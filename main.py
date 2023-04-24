@@ -10,4 +10,5 @@ df = pd.DataFrame({
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm)
-pandas_ai.run(df, "Calculate the sum of the gdp of north american countries")
+response = pandas_ai.run(df, "Calculate the sum of the gdp of north american countries")
+print(response)
