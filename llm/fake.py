@@ -7,7 +7,7 @@ class FakeLLM(LLM):
     self.output = output or self.output
 
   def call(self, instruction: str, input: str) -> str:
-    return self.output
+    return self._extract_code(self.output)
 
   @property
   def _type(self) -> str:
