@@ -54,6 +54,26 @@ The above code will return the following:
 14516000
 ```
 
+## Environment Variables
+
+In order to set the API key for the LLM (HuggingFaceHub, OpenAI), you need to set the appropriate environment variables. You can do this by copying the `.env.example` file to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Then, edit the `.env` file and set the appropriate values.
+
+As an alternative, you can also pass the environment variables directly to the constructor of the LLM:
+
+```python
+# OpenAI
+llm = OpenAI(api_token="YOUR_OPENAI_API_KEY")
+
+# OpenAssistant
+llm = OpenAssistant(api_token="YOUR_HF_API_KEY")
+```
+
 ## License
 
 PandasAI is licensed under the MIT License. See the LICENSE file for more details.
