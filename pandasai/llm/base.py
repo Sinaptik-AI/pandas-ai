@@ -1,5 +1,6 @@
 import re
 import ast
+import astor
 
 class LLM:
   @property
@@ -9,17 +10,14 @@ class LLM:
   
   def _remove_imports(self, code: str) -> str:
     tree = ast.parse(code)
+    new_body = []
 
-    for node in tree.body[:]:
-      if isinstance(node, ast.Import):
-        for name in node.names:
-          node.names.remove(name)
-        if not node.names:
-          tree.body.remove(node)
-      elif isinstance(node, ast.ImportFrom):
-        tree.body.remove(node)
+    for node in tree.body:
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            new_body.append(node)
 
-    return ast.unparse(tree)
+    new_tree = ast.Module(body=new_body)
+    return astor.to_source(new_tree)
 
   def _polish_code(self, code: str) -> str:
     """Polish the code:
