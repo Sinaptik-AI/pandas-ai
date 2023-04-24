@@ -70,13 +70,13 @@ class OpenAI(LLM):
 
   def call(self, instruction: str, input: str) -> str:
     if (self.model == "text-davinci-003"):
-      response = self.completion(instruction + input)
+      response = self.completion(str(instruction) + str(input))
     elif (self.model == "gpt-3.5-turbo"):
-      response = self.chat_completion(instruction + input)
+      response = self.chat_completion(str(instruction) + str(input))
     else:
-        raise Exception("Unsupported model")
+      raise Exception("Unsupported model")
 
-    return self._extract_code(response)
+    return response
 
   @property
   def _type(self) -> str:

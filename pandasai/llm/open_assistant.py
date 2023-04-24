@@ -24,8 +24,7 @@ class OpenAssistant(LLM):
     output = self.query({
       "inputs": "<|prompter|>" + instruction + input + "<|endoftext|>"
     })
-
-    return self._extract_code(output[0]["generated_text"])
+    return output[0]["generated_text"]
 
   @property
   def _type(self) -> str:

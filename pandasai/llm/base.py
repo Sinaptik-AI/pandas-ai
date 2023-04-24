@@ -59,3 +59,8 @@ class LLM:
     """Execute the llm with the given prompt"""
 
     raise Exception("Call method has not been implemented")
+  
+  def generate_code(self, instruction: str, prompt: str) -> str:
+    """Generate the code based on the instruction and the prompt"""
+
+    return self._extract_code(self.call(instruction, prompt))

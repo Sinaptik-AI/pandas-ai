@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pandasai",
-    version="0.0.1",
+    version="0.0.2",
     author="Gabriele Venturi",
     description="A wrapper around pandas to make it conversational",
     long_description=long_description,

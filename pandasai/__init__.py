@@ -6,7 +6,7 @@ import sys
 class PandasAI:
   """PandasAI is a wrapper around a LLM to make dataframes convesational"""
 
-  instruction: str = """
+  task_instruction: str = """
 There is a dataframe in pandas (python).
 The name of the dataframe is `df`.
 This is the result of `print(df.head())`:
@@ -14,19 +14,39 @@ This is the result of `print(df.head())`:
 
 Return the python code (do not import anything) to get the answer to the following question:
 """
+  response_instruction: str = """
+The customer asked:
+{question}
+
+To get the answer, run you run the following code in pandas (python):
+{code}
+
+Result:
+{answer}
+
+Write the answer to the customer
+"""
   llm: LLM
+  conversational_answer: bool
 
   # default constructor
-  def __init__(self, llm = None):
+  def __init__(self, llm = None, conversational_answer = True):
     if llm is None:
       raise Exception("An LLM should be provided to instantiate a PandasAI instance")
     self.llm = llm
+    self.conversational_answer = conversational_answer
 
-  def run(self, df: pd.DataFrame, prompt: str) -> str:
+  def run(self, df: pd.DataFrame, prompt: str, conversational_answer: bool = None) -> str:
     """Run the LLM with the given prompt"""
     print(f"Running PandasAI with {self.llm._type} LLM...")
-    result = self.llm.call(self.instruction.format(df = df.head()), prompt)
-    return self.run_code(result, df)
+    code = self.llm.generate_code(self.task_instruction.format(df = df.head()), prompt)
+    answer = self.run_code(code, df)
+
+    if conversational_answer is None:
+      conversational_answer = self.conversational_answer
+    if conversational_answer:
+      return self.llm.call(self.response_instruction.format(question = prompt, code = code, answer = answer), answer)
+    return answer
 
   def run_code(self, code: str, df: pd.DataFrame):
     """Run the code in the current context and return the result"""

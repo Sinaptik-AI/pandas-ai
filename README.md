@@ -65,4 +65,4 @@ Contributions are welcome!
 ### Todo
 
 - [ ] Add support for more LLMs
-- [ ] Add support for conversational responses
+- [x] Add support for conversational responses
