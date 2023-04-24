@@ -1,5 +1,5 @@
 import pandas as pd
-from llm.base import LLM
+from .llm.base import LLM
 
 class PandasAI:
   """PandasAI is a wrapper around a LLM to make dataframes convesational"""

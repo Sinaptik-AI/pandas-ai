@@ -5,7 +5,7 @@ Pandas AI is a Python library that adds generative artificial intelligence capab
 ## Installation
 
 ```bash
-pip install pandas-ai
+pip install pandasai
 ```
 
 ## Usage

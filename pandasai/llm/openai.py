@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from llm.base import LLM
+from .base import LLM
 import openai
 
 load_dotenv()

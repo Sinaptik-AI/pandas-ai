@@ -1,6 +1,6 @@
 import pandas as pd
-from pandas_ai import PandasAI
-from llm.openai import OpenAI
+from pandasai import PandasAI
+from pandasai.llm.openai import OpenAI
 
 df = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],

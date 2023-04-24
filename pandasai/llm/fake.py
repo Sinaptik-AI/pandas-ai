@@ -1,4 +1,4 @@
-from llm.base import LLM
+from .base import LLM
 
 class FakeLLM(LLM):
   output: str = 'print("Hello world")'
