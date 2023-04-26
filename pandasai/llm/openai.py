@@ -9,7 +9,7 @@ class OpenAI(LLM):
   api_token: str
   model: str = "gpt-3.5-turbo"
   temperature: float = 0
-  max_tokens: int = 150
+  max_tokens: int = 512
   top_p: float = 1
   frequency_penalty: float = 0
   presence_penalty: float = 0.6
