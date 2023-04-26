@@ -9,26 +9,20 @@ class PandasAI:
   task_instruction: str = """
 There is a dataframe in pandas (python).
 The name of the dataframe is `df`.
-This is the result of `print(df.columns)`:
-{columns}.
+This is the result of `print(df.head())`:
+{df_head}.
 
 Return the python code (do not import anything) to get the answer to the following question:
 """
   response_instruction: str = """
-The customer asked:
-{question}
+Question: {question}
+Answer: {answer}
 
-To get the answer, run you run the following code in pandas (python):
-{code}
-
-Result:
-{answer}
-
-Write the answer to the customer
+Rewrite the answer to the question in a conversational way.
 """
   llm: LLM
   verbose: bool = False
-  conversational_answer: bool = True
+  is_conversational_answer: bool = True
 
   def log(self, message: str):
     """Log a message"""
@@ -36,17 +30,17 @@ Write the answer to the customer
       print(message)
 
   # default constructor
-  def __init__(self, llm = None, conversational_answer = True, verbose = False):
+  def __init__(self, llm = None, is_conversational_answer = True, verbose = False):
     if llm is None:
       raise Exception("An LLM should be provided to instantiate a PandasAI instance")
     self.llm = llm
-    self.conversational_answer = conversational_answer
+    self.is_conversational_answer = is_conversational_answer
     self.verbose = verbose
 
-  def run(self, df: pd.DataFrame, prompt: str, conversational_answer: bool = None) -> str:
+  def run(self, df: pd.DataFrame, prompt: str, is_conversational_answer: bool = None) -> str:
     """Run the LLM with the given prompt"""
     self.log(f"Running PandasAI with {self.llm._type} LLM...")
-    code = self.llm.generate_code(self.task_instruction.format(columns = df.columns), prompt)
+    code = self.llm.generate_code(self.task_instruction.format(df_head = df.head()), prompt)
     self.log(f"""
 Code generated:
 ```
@@ -55,10 +49,11 @@ Code generated:
     answer = self.run_code(code, df)
     self.log(f"Answer: {answer}")
 
-    if conversational_answer is None:
-      conversational_answer = self.conversational_answer
-    if conversational_answer:
-      answer = self.llm.call(self.response_instruction.format(question = prompt, code = code, answer = answer), answer)
+    if is_conversational_answer is None:
+      is_conversational_answer = self.is_conversational_answer
+    if is_conversational_answer:
+      instruction = self.response_instruction.format(question = prompt, code = code, answer = answer)
+      answer = self.llm.call(instruction, answer)
       self.log(f"Conversational answer: {answer}")
     return answer
 
