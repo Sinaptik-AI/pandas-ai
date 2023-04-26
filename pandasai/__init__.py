@@ -6,7 +6,7 @@ import sys
 class PandasAI:
   """PandasAI is a wrapper around a LLM to make dataframes convesational"""
 
-  task_instruction: str = """
+  _task_instruction: str = """
 There is a dataframe in pandas (python).
 The name of the dataframe is `df`.
 This is the result of `print(df.head())`:
@@ -14,46 +14,50 @@ This is the result of `print(df.head())`:
 
 Return the python code (do not import anything) to get the answer to the following question:
 """
-  response_instruction: str = """
+  _response_instruction: str = """
 Question: {question}
 Answer: {answer}
 
 Rewrite the answer to the question in a conversational way.
 """
-  llm: LLM
-  verbose: bool = False
-  is_conversational_answer: bool = True
+  _llm: LLM
+  _verbose: bool = False
+  _is_conversational_answer: bool = True
+  last_code_generated: str = None
+  code_output: str = None
 
-  def log(self, message: str):
-    """Log a message"""
-    if self.verbose:
-      print(message)
-
-  # default constructor
-  def __init__(self, llm = None, is_conversational_answer = True, verbose = False):
+  def __init__(self, llm = None, conversational = True, verbose = False):
     if llm is None:
       raise Exception("An LLM should be provided to instantiate a PandasAI instance")
-    self.llm = llm
-    self.is_conversational_answer = is_conversational_answer
-    self.verbose = verbose
+    self._llm = llm
+    self._is_conversational_answer = conversational
+    self._verbose = verbose
+
+  def conversational_answer(self, question: str, code: str, answer: str) -> str:
+    """Return the conversational answer"""
+    instruction = self._response_instruction.format(question = question, code = code, answer = answer)
+    return self._llm.call(instruction, answer)
 
   def run(self, df: pd.DataFrame, prompt: str, is_conversational_answer: bool = None) -> str:
     """Run the LLM with the given prompt"""
-    self.log(f"Running PandasAI with {self.llm._type} LLM...")
-    code = self.llm.generate_code(self.task_instruction.format(df_head = df.head()), prompt)
+    self.log(f"Running PandasAI with {self._llm._type} LLM...")
+
+    code = self._llm.generate_code(self._task_instruction.format(df_head = df.head()), prompt)
+    self.last_code_generated = code
     self.log(f"""
 Code generated:
 ```
 {code}
 ```""")
+
     answer = self.run_code(code, df)
+    self.code_output = answer
     self.log(f"Answer: {answer}")
 
     if is_conversational_answer is None:
-      is_conversational_answer = self.is_conversational_answer
+      is_conversational_answer = self._is_conversational_answer
     if is_conversational_answer:
-      instruction = self.response_instruction.format(question = prompt, code = code, answer = answer)
-      answer = self.llm.call(instruction, answer)
+      answer = self.conversational_answer(prompt, code, answer)
       self.log(f"Conversational answer: {answer}")
     return answer
 
@@ -75,12 +79,17 @@ Code generated:
     lines = code.strip().split('\n')
     last_line = lines[-1].strip()
     if last_line.startswith('print(') and last_line.endswith(')'):
-      # last line is already printing
+      # Last line is already printing
       return eval(last_line[6:-1])
     else:
-      # evaluate last line and return its value or the captured output
+      # Evaluate last line and return its value or the captured output
       try:
         result = eval(last_line)
         return result
       except:
         return captured_output
+
+  def log(self, message: str):
+    """Log a message"""
+    if self._verbose:
+      print(message)
