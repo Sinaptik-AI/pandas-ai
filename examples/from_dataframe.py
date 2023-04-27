@@ -9,6 +9,7 @@ df = pd.DataFrame({
 })
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose = True)
+pandas_ai = PandasAI(llm, verbose = True, conversational = False)
 response = pandas_ai.run(df, "Calculate the sum of the gdp of north american countries")
 print(response)
+# Output: 26200000

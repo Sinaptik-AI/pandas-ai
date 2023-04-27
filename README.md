@@ -54,6 +54,8 @@ The above code will return the following:
 14516000
 ```
 
+You can find more examples in the [examples](examples) directory.
+
 ## Environment Variables
 
 In order to set the API key for the LLM (HuggingFaceHub, OpenAI), you need to set the appropriate environment variables. You can do this by copying the `.env.example` file to `.env`:
@@ -80,9 +82,12 @@ PandasAI is licensed under the MIT License. See the LICENSE file for more detail
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are welcome! Please check out the todos below, and feel free to open a pull request.
 
 ### Todo
 
 - [ ] Add support for more LLMs
+- [ ] Make PandasAI available from a CLI
+- [ ] Create a web interface for PandasAI
+- [ ] Add CI/CD
 - [x] Add support for conversational responses
