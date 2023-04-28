@@ -18,7 +18,7 @@ PandasAI is designed to be used in conjunction with Pandas. It makes Pandas conv
 
 ```python
 import pandas as pd
-from pandas_ai import PandasAI
+from pandasai import PandasAI
 
 # Sample DataFrame
 df = pd.DataFrame({
