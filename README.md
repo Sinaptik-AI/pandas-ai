@@ -2,6 +2,10 @@
 
 Pandas AI is a Python library that adds generative artificial intelligence capabilities to Pandas, the popular data analysis and manipulation tool. It is designed to be used in conjunction with Pandas, and is not a replacement for it.
 
+<!-- Add images/pandas-ai.png -->
+
+![PandasAI](images/pandas-ai.png?raw=true)
+
 ## Installation
 
 ```bash
