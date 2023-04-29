@@ -1,0 +1,5 @@
+pandasai==0.0.3
+setuptools==67.3.2
+astor==0.8.1
+requests==2.29.0
+python-dotenv==0.14.0
