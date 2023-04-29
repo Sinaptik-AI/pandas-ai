@@ -11,6 +11,7 @@ packages = [{include = "pandas_ai"}]
 python = "^3.9"
 python-dotenv = "^1.0.0"
 pandas = "^2.0.1"
+astor = "^0.8.1"
 
 
 [tool.poetry.group.dev.dependencies]
