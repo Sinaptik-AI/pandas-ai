@@ -6,6 +6,10 @@ Pandas AI is a Python library that adds generative artificial intelligence capab
 
 ![PandasAI](images/pandas-ai.png?raw=true)
 
+## Demo
+
+Try out PandasAI in your browser from on [Google Colab](https://colab.research.google.com/drive/1rKz7TudOeCeKGHekw7JFNL4sagN9hon-?usp=sharing).
+
 ## Installation
 
 ```bash
@@ -94,4 +98,6 @@ Contributions are welcome! Please check out the todos below, and feel free to op
 - [ ] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
 - [ ] Add CI/CD
+- [ ] Add unit tests
+- [ ] Add contributing guidelines
 - [x] Add support for conversational responses
