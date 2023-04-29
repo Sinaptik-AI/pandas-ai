@@ -28,11 +28,11 @@ df = pd.DataFrame({
 })
 
 # Instantiate a LLM
-from llm.openai import OpenAI
+from pandasai.llm.openai import OpenAI
 llm = OpenAI()
 
-pandas_ai = PandasAI(df, llm)
-pandas_ai.run('Which are the 5 happiest countries?')
+pandas_ai = PandasAI(llm)
+pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 ```
 
 The above code will return the following:
@@ -49,7 +49,7 @@ Name: country, dtype: object
 Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
 
 ```python
-pandas_ai.run('What is the sum of the GDPs of the 2 unhappiest countries?')
+pandas_ai.run(df, prompt='What is the sum of the GDPs of the 2 unhappiest countries?')
 ```
 
 The above code will return the following:
