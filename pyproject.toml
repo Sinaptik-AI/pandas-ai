@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pandas-ai"
+version = "0.1.0"
+description = "Pandas AI is a Python library that integrates generative artificial intelligence capabilities into Pandas, allowing for advanced data analysis tasks such as data synthesis and augmentation."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "pandas_ai"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+python-dotenv = "^1.0.0"
+pandas = "^2.0.1"
+astor = "^0.8.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+pre-commit = "^3.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
