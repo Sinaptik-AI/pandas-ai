@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "pandas-ai"
+name = "pandasai"
 version = "0.1.0"
-description = "Pandas AI is a Python library that integrates generative artificial intelligence capabilities into Pandas, allowing for advanced data analysis tasks such as data synthesis and augmentation."
-authors = ["Your Name <you@example.com>"]
+description = "Pandas AI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
+authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "pandas_ai"}]
+packages = [{include = "pandasai"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
