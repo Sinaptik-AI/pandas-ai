@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Lint with pylint
-        run: poetry run pylint $(git ls-files '*.py')
+        run: poetry run pylint pandasai examples
         continue-on-error: true
-      # - name: Test with pytest
-      #   run: poetry run pytest
+      - name: Test with pytest
+        run: poetry run pytest
