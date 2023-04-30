@@ -97,7 +97,7 @@ Contributions are welcome! Please check out the todos below, and feel free to op
 - [ ] Add support for more LLMs
 - [ ] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
-- [ ] Add CI/CD
 - [ ] Add unit tests
 - [ ] Add contributing guidelines
+- [x] Add CI
 - [x] Add support for conversational responses
