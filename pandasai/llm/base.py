@@ -1,13 +1,22 @@
+""" Base class to implement a new LLM. """
+
 import re
 import ast
 import astor
+from ..exceptions import (
+    APIKeyNotFoundError,
+    NoCodeFoundError,
+    MethodNotImplementedError,
+)
 
 
 class LLM:
+    """Base class to implement a new LLM."""
+
     @property
-    def _type(self) -> str:
+    def type(self) -> str:
         """Return type of llm."""
-        raise Exception("Type has not been implemented")
+        raise APIKeyNotFoundError("Type has not been implemented")
 
     def _remove_imports(self, code: str) -> str:
         tree = ast.parse(code)
@@ -50,14 +59,14 @@ class LLM:
             code = response.split(separator)[1]
         code = self._polish_code(code)
         if not self._is_python_code(code):
-            raise Exception("No code found in the response")
+            raise NoCodeFoundError("No code found in the response")
 
         return code
 
-    def call(self, instruction: str, input: str) -> str:
+    def call(self, instruction: str, value: str) -> str:
         """Execute the llm with the given prompt"""
 
-        raise Exception("Call method has not been implemented")
+        raise MethodNotImplementedError("Call method has not been implemented")
 
     def generate_code(self, instruction: str, prompt: str) -> str:
         """Generate the code based on the instruction and the prompt"""

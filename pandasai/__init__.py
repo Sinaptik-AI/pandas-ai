@@ -1,7 +1,9 @@
-import pandas as pd
-from .llm.base import LLM
+""" PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
 import sys
+import pandas as pd
+from .llm.base import LLM
+from .exceptions import LLMNotFoundError
 
 
 class PandasAI:
@@ -29,7 +31,7 @@ Rewrite the answer to the question in a conversational way.
 
     def __init__(self, llm=None, conversational=True, verbose=False):
         if llm is None:
-            raise Exception(
+            raise LLMNotFoundError(
                 "An LLM should be provided to instantiate a PandasAI instance"
             )
         self._llm = llm
@@ -44,13 +46,16 @@ Rewrite the answer to the question in a conversational way.
         return self._llm.call(instruction, answer)
 
     def run(
-        self, df: pd.DataFrame, prompt: str, is_conversational_answer: bool = None
+        self,
+        data_frame: pd.DataFrame,
+        prompt: str,
+        is_conversational_answer: bool = None,
     ) -> str:
         """Run the LLM with the given prompt"""
-        self.log(f"Running PandasAI with {self._llm._type} LLM...")
+        self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         code = self._llm.generate_code(
-            self._task_instruction.format(df_head=df.head()), prompt
+            self._task_instruction.format(df_head=data_frame.head()), prompt
         )
         self.last_code_generated = code
         self.log(
@@ -61,7 +66,7 @@ Code generated:
 ```"""
         )
 
-        answer = self.run_code(code, df)
+        answer = self.run_code(code, data_frame)
         self.code_output = answer
         self.log(f"Answer: {answer}")
 
@@ -72,7 +77,10 @@ Code generated:
             self.log(f"Conversational answer: {answer}")
         return answer
 
-    def run_code(self, code: str, df: pd.DataFrame):
+    def run_code(
+        self, code: str, df: pd.DataFrame  # pylint: disable=W0613 disable=C0103
+    ) -> str:
+        # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
 
         # Redirect standard output to a StringIO buffer
@@ -92,13 +100,12 @@ Code generated:
         if last_line.startswith("print(") and last_line.endswith(")"):
             # Last line is already printing
             return eval(last_line[6:-1])
-        else:
-            # Evaluate last line and return its value or the captured output
-            try:
-                result = eval(last_line)
-                return result
-            except:
-                return captured_output
+        # Evaluate last line and return its value or the captured output
+        try:
+            result = eval(last_line)
+            return result
+        except:
+            return captured_output
 
     def log(self, message: str):
         """Log a message"""

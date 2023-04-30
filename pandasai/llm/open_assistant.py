@@ -1,32 +1,44 @@
-import requests
+""" Open Assistant LLM """
+
 import os
+import requests
 from dotenv import load_dotenv
 from .base import LLM
+from ..exceptions import APIKeyNotFoundError
 
 load_dotenv()
 
 
 class OpenAssistant(LLM):
+    """Open Assistant LLM"""
+
     api_token: str
+    _api_url: str = (
+        "https://api-inference.huggingface.co/models/"
+        "OpenAssistant/oasst-sft-1-pythia-12b"
+    )
 
     def __init__(self, api_token: str = None):
         self.api_token = api_token or os.getenv("HUGGINGFACE_API_KEY")
         if self.api_token is None:
-            raise Exception("HuggingFace Hub API key is required")
+            raise APIKeyNotFoundError("HuggingFace Hub API key is required")
 
     def query(self, payload):
-        API_URL = "https://api-inference.huggingface.co/models/OpenAssistant/oasst-sft-1-pythia-12b"
-        headers = {"Authorization": "Bearer {}".format(self.api_token)}
+        """Query the API"""
 
-        response = requests.post(API_URL, headers=headers, json=payload)
+        headers = {"Authorization": f"Bearer {self.api_token}"}
+
+        response = requests.post(
+            self._api_url, headers=headers, json=payload, timeout=60
+        )
         return response.json()
 
-    def call(self, instruction: str, input: str) -> str:
+    def call(self, instruction: str, value: str) -> str:
         output = self.query(
-            {"inputs": "<|prompter|>" + instruction + input + "<|endoftext|>"}
+            {"inputs": "<|prompter|>" + instruction + value + "<|endoftext|>"}
         )
         return output[0]["generated_text"]
 
     @property
-    def _type(self) -> str:
+    def type(self) -> str:
         return "open-assistant"

@@ -1,12 +1,17 @@
+"""OpenAI LLM"""
+
 import os
 from dotenv import load_dotenv
-from .base import LLM
 import openai
+from .base import LLM
+from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 
 load_dotenv()
 
 
 class OpenAI(LLM):
+    """OpenAI LLM"""
+
     api_token: str
     model: str = "gpt-3.5-turbo"
     temperature: float = 0
@@ -19,28 +24,32 @@ class OpenAI(LLM):
     def __init__(
         self,
         api_token: str = None,
-        model: str = None,
-        temperature: float = None,
-        max_tokens: int = None,
-        top_p: float = None,
-        frequency_penalty: float = None,
-        presence_penalty: float = None,
-        stop: str = None,
+        **kwargs,
     ):
         self.api_token = api_token or os.getenv("OPENAI_API_KEY")
         if self.api_token is None:
-            raise Exception("OpenAI API key is required")
+            raise APIKeyNotFoundError("OpenAI API key is required")
         openai.api_key = self.api_token
 
-        self.model = model or self.model
-        self.temperature = temperature or self.temperature
-        self.max_tokens = max_tokens or self.max_tokens
-        self.top_p = top_p or self.top_p
-        self.frequency_penalty = frequency_penalty or self.frequency_penalty
-        self.presence_penalty = presence_penalty or self.presence_penalty
-        self.stop = stop or self.stop
+        self._set_params(**kwargs)
+
+    def _set_params(self, **kwargs):
+        valid_params = [
+            "model",
+            "temperature",
+            "max_tokens",
+            "top_p",
+            "frequency_penalty",
+            "presence_penalty",
+            "stop",
+        ]
+        for key, value in kwargs.items():
+            if key in valid_params:
+                setattr(self, key, value)
 
     def completion(self, prompt: str) -> str:
+        """Query the completion API"""
+
         params = {
             "model": self.model,
             "prompt": prompt,
@@ -58,7 +67,9 @@ class OpenAI(LLM):
 
         return response["choices"][0]["text"]
 
-    def chat_completion(self, prompt: str) -> str:
+    def chat_completion(self, value: str) -> str:
+        """Query the chat completion API"""
+
         params = {
             "model": self.model,
             "temperature": self.temperature,
@@ -69,7 +80,7 @@ class OpenAI(LLM):
             "messages": [
                 {
                     "role": "system",
-                    "content": prompt,
+                    "content": value,
                 }
             ],
         }
@@ -81,16 +92,16 @@ class OpenAI(LLM):
 
         return response["choices"][0]["message"]["content"]
 
-    def call(self, instruction: str, input: str) -> str:
+    def call(self, instruction: str, value: str) -> str:
         if self.model == "text-davinci-003":
-            response = self.completion(str(instruction) + str(input))
+            response = self.completion(str(instruction) + str(value))
         elif self.model == "gpt-3.5-turbo":
-            response = self.chat_completion(str(instruction) + str(input))
+            response = self.chat_completion(str(instruction) + str(value))
         else:
-            raise Exception("Unsupported model")
+            raise UnsupportedOpenAIModelError("Unsupported model")
 
         return response
 
     @property
-    def _type(self) -> str:
+    def type(self) -> str:
         return "openai"
