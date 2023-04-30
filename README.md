@@ -66,7 +66,7 @@ You can find more examples in the [examples](examples) directory.
 
 ## Environment Variables
 
-In order to set the API key for the LLM (HuggingFaceHub, OpenAI), you need to set the appropriate environment variables. You can do this by copying the `.env.example` file to `.env`:
+In order to set the API key for the LLM (Hugging Face Hub, OpenAI), you need to set the appropriate environment variables. You can do this by copying the `.env.example` file to `.env`:
 
 ```bash
 cp .env.example .env
