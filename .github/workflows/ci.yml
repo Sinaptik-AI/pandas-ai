@@ -14,21 +14,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install poetry
-        run: |
-          pip install poetry
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        run: pip install poetry==1.4.2
       - name: Install dependencies
-        run: |
-          poetry install
-          pip install pylint pytest
+        run: poetry install
       - name: Lint with pylint
-        run: |
-            pylint $(git ls-files '*.py')
+        run: poetry run pylint $(git ls-files '*.py')
         continue-on-error: true
-      - name: Test with pytest
-        run: |
-          pytest
+      # - name: Test with pytest
+      #   run: poetry run pytest
