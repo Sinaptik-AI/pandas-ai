@@ -12,6 +12,16 @@ load_dotenv()
 class OpenAI(LLM):
     """OpenAI LLM"""
 
+    _supported_chat_models = [
+        "gpt-4",
+        "gpt-4-0314",
+        "gpt-4-32k",
+        "gpt-4-32k-0314",
+        "gpt-3.5-turbo",
+        "gpt-3.5-turbo-0301",
+    ]
+    _supported_completion_models = ["text-davinci-003"]
+
     api_token: str
     model: str = "gpt-3.5-turbo"
     temperature: float = 0
@@ -93,9 +103,9 @@ class OpenAI(LLM):
         return response["choices"][0]["message"]["content"]
 
     def call(self, instruction: str, value: str) -> str:
-        if self.model == "text-davinci-003":
+        if self.model in self._supported_completion_models:
             response = self.completion(str(instruction) + str(value))
-        elif self.model == "gpt-3.5-turbo":
+        elif self.model in self._supported_chat_models:
             response = self.chat_completion(str(instruction) + str(value))
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
