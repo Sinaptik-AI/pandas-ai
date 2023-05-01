@@ -15,7 +15,8 @@ The name of the dataframe is `df`.
 This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
-Return the python code (do not import anything) to get the answer to the following question:
+Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+to get the answer to the following question :
 """
     _response_instruction: str = """
 Question: {question}
@@ -23,15 +24,32 @@ Answer: {answer}
 
 Rewrite the answer to the question in a conversational way.
 """
+
+    _error_correct_instruction: str = """
+    For the task defined below:
+    {orig_task}
+    you generated this python code:
+    {code}
+    and this fails with the following error:
+    {error_returned}
+    Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error.
+    Make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly.
+    """
     _llm: LLM
     _verbose: bool = False
     _is_conversational_answer: bool = True
     _enforce_privacy: bool = False
+    _max_retries: int = 3
+    _original_instruction_and_prompt = None
     last_code_generated: str = None
     code_output: str = None
 
     def __init__(
-        self, llm=None, conversational=True, verbose=False, enforce_privacy=False
+        self,
+        llm=None,
+        conversational=True,
+        verbose=False,
+        enforce_privacy=False,
     ):
         if llm is None:
             raise LLMNotFoundError(
@@ -74,6 +92,13 @@ Rewrite the answer to the question in a conversational way.
             ),
             prompt,
         )
+        self._original_instruction_and_prompt = (
+            self._task_instruction.format(
+                df_head=data_frame.head(rows_to_display),
+                rows_to_display=rows_to_display,
+            )
+            + prompt
+        )
         self.last_code_generated = code
         self.log(
             f"""
@@ -83,7 +108,7 @@ Code generated:
 ```"""
         )
 
-        answer = self.run_code(code, data_frame)
+        answer = self.run_code(code, data_frame, False)
         self.code_output = answer
         self.log(f"Answer: {answer}")
 
@@ -95,7 +120,10 @@ Code generated:
         return answer
 
     def run_code(
-        self, code: str, df: pd.DataFrame  # pylint: disable=W0613 disable=C0103
+        self,
+        code: str,
+        df: pd.DataFrame,  # pylint: disable=W0613 disable=C0103
+        use_error_correction_framework: bool = False,
     ) -> str:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
@@ -105,7 +133,28 @@ Code generated:
         sys.stdout = output
 
         # Execute the code
-        exec(code)
+        if use_error_correction_framework:
+            count = 0
+            code_to_run = code
+            while count < self._max_retries:
+                try:
+                    exec(code_to_run)
+                    code = code_to_run
+                    break
+                except Exception as e:  # pylint: disable=W0718 disable=C0103
+                    count += 1
+                    error_correcting_instruction = (
+                        self._error_correct_instruction.format(
+                            orig_task=self._original_instruction_and_prompt,
+                            code=code,
+                            error_returned=e,
+                        )
+                    )
+                    code_to_run = self._llm.generate_code(
+                        error_correcting_instruction, ""
+                    )
+        else:
+            exec(code)
 
         # Restore standard output and get the captured output
         sys.stdout = sys.__stdout__
