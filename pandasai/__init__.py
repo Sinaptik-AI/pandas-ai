@@ -39,12 +39,17 @@ Rewrite the answer to the question in a conversational way.
     _verbose: bool = False
     _is_conversational_answer: bool = True
     _enforce_privacy: bool = False
+    _max_retries: int = 3
+    _original_instruction_and_prompt = None
     last_code_generated: str = None
     code_output: str = None
-    original_instruction_and_prompt = None
 
     def __init__(
-            self, llm=None, conversational=True, verbose=False, enforce_privacy=False
+        self,
+        llm=None,
+        conversational=True,
+        verbose=False,
+        enforce_privacy=False,
     ):
         if llm is None:
             raise LLMNotFoundError(
@@ -68,10 +73,10 @@ Rewrite the answer to the question in a conversational way.
         return self._llm.call(instruction, answer)
 
     def run(
-            self,
-            data_frame: pd.DataFrame,
-            prompt: str,
-            is_conversational_answer: bool = None,
+        self,
+        data_frame: pd.DataFrame,
+        prompt: str,
+        is_conversational_answer: bool = None,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
@@ -87,9 +92,13 @@ Rewrite the answer to the question in a conversational way.
             ),
             prompt,
         )
-        self.original_instruction_and_prompt = self._task_instruction.format(
-            df_head=data_frame.head(rows_to_display),
-            rows_to_display=rows_to_display) + prompt
+        self._original_instruction_and_prompt = (
+            self._task_instruction.format(
+                df_head=data_frame.head(rows_to_display),
+                rows_to_display=rows_to_display,
+            )
+            + prompt
+        )
         self.last_code_generated = code
         self.log(
             f"""
@@ -111,7 +120,10 @@ Code generated:
         return answer
 
     def run_code(
-            self, code: str, df: pd.DataFrame, use_error_correction_framework: bool = False  # pylint: disable=W0613 disable=C0103
+        self,
+        code: str,
+        df: pd.DataFrame,  # pylint: disable=W0613 disable=C0103
+        use_error_correction_framework: bool = False,
     ) -> str:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
@@ -124,19 +136,23 @@ Code generated:
         if use_error_correction_framework:
             count = 0
             code_to_run = code
-            while count < 3:
+            while count < self._max_retries:
                 try:
                     exec(code_to_run)
                     code = code_to_run
                     break
-                except Exception as e:
+                except Exception as e:  # pylint: disable=W0718 disable=C0103
                     count += 1
-                    error_correcting_instruction = self._error_correct_instruction.format(
-                        orig_task=self.original_instruction_and_prompt,
-                        code=code,
-                        error_returned=e
+                    error_correcting_instruction = (
+                        self._error_correct_instruction.format(
+                            orig_task=self._original_instruction_and_prompt,
+                            code=code,
+                            error_returned=e,
+                        )
                     )
-                    code_to_run = self._llm.generate_code(error_correcting_instruction, "")
+                    code_to_run = self._llm.generate_code(
+                        error_correcting_instruction, ""
+                    )
         else:
             exec(code)
 
