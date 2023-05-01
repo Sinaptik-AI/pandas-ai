@@ -6,13 +6,15 @@ from .base import LLM
 class FakeLLM(LLM):
     """Fake LLM"""
 
-    output: str = 'print("Hello world")'
+    _output: str = 'print("Hello world")'
 
     def __init__(self, output: str = None):
-        self.output = output or self.output
+        if output is not None:
+            self._output = output
 
     def call(self, instruction: str, value: str) -> str:
-        return self.output
+        self.last_prompt = str(instruction) + str(value)
+        return self._output
 
     @property
     def type(self) -> str:

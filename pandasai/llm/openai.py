@@ -103,6 +103,9 @@ class OpenAI(LLM):
         return response["choices"][0]["message"]["content"]
 
     def call(self, instruction: str, value: str) -> str:
+        """Call the openAI LLM"""
+        self.last_prompt = str(instruction) + str(value)
+
         if self.model in self._supported_completion_models:
             response = self.completion(str(instruction) + str(value))
         elif self.model in self._supported_chat_models:

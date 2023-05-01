@@ -1,7 +1,7 @@
 """Unit tests for the PandasAI class"""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pandas as pd
 from pandasai import PandasAI
@@ -105,3 +105,61 @@ class TestPandasAI(unittest.TestCase):
         df = pd.DataFrame()
         self.setup()
         self.assertEqual(self.pandasai.run_code("print(1 + 1)", df), 2)
+
+    def test_conversational_answer_with_privacy_enforcement(self):
+        self.setup()
+        self.pandasai._enforce_privacy = True
+        self.pandasai._llm.call = Mock(return_value="The answer is 2")
+        self.assertEqual(
+            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2), 2
+        )
+        self.pandasai._llm.call.assert_not_called()
+
+    def test_conversational_answer_without_privacy_enforcement(self):
+        self.setup()
+        self.pandasai._enforce_privacy = False
+        self.pandasai._llm.call = Mock(return_value="The answer is 2")
+        self.assertEqual(
+            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2),
+            "The answer is 2",
+        )
+        self.pandasai._llm.call.assert_called()
+
+    def test_run_with_privacy_enforcement(self):
+        df = pd.DataFrame({"country": ["United States", "United Kingdom", "France"]})
+        self.setup()
+        self.pandasai._enforce_privacy = True
+        self.pandasai._is_conversational_answer = True
+
+        expected_prompt = """
+There is a dataframe in pandas (python).
+The name of the dataframe is `df`.
+This is the result of `print(df.head(0))`:
+Empty DataFrame
+Columns: [country]
+Index: [].
+
+Return the python code (do not import anything) to get the answer to the following question:
+How many countries are in the dataframe?"""
+        self.pandasai.run(df, "How many countries are in the dataframe?")
+        assert self.pandasai._llm.last_prompt == expected_prompt
+
+    def test_run_without_privacy_enforcement(self):
+        df = pd.DataFrame({"country": ["United States", "United Kingdom", "France"]})
+        self.setup()
+        self.pandasai._enforce_privacy = False
+        self.pandasai._is_conversational_answer = False
+
+        expected_prompt = """
+There is a dataframe in pandas (python).
+The name of the dataframe is `df`.
+This is the result of `print(df.head(5))`:
+          country
+0   United States
+1  United Kingdom
+2          France.
+
+Return the python code (do not import anything) to get the answer to the following question:
+How many countries are in the dataframe?"""
+        self.pandasai.run(df, "How many countries are in the dataframe?")
+        assert self.pandasai._llm.last_prompt == expected_prompt

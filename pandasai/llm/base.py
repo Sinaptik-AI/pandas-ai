@@ -13,6 +13,8 @@ from ..exceptions import (
 class LLM:
     """Base class to implement a new LLM."""
 
+    last_prompt: str = None
+
     @property
     def type(self) -> str:
         """Return type of llm."""

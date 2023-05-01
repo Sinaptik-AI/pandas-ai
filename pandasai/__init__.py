@@ -12,7 +12,7 @@ class PandasAI:
     _task_instruction: str = """
 There is a dataframe in pandas (python).
 The name of the dataframe is `df`.
-This is the result of `print(df.head())`:
+This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
 Return the python code (do not import anything) to get the answer to the following question:
@@ -26,10 +26,13 @@ Rewrite the answer to the question in a conversational way.
     _llm: LLM
     _verbose: bool = False
     _is_conversational_answer: bool = True
+    _enforce_privacy: bool = False
     last_code_generated: str = None
     code_output: str = None
 
-    def __init__(self, llm=None, conversational=True, verbose=False):
+    def __init__(
+        self, llm=None, conversational=True, verbose=False, enforce_privacy=False
+    ):
         if llm is None:
             raise LLMNotFoundError(
                 "An LLM should be provided to instantiate a PandasAI instance"
@@ -37,9 +40,15 @@ Rewrite the answer to the question in a conversational way.
         self._llm = llm
         self._is_conversational_answer = conversational
         self._verbose = verbose
+        self._enforce_privacy = enforce_privacy
 
     def conversational_answer(self, question: str, code: str, answer: str) -> str:
         """Return the conversational answer"""
+        if self._enforce_privacy:
+            # we don't want to send potentially sensitive data to the LLM server
+            # if the user has set enforce_privacy to True
+            return answer
+
         instruction = self._response_instruction.format(
             question=question, code=code, answer=answer
         )
@@ -54,8 +63,16 @@ Rewrite the answer to the question in a conversational way.
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
+        rows_to_display = 5
+        if self._enforce_privacy:
+            rows_to_display = 0
+
         code = self._llm.generate_code(
-            self._task_instruction.format(df_head=data_frame.head()), prompt
+            self._task_instruction.format(
+                df_head=data_frame.head(rows_to_display),
+                rows_to_display=rows_to_display,
+            ),
+            prompt,
         )
         self.last_code_generated = code
         self.log(
