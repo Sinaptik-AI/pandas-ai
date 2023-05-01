@@ -139,7 +139,8 @@ Empty DataFrame
 Columns: [country]
 Index: [].
 
-Return the python code (do not import anything) to get the answer to the following question:
+Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
@@ -159,7 +160,8 @@ This is the result of `print(df.head(5))`:
 1  United Kingdom
 2          France.
 
-Return the python code (do not import anything) to get the answer to the following question:
+Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
