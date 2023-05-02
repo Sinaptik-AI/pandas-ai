@@ -2,9 +2,10 @@
 import io
 import sys
 import pandas as pd
+from IPython.core.getipython import get_ipython
 from .llm.base import LLM
 from .exceptions import LLMNotFoundError
-from IPython.core.getipython import get_ipython
+
 
 
 class PandasAI:
