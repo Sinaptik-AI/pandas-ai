@@ -109,6 +109,7 @@ PandasAI is licensed under the MIT License. See the LICENSE file for more detail
 ## Contributing
 
 Contributions are welcome! Please check out the todos below, and feel free to open a pull request.
+For more information, please see the [contributing guidelines](CONTRIBUTING.md).
 
 ### Todo
 
