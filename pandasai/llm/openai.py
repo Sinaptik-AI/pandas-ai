@@ -58,8 +58,15 @@ class OpenAI(LLM):
                 setattr(self, key, value)
 
     def completion(self, prompt: str) -> str:
-        """Query the completion API"""
+        """
+        Query the completation API
 
+        Args:
+            prompt (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
         params = {
             "model": self.model,
             "prompt": prompt,
@@ -78,8 +85,15 @@ class OpenAI(LLM):
         return response["choices"][0]["text"]
 
     def chat_completion(self, value: str) -> str:
-        """Query the chat completion API"""
+        """
+        Query the chat completion API
 
+        Args:
+            value (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
         params = {
             "model": self.model,
             "temperature": self.temperature,
@@ -103,7 +117,19 @@ class OpenAI(LLM):
         return response["choices"][0]["message"]["content"]
 
     def call(self, instruction: str, value: str) -> str:
-        """Call the openAI LLM"""
+        """
+        Call the OpenAI LLM.
+
+        Args:
+            instruction (str): Instruction to pass
+            value (str): Value to pass
+
+        Raises:
+            UnsupportedOpenAIModelError: Unsupported model
+
+        Returns:
+            str: Response
+        """
         self.last_prompt = str(instruction) + str(value)
 
         if self.model in self._supported_completion_models:
