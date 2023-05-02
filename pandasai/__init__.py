@@ -126,7 +126,7 @@ Code generated:
         if show_code:
             if self._is_notebook:
                 self.create_new_cell(code)
-            elif self._verbose:
+            else:
                 self.log(code)
             
         answer = self.run_code(code, data_frame, False)
