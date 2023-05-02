@@ -2,7 +2,6 @@
 import io
 import sys
 import pandas as pd
-from IPython.core.getipython import get_ipython
 from .llm.base import LLM
 from .exceptions import LLMNotFoundError
 
@@ -43,8 +42,10 @@ Rewrite the answer to the question in a conversational way.
     _enforce_privacy: bool = False
     _max_retries: int = 3
     _original_instruction_and_prompt = None
+    _is_notebook: bool = False
     last_code_generated: str = None
     code_output: str = None
+    
 
     def __init__(
         self,
@@ -61,6 +62,18 @@ Rewrite the answer to the question in a conversational way.
         self._is_conversational_answer = conversational
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
+        self._is_notebook = self.in_notebook()
+
+    def in_notebook(self):
+        try:
+            from IPython import get_ipython
+            if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+                return False
+        except ImportError:
+            return False
+        except AttributeError:
+            return False
+        return True
 
     def conversational_answer(self, question: str, code: str, answer: str) -> str:
         """Return the conversational answer"""
@@ -111,7 +124,10 @@ Code generated:
 ```"""
         )
         if show_code:
-            self.create_new_cell(code)
+            if self._is_notebook:
+                self.create_new_cell(code)
+            elif self._verbose:
+                self.log(code)
             
         answer = self.run_code(code, data_frame, False)
         self.code_output = answer
