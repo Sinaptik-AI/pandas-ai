@@ -130,8 +130,6 @@ class OpenAI(LLM):
         Returns:
             str: Response
         """
-
-        """Call the openAI LLM"""
         self.last_prompt = str(instruction) + str(value)
 
         if self.model in self._supported_completion_models:

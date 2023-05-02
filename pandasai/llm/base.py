@@ -41,8 +41,8 @@ class LLM:
 
     def _polish_code(self, code: str) -> str:
         """
-        Polish the code by removing the leading "python" or "py", removing the imports and removing \
-        trailing spaces and new lines
+        Polish the code by removing the leading "python" or "py",  \
+        removing the imports and removing trailing spaces and new lines.
 
         Args:
             code (str): Code
