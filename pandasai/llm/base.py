@@ -17,7 +17,15 @@ class LLM:
 
     @property
     def type(self) -> str:
-        """Return type of llm."""
+        """
+        Return type of LLM.
+
+        Raises:
+            APIKeyNotFoundError: Type has not been implemented
+
+        Returns:
+            str: Type of LLM a string
+        """
         raise APIKeyNotFoundError("Type has not been implemented")
 
     def _remove_imports(self, code: str) -> str:
@@ -32,12 +40,16 @@ class LLM:
         return astor.to_source(new_tree)
 
     def _polish_code(self, code: str) -> str:
-        """Polish the code:
-        - remove the leading "python" or "py"
-        - remove the imports
-        - remove trailing spaces and new lines
         """
+        Polish the code by removing the leading "python" or "py",  \
+        removing the imports and removing trailing spaces and new lines.
 
+        Args:
+            code (str): Code
+
+        Returns:
+            str: Polished code
+        """
         if re.match(r"^(python|py)", code):
             code = re.sub(r"^(python|py)", "", code)
         if re.match(r"^`.*`$", code):
@@ -54,8 +66,19 @@ class LLM:
             return False
 
     def _extract_code(self, response: str, separator: str = "```") -> str:
-        """Extract the code from the response"""
+        """
+        Extract the code from the response.
 
+        Args:
+            response (str): Response
+            separator (str, optional): Separator. Defaults to "```".
+
+        Raises:
+            NoCodeFoundError: No code found in the response
+
+        Returns:
+            str: Extracted code from the response
+        """
         code = response
         if len(response.split(separator)) > 1:
             code = response.split(separator)[1]
@@ -67,12 +90,24 @@ class LLM:
 
         return code
 
-    def call(self, instruction: str, value: str) -> str:
-        """Execute the llm with the given prompt"""
+    def call(self, instruction: str, value: str) -> None:
+        """
+        Execute the LLM with given prompt.
 
+        Args:
+            instruction (str): Prompt
+            value (str): Value
+
+        Raises:
+            MethodNotImplementedError: Call method has not been implemented
+        """
         raise MethodNotImplementedError("Call method has not been implemented")
 
     def generate_code(self, instruction: str, prompt: str) -> str:
-        """Generate the code based on the instruction and the prompt"""
+        """
+        Generate the code based on the instruction and the given prompt.
 
+        Returns:
+            str: Code
+        """
         return self._extract_code(self.call(instruction, prompt))
