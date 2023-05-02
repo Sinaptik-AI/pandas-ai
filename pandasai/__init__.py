@@ -7,7 +7,6 @@ from .helpers.notebook import Notebook
 from .exceptions import LLMNotFoundError
 
 
-
 class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes convesational"""
 
@@ -46,7 +45,6 @@ Rewrite the answer to the question in a conversational way.
     _is_notebook: bool = False
     last_code_generated: str = None
     code_output: str = None
-    
 
     def __init__(
         self,
@@ -65,7 +63,7 @@ Rewrite the answer to the question in a conversational way.
         self._enforce_privacy = enforce_privacy
 
         self.notebook = Notebook()
-        self._in_notebook = self.notebook._in_notebook()
+        self._in_notebook = self.notebook.in_notebook()
 
     def conversational_answer(self, question: str, code: str, answer: str) -> str:
         """Return the conversational answer"""
@@ -117,7 +115,7 @@ Code generated:
         )
         if show_code and self._in_notebook:
             self.notebook.create_new_cell(code)
-            
+
         answer = self.run_code(code, data_frame, False)
         self.code_output = answer
         self.log(f"Answer: {answer}")
