@@ -8,6 +8,7 @@
 Pandas AI is a Python library that adds generative artificial intelligence capabilities to Pandas, the popular data analysis and manipulation tool. It is designed to be used in conjunction with Pandas, and is not a replacement for it.
 
 <!-- Add images/pandas-ai.png -->
+
 ![PandasAI](images/pandas-ai.png?raw=true)
 
 ## Demo
@@ -67,6 +68,17 @@ The above code will return the following:
 ```
 14516000
 ```
+
+You can also ask PandasAI to draw a graph:
+
+```python
+pandas_ai.run(
+    df,
+    "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
+)
+```
+
+![Chart](images/histogram-chart.png?raw=true)
 
 You can find more examples in the [examples](examples) directory.
 
