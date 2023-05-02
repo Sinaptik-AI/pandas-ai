@@ -3,6 +3,7 @@ import io
 import sys
 import pandas as pd
 from .llm.base import LLM
+from .helpers.notebook import Notebook
 from .exceptions import LLMNotFoundError
 
 
@@ -41,6 +42,7 @@ Rewrite the answer to the question in a conversational way.
     _enforce_privacy: bool = False
     _max_retries: int = 3
     _original_instruction_and_prompt = None
+    _is_notebook: bool = False
     last_code_generated: str = None
     code_output: str = None
 
@@ -60,6 +62,9 @@ Rewrite the answer to the question in a conversational way.
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
 
+        self.notebook = Notebook()
+        self._in_notebook = self.notebook.in_notebook()
+
     def conversational_answer(self, question: str, code: str, answer: str) -> str:
         """Return the conversational answer"""
         if self._enforce_privacy:
@@ -77,6 +82,7 @@ Rewrite the answer to the question in a conversational way.
         data_frame: pd.DataFrame,
         prompt: str,
         is_conversational_answer: bool = None,
+        show_code: bool = False,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
@@ -107,6 +113,8 @@ Code generated:
 {code}
 ```"""
         )
+        if show_code and self._in_notebook:
+            self.notebook.create_new_cell(code)
 
         answer = self.run_code(code, data_frame, False)
         self.code_output = answer
