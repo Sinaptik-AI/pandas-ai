@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 from .llm.base import LLM
 from .exceptions import LLMNotFoundError
+from IPython.core.getipython import get_ipython
 
 
 class PandasAI:
@@ -77,6 +78,7 @@ Rewrite the answer to the question in a conversational way.
         data_frame: pd.DataFrame,
         prompt: str,
         is_conversational_answer: bool = None,
+        show_code: bool = False,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
@@ -107,7 +109,9 @@ Code generated:
 {code}
 ```"""
         )
-
+        if show_code:
+            self.create_new_cell(code)
+            
         answer = self.run_code(code, data_frame, False)
         self.code_output = answer
         self.log(f"Answer: {answer}")
@@ -172,6 +176,11 @@ Code generated:
             return result
         except:
             return captured_output
+        
+    def create_new_cell(self, contents: str):
+        payload = dict(source='set_next_input', text=contents, replace=False)
+        get_ipython().payload_manager.write_payload(payload, single=False)
+
 
     def log(self, message: str):
         """Log a message"""
