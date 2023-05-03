@@ -173,8 +173,7 @@ Code generated:
             return eval(last_line[6:-1])
         # Evaluate last line and return its value or the captured output
         try:
-            result = eval(last_line)
-            return result
+            return eval(last_line)
         except Exception:
             return captured_output
 
