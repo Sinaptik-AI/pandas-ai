@@ -75,7 +75,7 @@ Rewrite the answer to the question in a conversational way.
         instruction = self._response_instruction.format(
             question=question, code=code, answer=answer
         )
-        return self._llm.call(instruction, answer)
+        return self._llm.call(instruction, "")
 
     def run(
         self,
