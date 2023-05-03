@@ -1,6 +1,7 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
 import sys
+from typing import Optional
 import pandas as pd
 from .llm.base import LLM
 from .helpers.notebook import Notebook
@@ -43,8 +44,8 @@ Rewrite the answer to the question in a conversational way.
     _max_retries: int = 3
     _original_instruction_and_prompt = None
     _is_notebook: bool = False
-    last_code_generated: str = None
-    code_output: str = None
+    last_code_generated: Optional[str] = None
+    code_output: Optional[str] = None
 
     def __init__(
         self,

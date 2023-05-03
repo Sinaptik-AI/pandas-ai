@@ -2,6 +2,7 @@
 
 import unittest
 from unittest.mock import patch, Mock
+from typing import Optional
 
 import pandas as pd
 from pandasai import PandasAI
@@ -15,7 +16,7 @@ class TestPandasAI(unittest.TestCase):
     llm: FakeLLM
     pandasai: PandasAI
 
-    def setup(self, output: str = None):
+    def setup(self, output: Optional[str] = None):
         self.llm = FakeLLM(output=output)
         self.pandasai = PandasAI(self.llm)
 

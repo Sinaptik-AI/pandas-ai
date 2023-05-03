@@ -2,6 +2,7 @@
 
 import re
 import ast
+from typing import Optional
 import astor
 from ..exceptions import (
     APIKeyNotFoundError,
@@ -13,7 +14,7 @@ from ..exceptions import (
 class LLM:
     """Base class to implement a new LLM."""
 
-    last_prompt: str = None
+    last_prompt: Optional[str] = None
 
     @property
     def type(self) -> str:
