@@ -68,7 +68,7 @@ pandas_ai.run(df, prompt='What is the sum of the GDPs of the 2 unhappiest countr
 The above code will return the following:
 
 ```
-14516000
+19012600725504
 ```
 
 You can also ask PandasAI to draw a graph:
