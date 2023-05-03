@@ -30,12 +30,11 @@ class LLM:
 
     def _remove_imports(self, code: str) -> str:
         tree = ast.parse(code)
-        new_body = []
-
-        for node in tree.body:
-            if not isinstance(node, (ast.Import, ast.ImportFrom)):
-                new_body.append(node)
-
+        new_body = [
+            node
+            for node in tree.body
+            if not isinstance(node, (ast.Import, ast.ImportFrom))
+        ]
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree)
 
