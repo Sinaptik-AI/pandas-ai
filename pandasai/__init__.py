@@ -175,7 +175,7 @@ Code generated:
         try:
             result = eval(last_line)
             return result
-        except:
+        except Exception:
             return captured_output
 
     def log(self, message: str):
