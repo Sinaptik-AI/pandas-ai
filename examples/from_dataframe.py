@@ -1,7 +1,8 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 
-from data.sample_dataframe import dataframe
 import pandas as pd
+from data.sample_dataframe import dataframe
+
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 

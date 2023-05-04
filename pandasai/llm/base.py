@@ -1,19 +1,22 @@
 """ Base class to implement a new LLM. """
 
-import re
 import ast
+import re
+from typing import Optional
+
 import astor
+
 from ..exceptions import (
     APIKeyNotFoundError,
-    NoCodeFoundError,
     MethodNotImplementedError,
+    NoCodeFoundError,
 )
 
 
 class LLM:
     """Base class to implement a new LLM."""
 
-    last_prompt: str = None
+    last_prompt: Optional[str] = None
 
     @property
     def type(self) -> str:
@@ -30,12 +33,11 @@ class LLM:
 
     def _remove_imports(self, code: str) -> str:
         tree = ast.parse(code)
-        new_body = []
-
-        for node in tree.body:
-            if not isinstance(node, (ast.Import, ast.ImportFrom)):
-                new_body.append(node)
-
+        new_body = [
+            node
+            for node in tree.body
+            if not isinstance(node, (ast.Import, ast.ImportFrom))
+        ]
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree)
 

@@ -1,10 +1,13 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
 import sys
+from typing import Optional
+
 import pandas as pd
-from .llm.base import LLM
-from .helpers.notebook import Notebook
+
 from .exceptions import LLMNotFoundError
+from .helpers.notebook import Notebook
+from .llm.base import LLM
 
 
 class PandasAI:
@@ -43,8 +46,8 @@ Rewrite the answer to the question in a conversational way.
     _max_retries: int = 3
     _original_instruction_and_prompt = None
     _is_notebook: bool = False
-    last_code_generated: str = None
-    code_output: str = None
+    last_code_generated: Optional[str] = None
+    code_output: Optional[str] = None
 
     def __init__(
         self,
@@ -87,10 +90,7 @@ Rewrite the answer to the question in a conversational way.
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
-        rows_to_display = 5
-        if self._enforce_privacy:
-            rows_to_display = 0
-
+        rows_to_display = 0 if self._enforce_privacy else 5
         code = self._llm.generate_code(
             self._task_instruction.format(
                 df_head=data_frame.head(rows_to_display),
@@ -174,9 +174,8 @@ Code generated:
         if last_line.startswith("print(") and last_line.endswith(")"):
             last_line = last_line[6:-1]
         try:
-            result = eval(last_line)
-            return result
-        except:
+            return eval(last_line)
+        except Exception:  # pylint: disable=W0718
             return captured_output
 
     def log(self, message: str):

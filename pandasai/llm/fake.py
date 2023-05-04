@@ -1,5 +1,7 @@
 """Fake LLM"""
 
+from typing import Optional
+
 from .base import LLM
 
 
@@ -8,7 +10,7 @@ class FakeLLM(LLM):
 
     _output: str = 'print("Hello world")'
 
-    def __init__(self, output: str = None):
+    def __init__(self, output: Optional[str] = None):
         if output is not None:
             self._output = output
 

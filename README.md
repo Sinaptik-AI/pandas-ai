@@ -114,6 +114,12 @@ PandasAI is licensed under the MIT License. See the LICENSE file for more detail
 Contributions are welcome! Please check out the todos below, and feel free to open a pull request.
 For more information, please see the [contributing guidelines](CONTRIBUTING.md).
 
+After installing the virtual environment, please remember to install `pre-commit` to be compliant with our standards:
+
+```bash
+pre-commit install
+```
+
 ### Todo
 
 - [ ] Add support for more LLMs
