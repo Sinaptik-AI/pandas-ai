@@ -8,7 +8,7 @@ from .exceptions import LLMNotFoundError
 
 
 class PandasAI:
-    """PandasAI is a wrapper around a LLM to make dataframes convesational"""
+    """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
     _task_instruction: str = """
 There is a dataframe in pandas (python).
