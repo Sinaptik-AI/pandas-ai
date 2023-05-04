@@ -4,9 +4,10 @@ import unittest
 from unittest.mock import patch, Mock
 
 import pandas as pd
+
 from pandasai import PandasAI
-from pandasai.llm.fake import FakeLLM
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.llm.fake import FakeLLM
 
 
 class TestPandasAI(unittest.TestCase):
