@@ -4,6 +4,9 @@
 # __pycache__
 __pycache__
 
+# macOS
+.DS_Store
+
 # build
 build
 dist

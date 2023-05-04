@@ -11,7 +11,7 @@ from .llm.base import LLM
 
 
 class PandasAI:
-    """PandasAI is a wrapper around a LLM to make dataframes convesational"""
+    """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
     _task_instruction: str = """
 There is a dataframe in pandas (python).
@@ -172,9 +172,7 @@ Code generated:
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
         if last_line.startswith("print(") and last_line.endswith(")"):
-            # Last line is already printing
-            return eval(last_line[6:-1])
-        # Evaluate last line and return its value or the captured output
+            last_line = last_line[6:-1]
         try:
             return eval(last_line)
         except Exception:  # pylint: disable=W0718

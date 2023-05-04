@@ -62,7 +62,7 @@ class OpenAI(LLM):
 
     def completion(self, prompt: str) -> str:
         """
-        Query the completation API
+        Query the completion API
 
         Args:
             prompt (str): Prompt
