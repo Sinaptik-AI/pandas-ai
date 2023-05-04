@@ -1,6 +1,8 @@
 """ Base class to implement a new LLM. """
 
 import ast
+import re
+
 import astor
 
 from ..exceptions import (
