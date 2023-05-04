@@ -14,4 +14,4 @@ response = pandas_ai.run(
     "Calculate the sum of the gdp of north american countries",
 )
 print(response)
-# Output: 26200000
+# Output: 20901884461056
