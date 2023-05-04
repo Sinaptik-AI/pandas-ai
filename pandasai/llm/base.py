@@ -1,13 +1,15 @@
 """ Base class to implement a new LLM. """
 
-import re
 import ast
+import re
 from typing import Optional
+
 import astor
+
 from ..exceptions import (
     APIKeyNotFoundError,
-    NoCodeFoundError,
     MethodNotImplementedError,
+    NoCodeFoundError,
 )
 
 

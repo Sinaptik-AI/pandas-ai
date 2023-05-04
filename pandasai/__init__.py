@@ -2,10 +2,12 @@
 import io
 import sys
 from typing import Optional
+
 import pandas as pd
-from .llm.base import LLM
-from .helpers.notebook import Notebook
+
 from .exceptions import LLMNotFoundError
+from .helpers.notebook import Notebook
+from .llm.base import LLM
 
 
 class PandasAI:

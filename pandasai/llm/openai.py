@@ -2,10 +2,12 @@
 
 import os
 from typing import Optional
-from dotenv import load_dotenv
+
 import openai
-from .base import LLM
+from dotenv import load_dotenv
+
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
+from .base import LLM
 
 load_dotenv()
 

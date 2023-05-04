@@ -2,10 +2,12 @@
 
 import os
 from typing import Optional
+
 import requests
 from dotenv import load_dotenv
-from .base import LLM
+
 from ..exceptions import APIKeyNotFoundError
+from .base import LLM
 
 load_dotenv()
 

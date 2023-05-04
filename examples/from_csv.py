@@ -1,6 +1,7 @@
 """Example of using PandasAI with a CSV file."""
 
 import pandas as pd
+
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 

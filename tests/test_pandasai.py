@@ -1,13 +1,14 @@
 """Unit tests for the PandasAI class"""
 
 import unittest
-from unittest.mock import patch, Mock
 from typing import Optional
+from unittest.mock import Mock, patch
 
 import pandas as pd
+
 from pandasai import PandasAI
-from pandasai.llm.fake import FakeLLM
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.llm.fake import FakeLLM
 
 
 class TestPandasAI(unittest.TestCase):
