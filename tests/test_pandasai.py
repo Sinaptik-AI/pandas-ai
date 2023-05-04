@@ -139,7 +139,7 @@ Empty DataFrame
 Columns: [country]
 Index: [].
 
-Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly
 to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
@@ -160,8 +160,20 @@ This is the result of `print(df.head(5))`:
 1  United Kingdom
 2          France.
 
-Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly
 to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
+
+    def test_run_with_import_lib_json(self):
+        self.setup('{"a": 1}')
+        import pdb; pdb.set_trace()
+        self.assertEqual(
+            self.pandasai.conversational_answer(
+                "Import python's json library",
+                "import json; json.dumps({'a': 1})",
+                '{"a": 1}'
+            ),
+            '{"a": 1}',
+        )
