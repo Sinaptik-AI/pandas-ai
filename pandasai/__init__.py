@@ -177,7 +177,7 @@ Code generated:
         # Evaluate last line and return its value or the captured output
         try:
             return eval(last_line)
-        except Exception:
+        except Exception:  # pylint: disable=W0718
             return captured_output
 
     def log(self, message: str):
