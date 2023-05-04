@@ -1,6 +1,8 @@
 """ Open Assistant LLM """
 
 import os
+from typing import Optional
+
 import requests
 from dotenv import load_dotenv
 
@@ -19,7 +21,7 @@ class OpenAssistant(LLM):
         "OpenAssistant/oasst-sft-1-pythia-12b"
     )
 
-    def __init__(self, api_token: str = None):
+    def __init__(self, api_token: Optional[str] = None):
         self.api_token = api_token or os.getenv("HUGGINGFACE_API_KEY")
         if self.api_token is None:
             raise APIKeyNotFoundError("HuggingFace Hub API key is required")

@@ -1,7 +1,8 @@
 """OpenAI LLM"""
 
 import os
-from dotenv import load_dotenv
+from typing import Optional
+
 import openai
 from dotenv import load_dotenv
 
@@ -31,11 +32,11 @@ class OpenAI(LLM):
     top_p: float = 1
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
-    stop: str = None
+    stop: Optional[str] = None
 
     def __init__(
         self,
-        api_token: str = None,
+        api_token: Optional[str] = None,
         **kwargs,
     ):
         self.api_token = api_token or os.getenv("OPENAI_API_KEY")
@@ -61,7 +62,7 @@ class OpenAI(LLM):
 
     def completion(self, prompt: str) -> str:
         """
-        Query the completation API
+        Query the completion API
 
         Args:
             prompt (str): Prompt
