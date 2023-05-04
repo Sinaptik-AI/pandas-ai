@@ -1,6 +1,7 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
 import sys
+import json
 import pandas as pd
 from .llm.base import LLM
 from .helpers.notebook import Notebook
