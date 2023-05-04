@@ -172,9 +172,7 @@ Code generated:
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
         if last_line.startswith("print(") and last_line.endswith(")"):
-            # Last line is already printing
-            return eval(last_line[6:-1])
-        # Evaluate last line and return its value or the captured output
+            last_line = last_line[6:-1]
         try:
             result = eval(last_line)
             return result

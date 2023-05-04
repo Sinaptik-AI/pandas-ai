@@ -165,3 +165,10 @@ to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
+
+    def test_run_with_print_at_the_end(self):
+        code = """
+result = {"happiness": 0.5, "gdp": 0.8}
+print(result)"""
+        self.setup(code)
+        self.pandasai.run_code(code, pd.DataFrame())
