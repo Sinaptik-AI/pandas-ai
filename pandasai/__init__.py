@@ -5,6 +5,7 @@ from typing import Optional
 
 import pandas as pd
 
+from .constants import END_CODE_TAG, START_CODE_TAG
 from .exceptions import LLMNotFoundError
 from .helpers.notebook import Notebook
 from .llm.base import LLM
@@ -20,7 +21,7 @@ The name of the dataframe is `df`.
 This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
-Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
+Return the python code (do not import anything) and make sure to prefix the python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly 
 to get the answer to the following question :
 """
     _response_instruction: str = """
@@ -38,7 +39,7 @@ Rewrite the answer to the question in a conversational way.
     and this fails with the following error:
     {error_returned}
     Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error.
-    Make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly.
+    Make sure to prefix the python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
     """
     _llm: LLM
     _verbose: bool = False
@@ -96,6 +97,8 @@ Rewrite the answer to the question in a conversational way.
             self._task_instruction.format(
                 df_head=data_frame.head(rows_to_display),
                 rows_to_display=rows_to_display,
+                START_CODE_TAG=START_CODE_TAG,
+                END_CODE_TAG=END_CODE_TAG,
             ),
             prompt,
         )
@@ -103,6 +106,8 @@ Rewrite the answer to the question in a conversational way.
             self._task_instruction.format(
                 df_head=data_frame.head(rows_to_display),
                 rows_to_display=rows_to_display,
+                START_CODE_TAG=START_CODE_TAG,
+                END_CODE_TAG=END_CODE_TAG,
             )
             + prompt
         )
