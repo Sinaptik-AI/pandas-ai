@@ -10,6 +10,7 @@ from .helpers.notebook import Notebook
 from .llm.base import LLM
 
 
+# pylint: disable=too-many-instance-attributes
 class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
