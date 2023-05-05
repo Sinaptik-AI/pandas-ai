@@ -8,6 +8,7 @@ import pandas as pd
 from .exceptions import LLMNotFoundError
 from .helpers.notebook import Notebook
 from .llm.base import LLM
+from .helpers.anonymizer import anonymize_dataframe_head
 
 
 class PandasAI:
@@ -48,6 +49,7 @@ Rewrite the answer to the question in a conversational way.
     _is_notebook: bool = False
     last_code_generated: Optional[str] = None
     code_output: Optional[str] = None
+    anonymize_df_head: bool =  False
 
     def __init__(
         self,
@@ -86,21 +88,27 @@ Rewrite the answer to the question in a conversational way.
         prompt: str,
         is_conversational_answer: bool = None,
         show_code: bool = False,
+        anonymize_df: bool = False,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         rows_to_display = 0 if self._enforce_privacy else 5
+        
+        df_head = data_frame.head(rows_to_display)
+        if anonymize_df:
+           df_head = anonymize_dataframe_head(df_head)
+        
         code = self._llm.generate_code(
             self._task_instruction.format(
-                df_head=data_frame.head(rows_to_display),
+                df_head=df_head,
                 rows_to_display=rows_to_display,
             ),
             prompt,
         )
         self._original_instruction_and_prompt = (
             self._task_instruction.format(
-                df_head=data_frame.head(rows_to_display),
+                df_head=df_head,
                 rows_to_display=rows_to_display,
             )
             + prompt
