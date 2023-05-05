@@ -2,6 +2,7 @@
 import io
 import sys
 from typing import Optional
+import re
 
 import pandas as pd
 
@@ -171,8 +172,12 @@ Code generated:
         # Evaluate the last line and return its value or the captured output
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
-        if last_line.startswith("print(") and last_line.endswith(")"):
-            last_line = last_line[6:-1]
+
+        regex = r"print\((.*)\)"
+        match = re.search(regex, last_line)
+
+        if match:
+            last_line = match.group(1)
         try:
             return eval(last_line)
         except Exception:  # pylint: disable=W0718
