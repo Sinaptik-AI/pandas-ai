@@ -49,7 +49,6 @@ Rewrite the answer to the question in a conversational way.
     _is_notebook: bool = False
     last_code_generated: Optional[str] = None
     code_output: Optional[str] = None
-    anonymize_df_head: bool =  False
 
     def __init__(
         self,
