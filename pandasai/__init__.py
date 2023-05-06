@@ -93,11 +93,11 @@ Rewrite the answer to the question in a conversational way.
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         rows_to_display = 0 if self._enforce_privacy else 5
-        
+
         df_head = data_frame.head(rows_to_display)
         if anonymize_df:
-           df_head = anonymize_dataframe_head(df_head)
-        
+            df_head = anonymize_dataframe_head(df_head)
+
         code = self._llm.generate_code(
             self._task_instruction.format(
                 df_head=df_head,
