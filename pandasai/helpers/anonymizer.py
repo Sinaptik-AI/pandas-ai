@@ -10,7 +10,7 @@ import string
 import pandas as pd
 
 
-def is_valid_email(email):
+def is_valid_email(email: str) -> bool:
     """
     Check if the given email is valid based on regex pattern.
 
@@ -18,10 +18,10 @@ def is_valid_email(email):
     :return: bool, True if the email is valid, otherwise False
     """
     email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return re.match(email_regex, email)
+    return re.match(email_regex, email) is not None
 
 
-def is_valid_phone_number(phone_number):
+def is_valid_phone_number(phone_number: str) -> bool:
     """
     Check if the given phone number is valid based on regex pattern.
 
@@ -29,10 +29,10 @@ def is_valid_phone_number(phone_number):
     :return: bool, True if the phone number is valid, otherwise False
     """
     pattern = r"\b(?:\+?\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}\b"
-    return re.search(pattern, phone_number)
+    return re.search(pattern, phone_number) is not None
 
 
-def is_valid_credit_card(credit_card_number):
+def is_valid_credit_card(credit_card_number: str) -> bool:
     """
     Check if the given credit card number is valid based on regex pattern.
 
@@ -40,10 +40,10 @@ def is_valid_credit_card(credit_card_number):
     :return: bool, True if the credit card number is valid, otherwise False
     """
     pattern = r"^\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}$"
-    return re.search(pattern, credit_card_number)
+    return re.search(pattern, credit_card_number) is not None
 
 
-def generate_random_email():
+def generate_random_email() -> str:
     """
     Generate a random email address using predefined domains.
 
@@ -67,7 +67,7 @@ def generate_random_email():
     return email
 
 
-def generate_random_phone_number(original_field):
+def generate_random_phone_number(original_field: str) -> str:
     """
     Generate a random phone number with country code if originally present.
 
@@ -90,7 +90,7 @@ def generate_random_phone_number(original_field):
     return phone_number
 
 
-def generate_random_credit_card():
+def generate_random_credit_card() -> str:
     """
     Generate a random credit card number.
 
@@ -104,7 +104,7 @@ def generate_random_credit_card():
     return separator.join(groups)
 
 
-def copy_head(data_frame: pd.DataFrame):
+def copy_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     """
     Copy the head of a DataFrame.
 
@@ -114,7 +114,7 @@ def copy_head(data_frame: pd.DataFrame):
     return data_frame.head().copy()
 
 
-def anonymize_dataframe_head(data_frame: pd.DataFrame):
+def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     """
     Anonymize the head of a given DataFrame by replacing sensitive data.
 

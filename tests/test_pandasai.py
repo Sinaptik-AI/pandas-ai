@@ -146,35 +146,33 @@ to get the answer to the following question :
 How many countries are in the dataframe?"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
-        
+
     def test_run_with_anonymized_df(self):
-        df = pd.DataFrame({
-            "Phone Number": [
-                "(743) 226-2382",
-                "+1 123456789",
-                "0002223334"
-            ],
-            "Email": [
-                "linda55@nguyen-williams.info",
-                "oliverdouglas@lee-harris.biz",
-                "sara41@mitchell-rodriguez.com",
-            ],
-            "Name": [
-                "Rachel Davis",
-                "Nathan Richards",
-                "Monica Scott",
-            ],
-            "Age": [
-                54,
-                21,
-                27,
-            ],
-            "Credit Card Number": [
-                '5416931670890256',
-                '3109-2849-2297-7926',
-                '4795 0612 5882 4558',
-            ]
-        })
+        df = pd.DataFrame(
+            {
+                "Phone Number": ["(743) 226-2382", "+1 123456789", "0002223334"],
+                "Email": [
+                    "linda55@nguyen-williams.info",
+                    "oliverdouglas@lee-harris.biz",
+                    "sara41@mitchell-rodriguez.com",
+                ],
+                "Name": [
+                    "Rachel Davis",
+                    "Nathan Richards",
+                    "Monica Scott",
+                ],
+                "Age": [
+                    54,
+                    21,
+                    27,
+                ],
+                "Credit Card Number": [
+                    "5416931670890256",
+                    "3109-2849-2297-7926",
+                    "4795 0612 5882 4558",
+                ],
+            }
+        )
         self.setup()
         self.pandasai._is_conversational_answer = True
 
@@ -185,8 +183,13 @@ This is the result of `print(df.head(5))`:
 1    +1 123456789   oliverdouglas@lee-harris.biz  Nathan Richards   21  3109-2849-2297-7926
 2      0002223334  sara41@mitchell-rodriguez.com     Monica Scott   27  4795 0612 5882 4558.
 """
-        self.pandasai.run(df, "How many people are in the dataframe?", anonymize_df=True)
-        self.assertNotIn(expected_non_anonymized_data_frame_substring, self.pandasai._llm.last_prompt)
+        self.pandasai.run(
+            df, "How many people are in the dataframe?", anonymize_df=True
+        )
+        assert (
+            expected_non_anonymized_data_frame_substring
+            not in self.pandasai._llm.last_prompt
+        )
 
     def test_run_without_privacy_enforcement(self):
         df = pd.DataFrame({"country": ["United States", "United Kingdom", "France"]})
@@ -206,7 +209,9 @@ This is the result of `print(df.head(5))`:
 Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
 to get the answer to the following question :
 How many countries are in the dataframe?"""
-        self.pandasai.run(df, "How many countries are in the dataframe?", anonymize_df = False)
+        self.pandasai.run(
+            df, "How many countries are in the dataframe?", anonymize_df=False
+        )
         assert self.pandasai._llm.last_prompt == expected_prompt
 
     def test_run_with_print_at_the_end(self):
