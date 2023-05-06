@@ -7,11 +7,12 @@ import pandas as pd
 
 from .constants import END_CODE_TAG, START_CODE_TAG
 from .exceptions import LLMNotFoundError
+from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .llm.base import LLM
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
@@ -88,14 +89,20 @@ Rewrite the answer to the question in a conversational way.
         prompt: str,
         is_conversational_answer: bool = None,
         show_code: bool = False,
+        anonymize_df: bool = True,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         rows_to_display = 0 if self._enforce_privacy else 5
+
+        df_head = data_frame.head(rows_to_display)
+        if anonymize_df:
+            df_head = anonymize_dataframe_head(df_head)
+
         code = self._llm.generate_code(
             self._task_instruction.format(
-                df_head=data_frame.head(rows_to_display),
+                df_head=df_head,
                 rows_to_display=rows_to_display,
                 START_CODE_TAG=START_CODE_TAG,
                 END_CODE_TAG=END_CODE_TAG,
@@ -104,7 +111,7 @@ Rewrite the answer to the question in a conversational way.
         )
         self._original_instruction_and_prompt = (
             self._task_instruction.format(
-                df_head=data_frame.head(rows_to_display),
+                df_head=df_head,
                 rows_to_display=rows_to_display,
                 START_CODE_TAG=START_CODE_TAG,
                 END_CODE_TAG=END_CODE_TAG,

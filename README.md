@@ -85,6 +85,12 @@ pandas_ai.run(
 
 You can find more examples in the [examples](examples) directory.
 
+## Privacy & Security
+In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
+
+Also, if you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
+
+
 ## Environment Variables
 
 In order to set the API key for the LLM (Hugging Face Hub, OpenAI), you need to set the appropriate environment variables. You can do this by copying the `.env.example` file to `.env`:
