@@ -61,17 +61,27 @@ def generate_random_email():
     return email
 
 
-def generate_random_phone_number():
+def generate_random_phone_number(original_field):
     """
-    Generate a random phone number with country code.
+    Generate a random phone number with country code if originally present.
 
+    :param original_field: str, original phone number field
     :return: str, generated random phone number
     """
-    area_code = str(random.randint(0, 99))
-    number = "".join(random.choices("0123456789", k=10))
-    phone_number = f"+{area_code} {number}"
-    return phone_number
+    if original_field.startswith('+'):
+        # Extract country code if present
+        country_code = original_field.split()[0]
+    else:
+        country_code = ''
 
+    number = "".join(random.choices("0123456789", k=10))
+
+    if country_code:
+        phone_number = f"{country_code} {number}"
+    else:
+        phone_number = number
+
+    return phone_number
 
 def generate_random_credit_card():
     """
@@ -114,7 +124,7 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame):
                 df.iloc[row_idx, col_idx] = generate_random_email()
                 continue
             if is_valid_phone_number(cell_value):
-                df.iloc[row_idx, col_idx] = generate_random_phone_number()
+                df.iloc[row_idx, col_idx] = generate_random_phone_number(cell_value)
                 continue
             if is_valid_credit_card(cell_value):
                 df.iloc[row_idx, col_idx] = generate_random_credit_card()
