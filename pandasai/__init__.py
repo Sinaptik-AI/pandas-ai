@@ -7,12 +7,12 @@ import pandas as pd
 
 from .constants import END_CODE_TAG, START_CODE_TAG
 from .exceptions import LLMNotFoundError
+from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .llm.base import LLM
-from .helpers.anonymizer import anonymize_dataframe_head
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 

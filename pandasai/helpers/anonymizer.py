@@ -1,6 +1,12 @@
-import re
+"""
+This module contains helper functions for anonymizing data and generating random data
+before sending it to the LLM.
+"""
+
 import random
+import re
 import string
+
 import pandas as pd
 
 
@@ -68,11 +74,11 @@ def generate_random_phone_number(original_field):
     :param original_field: str, original phone number field
     :return: str, generated random phone number
     """
-    if original_field.startswith('+'):
+    if original_field.startswith("+"):
         # Extract country code if present
         country_code = original_field.split()[0]
     else:
-        country_code = ''
+        country_code = ""
 
     number = "".join(random.choices("0123456789", k=10))
 
@@ -83,6 +89,7 @@ def generate_random_phone_number(original_field):
 
     return phone_number
 
+
 def generate_random_credit_card():
     """
     Generate a random credit card number.
@@ -90,21 +97,21 @@ def generate_random_credit_card():
     :return: str, generated random credit card number
     """
     groups = []
-    for i in range(4):
+    for _i in range(4):
         group = "".join(random.choices("0123456789", k=4))
         groups.append(group)
     separator = random.choice(["-", " "])
     return separator.join(groups)
 
 
-def copy_head(df: pd.DataFrame):
+def copy_head(data_frame: pd.DataFrame):
     """
     Copy the head of a DataFrame.
 
-    :param df: pd.DataFrame, the DataFrame to copy the head from
+    :param data_frame: pd.DataFrame, the DataFrame to copy the head from
     :return: pd.DataFrame, copied head of the DataFrame
-    """ 
-    return df.head().copy()
+    """
+    return data_frame.head().copy()
 
 
 def anonymize_dataframe_head(data_frame: pd.DataFrame):
@@ -114,27 +121,29 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame):
     :param data_frame: pd.DataFrame, the DataFrame to anonymize the head
     :return: pd.DataFrame, anonymized head of the DataFrame
     """
-    df = copy_head(data_frame)
-    for col in df.columns:
-        col_idx = df.columns.get_loc(col)
-        for row_idx, val in enumerate(df[col]):
+    data_frame = copy_head(data_frame)
+    for col in data_frame.columns:
+        col_idx = data_frame.columns.get_loc(col)
+        for row_idx, val in enumerate(data_frame[col]):
             cell_value = str(val)
 
             if is_valid_email(cell_value):
-                df.iloc[row_idx, col_idx] = generate_random_email()
+                data_frame.iloc[row_idx, col_idx] = generate_random_email()
                 continue
             if is_valid_phone_number(cell_value):
-                df.iloc[row_idx, col_idx] = generate_random_phone_number(cell_value)
+                data_frame.iloc[row_idx, col_idx] = generate_random_phone_number(
+                    cell_value
+                )
                 continue
             if is_valid_credit_card(cell_value):
-                df.iloc[row_idx, col_idx] = generate_random_credit_card()
+                data_frame.iloc[row_idx, col_idx] = generate_random_credit_card()
                 continue
 
             # anonymize data
             random_row_index = random.choice(
-                [i for i in range(len(df.index)) if i != row_idx]
+                [i for i in range(len(data_frame.index)) if i != row_idx]
             )
-            random_value = df.iloc[random_row_index, col_idx]
-            df.iloc[row_idx, col_idx] = random_value
-            df.iloc[random_row_index, col_idx] = cell_value
-    return df
+            random_value = data_frame.iloc[random_row_index, col_idx]
+            data_frame.iloc[row_idx, col_idx] = random_value
+            data_frame.iloc[random_row_index, col_idx] = cell_value
+    return data_frame
