@@ -101,8 +101,8 @@ As an alternative, you can also pass the environment variables directly to the c
 # OpenAI
 llm = OpenAI(api_token="YOUR_OPENAI_API_KEY")
 
-# OpenAssistant
-llm = OpenAssistant(api_token="YOUR_HF_API_KEY")
+# Starcoder
+llm = Starcoder(api_token="YOUR_HF_API_KEY")
 ```
 
 ## License

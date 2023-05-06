@@ -6,6 +6,7 @@ from typing import Optional
 
 import astor
 
+from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -84,8 +85,9 @@ class LLM:
         code = response
         if len(response.split(separator)) > 1:
             code = response.split(separator)[1]
-        if re.match(r"<startCode>([\s\S]*?)<\/?endCode>", code):
-            code = re.findall(r"<startCode>([\s\S]*?)<\/?endCode>", code)[0]
+        match = re.search(rf"{START_CODE_TAG}(.*){END_CODE_TAG}", code, re.DOTALL)
+        if match:
+            code = match.group(1).strip()
         code = self._polish_code(code)
         if not self._is_python_code(code):
             raise NoCodeFoundError("No code found in the response")
