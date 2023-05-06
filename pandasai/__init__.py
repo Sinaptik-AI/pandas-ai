@@ -3,6 +3,7 @@ import io
 import sys
 from typing import Optional
 import re
+import builtins
 
 import pandas as pd
 
@@ -147,13 +148,27 @@ Code generated:
         output = io.StringIO()
         sys.stdout = output
 
+        global_vars = {
+            "df": df,
+            "pd": pd,
+            "__builtins__": {
+                "min": min, 
+                "max": max,
+                "print": print,
+                "abs": abs,
+                "all": all,
+                "any": any,
+                "__import__": __import__
+            }
+        }
+
         # Execute the code
         if use_error_correction_framework:
             count = 0
             code_to_run = code
             while count < self._max_retries:
                 try:
-                    exec(code_to_run)
+                    exec(code_to_run, global_vars)
                     code = code_to_run
                     break
                 except Exception as e:  # pylint: disable=W0718 disable=C0103
@@ -169,7 +184,7 @@ Code generated:
                         error_correcting_instruction, ""
                     )
         else:
-            exec(code)
+            exec(code, global_vars)
 
         # Restore standard output and get the captured output
         sys.stdout = sys.__stdout__
@@ -185,7 +200,7 @@ Code generated:
         if match:
             last_line = match.group(1)
         try:
-            return eval(last_line)
+            return eval(last_line, global_vars)
         except Exception:  # pylint: disable=W0718
             return captured_output
 
