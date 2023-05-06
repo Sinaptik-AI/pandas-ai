@@ -105,6 +105,11 @@ llm = OpenAI(api_token="YOUR_OPENAI_API_KEY")
 llm = Starcoder(api_token="YOUR_HF_API_KEY")
 ```
 
+## pandas-ai as an API
+
+You can deploy pandas-ai as an API using [langchain-serve](https://github.com/jina-ai/langchain-serve#panda_face-pandas-ai-as-a-service), which provides REST/Websocket APIs and a CLI playground, making it easy to interact with your data in a conversational manner.
+
+
 ## License
 
 PandasAI is licensed under the MIT License. See the LICENSE file for more details.
