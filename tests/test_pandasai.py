@@ -1,18 +1,20 @@
 """Unit tests for the PandasAI class"""
 
-import unittest
 from typing import Optional
 from unittest.mock import Mock, patch
 
 import pandas as pd
+import pytest
 
 from pandasai import PandasAI
 from pandasai.exceptions import LLMNotFoundError
 from pandasai.llm.fake import FakeLLM
 
 
-class TestPandasAI(unittest.TestCase):
+class TestPandasAI:
     """Unit tests for the PandasAI class"""
+
+    # pylint: disable=missing-function-docstring protected-access invalid-name
 
     llm: FakeLLM
     pandasai: PandasAI
@@ -23,53 +25,51 @@ class TestPandasAI(unittest.TestCase):
 
     def test_init(self):
         self.setup()
-        self.assertEqual(self.pandasai._llm, self.llm)
-        self.assertEqual(self.pandasai._is_conversational_answer, True)
-        self.assertEqual(self.pandasai._verbose, False)
+        assert self.pandasai._llm == self.llm
+        assert self.pandasai._is_conversational_answer is True
+        assert self.pandasai._verbose is False
 
     def test_init_with_llm(self):
         self.setup()
-        self.assertEqual(self.pandasai._llm, self.llm)
-        self.assertEqual(self.pandasai._is_conversational_answer, True)
-        self.assertEqual(self.pandasai._verbose, False)
+        assert self.pandasai._llm == self.llm
+        assert self.pandasai._is_conversational_answer is True
+        assert self.pandasai._verbose is False
 
     def test_init_without_llm(self):
-        with self.assertRaises(LLMNotFoundError):
+        with pytest.raises(LLMNotFoundError):
             PandasAI()
 
     def test_conversational_answer(self):
         result = "2"
         self.setup(result)
-        self.assertEqual(
-            self.pandasai.conversational_answer(
-                "What is the sum of 1 + 1?", "1 + 1", 2
-            ),
-            result,
+        assert (
+            self.pandasai.conversational_answer("What is the sum of 1 + 1?", "1 + 1", 2)
+            == result
         )
 
     def test_run(self):
         df = pd.DataFrame()
         self.setup(output="1")
-        self.assertEqual(self.pandasai.run(df, "What number comes before 2?"), "1")
+        assert self.pandasai.run(df, "What number comes before 2?") == "1"
 
     def test_run_with_conversational_answer(self):
         df = pd.DataFrame()
         self.setup(output="1 + 1")
-        self.assertEqual(
+        assert (
             self.pandasai.run(
                 df, "What is the sum of 1 + 1?", is_conversational_answer=True
-            ),
-            "1 + 1",
+            )
+            == "1 + 1"
         )
 
     def test_run_with_non_conversational_answer(self):
         df = pd.DataFrame()
         self.setup(output="1 + 1")
-        self.assertEqual(
+        assert (
             self.pandasai.run(
                 df, "What is the sum of 1 + 1?", is_conversational_answer=False
-            ),
-            2,
+            )
+            == 2
         )
 
     def test_run_with_verbose(self):
@@ -95,25 +95,25 @@ class TestPandasAI(unittest.TestCase):
     def test_run_code(self):
         df = pd.DataFrame()
         self.setup()
-        self.assertEqual(self.pandasai.run_code("1 + 1", df), 2)
+        assert self.pandasai.run_code("1 + 1", df) == 2
 
     def test_run_code_invalid_code(self):
         df = pd.DataFrame()
         self.setup()
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.pandasai.run_code("1 +", df)
 
     def test_run_code_with_print(self):
         df = pd.DataFrame()
         self.setup()
-        self.assertEqual(self.pandasai.run_code("print(1 + 1)", df), 2)
+        assert self.pandasai.run_code("print(1 + 1)", df) == 2
 
     def test_conversational_answer_with_privacy_enforcement(self):
         self.setup()
         self.pandasai._enforce_privacy = True
         self.pandasai._llm.call = Mock(return_value="The answer is 2")
-        self.assertEqual(
-            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2), 2
+        assert (
+            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2) == 2
         )
         self.pandasai._llm.call.assert_not_called()
 
@@ -121,9 +121,9 @@ class TestPandasAI(unittest.TestCase):
         self.setup()
         self.pandasai._enforce_privacy = False
         self.pandasai._llm.call = Mock(return_value="The answer is 2")
-        self.assertEqual(
-            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2),
-            "The answer is 2",
+        assert (
+            self.pandasai.conversational_answer("How much does 1 + 1 do?", "", 2)
+            == "The answer is 2"
         )
         self.pandasai._llm.call.assert_called()
 
@@ -222,28 +222,28 @@ print(result)"""
         code = """```python
 result = {"happiness": 0.5, "gdp": 0.8}
 print(result)```"""
-        self.assertEqual(
-            self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.5, "gdp": 0.8}\nprint(result)',
+        assert (
+            self.pandasai._llm._extract_code(code)
+            == 'result = {"happiness": 0.5, "gdp": 0.8}\nprint(result)'
         )
 
         code = """```
 result = {"happiness": 1, "gdp": 0.43}```"""
-        self.assertEqual(
-            self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 1, "gdp": 0.43}',
+        assert (
+            self.pandasai._llm._extract_code(code)
+            == 'result = {"happiness": 1, "gdp": 0.43}'
         )
 
         code = """```python<startCode>
 result = {"happiness": 0.3, "gdp": 5.5}<endCode>```"""
-        self.assertEqual(
-            self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.3, "gdp": 5.5}',
+        assert (
+            self.pandasai._llm._extract_code(code)
+            == 'result = {"happiness": 0.3, "gdp": 5.5}'
         )
 
         code = """<startCode>```python
 result = {"happiness": 0.49, "gdp": 25.5}```<endCode>"""
-        self.assertEqual(
-            self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.49, "gdp": 25.5}',
+        assert (
+            self.pandasai._llm._extract_code(code)
+            == 'result = {"happiness": 0.49, "gdp": 25.5}'
         )
