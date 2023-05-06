@@ -3,7 +3,6 @@ import io
 import sys
 from typing import Optional
 import re
-import builtins
 
 import pandas as pd
 
