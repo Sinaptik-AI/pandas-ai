@@ -206,7 +206,7 @@ This is the result of `print(df.head(5))`:
 Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
 to get the answer to the following question :
 How many countries are in the dataframe?"""
-        self.pandasai.run(df, "How many countries are in the dataframe?")
+        self.pandasai.run(df, "How many countries are in the dataframe?", anonymize_df = False)
         assert self.pandasai._llm.last_prompt == expected_prompt
 
     def test_run_with_print_at_the_end(self):

@@ -87,7 +87,7 @@ Rewrite the answer to the question in a conversational way.
         prompt: str,
         is_conversational_answer: bool = None,
         show_code: bool = False,
-        anonymize_df: bool = False,
+        anonymize_df: bool = True,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
