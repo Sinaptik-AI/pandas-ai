@@ -40,7 +40,7 @@ class LLM:
             if not isinstance(node, (ast.Import, ast.ImportFrom))
         ]
         new_tree = ast.Module(body=new_body)
-        return astor.to_source(new_tree)
+        return astor.to_source(new_tree).strip()
 
     def _polish_code(self, code: str) -> str:
         """
@@ -57,8 +57,8 @@ class LLM:
             code = re.sub(r"^(python|py)", "", code)
         if re.match(r"^`.*`$", code):
             code = re.sub(r"^`(.*)`$", r"\1", code)
-        self._remove_imports(code)
         code = code.strip()
+        code = self._remove_imports(code)
         return code
 
     def _is_python_code(self, string):

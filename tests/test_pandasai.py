@@ -221,7 +221,7 @@ Code:
 
     def test_run_with_print_at_the_end(self):
         code = """
-result = {"happiness": 0.5, "gdp": 0.8}
+result = {'happiness': 0.5, 'gdp': 0.8}
 print(result)"""
         self.setup(code)
         self.pandasai.run_code(code, pd.DataFrame())
@@ -230,30 +230,36 @@ print(result)"""
         self.setup()
 
         code = """```python
-result = {"happiness": 0.5, "gdp": 0.8}
+result = {'happiness': 0.5, 'gdp': 0.8}
 print(result)```"""
         assert (
             self.pandasai._llm._extract_code(code)
-            == 'result = {"happiness": 0.5, "gdp": 0.8}\nprint(result)'
+            == "result = {'happiness': 0.5, 'gdp': 0.8}\nprint(result)"
         )
 
         code = """```
 result = {"happiness": 1, "gdp": 0.43}```"""
         assert (
             self.pandasai._llm._extract_code(code)
-            == 'result = {"happiness": 1, "gdp": 0.43}'
+            == "result = {'happiness': 1, 'gdp': 0.43}"
         )
 
         code = """```python<startCode>
-result = {"happiness": 0.3, "gdp": 5.5}<endCode>```"""
+result = {'happiness': 0.3, 'gdp': 5.5}<endCode>```"""
         assert (
             self.pandasai._llm._extract_code(code)
-            == 'result = {"happiness": 0.3, "gdp": 5.5}'
+            == "result = {'happiness': 0.3, 'gdp': 5.5}"
         )
 
         code = """<startCode>```python
-result = {"happiness": 0.49, "gdp": 25.5}```<endCode>"""
+result = {'happiness': 0.49, 'gdp': 25.5}```<endCode>"""
         assert (
             self.pandasai._llm._extract_code(code)
-            == 'result = {"happiness": 0.49, "gdp": 25.5}'
+            == "result = {'happiness': 0.49, 'gdp': 25.5}"
+        )
+        code = """<startCode>```python
+result = {'happiness': 0.49, 'gdp': 25.5}```"""
+        assert (
+            self.pandasai._llm._extract_code(code)
+            == "result = {'happiness': 0.49, 'gdp': 25.5}"
         )
