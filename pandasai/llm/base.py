@@ -57,7 +57,7 @@ class LLM:
             code = re.sub(r"^(python|py)", "", code)
         if re.match(r"^`.*`$", code):
             code = re.sub(r"^`(.*)`$", r"\1", code)
-        self._remove_imports(code)
+        code = self._remove_imports(code)
         code = code.strip()
         return code
 

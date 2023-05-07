@@ -108,6 +108,10 @@ class TestPandasAI(unittest.TestCase):
         self.setup()
         self.assertEqual(self.pandasai.run_code("print(1 + 1)", df), 2)
 
+    def test_run_code_with_imports(self):
+        self.setup()
+        self.assertEqual(self.llm._polish_code('import os'), "")
+
     def test_conversational_answer_with_privacy_enforcement(self):
         self.setup()
         self.pandasai._enforce_privacy = True
@@ -183,26 +187,26 @@ result = {"happiness": 0.5, "gdp": 0.8}
 print(result)```"""
         self.assertEqual(
             self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.5, "gdp": 0.8}\nprint(result)',
+            "result = {'happiness': 0.5, 'gdp': 0.8}\nprint(result)",
         )
 
         code = """```
 result = {"happiness": 1, "gdp": 0.43}```"""
         self.assertEqual(
             self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 1, "gdp": 0.43}',
+            "result = {'happiness': 1, 'gdp': 0.43}",
         )
 
         code = """```python<startCode>
 result = {"happiness": 0.3, "gdp": 5.5}<endCode>```"""
         self.assertEqual(
             self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.3, "gdp": 5.5}',
+            "result = {'happiness': 0.3, 'gdp': 5.5}",
         )
 
         code = """<startCode>```python
 result = {"happiness": 0.49, "gdp": 25.5}```<endCode>"""
         self.assertEqual(
             self.pandasai._llm._extract_code(code),
-            'result = {"happiness": 0.49, "gdp": 25.5}',
+            "result = {'happiness': 0.49, 'gdp': 25.5}",
         )
