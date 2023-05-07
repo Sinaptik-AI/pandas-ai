@@ -83,7 +83,11 @@ class LLM:
             str: Extracted code from the response
         """
         code = response
-        match = re.search(rf"{START_CODE_TAG}(.*){END_CODE_TAG}", code, re.DOTALL)
+        match = re.search(
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            code,
+            re.DOTALL,
+        )
         if match:
             code = match.group(1).strip()
         if len(code.split(separator)) > 1:
