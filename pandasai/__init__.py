@@ -33,22 +33,36 @@ Rewrite the answer to the question in a conversational way.
 """
 
     _error_correct_instruction: str = """
-    For the task defined below:
-    {orig_task}
-    you generated this python code:
-    {code}
-    and this fails with the following error:
-    {error_returned}
-    Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error.
-    Make sure to prefix the python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
+Today is {today_date}.
+You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
+This is the result of `print(df.head({rows_to_display}))`:
+{df_head}.
+
+The user asked the following question:
+{question}
+
+You generated this python code:
+{code}
+
+It fails with the following error:
+{error_returned}
+
+Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
     """
     _llm: LLM
     _verbose: bool = False
     _is_conversational_answer: bool = True
     _enforce_privacy: bool = False
     _max_retries: int = 3
-    _original_instruction_and_prompt = None
     _is_notebook: bool = False
+    _original_instructions: dict = {
+        "question": None,
+        "df_head": None,
+        "num_rows": None,
+        "num_columns": None,
+        "rows_to_display": None,
+    }
     last_code_generated: Optional[str] = None
     code_output: Optional[str] = None
 
@@ -90,6 +104,7 @@ Rewrite the answer to the question in a conversational way.
         is_conversational_answer: bool = None,
         show_code: bool = False,
         anonymize_df: bool = True,
+        use_error_correction_framework: bool = True,
     ) -> str:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
@@ -112,18 +127,13 @@ Rewrite the answer to the question in a conversational way.
             ),
             prompt,
         )
-        self._original_instruction_and_prompt = (
-            self._task_instruction.format(
-                today_date=date.today(),
-                df_head=df_head,
-                num_rows=data_frame.shape[0],
-                num_columns=data_frame.shape[1],
-                rows_to_display=rows_to_display,
-                START_CODE_TAG=START_CODE_TAG,
-                END_CODE_TAG=END_CODE_TAG,
-            )
-            + prompt
-        )
+        self._original_instructions = {
+            "question": prompt,
+            "df_head": df_head,
+            "num_rows": data_frame.shape[0],
+            "num_columns": data_frame.shape[1],
+            "rows_to_display": rows_to_display,
+        }
         self.last_code_generated = code
         self.log(
             f"""
@@ -135,7 +145,11 @@ Code generated:
         if show_code and self._in_notebook:
             self.notebook.create_new_cell(code)
 
-        answer = self.run_code(code, data_frame, False)
+        answer = self.run_code(
+            code,
+            data_frame,
+            use_error_correction_framework=use_error_correction_framework,
+        )
         self.code_output = answer
         self.log(f"Answer: {answer}")
 
@@ -150,7 +164,7 @@ Code generated:
         self,
         code: str,
         df: pd.DataFrame,  # pylint: disable=W0613 disable=C0103
-        use_error_correction_framework: bool = False,
+        use_error_correction_framework: bool = True,
     ) -> str:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
@@ -160,28 +174,31 @@ Code generated:
         sys.stdout = output
 
         # Execute the code
-        if use_error_correction_framework:
-            count = 0
-            code_to_run = code
-            while count < self._max_retries:
-                try:
-                    exec(code_to_run)
-                    code = code_to_run
-                    break
-                except Exception as e:  # pylint: disable=W0718 disable=C0103
-                    count += 1
-                    error_correcting_instruction = (
-                        self._error_correct_instruction.format(
-                            orig_task=self._original_instruction_and_prompt,
-                            code=code,
-                            error_returned=e,
-                        )
-                    )
-                    code_to_run = self._llm.generate_code(
-                        error_correcting_instruction, ""
-                    )
-        else:
-            exec(code)
+        count = 0
+        code_to_run = code
+        while count < self._max_retries:
+            try:
+                exec(code_to_run)
+                code = code_to_run
+                break
+            except Exception as e:  # pylint: disable=W0718 disable=C0103
+                if not use_error_correction_framework:
+                    raise e
+
+                count += 1
+                error_correcting_instruction = self._error_correct_instruction.format(
+                    today_date=date.today(),
+                    code=code,
+                    error_returned=e,
+                    START_CODE_TAG=START_CODE_TAG,
+                    END_CODE_TAG=END_CODE_TAG,
+                    question=self._original_instructions["question"],
+                    df_head=self._original_instructions["df_head"],
+                    num_rows=self._original_instructions["num_rows"],
+                    num_columns=self._original_instructions["num_columns"],
+                    rows_to_display=self._original_instructions["rows_to_display"],
+                )
+                code_to_run = self._llm.generate_code(error_correcting_instruction, "")
 
         # Restore standard output and get the captured output
         sys.stdout = sys.__stdout__
