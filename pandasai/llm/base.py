@@ -83,11 +83,11 @@ class LLM:
             str: Extracted code from the response
         """
         code = response
-        if len(response.split(separator)) > 1:
-            code = response.split(separator)[1]
         match = re.search(rf"{START_CODE_TAG}(.*){END_CODE_TAG}", code, re.DOTALL)
         if match:
             code = match.group(1).strip()
+        if len(code.split(separator)) > 1:
+            code = code.split(separator)[1]
         code = self._polish_code(code)
         if not self._is_python_code(code):
             raise NoCodeFoundError("No code found in the response")
