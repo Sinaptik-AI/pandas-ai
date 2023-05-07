@@ -1,6 +1,7 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
 import sys
+from datetime import date
 from typing import Optional
 
 import pandas as pd
@@ -17,13 +18,12 @@ class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
     _task_instruction: str = """
-There is a dataframe in pandas (python).
-The name of the dataframe is `df`.
+Today is {today_date}.
+You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
 This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
-Return the python code (do not import anything) and make sure to prefix the python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly 
-to get the answer to the following question :
+Return the python code (do not import anything) and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
 """
     _response_instruction: str = """
 Question: {question}
@@ -102,7 +102,10 @@ Rewrite the answer to the question in a conversational way.
 
         code = self._llm.generate_code(
             self._task_instruction.format(
+                today_date=date.today(),
                 df_head=df_head,
+                num_rows=data_frame.shape[0],
+                num_columns=data_frame.shape[1],
                 rows_to_display=rows_to_display,
                 START_CODE_TAG=START_CODE_TAG,
                 END_CODE_TAG=END_CODE_TAG,
@@ -111,7 +114,10 @@ Rewrite the answer to the question in a conversational way.
         )
         self._original_instruction_and_prompt = (
             self._task_instruction.format(
+                today_date=date.today(),
                 df_head=df_head,
+                num_rows=data_frame.shape[0],
+                num_columns=data_frame.shape[1],
                 rows_to_display=rows_to_display,
                 START_CODE_TAG=START_CODE_TAG,
                 END_CODE_TAG=END_CODE_TAG,

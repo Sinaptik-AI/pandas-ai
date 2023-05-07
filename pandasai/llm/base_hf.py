@@ -30,10 +30,10 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: str, value: str) -> str:
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """Call the LLM"""
 
-        payload = instruction + value
+        payload = instruction + value + suffix
 
         # sometimes the API doesn't return a valid response, so we retry passing the
         # output generated from the previous call as the input
@@ -44,5 +44,5 @@ class HuggingFaceLLM(LLM):
                 break
 
         # replace instruction + value from the inputs to avoid showing it in the output
-        output = response.replace(instruction + value, "")
+        output = response.replace(instruction + value + suffix, "")
         return output

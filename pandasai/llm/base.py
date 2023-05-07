@@ -94,13 +94,14 @@ class LLM:
 
         return code
 
-    def call(self, instruction: str, value: str) -> None:
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
             instruction (str): Prompt
             value (str): Value
+            suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
             MethodNotImplementedError: Call method has not been implemented
@@ -114,4 +115,4 @@ class LLM:
         Returns:
             str: Code
         """
-        return self._extract_code(self.call(instruction, prompt))
+        return self._extract_code(self.call(instruction, prompt, suffix="\n\nCode:\n"))

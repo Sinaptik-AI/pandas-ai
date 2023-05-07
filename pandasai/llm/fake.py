@@ -14,8 +14,8 @@ class FakeLLM(LLM):
         if output is not None:
             self._output = output
 
-    def call(self, instruction: str, value: str) -> str:
-        self.last_prompt = str(instruction) + str(value)
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+        self.last_prompt = str(instruction) + str(value) + suffix
         return self._output
 
     @property

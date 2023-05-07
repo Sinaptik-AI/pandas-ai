@@ -1,5 +1,6 @@
 """Unit tests for the PandasAI class"""
 
+from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
 
@@ -101,7 +102,7 @@ class TestPandasAI:
         df = pd.DataFrame()
         self.setup()
         with pytest.raises(Exception):
-            self.pandasai.run_code("1 +", df)
+            self.pandasai.run_code("1 +", df, use_error_correction_framework=False)
 
     def test_run_code_with_print(self):
         df = pd.DataFrame()
@@ -133,17 +134,19 @@ class TestPandasAI:
         self.pandasai._enforce_privacy = True
         self.pandasai._is_conversational_answer = True
 
-        expected_prompt = """
-There is a dataframe in pandas (python).
-The name of the dataframe is `df`.
+        expected_prompt = f"""
+Today is {date.today()}.
+You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the result of `print(df.head(0))`:
 Empty DataFrame
 Columns: [country]
 Index: [].
 
-Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
-to get the answer to the following question :
-How many countries are in the dataframe?"""
+Return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+How many countries are in the dataframe?
+
+Code:
+"""
         self.pandasai.run(df, "How many countries are in the dataframe?")
         assert self.pandasai._llm.last_prompt == expected_prompt
 
@@ -197,18 +200,20 @@ This is the result of `print(df.head(5))`:
         self.pandasai._enforce_privacy = False
         self.pandasai._is_conversational_answer = False
 
-        expected_prompt = """
-There is a dataframe in pandas (python).
-The name of the dataframe is `df`.
+        expected_prompt = f"""
+Today is {date.today()}.
+You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the result of `print(df.head(5))`:
           country
 0   United States
 1  United Kingdom
 2          France.
 
-Return the python code (do not import anything) and make sure to prefix the python code with <startCode> exactly and suffix the code with <endCode> exactly 
-to get the answer to the following question :
-How many countries are in the dataframe?"""
+Return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+How many countries are in the dataframe?
+
+Code:
+"""
         self.pandasai.run(
             df, "How many countries are in the dataframe?", anonymize_df=False
         )

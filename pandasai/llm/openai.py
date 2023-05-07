@@ -119,7 +119,7 @@ class OpenAI(LLM):
 
         return response["choices"][0]["message"]["content"]
 
-    def call(self, instruction: str, value: str) -> str:
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
@@ -136,9 +136,9 @@ class OpenAI(LLM):
         self.last_prompt = str(instruction) + str(value)
 
         if self.model in self._supported_completion_models:
-            response = self.completion(str(instruction) + str(value))
+            response = self.completion(str(instruction) + str(value) + suffix)
         elif self.model in self._supported_chat_models:
-            response = self.chat_completion(str(instruction) + str(value))
+            response = self.chat_completion(str(instruction) + str(value) + suffix)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
 
