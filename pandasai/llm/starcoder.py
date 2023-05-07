@@ -16,6 +16,7 @@ class Starcoder(HuggingFaceLLM):
 
     api_token: str
     _api_url: str = "https://api-inference.huggingface.co/models/bigcode/starcoder"
+    _max_retries: int = 5
 
     def __init__(self, api_token: Optional[str] = None):
         self.api_token = api_token or os.getenv("HUGGINGFACE_API_KEY")
@@ -24,4 +25,4 @@ class Starcoder(HuggingFaceLLM):
 
     @property
     def type(self) -> str:
-        return "open-assistant"
+        return "starcoder"
