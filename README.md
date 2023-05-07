@@ -132,6 +132,6 @@ pre-commit install
 - [ ] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
 - [ ] Add unit tests
-- [ ] Add contributing guidelines
+- [x] Add contributing guidelines
 - [x] Add CI
 - [x] Add support for conversational responses
