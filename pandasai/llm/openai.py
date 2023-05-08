@@ -39,7 +39,7 @@ class OpenAI(LLM):
         api_token: Optional[str] = None,
         **kwargs,
     ):
-        self.api_token = api_token or os.getenv("OPENAI_API_KEY")
+        self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
         if self.api_token is None:
             raise APIKeyNotFoundError("OpenAI API key is required")
         openai.api_key = self.api_token

@@ -15,6 +15,7 @@ astor = "^0.8.1"
 openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
+pytest-env = "^0.8.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,3 +32,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint]
 ignore = "tests_*"
+
+[tool.pytest.ini_options]
+env = [
+    "HUGGINGFACE_API_KEY=",
+    "OPENAI_API_KEY="
+]
