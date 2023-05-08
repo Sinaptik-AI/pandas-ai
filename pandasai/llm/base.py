@@ -6,7 +6,7 @@ from typing import Optional
 
 import astor
 
-from ..constants import END_CODE_TAG, START_CODE_TAG
+from ..constants import END_CODE_TAG, START_CODE_TAG, WHITELISTED_LIBRARIES
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -37,7 +37,10 @@ class LLM:
         new_body = [
             node
             for node in tree.body
-            if not isinstance(node, (ast.Import, ast.ImportFrom))
+            if not (
+                isinstance(node, (ast.Import, ast.ImportFrom))
+                and any(alias.name in WHITELISTED_LIBRARIES for alias in node.names)
+            )
         ]
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree).strip()
