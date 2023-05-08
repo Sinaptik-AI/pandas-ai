@@ -4,9 +4,7 @@ import ast
 import re
 from typing import Optional
 
-import astor
-
-from ..constants import END_CODE_TAG, START_CODE_TAG, WHITELISTED_LIBRARIES
+from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -32,19 +30,6 @@ class LLM:
         """
         raise APIKeyNotFoundError("Type has not been implemented")
 
-    def _remove_imports(self, code: str) -> str:
-        tree = ast.parse(code)
-        new_body = [
-            node
-            for node in tree.body
-            if not (
-                isinstance(node, (ast.Import, ast.ImportFrom))
-                and any(alias.name in WHITELISTED_LIBRARIES for alias in node.names)
-            )
-        ]
-        new_tree = ast.Module(body=new_body)
-        return astor.to_source(new_tree).strip()
-
     def _polish_code(self, code: str) -> str:
         """
         Polish the code by removing the leading "python" or "py",  \
@@ -61,7 +46,6 @@ class LLM:
         if re.match(r"^`.*`$", code):
             code = re.sub(r"^`(.*)`$", r"\1", code)
         code = code.strip()
-        code = self._remove_imports(code)
         return code
 
     def _is_python_code(self, string):

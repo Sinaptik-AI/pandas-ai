@@ -213,7 +213,7 @@ print(result)```"""
         )
 
         code = """```
-result = {"happiness": 1, "gdp": 0.43}```"""
+result = {'happiness': 1, 'gdp': 0.43}```"""
         assert (
             pandasai._llm._extract_code(code)
             == "result = {'happiness': 1, 'gdp': 0.43}"
@@ -238,3 +238,12 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
             pandasai._llm._extract_code(code)
             == "result = {'happiness': 0.49, 'gdp': 25.5}"
         )
+
+    def test_remove_unsafe_imports(self, pandasai):
+        malicious_code = """
+import os
+print(os.listdir())
+"""
+        pandasai._llm._output = malicious_code
+        assert pandasai.remove_unsafe_imports(malicious_code) == "print(os.listdir())"
+        assert pandasai.run_code(malicious_code, pd.DataFrame()) == ""

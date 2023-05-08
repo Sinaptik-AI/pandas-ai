@@ -1,12 +1,19 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
+import ast
 import io
 from contextlib import redirect_stdout
 from datetime import date
 from typing import Optional
 
+import astor
 import pandas as pd
 
-from .constants import END_CODE_TAG, START_CODE_TAG
+from .constants import (
+    END_CODE_TAG,
+    START_CODE_TAG,
+    WHITELISTED_BUILTINS,
+    WHITELISTED_LIBRARIES,
+)
 from .exceptions import LLMNotFoundError
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
@@ -160,10 +167,25 @@ Code generated:
             self.log(f"Conversational answer: {answer}")
         return answer
 
+    def remove_unsafe_imports(self, code: str) -> str:
+        """Remove non-whitelisted imports from the code to prevent malicious code execution"""
+
+        tree = ast.parse(code)
+        new_body = [
+            node
+            for node in tree.body
+            if not (
+                isinstance(node, (ast.Import, ast.ImportFrom))
+                and any(alias.name not in WHITELISTED_LIBRARIES for alias in node.names)
+            )
+        ]
+        new_tree = ast.Module(body=new_body)
+        return astor.to_source(new_tree).strip()
+
     def run_code(
         self,
         code: str,
-        df: pd.DataFrame,  # pylint: disable=W0613 disable=C0103
+        data_frame: pd.DataFrame,
         use_error_correction_framework: bool = True,
     ) -> str:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
@@ -173,10 +195,24 @@ Code generated:
         with redirect_stdout(io.StringIO()) as output:
             # Execute the code
             count = 0
-            code_to_run = code
+            code_to_run = self.remove_unsafe_imports(code)
             while count < self._max_retries:
                 try:
-                    exec(code_to_run)
+                    exec(
+                        code_to_run,
+                        {
+                            "pd": pd,
+                            "df": data_frame,
+                            "__builtins__": {
+                                "pd": pd,
+                                "df": data_frame,
+                                **{
+                                    builtin: __builtins__[builtin]
+                                    for builtin in WHITELISTED_BUILTINS
+                                },
+                            },
+                        },
+                    )
                     code = code_to_run
                     break
                 except Exception as e:  # pylint: disable=W0718 disable=C0103
@@ -184,19 +220,25 @@ Code generated:
                         raise e
 
                     count += 1
-                    error_correcting_instruction = self._error_correct_instruction.format(
-                        today_date=date.today(),
-                        code=code,
-                        error_returned=e,
-                        START_CODE_TAG=START_CODE_TAG,
-                        END_CODE_TAG=END_CODE_TAG,
-                        question=self._original_instructions["question"],
-                        df_head=self._original_instructions["df_head"],
-                        num_rows=self._original_instructions["num_rows"],
-                        num_columns=self._original_instructions["num_columns"],
-                        rows_to_display=self._original_instructions["rows_to_display"],
+                    error_correcting_instruction = (
+                        self._error_correct_instruction.format(
+                            today_date=date.today(),
+                            code=code,
+                            error_returned=e,
+                            START_CODE_TAG=START_CODE_TAG,
+                            END_CODE_TAG=END_CODE_TAG,
+                            question=self._original_instructions["question"],
+                            df_head=self._original_instructions["df_head"],
+                            num_rows=self._original_instructions["num_rows"],
+                            num_columns=self._original_instructions["num_columns"],
+                            rows_to_display=self._original_instructions[
+                                "rows_to_display"
+                            ],
+                        )
                     )
-                    code_to_run = self._llm.generate_code(error_correcting_instruction, "")
+                    code_to_run = self._llm.generate_code(
+                        error_correcting_instruction, ""
+                    )
 
         captured_output = output.getvalue()
 
