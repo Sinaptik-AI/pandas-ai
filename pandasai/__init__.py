@@ -1,6 +1,6 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import io
-import sys
+from contextlib import redirect_stdout
 from datetime import date
 from typing import Optional
 
@@ -170,38 +170,34 @@ Code generated:
         """Run the code in the current context and return the result"""
 
         # Redirect standard output to a StringIO buffer
-        output = io.StringIO()
-        sys.stdout = output
+        with redirect_stdout(io.StringIO()) as output:
+            # Execute the code
+            count = 0
+            code_to_run = code
+            while count < self._max_retries:
+                try:
+                    exec(code_to_run)
+                    code = code_to_run
+                    break
+                except Exception as e:  # pylint: disable=W0718 disable=C0103
+                    if not use_error_correction_framework:
+                        raise e
 
-        # Execute the code
-        count = 0
-        code_to_run = code
-        while count < self._max_retries:
-            try:
-                exec(code_to_run)
-                code = code_to_run
-                break
-            except Exception as e:  # pylint: disable=W0718 disable=C0103
-                if not use_error_correction_framework:
-                    raise e
+                    count += 1
+                    error_correcting_instruction = self._error_correct_instruction.format(
+                        today_date=date.today(),
+                        code=code,
+                        error_returned=e,
+                        START_CODE_TAG=START_CODE_TAG,
+                        END_CODE_TAG=END_CODE_TAG,
+                        question=self._original_instructions["question"],
+                        df_head=self._original_instructions["df_head"],
+                        num_rows=self._original_instructions["num_rows"],
+                        num_columns=self._original_instructions["num_columns"],
+                        rows_to_display=self._original_instructions["rows_to_display"],
+                    )
+                    code_to_run = self._llm.generate_code(error_correcting_instruction, "")
 
-                count += 1
-                error_correcting_instruction = self._error_correct_instruction.format(
-                    today_date=date.today(),
-                    code=code,
-                    error_returned=e,
-                    START_CODE_TAG=START_CODE_TAG,
-                    END_CODE_TAG=END_CODE_TAG,
-                    question=self._original_instructions["question"],
-                    df_head=self._original_instructions["df_head"],
-                    num_rows=self._original_instructions["num_rows"],
-                    num_columns=self._original_instructions["num_columns"],
-                    rows_to_display=self._original_instructions["rows_to_display"],
-                )
-                code_to_run = self._llm.generate_code(error_correcting_instruction, "")
-
-        # Restore standard output and get the captured output
-        sys.stdout = sys.__stdout__
         captured_output = output.getvalue()
 
         # Evaluate the last line and return its value or the captured output
