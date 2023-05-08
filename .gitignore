@@ -11,3 +11,6 @@ __pycache__
 build
 dist
 pandasai.egg-info
+
+#venv
+/venv
