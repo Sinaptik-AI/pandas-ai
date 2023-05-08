@@ -9,6 +9,7 @@ from ..exceptions import APIKeyNotFoundError, UnsupportedCohereModelError
 load_dotenv()
 
 
+# pylint: disable=duplicate-code
 class CohereLLM(LLM):
     """Cohere LLM"""
 
