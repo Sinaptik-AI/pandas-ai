@@ -182,7 +182,8 @@ Code generated:
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree).strip()
 
-    def limit_builtin_dict(self, data_frame: pd.DataFrame):
+    def limit_context_dict(self, data_frame: pd.DataFrame):
+        """create the dictionary that has context about variables and allowed builtins"""
         return {
             "pd": pd,
             "df": data_frame,
@@ -212,7 +213,7 @@ Code generated:
             code_to_run = self.remove_unsafe_imports(code)
             while count < self._max_retries:
                 try:
-                    exec(code_to_run, self.limit_builtin_dict(data_frame))
+                    exec(code_to_run, self.limit_context_dict(data_frame))
                     code = code_to_run
                     break
                 except Exception as e:  # pylint: disable=W0718 disable=C0103
@@ -248,7 +249,7 @@ Code generated:
         if last_line.startswith("print(") and last_line.endswith(")"):
             last_line = last_line[6:-1]
         try:
-            return eval(last_line,self.limit_builtin_dict(data_frame))
+            return eval(last_line,self.limit_context_dict(data_frame))
         except Exception:  # pylint: disable=W0718
             return captured_output
 
