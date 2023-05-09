@@ -204,8 +204,6 @@ Code generated:
                             "pd": pd,
                             "df": data_frame,
                             "__builtins__": {
-                                "pd": pd,
-                                "df": data_frame,
                                 **{
                                     builtin: __builtins__[builtin]
                                     for builtin in WHITELISTED_BUILTINS
@@ -248,7 +246,19 @@ Code generated:
         if last_line.startswith("print(") and last_line.endswith(")"):
             last_line = last_line[6:-1]
         try:
-            return eval(last_line)
+            return eval(
+                last_line,
+                {
+                    "pd": pd,
+                    "df": data_frame,
+                    "__builtins__": {
+                        **{
+                            builtin: __builtins__[builtin]
+                            for builtin in WHITELISTED_BUILTINS
+                        },
+                    },
+                },
+            )
         except Exception:  # pylint: disable=W0718
             return captured_output
 
