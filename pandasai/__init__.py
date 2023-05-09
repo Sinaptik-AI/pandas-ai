@@ -7,14 +7,17 @@ from typing import Optional
 
 import astor
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from .constants import (
     END_CODE_TAG,
     START_CODE_TAG,
     WHITELISTED_BUILTINS,
     WHITELISTED_LIBRARIES,
+    PLOT_KEY_WORDS,
+    PLT_CODE,
 )
-from .exceptions import LLMNotFoundError
+from .exceptions import LLMNotFoundError, ExecutionFailed
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .llm.base import LLM
@@ -196,13 +199,17 @@ Code generated:
             # Execute the code
             count = 0
             code_to_run = self.remove_unsafe_imports(code)
+            _success_in_running_code = False
             while count < self._max_retries:
                 try:
+                    if any([x in code_to_run for x in PLOT_KEY_WORDS]) and code_to_run.count(PLT_CODE) < 1:
+                        code_to_run += PLT_CODE
                     exec(
                         code_to_run,
                         {
                             "pd": pd,
                             "df": data_frame,
+                            "plt": plt,
                             "__builtins__": {
                                 "pd": pd,
                                 "df": data_frame,
@@ -214,6 +221,7 @@ Code generated:
                         },
                     )
                     code = code_to_run
+                    _success_in_running_code = True
                     break
                 except Exception as e:  # pylint: disable=W0718 disable=C0103
                     if not use_error_correction_framework:
@@ -224,7 +232,7 @@ Code generated:
                         self._error_correct_instruction.format(
                             today_date=date.today(),
                             code=code,
-                            error_returned=e,
+                            error_returned=repr(e),
                             START_CODE_TAG=START_CODE_TAG,
                             END_CODE_TAG=END_CODE_TAG,
                             question=self._original_instructions["question"],
@@ -240,11 +248,17 @@ Code generated:
                         error_correcting_instruction, ""
                     )
 
-        captured_output = output.getvalue()
+        if(_success_in_running_code):
+            captured_output = output.getvalue()
+        else:
+            raise ExecutionFailed("The llm could not generate the correct code.")
 
         # Evaluate the last line and return its value or the captured output
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
+        if last_line.startswith("plt.show(") and last_line.endswith(")"):
+            self._is_conversational_answer = False
+            return "The required plot has been generated."
         if last_line.startswith("print(") and last_line.endswith(")"):
             last_line = last_line[6:-1]
         try:
