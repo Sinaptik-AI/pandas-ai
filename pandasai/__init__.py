@@ -1,6 +1,7 @@
 """ PandasAI is a wrapper around a LLM to make dataframes convesational """
 import ast
 import io
+import re
 from contextlib import redirect_stdout
 from datetime import date
 from typing import Optional
@@ -243,8 +244,12 @@ Code generated:
         # Evaluate the last line and return its value or the captured output
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
-        if last_line.startswith("print(") and last_line.endswith(")"):
-            last_line = last_line[6:-1]
+        
+        pattern = r'^print\((.*)\)$'
+        match = re.match(pattern, last_line)
+        if match:
+            last_line = match.group(1)
+
         try:
             return eval(
                 last_line,
