@@ -1,0 +1,28 @@
+name: pandas_ai_cd
+
+on:
+  releases:
+    types:
+      - published
+  # for testing without release a new version
+#  push:
+#    branches:
+#      - add-auto-pypi-release
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish_to_pypi:
+    name: publish to pypi on new release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: JRubics/poetry-publish@v1.16
+        name: Build and publish to Pypi
+        with:
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          ignore_dev_requirements: "yes"
+          repository_url: https://test.pypi.org/legacy/ # for testing only
+          repository_name: test_pypi # for testing only
