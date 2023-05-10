@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv()
+load_dotenv(dotenv_path=dotenv_path)
 
 parser = argparse.ArgumentParser(description='Pandas AI command-line tool.')
 parser.add_argument('-d', '--dataset', type=str, required=True, help='The dataset to use.')
@@ -19,10 +19,21 @@ parser.add_argument('-p', '--prompt', type=str, required=True, help='The prompt 
 def main():
     args = parser.parse_args()
 
+    ext: str = os.path.splitext(args.dataset)[1]
+
     try:
-        df = pd.read_csv(args.dataset)
+        if ext == '.csv':
+            df = pd.read_csv(args.dataset)
+        elif ext == ".xlsx":
+            df = pd.read_excel(args.dataset)
+        elif ext == ".json":
+            df = pd.read_json(args.dataset)
+        else:
+            print(f"{args.dataset} does not contain a valid file extension.")
+
     except:
-        raise ValueError(f"Could not find {args.dataset}")
+        print(f"Could not find {args.dataset}")
+        return
 
     if args.model == "openai":
         llm = OpenAI(api_token = args.token or os.environ.get("OPENAI_API_KEY"))
@@ -31,14 +42,16 @@ def main():
         llm = OpenAssistant(api_token = args.token or os.environ.get("HUGGINGFACE_API_KEY"))
 
     else:
-        raise ValueError(f"Invalid model type: {args.model}")
+        print(f"Invalid model type: {args.model}")
+        return
 
     try:
         pandas_ai = PandasAI(llm, verbose=True)
         response = pandas_ai.run(df, args.prompt)
         print(response)
-    except Exception as e:
-        print(e)
+
+    except:
+        print("Invalid API token.")
 
 if __name__ == '__main__':
     main()
