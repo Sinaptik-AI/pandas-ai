@@ -26,6 +26,14 @@ Please DO NOT use pip or conda to install the dependencies. Instead, use poetry:
 poetry install
 ```
 
+### 📌 Pre-commit
+
+To ensure our standards, make sure to install pre-commit before star to contribute.
+
+```bash
+pre-commit install
+```
+
 ### 🧹 Linting
 
 We use `pylint` to lint our code. You can run the linter by running the following command:
