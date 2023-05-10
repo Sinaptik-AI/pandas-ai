@@ -7,11 +7,12 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv()
 
 parser = argparse.ArgumentParser(description='Pandas AI command-line tool.')
 parser.add_argument('-d', '--dataset', type=str, required=True, help='The dataset to use.')
-parser.add_argument('-t', '--token', type=str, required=False, help='The API token to use.')
+parser.add_argument('-t', '--token', type=str, required=False, default=None, help='The API token to use.')
 parser.add_argument('-m', '--model', type=str, required=True, help='The type of model to use.')
 parser.add_argument('-p', '--prompt', type=str, required=True, help='The prompt to use.')
 
