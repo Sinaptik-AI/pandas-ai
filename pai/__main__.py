@@ -11,6 +11,7 @@ load_dotenv()
 
 parser = argparse.ArgumentParser(description='Pandas AI command-line tool.')
 parser.add_argument('-d', '--dataset', type=str, required=True, help='The dataset to use.')
+parser.add_argument('-t', '--token', type=str, required=False, help='The API token to use.')
 parser.add_argument('-m', '--model', type=str, required=True, help='The type of model to use.')
 parser.add_argument('-p', '--prompt', type=str, required=True, help='The prompt to use.')
 
@@ -23,10 +24,10 @@ def main():
         raise ValueError(f"Could not find {args.dataset}")
 
     if args.model == "openai":
-        llm = OpenAI(api_token = os.environ.get("OPENAI_API_KEY"))
+        llm = OpenAI(api_token = args.token or os.environ.get("OPENAI_API_KEY"))
 
     elif args.model == "open-assistant":
-        llm = OpenAssistant(api_token = os.environ.get("HUGGINGFACE_API_KEY"))
+        llm = OpenAssistant(api_token = args.token or os.environ.get("HUGGINGFACE_API_KEY"))
 
     else:
         raise ValueError(f"Invalid model type: {args.model}")
