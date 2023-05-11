@@ -1,13 +1,9 @@
-name: pandas_ai_cd
+name: cd
 
 on:
   release:
     types:
       - published
-  # for testing without release a new version
-#  push:
-#    branches:
-#      - add-auto-pypi-release
 
 permissions:
   id-token: write
@@ -20,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: JRubics/poetry-publish@v1.16
-        name: Build and publish to Pypi
+        name: Build and publish to PyPI
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
           ignore_dev_requirements: "yes"
