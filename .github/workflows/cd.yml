@@ -1,7 +1,7 @@
 name: pandas_ai_cd
 
 on:
-  releases:
+  release:
     types:
       - published
   # for testing without release a new version
