@@ -1,10 +1,13 @@
 """ Base class to implement a new LLM. """
 
 import ast
+from abc import ABC
+
 import openai
-import os
 import re
 from typing import Optional, Dict, Any
+
+from black.trans import abstractmethod
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
@@ -87,6 +90,7 @@ class LLM:
 
         return code
 
+    @abstractmethod
     def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
@@ -111,7 +115,7 @@ class LLM:
         return self._extract_code(self.call(instruction, prompt, suffix="\n\nCode:\n"))
 
 
-class BaseOpenAI(LLM):
+class BaseOpenAI(LLM, ABC):
     api_token: str
     temperature: float = 0
     max_tokens: int = 512
