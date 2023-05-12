@@ -45,7 +45,7 @@ df = pd.DataFrame({
 from pandasai.llm.openai import OpenAI
 llm = OpenAI()
 
-pandas_ai = PandasAI(llm)
+pandas_ai = PandasAI(llm, conversational=False)
 pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 ```
 
@@ -86,10 +86,10 @@ pandas_ai.run(
 You can find more examples in the [examples](examples) directory.
 
 ## Privacy & Security
+
 In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
 
 Also, if you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
-
 
 ## Environment Variables
 
