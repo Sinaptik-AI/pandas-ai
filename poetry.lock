@@ -392,7 +392,7 @@ files = [
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2136,4 +2136,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6698774b87abb74afc50dd7873146c0ac13c73bfa71d8a4c3cb25cc7bee8f9e0"
+content-hash = "201f6629e44929676b2a4f391c306fd20388a2e1b7ac868fbf9cb8c6e3a6fefd"
