@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any
 
 import openai
 from dotenv import load_dotenv
+from openai import InvalidRequestError
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from .base import BaseOpenAI
@@ -25,7 +26,6 @@ class AzureOpenAI(BaseOpenAI):
         api_base: Optional[str] = None,
         api_version: Optional[str] = None,
         deployment_name: str = None,
-        is_completion_model: Optional[bool] = False,
         **kwargs,
     ):
         """
@@ -33,7 +33,7 @@ class AzureOpenAI(BaseOpenAI):
         Args:
             api_token (str): Azure OpenAI API token.
             api_base (str): Base url of the Azure endpoint.
-                It should look like the following: https://YOUR_RESOURCE_NAME.openai.azure.com/
+                It should look like the following: <https://YOUR_RESOURCE_NAME.openai.azure.com/>
             api_version (str): Version of the Azure OpenAI API.
                     Be aware the API version may change.
             deployment_name (str): Custom name of the deployed model
@@ -56,8 +56,16 @@ class AzureOpenAI(BaseOpenAI):
 
         if deployment_name is None:
             raise UnsupportedOpenAIModelError("Model deployment name is required.")
-        self.engine = deployment_name
-        self.is_completion_model = is_completion_model
+        try:
+            model_name = openai.Deployment.retrieve(deployment_name).model
+            model_capabilities = openai.Model.retrieve(model_name).capabilities
+            if not model_capabilities.completion and not model_capabilities.chat_completion:
+                raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a chat nor a "
+                                                  "completion model.")
+            self.is_completion_model = model_capabilities.completion
+            self.engine = deployment_name
+        except InvalidRequestError:
+            raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a valid model entity.")
 
         self._set_params(**kwargs)
 

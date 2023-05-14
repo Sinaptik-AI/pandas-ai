@@ -1,13 +1,11 @@
 """ Base class to implement a new LLM. """
 
 import ast
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import openai
 import re
 from typing import Optional, Dict, Any
-
-from black.trans import abstractmethod
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
