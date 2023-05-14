@@ -6,6 +6,7 @@ from typing import Optional, Dict, Any
 import openai
 from dotenv import load_dotenv
 from openai import InvalidRequestError
+from openai.error import APIConnectionError
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from .base import BaseOpenAI
@@ -62,10 +63,12 @@ class AzureOpenAI(BaseOpenAI):
             if not model_capabilities.completion and not model_capabilities.chat_completion:
                 raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a chat nor a "
                                                   "completion model.")
-            self.is_completion_model = model_capabilities.completion
+            self.is_chat_model = model_capabilities.chat_completion
             self.engine = deployment_name
         except InvalidRequestError:
             raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a valid model entity.")
+        except APIConnectionError:
+            raise UnsupportedOpenAIModelError(f"Invalid Azure OpenAI Base Endpoint {api_base}")
 
         self._set_params(**kwargs)
 
@@ -91,10 +94,10 @@ class AzureOpenAI(BaseOpenAI):
         """
         self.last_prompt = str(instruction) + str(value)
 
-        if self.is_completion_model:
-            response = self.completion(str(instruction) + str(value) + suffix)
-        else:
+        if self.is_chat_model:
             response = self.chat_completion(str(instruction) + str(value) + suffix)
+        else:
+            response = self.completion(str(instruction) + str(value) + suffix)
 
         return response
 
