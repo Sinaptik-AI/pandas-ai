@@ -65,11 +65,12 @@ class AzureOpenAI(BaseOpenAI):
                                                   "chat nor a completion model.")
             self.is_chat_model = model_capabilities.chat_completion
             self.engine = deployment_name
-        except InvalidRequestError:
+        except InvalidRequestError as ex:
             raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a "
-                                              "valid model entity.")
-        except APIConnectionError:
-            raise UnsupportedOpenAIModelError(f"Invalid Azure OpenAI Base Endpoint {api_base}")
+                                              "valid model entity.") from ex
+        except APIConnectionError as ex:
+            raise UnsupportedOpenAIModelError(f"Invalid Azure OpenAI Base Endpoint {api_base}") \
+                from ex
 
         self._set_params(**kwargs)
 
