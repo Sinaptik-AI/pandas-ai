@@ -3,10 +3,10 @@
 import ast
 from abc import ABC, abstractmethod
 
-import openai
 import re
 from typing import Optional, Dict, Any
 
+import openai
 import requests
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
@@ -116,6 +116,8 @@ class LLM:
 
 
 class BaseOpenAI(LLM, ABC):
+    """Base class to implement a new OpenAI LLM"""
+
     api_token: str
     temperature: float = 0
     max_tokens: int = 512

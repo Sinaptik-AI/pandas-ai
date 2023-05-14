@@ -47,7 +47,7 @@ class AzureOpenAI(BaseOpenAI):
         self.api_version = api_version or '2023-03-15-preview'
         if self.api_token is None:
             raise APIKeyNotFoundError("Azure OpenAI key is required")
-        elif self.api_base is None:
+        if self.api_base is None:
             raise APIKeyNotFoundError("Azure OpenAI base endpoint is required")
 
         openai.api_key = self.api_token
@@ -61,12 +61,13 @@ class AzureOpenAI(BaseOpenAI):
             model_name = openai.Deployment.retrieve(deployment_name).model
             model_capabilities = openai.Model.retrieve(model_name).capabilities
             if not model_capabilities.completion and not model_capabilities.chat_completion:
-                raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a chat nor a "
-                                                  "completion model.")
+                raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a "
+                                                  "chat nor a completion model.")
             self.is_chat_model = model_capabilities.chat_completion
             self.engine = deployment_name
         except InvalidRequestError:
-            raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a valid model entity.")
+            raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a "
+                                              "valid model entity.")
         except APIConnectionError:
             raise UnsupportedOpenAIModelError(f"Invalid Azure OpenAI Base Endpoint {api_base}")
 
