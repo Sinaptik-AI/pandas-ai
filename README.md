@@ -43,7 +43,7 @@ df = pd.DataFrame({
 
 # Instantiate a LLM
 from pandasai.llm.openai import OpenAI
-llm = OpenAI()
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 pandas_ai = PandasAI(llm, conversational=False)
 pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
@@ -105,7 +105,7 @@ As an alternative, you can also pass the environment variables directly to the c
 
 ```python
 # OpenAI
-llm = OpenAI(api_token="YOUR_OPENAI_API_KEY")
+llm = OpenAI(api_token="YOUR_API_KEY")
 
 # Starcoder
 llm = Starcoder(api_token="YOUR_HF_API_KEY")
