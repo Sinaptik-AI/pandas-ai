@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "0.2.8"
+version = "0.2.11"
 description = "Pandas AI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -29,6 +29,7 @@ pylint = "^2.17.3"
 pytest = "^7.3.1"
 isort = "^5.12.0"
 pytest-mock = "^3.10.0"
+pytest-env = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core"]

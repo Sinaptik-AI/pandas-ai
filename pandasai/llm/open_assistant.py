@@ -6,7 +6,7 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError
-from .base_hf import HuggingFaceLLM
+from .base import HuggingFaceLLM
 
 load_dotenv()
 

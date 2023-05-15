@@ -2,6 +2,7 @@
 
 [![release](https://img.shields.io/pypi/v/pandasai?label=Release&style=flat-square)](https://pypi.org/project/pandasai/)
 [![lint](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)
+[![lint](https://github.com/gventuri/pandas-ai/actions/workflows/cd.yml/badge.svg)](https://github.com/gventuri/pandas-ai/actions/workflows/cd.yml/badge.svg)
 [![](https://dcbadge.vercel.app/api/server/kF7FqH2FwS?style=flat&compact=true)](https://discord.gg/kF7FqH2FwS)
 [![Downloads](https://static.pepy.tech/badge/pandasai/month)](https://pepy.tech/project/pandasai) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1rKz7TudOeCeKGHekw7JFNL4sagN9hon-?usp=sharing)
@@ -10,7 +11,7 @@ Pandas AI is a Python library that adds generative artificial intelligence capab
 
 <!-- Add images/pandas-ai.png -->
 
-![PandasAI](./docs/images/pandas-ai.png?raw=true)
+![PandasAI](images/pandas-ai.png?raw=true)
 
 ## Demo
 
@@ -43,9 +44,9 @@ df = pd.DataFrame({
 
 # Instantiate a LLM
 from pandasai.llm.openai import OpenAI
-llm = OpenAI()
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-pandas_ai = PandasAI(llm)
+pandas_ai = PandasAI(llm, conversational=False)
 pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 ```
 
@@ -81,15 +82,15 @@ pandas_ai.run(
 )
 ```
 
-![Chart](./docs/images/histogram-chart.png?raw=false)
+![Chart](images/histogram-chart.png?raw=true)
 
 You can find more examples in the [examples](examples) directory.
 
 ## Privacy & Security
+
 In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
 
 Also, if you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
-
 
 ## Environment Variables
 
@@ -105,7 +106,7 @@ As an alternative, you can also pass the environment variables directly to the c
 
 ```python
 # OpenAI
-llm = OpenAI(api_token="YOUR_OPENAI_API_KEY")
+llm = OpenAI(api_token="YOUR_API_KEY")
 
 # Starcoder
 llm = Starcoder(api_token="YOUR_HF_API_KEY")

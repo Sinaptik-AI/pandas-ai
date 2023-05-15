@@ -1,4 +1,4 @@
-name: pandas_ai_ci
+name: ci
 
 on:
   push:

@@ -1,4 +1,4 @@
-""" PandasAI is a wrapper around a LLM to make dataframes conversational """
+""" PandasAI is a wrapper around a LLM to make dataframes convesational """
 import ast
 import io
 from contextlib import redirect_stdout
@@ -6,6 +6,7 @@ from datetime import date
 from typing import Optional
 
 import astor
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from .constants import (
@@ -30,6 +31,7 @@ You are provided with a pandas dataframe (df) with {num_rows} rows and {num_colu
 This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
+When asked about the data, your response should include a python code that describes the dataframe `df`.
 Return the python code (do not import anything) and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
 """
     _response_instruction: str = """
@@ -54,9 +56,8 @@ You generated this python code:
 It fails with the following error:
 {error_returned}
 
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. 
-Do not generate the same code again. Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
-suffix the code with {END_CODE_TAG} exactly.
+Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
     """
     _llm: LLM
     _verbose: bool = False
@@ -204,9 +205,8 @@ Code generated:
                         {
                             "pd": pd,
                             "df": data_frame,
+                            "plt": plt,
                             "__builtins__": {
-                                "pd": pd,
-                                "df": data_frame,
                                 **{
                                     builtin: __builtins__[builtin]
                                     for builtin in WHITELISTED_BUILTINS
@@ -249,7 +249,19 @@ Code generated:
         if last_line.startswith("print(") and last_line.endswith(")"):
             last_line = last_line[6:-1]
         try:
-            return eval(last_line)
+            return eval(
+                last_line,
+                {
+                    "pd": pd,
+                    "df": data_frame,
+                    "__builtins__": {
+                        **{
+                            builtin: __builtins__[builtin]
+                            for builtin in WHITELISTED_BUILTINS
+                        },
+                    },
+                },
+            )
         except Exception:  # pylint: disable=W0718
             return captured_output
 

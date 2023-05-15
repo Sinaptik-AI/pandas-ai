@@ -3,7 +3,7 @@
 import pytest
 import requests
 
-from pandasai.llm.base_hf import HuggingFaceLLM
+from pandasai.llm.base import HuggingFaceLLM
 
 
 class TestBaseHfLLM:

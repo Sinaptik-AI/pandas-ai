@@ -1,8 +1,13 @@
 """ Base class to implement a new LLM. """
 
 import ast
+from abc import ABC, abstractmethod
+
 import re
-from typing import Optional
+from typing import Optional, Dict, Any
+
+import openai
+import requests
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
@@ -85,6 +90,7 @@ class LLM:
 
         return code
 
+    @abstractmethod
     def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
@@ -107,3 +113,132 @@ class LLM:
             str: Code
         """
         return self._extract_code(self.call(instruction, prompt, suffix="\n\nCode:\n"))
+
+
+class BaseOpenAI(LLM, ABC):
+    """Base class to implement a new OpenAI LLM"""
+
+    api_token: str
+    temperature: float = 0
+    max_tokens: int = 512
+    top_p: float = 1
+    frequency_penalty: float = 0
+    presence_penalty: float = 0.6
+    stop: Optional[str] = None
+
+    def _set_params(self, **kwargs):
+        valid_params = [
+            "model",
+            "engine",
+            "deployment_id",
+            "temperature",
+            "max_tokens",
+            "top_p",
+            "frequency_penalty",
+            "presence_penalty",
+            "stop",
+        ]
+        for key, value in kwargs.items():
+            if key in valid_params:
+                setattr(self, key, value)
+
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        """Get the default parameters for calling OpenAI API"""
+        return {
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+        }
+
+    def completion(self, prompt: str) -> str:
+        """
+        Query the completion API
+
+        Args:
+            prompt (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
+        params = {
+            **self._default_params,
+            "prompt": prompt
+        }
+
+        if self.stop is not None:
+            params["stop"] = [self.stop]
+
+        response = openai.Completion.create(**params)
+
+        return response["choices"][0]["text"]
+
+    def chat_completion(self, value: str) -> str:
+        """
+        Query the chat completion API
+
+        Args:
+            value (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
+        params = {
+            **self._default_params,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": value,
+                }
+            ],
+        }
+
+        if self.stop is not None:
+            params["stop"] = [self.stop]
+
+        response = openai.ChatCompletion.create(**params)
+
+        return response["choices"][0]["message"]["content"]
+
+
+class HuggingFaceLLM(LLM):
+    """Base class to implement a new Hugging Face LLM."""
+
+    last_prompt: Optional[str] = None
+    api_token: str
+    _api_url: str = "https://api-inference.huggingface.co/models/"
+    _max_retries: int = 3
+
+    @property
+    def type(self) -> str:
+        return "huggingface-llm"
+
+    def query(self, payload):
+        """Query the API"""
+
+        headers = {"Authorization": f"Bearer {self.api_token}"}
+
+        response = requests.post(
+            self._api_url, headers=headers, json=payload, timeout=60
+        )
+
+        return response.json()[0]["generated_text"]
+
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+        """Call the LLM"""
+
+        payload = instruction + value + suffix
+
+        # sometimes the API doesn't return a valid response, so we retry passing the
+        # output generated from the previous call as the input
+        for _i in range(self._max_retries):
+            response = self.query({"inputs": payload})
+            payload = response
+            if response.count("<endCode>") >= 2:
+                break
+
+        # replace instruction + value from the inputs to avoid showing it in the output
+        output = response.replace(instruction + value + suffix, "")
+        return output
