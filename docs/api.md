@@ -28,7 +28,3 @@ This document outlines the API included in the `pandasai`.
 ::: pandasai.llm.base
     options:
       show_root_heading: true
-
-::: pandasai.lumache
-    options:
-      show_root_heading: true
