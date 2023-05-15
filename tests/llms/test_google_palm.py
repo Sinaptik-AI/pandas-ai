@@ -39,7 +39,7 @@ class TestOpenAILLM:
         assert llm.top_k == 0.5
         assert llm.max_output_tokens == 64
 
-    def test_initiated_with_wrong_parameters(self):
+    def test_validations(self):
         with pytest.raises(
             ValueError, match=re.escape("temperature must be in the range [0.0, 1.0]")
         ):
