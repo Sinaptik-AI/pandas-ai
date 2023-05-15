@@ -1,4 +1,4 @@
-""" PandasAI is a wrapper around a LLM to make dataframes convesational """
+""" PandasAI is a wrapper around a LLM to make dataframes conversational """
 import ast
 import io
 from contextlib import redirect_stdout
@@ -54,8 +54,9 @@ You generated this python code:
 It fails with the following error:
 {error_returned}
 
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
+Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. 
+Do not generate the same code again. Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
+suffix the code with {END_CODE_TAG} exactly.
     """
     _llm: LLM
     _verbose: bool = False

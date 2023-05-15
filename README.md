@@ -10,7 +10,7 @@ Pandas AI is a Python library that adds generative artificial intelligence capab
 
 <!-- Add images/pandas-ai.png -->
 
-![PandasAI](images/pandas-ai.png?raw=true)
+![PandasAI](./docs/images/pandas-ai.png?raw=true)
 
 ## Demo
 
@@ -81,7 +81,7 @@ pandas_ai.run(
 )
 ```
 
-![Chart](images/histogram-chart.png?raw=true)
+![Chart](./docs/images/histogram-chart.png?raw=false)
 
 You can find more examples in the [examples](examples) directory.
 
