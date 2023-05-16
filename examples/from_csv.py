@@ -5,7 +5,7 @@ import pandas as pd
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 
-df = pd.read_csv("data/Loan payments data.csv")
+df = pd.read_csv("examples/data/Loan payments data.csv")
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True)

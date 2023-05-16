@@ -1,10 +1,11 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 
 import pandas as pd
-from data.sample_dataframe import dataframe
 
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
+
+from .data.sample_dataframe import dataframe
 
 df = pd.DataFrame(dataframe)
 
