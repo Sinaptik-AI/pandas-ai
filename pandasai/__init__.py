@@ -33,7 +33,7 @@ This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Return the python code (do not import anything) and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
+Using the provided dataframe, df, return the python code (do not import anything) and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
 """
     _response_instruction: str = """
 Question: {question}
@@ -185,6 +185,21 @@ Code generated:
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree).strip()
 
+    def remove_df_overrides(self, code: str) -> str:
+        """Remove any instance of the dataframe being overridden"""
+        tree = ast.parse(code)
+
+        tree.body = [node for node in tree.body if not (
+            isinstance(node, ast.Assign) and
+            isinstance(node.targets[0], ast.Name) and
+            node.targets[0].id == "df" and
+            isinstance(node.value, ast.Call) and
+            isinstance(node.value.func, ast.Attribute) and
+            node.value.func.attr == "DataFrame"
+        )]
+
+        return ast.unparse(tree)
+
     def run_code(
         self,
         code: str,
@@ -199,6 +214,7 @@ Code generated:
             # Execute the code
             count = 0
             code_to_run = self.remove_unsafe_imports(code)
+            code_to_run = self.remove_df_overrides(code_to_run)
             while count < self._max_retries:
                 try:
                     exec(
