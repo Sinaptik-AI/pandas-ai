@@ -1,10 +1,9 @@
 """ Base class to implement a new LLM. """
 
 import ast
-from abc import ABC, abstractmethod
-
 import re
-from typing import Optional, Dict, Any
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
 
 import openai
 import requests
@@ -163,10 +162,7 @@ class BaseOpenAI(LLM, ABC):
         Returns:
             str: LLM response
         """
-        params = {
-            **self._default_params,
-            "prompt": prompt
-        }
+        params = {**self._default_params, "prompt": prompt}
 
         if self.stop is not None:
             params["stop"] = [self.stop]
