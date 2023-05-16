@@ -73,7 +73,7 @@ class AzureOpenAI(BaseOpenAI):
             self.engine = deployment_name
         except InvalidRequestError as ex:
             raise UnsupportedOpenAIModelError(
-                "Model deployment name does not correspond to a " "valid model entity."
+                "Model deployment name does not correspond to a valid model entity."
             ) from ex
         except APIConnectionError as ex:
             raise UnsupportedOpenAIModelError(
