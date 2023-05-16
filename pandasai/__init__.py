@@ -246,8 +246,8 @@ Code generated:
         # Evaluate the last line and return its value or the captured output
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
-        
-        pattern = r'^print\((.*)\)$'
+
+        pattern = r"^print\((.*)\)$"
         match = re.match(pattern, last_line)
         if match:
             last_line = match.group(1)
