@@ -127,7 +127,7 @@ Columns: [country]
 Index: [].
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+Using the provided dataframe, df, return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
 How many countries are in the dataframe?
 
 Code:
@@ -190,7 +190,7 @@ This is the result of `print(df.head(5))`:
 2          France.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+Using the provided dataframe, df, return the python code (do not import anything) and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
 How many countries are in the dataframe?
 
 Code:
