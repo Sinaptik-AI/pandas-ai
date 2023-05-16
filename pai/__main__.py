@@ -1,3 +1,4 @@
+""" Driver code for the CLI tool """
 import os
 import click
 import pandas as pd
@@ -6,17 +7,19 @@ from pandasai.llm.openai import OpenAI
 from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.starcoder import Starcoder
 
-
 @click.command()
 @click.option('-d', '--dataset', type=str, required=True, help='The dataset to use.')
 @click.option('-t', '--token', type=str, required=False, default=None, help='The API token to use.')
-@click.option('-m', '--model', type=click.Choice(['openai', 'open-assistant', 'starcoder']), required=True, help='The type of model to use.')
+@click.option('-m', '--model', type=click.Choice(['openai', 'open-assistant', 'starcoder']),
+              required=True, help='The type of model to use.')
 @click.option('-p', '--prompt', type=str, required=True, help='The prompt to use.')
-def main(dataset, token, model, prompt):
+def main(dataset: str, token: str, model: str, prompt: str) -> None:
+    """Main logic for the command line interface tool."""
+
     ext = os.path.splitext(dataset)[1]
 
     try:
-        format = {
+        file_format = {
             ".csv": pd.read_csv,
             ".xls": pd.read_excel,
             ".xlsx": pd.read_excel,
@@ -44,14 +47,14 @@ def main(dataset, token, model, prompt):
             ".txt": pd.read_csv,
             ".xml": pd.read_xml,
         }
-        if ext in format:
-            df = format[ext](dataset)
+        if ext in file_format:
+            df = file_format[ext](dataset) # pylint: disable=C0103
         else:
             print("Unsupported file format.")
             return
 
-    except:
-        print(f"Could not find {dataset}")
+    except Exception as e: # pylint: disable=W0718 disable=C0103
+        print(e)
         return
 
     if model == "openai":
@@ -59,7 +62,7 @@ def main(dataset, token, model, prompt):
 
     elif model == "open-assistant":
         llm = OpenAssistant(api_token = token)
-    
+
     elif model == 'starcoder':
         llm = Starcoder(api_token = token)
 
@@ -68,8 +71,5 @@ def main(dataset, token, model, prompt):
         response = pandas_ai.run(df, prompt)
         print(response)
 
-    except:
-        print("Invalid API token.")
-
-if __name__ == '__main__':
-    main()
+    except Exception as e: # pylint: disable=W0718 disable=C0103
+        print(e)
