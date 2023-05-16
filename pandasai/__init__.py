@@ -204,7 +204,7 @@ Code generated:
     def clean_code(self, code: str) -> str:
         """Clean the code to prevent malicious code execution"""
 
-        # TODO: avoid iterating over the code twice
+        # TODO: avoid iterating over the code twice # pylint: disable=W0511
         code = self.remove_unsafe_imports(code)
         code = self.remove_df_overwrites(code)
         return code
