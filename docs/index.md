@@ -1,15 +1,14 @@
+# PANDASAI documentation
+
+**pandas AI** is a Python library that enhances Pandas with generative AI capabilities. 
+It is intended to complement, not replace, the popular data analysis and manipulation tool.
+ Using `pandasai`, users are able to summarise pandas dataframes data by interacting like Human. 
+
+Check out the [Getting Started](getting-started.md) section for instructions including how to install the package.
+
+> This project is under active development.
+
 {!README.md!}
 
-# Welcome to Lumache's documentation!
 
-**Lumache** (/lu\'make/) is a Python library for cooks and food lovers
-that creates recipes mixing random ingredients. It pulls data from the
-[Open Food Facts database](https://world.openfoodfacts.org/) and offers
-a *simple* and *intuitive* API.
-
-Check out the [usage](usage) section for further information, including how to [install](usage#installation) the project.
-
-!!! note
-
-    This project is under active development.
 

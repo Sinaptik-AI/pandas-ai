@@ -1,7 +1,27 @@
-site_name: Pandas-ai Documentation
+site_name: Pandas-ai
+site_url: https://github.com/gventuri/pandas-ai
+repo_url: https://github.com/gventuri/pandas-ai
+site_description: Pandasai Documentation with Markdown
+site_author: pandasai contributors
+
 theme:
   name: readthedocs
   highlightjs: true
+
+nav:
+    - Home: index.md
+    - Getting Started: getting-started.md
+    - API:
+        - API/api.md
+        - API/helpers.md
+        - API/llms.md
+    - About:
+        - Release Notes: release-notes.md
+        - Contributing: CONTRIBUTING.md
+        - Documents Building: building_docs.md
+        - License: license.md
+extra:
+    version: "0.2.12"
 plugins:
   - search
   - mkdocstrings:
