@@ -28,12 +28,12 @@ class PandasAI:
 
     _task_instruction: str = """
 Today is {today_date}.
-You are provided with a pandas dataframe ({df_name}) with {num_rows} rows and {num_columns} columns.
-This is the result of `print({df_name}.head({rows_to_display}))`:
+You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
+This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
-When asked about the data, your response should include a python code that describes the provided dataframe {df_name}.
-Using the provided dataframe, {df_name}, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
+When asked about the data, your response should include a python code that describes the dataframe `df`.
+Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
 """
     _response_instruction: str = """
 Question: {question}
@@ -44,8 +44,8 @@ Rewrite the answer to the question in a conversational way.
 
     _error_correct_instruction: str = """
 Today is {today_date}.
-You are provided with a pandas dataframe ({df_name}) with {num_rows} rows and {num_columns} columns.
-This is the result of `print({df_name}.head({rows_to_display}))`:
+You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
+This is the result of `print(df.head({rows_to_display}))`:
 {df_head}.
 
 The user asked the following question:
@@ -128,7 +128,6 @@ Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
         code = self._llm.generate_code(
             self._task_instruction.format(
                 today_date=date.today(),
-                df_name=data_frame,
                 df_head=df_head,
                 num_rows=data_frame.shape[0],
                 num_columns=data_frame.shape[1],
@@ -251,7 +250,6 @@ Code generated:
                         self._error_correct_instruction.format(
                             today_date=date.today(),
                             code=code,
-                            df_name=data_frame,
                             error_returned=e,
                             START_CODE_TAG=START_CODE_TAG,
                             END_CODE_TAG=END_CODE_TAG,
