@@ -11,6 +11,7 @@ theme:
 nav:
     - Home: index.md
     - Getting Started: getting-started.md
+    - Command Line Tool: pai_cli.md
     - API:
         - API/api.md
         - API/helpers.md
@@ -21,7 +22,7 @@ nav:
         - Documents Building: building_docs.md
         - License: license.md
 extra:
-    version: "0.2.12"
+    version: "0.2.13"
 plugins:
   - search
   - mkdocstrings:
