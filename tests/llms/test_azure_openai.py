@@ -17,7 +17,9 @@ def mock_deployment(mocker, completion=True, chat_completion=True):
     openai_mock_deploy.return_value = MockedOpenAIObject(model="test-model")
 
     openai_mock_model = mocker.patch("openai.Model.retrieve")
-    capabilities = MockedOpenAIObject(completion=completion, chat_completion=chat_completion)
+    capabilities = MockedOpenAIObject(
+        completion=completion, chat_completion=chat_completion
+    )
     openai_mock_model.return_value = MockedOpenAIObject(capabilities=capabilities)
 
 
@@ -38,30 +40,21 @@ class TestOpenAILLM:
 
     def test_type_with_token(self, mocker):
         mock_deployment(mocker)
-        assert AzureOpenAI(
-            api_token="test",
-            api_base="test",
-            deployment_name="test"
-        ).type == "azure-openai"
+        assert (
+            AzureOpenAI(api_token="test", api_base="test", deployment_name="test").type
+            == "azure-openai"
+        )
 
     def test_with_nonexistent_deployment(self):
         with pytest.raises(UnsupportedOpenAIModelError):
             # test is no valid deployment name nor api endpoint
-            AzureOpenAI(
-                api_token="test",
-                api_base="test",
-                deployment_name="test"
-            )
+            AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
 
     def test_with_invalid_model_type(self, mocker):
         mock_deployment(mocker, False, False)
         with pytest.raises(UnsupportedOpenAIModelError):
             # model is not capable of chat nor completion
-            AzureOpenAI(
-                api_token="test",
-                api_base="test",
-                deployment_name="test"
-            )
+            AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
 
     def test_params_setting(self, mocker):
         mock_deployment(mocker)
@@ -91,11 +84,7 @@ class TestOpenAILLM:
         expected_text = "This is the generated text."
         openai_mock.return_value = {"choices": [{"text": expected_text}]}
 
-        openai = AzureOpenAI(
-            api_token="test",
-            api_base="test",
-            deployment_name="test"
-        )
+        openai = AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
         result = openai.completion("Some prompt.")
 
         openai_mock.assert_called_once_with(
@@ -112,11 +101,7 @@ class TestOpenAILLM:
 
     def test_chat_completion(self, mocker):
         mock_deployment(mocker, chat_completion=True)
-        openai = AzureOpenAI(
-            api_token="test",
-             api_base="test",
-             deployment_name="test"
-        )
+        openai = AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
         expected_response = {
             "choices": [
                 {
@@ -133,4 +118,3 @@ class TestOpenAILLM:
 
         result = openai.chat_completion("Hi")
         assert result == expected_response
-

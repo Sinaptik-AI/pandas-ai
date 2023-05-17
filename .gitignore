@@ -14,5 +14,8 @@ pandasai.egg-info
 
 #venv
 /venv
+
+# command line
+/pandasai_cli.egg-info
 .venv
 .idea

@@ -1,7 +1,7 @@
 """OpenAI LLM"""
 
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import openai
 from dotenv import load_dotenv

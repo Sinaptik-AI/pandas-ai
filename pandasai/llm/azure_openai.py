@@ -1,7 +1,7 @@
 """OpenAI LLM via Microsoft Azure Cloud"""
 
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import openai
 from dotenv import load_dotenv
@@ -16,6 +16,7 @@ load_dotenv()
 
 class AzureOpenAI(BaseOpenAI):
     """OpenAI LLM via Microsoft Azure"""
+
     api_base: str
     api_type: str = "azure"
     api_version: str
@@ -39,12 +40,12 @@ class AzureOpenAI(BaseOpenAI):
                     Be aware the API version may change.
             deployment_name (str): Custom name of the deployed model
             is_completion_model (bool): Whether `deployment_name` corresponds to
-                a model for completion or chat. 
+                a model for completion or chat.
             **kwargs: Inference parameters
         """
         self.api_token = api_token or os.getenv("AZURE_OPENAI_KEY") or None
         self.api_base = api_base or os.getenv("AZURE_OPENAI_ENDPOINT") or None
-        self.api_version = api_version or '2023-03-15-preview'
+        self.api_version = api_version or "2023-03-15-preview"
         if self.api_token is None:
             raise APIKeyNotFoundError("Azure OpenAI key is required")
         if self.api_base is None:
@@ -60,27 +61,31 @@ class AzureOpenAI(BaseOpenAI):
         try:
             model_name = openai.Deployment.retrieve(deployment_name).model
             model_capabilities = openai.Model.retrieve(model_name).capabilities
-            if not model_capabilities.completion and not model_capabilities.chat_completion:
-                raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a "
-                                                  "chat nor a completion model.")
+            if (
+                not model_capabilities.completion
+                and not model_capabilities.chat_completion
+            ):
+                raise UnsupportedOpenAIModelError(
+                    "Model deployment name does not correspond to a "
+                    "chat nor a completion model."
+                )
             self.is_chat_model = model_capabilities.chat_completion
             self.engine = deployment_name
         except InvalidRequestError as ex:
-            raise UnsupportedOpenAIModelError("Model deployment name does not correspond to a "
-                                              "valid model entity.") from ex
+            raise UnsupportedOpenAIModelError(
+                "Model deployment name does not correspond to a valid model entity."
+            ) from ex
         except APIConnectionError as ex:
-            raise UnsupportedOpenAIModelError(f"Invalid Azure OpenAI Base Endpoint {api_base}") \
-                from ex
+            raise UnsupportedOpenAIModelError(
+                f"Invalid Azure OpenAI Base Endpoint {api_base}"
+            ) from ex
 
         self._set_params(**kwargs)
 
     @property
     def _default_params(self) -> Dict[str, Any]:
         """Get the default parameters for calling OpenAI API"""
-        return {
-            **super()._default_params,
-            "engine": self.engine
-        }
+        return {**super()._default_params, "engine": self.engine}
 
     def call(self, instruction: str, value: str, suffix: str = "") -> str:
         """

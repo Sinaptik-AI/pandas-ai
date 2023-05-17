@@ -12,6 +12,7 @@ class TestOpenAILLM:
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
             OpenAI().type
+
     def test_type_with_token(self):
         OpenAI(api_token="test").type == "openai"
 
