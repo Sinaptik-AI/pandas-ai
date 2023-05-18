@@ -29,7 +29,7 @@ pip install pandasai
 
 > Disclaimer: GDP data was collected from [this source](https://ourworldindata.org/grapher/gross-domestic-product?tab=table), published by World Development Indicators - World Bank (2022.05.26) and collected at National accounts data - World Bank / OECD. It relates to the year of 2020. Happiness indexes were extracted from [the World Happiness Report](https://ftnnews.com/images/stories/documents/2020/WHR20.pdf). Another useful [link](https://data.world/makeovermonday/2020w19-world-happiness-report-2020).
 
-PandasAI is designed to be used in conjunction with Pandas. It makes Pandas conversational, allowing you to ask questions about your data and get answers back, in the form of Pandas DataFrames. For example, you can ask PandasAI to find all the rows in a DataFrame where the value of a column is greater than 5, and it will return a DataFrame containing only those rows:
+PandasAI is designed to be used in conjunction with [pandas](https://github.com/pandas-dev/pandas). It makes Pandas conversational, allowing you to ask questions about your data and get answers back, in the form of pandas DataFrames. For example, you can ask PandasAI to find all the rows in a DataFrame where the value of a column is greater than 5, and it will return a DataFrame containing only those rows:
 
 ```python
 import pandas as pd
@@ -87,27 +87,34 @@ pandas_ai(
 You can find more examples in the [examples](examples) directory.
 
 ## Command-Line Tool
-Pai is the command line tool designed to provide a convenient way to interact with pandasai through a command line interface (CLI).
+
+Pai is the command line tool designed to provide a convenient way to interact with PandasAI through a command line interface (CLI).
 
 ```
 pai [OPTIONS]
 ```
+
 Options:
+
 - **-d, --dataset**: The file path to the dataset.
 - **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will pull from the `.env` file.
 - **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, or `starcoder`.
 - **-p, --prompt**: Prompt that PandasAI will run.
 
 To view a full list of available options and their descriptions, run the following command:
+
 ```
 pai --help
 
 ```
->For example,
->```
->pai -d "~/pandasai/example/data/Loan payments data.csv" -m "openai" -p "How many loans are from men and have been paid off?"
->```
->Should result in the same output as the `from_csv.py` example.
+
+> For example,
+>
+> ```
+> pai -d "~/pandasai/example/data/Loan payments data.csv" -m "openai" -p "How many loans are from men and have been paid off?"
+> ```
+>
+> Should result in the same output as the `from_csv.py` example.
 
 ## Privacy & Security
 
@@ -150,10 +157,15 @@ After installing the virtual environment, please remember to install `pre-commit
 pre-commit install
 ```
 
+## Acknowledgements
+
+- This project is based on the [pandas](https://github.com/pandas-dev/pandas) library by independent contributors, but it's in no way affiliated with the pandas project.
+- This project is meant to be used as a tool for data exploration and analysis, and it's not meant to be used for production purposes. Please use it responsibly.
+
 ### Todo
 
 - [ ] Add support for more LLMs
-- [ ] Make PandasAI available from a CLI
+- [x] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
 - [ ] Add unit tests
 - [x] Add contributing guidelines
