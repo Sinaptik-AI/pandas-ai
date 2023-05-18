@@ -14,3 +14,6 @@ pandasai.egg-info
 
 #venv
 /venv
+
+#googlesheets
+pandasai/helpers/service_account_file.json
