@@ -11,7 +11,7 @@ df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm)
-response = pandas_ai.run(
+response = pandas_ai(
     df,
     "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
 )
