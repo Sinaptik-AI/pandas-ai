@@ -15,8 +15,6 @@ pandasai.egg-info
 #venv
 /venv
 
-#googlesheets
-service_account_file.json
-
 # command line
 /pandasai_cli.egg-info
+
