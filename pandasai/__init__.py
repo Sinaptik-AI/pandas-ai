@@ -170,6 +170,25 @@ Code generated:
             self.log(f"Conversational answer: {answer}")
         return answer
 
+    def __call__(
+        self,
+        data_frame: pd.DataFrame,
+        prompt: str,
+        is_conversational_answer: bool = None,
+        show_code: bool = False,
+        anonymize_df: bool = True,
+        use_error_correction_framework: bool = True,
+    ) -> str:
+        """Run the LLM with the given prompt"""
+        return self.run(
+            data_frame,
+            prompt,
+            is_conversational_answer,
+            show_code,
+            anonymize_df,
+            use_error_correction_framework
+        )
+
     def remove_unsafe_imports(self, code: str) -> str:
         """Remove non-whitelisted imports from the code to prevent malicious code execution"""
 
