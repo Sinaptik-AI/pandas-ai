@@ -74,6 +74,7 @@ Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
         "rows_to_display": None,
     }
     last_code_generated: Optional[str] = None
+    last_run_code: Optional[str] = None
     code_output: Optional[str] = None
 
     def __init__(
@@ -186,7 +187,7 @@ Code generated:
             is_conversational_answer,
             show_code,
             anonymize_df,
-            use_error_correction_framework
+            use_error_correction_framework,
         )
 
     def remove_unsafe_imports(self, code: str) -> str:
@@ -237,13 +238,23 @@ Code generated:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
 
+        # Get the code to run removing unsafe imports and df overwrites
+        code_to_run = self.clean_code(code)
+        self.last_run_code = code_to_run
+        self.log(
+            f"""
+Code running:
+```
+{code_to_run}
+```"""
+        )
+
         # Redirect standard output to a StringIO buffer
         with redirect_stdout(io.StringIO()) as output:
-            # Execute the code
             count = 0
-            code_to_run = self.clean_code(code)
             while count < self._max_retries:
                 try:
+                    # Execute the code
                     exec(
                         code_to_run,
                         {
