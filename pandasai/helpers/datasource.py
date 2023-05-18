@@ -8,7 +8,9 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 
-def sheets_input(spreadsheet_id, spreadsheet_name) -> pd.DataFrame:
+def sheets_input(
+    spreadsheet_id, spreadsheet_name, service_account_file
+) -> pd.DataFrame:
     """
     Fetches data from a Google Sheets document and returns it as a pandas DataFrame.
 
@@ -19,7 +21,6 @@ def sheets_input(spreadsheet_id, spreadsheet_name) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame containing the data from the Google Sheets document.
     """
-    service_account_file = "service_account_file.json"
 
     scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
@@ -36,5 +37,7 @@ def sheets_input(spreadsheet_id, spreadsheet_name) -> pd.DataFrame:
     )
 
     values = result.get("values", [])
+    print(values)
+    df = pd.DataFrame(values[1:], columns=values[0])
 
-    return pd.DataFrame(values[1:], columns=values[0])
+    return df
