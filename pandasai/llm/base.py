@@ -238,3 +238,75 @@ class HuggingFaceLLM(LLM):
         # replace instruction + value from the inputs to avoid showing it in the output
         output = response.replace(instruction + value + suffix, "")
         return output
+
+
+class BaseGoogle(LLM):
+    """Base class to implement a new Google LLM"""
+
+    genai: Any
+    temperature: Optional[float] = 0
+    top_p: Optional[float] = None
+    top_k: Optional[float] = None
+    max_output_tokens: Optional[int] = None
+
+    def _configure(self, api_key: str):
+        if not api_key:
+            raise APIKeyNotFoundError("Google Palm API key is required")
+
+        from google import generativeai
+
+        generativeai.configure(api_key=api_key)
+        self.genai = generativeai
+
+    def _valid_params(self):
+        return ["temperature", "top_p", "top_k", "max_output_tokens"]
+
+    def _set_params(self, **kwargs):
+        valid_params = self._valid_params()
+        for key, value in kwargs.items():
+            if key in valid_params:
+                setattr(self, key, value)
+
+    def _validate(self):
+        """Validates the parameters for Google"""
+
+        if self.temperature is not None and not 0 <= self.temperature <= 1:
+            raise ValueError("temperature must be in the range [0.0, 1.0]")
+
+        if self.top_p is not None and not 0 <= self.top_p <= 1:
+            raise ValueError("top_p must be in the range [0.0, 1.0]")
+
+        if self.top_k is not None and not 0 <= self.top_k <= 1:
+            raise ValueError("top_k must be in the range [0.0, 1.0]")
+
+        if self.max_output_tokens is not None and self.max_output_tokens <= 0:
+            raise ValueError("max_output_tokens must be greater than zero")
+
+    @abstractmethod
+    def _generate_text(self, prompt: str) -> str:
+        """
+        Generates text for prompt, specific to implementation.
+
+        Args:
+            prompt (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
+        raise MethodNotImplementedError("method has not been implemented")
+
+    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+        """
+        Call the Google LLM.
+
+        Args:
+            instruction (str): Instruction to pass
+            value (str): Value to pass
+            suffix (str): Suffix to pass
+
+        Returns:
+            str: Response
+        """
+        self.last_prompt = str(instruction) + str(value)
+        prompt = str(instruction) + str(value) + suffix
+        return self._generate_text(prompt)

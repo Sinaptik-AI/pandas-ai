@@ -44,24 +44,39 @@ class TestOpenAILLM:
             ValueError, match=re.escape("temperature must be in the range [0.0, 1.0]")
         ):
             GooglePalm(api_key="test", temperature=-1).call("Hello", "World")
+
+        with pytest.raises(
+            ValueError, match=re.escape("temperature must be in the range [0.0, 1.0]")
+        ):
             GooglePalm(api_key="test", temperature=1.1).call("Hello", "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_p must be in the range [0.0, 1.0]")
         ):
             GooglePalm(api_key="test", top_p=-1).call("Hello", "World")
+
+        with pytest.raises(
+            ValueError, match=re.escape("top_p must be in the range [0.0, 1.0]")
+        ):
             GooglePalm(api_key="test", top_p=1.1).call("Hello", "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
         ):
             GooglePalm(api_key="test", top_k=-1).call("Hello", "World")
+
+        with pytest.raises(
+            ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
+        ):
             GooglePalm(api_key="test", top_k=1.1).call("Hello", "World")
 
         with pytest.raises(
             ValueError, match=re.escape("max_output_tokens must be greater than zero")
         ):
             GooglePalm(api_key="test", max_output_tokens=0).call("Hello", "World")
+
+        with pytest.raises(ValueError, match=re.escape("model is required.")):
+            GooglePalm(api_key="test", model="").call("Hello", "World")
 
     def test_text_generation(self, mocker):
         llm = GooglePalm(api_key="test")
