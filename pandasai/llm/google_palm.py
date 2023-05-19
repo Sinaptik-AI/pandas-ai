@@ -1,7 +1,4 @@
 """Google Palm LLM"""
-from typing import Optional
-
-from ..exceptions import APIKeyNotFoundError
 from .base import BaseGoogle
 
 

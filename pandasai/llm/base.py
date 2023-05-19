@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 
 import openai
 import requests
+from google import generativeai
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
@@ -252,8 +253,6 @@ class BaseGoogle(LLM):
     def _configure(self, api_key: str):
         if not api_key:
             raise APIKeyNotFoundError("Google Palm API key is required")
-
-        from google import generativeai
 
         generativeai.configure(api_key=api_key)
         self.genai = generativeai
