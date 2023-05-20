@@ -7,6 +7,7 @@ import random
 import re
 import string
 
+import numpy as np
 import pandas as pd
 
 
@@ -124,6 +125,9 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     data_frame = copy_head(data_frame)
     for col in data_frame.columns:
         col_idx = data_frame.columns.get_loc(col)
+        # check category type column and temporarily convert to object type
+        if pd.api.types.is_categorical_dtype(data_frame[col]):
+            data_frame[col] = data_frame[col].astype(object)
         for row_idx, val in enumerate(data_frame[col]):
             cell_value = str(val)
 
