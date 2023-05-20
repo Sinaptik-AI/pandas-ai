@@ -122,6 +122,7 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     :return: pd.DataFrame, anonymized head of the DataFrame
     """
     data_frame = copy_head(data_frame)
+    dtypes = data_frame.dtypes
     for col in data_frame.columns:
         col_idx = data_frame.columns.get_loc(col)
         # check category type column and temporarily convert to object type
@@ -149,4 +150,6 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
             random_value = data_frame.iloc[random_row_index, col_idx]
             data_frame.iloc[row_idx, col_idx] = random_value
             data_frame.iloc[random_row_index, col_idx] = cell_value
+    # restore the original data types
+    data_frame = data_frame.astype(dtypes)
     return data_frame
