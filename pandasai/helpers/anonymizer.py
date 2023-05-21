@@ -114,7 +114,9 @@ def copy_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     return data_frame.head().copy()
 
 
-def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
+def anonymize_dataframe_head(
+    data_frame: pd.DataFrame, force_conversion: bool = True
+) -> pd.DataFrame:
     """
     Anonymize the head of a given DataFrame by replacing sensitive data.
 
@@ -126,8 +128,10 @@ def anonymize_dataframe_head(data_frame: pd.DataFrame) -> pd.DataFrame:
     for col in data_frame.columns:
         col_idx = data_frame.columns.get_loc(col)
         # check category type column and temporarily convert to object type
-        if pd.api.types.is_categorical_dtype(data_frame[col]):
-            data_frame[col] = data_frame[col].astype(object)
+        if force_conversion:
+            if pd.api.types.is_categorical_dtype(data_frame[col]):
+                if data_frame[col].isna().any():
+                    data_frame[col] = data_frame[col].astype(object)
         for row_idx, val in enumerate(data_frame[col]):
             cell_value = str(val)
 
