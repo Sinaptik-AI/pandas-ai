@@ -68,7 +68,7 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
 
     try:
         pandas_ai = PandasAI(llm, verbose=True)
-        response = pandas_ai.run(df, prompt)
+        response = pandas_ai(df, prompt)
         print(response)
 
     except Exception as e: # pylint: disable=W0718 disable=C0103
