@@ -6,11 +6,12 @@ from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.starcoder import Starcoder
+from pandasai.llm.google_palm import GooglePalm
 
 @click.command()
 @click.option('-d', '--dataset', type=str, required=True, help='The dataset to use.')
 @click.option('-t', '--token', type=str, required=False, default=None, help='The API token to use.')
-@click.option('-m', '--model', type=click.Choice(['openai', 'open-assistant', 'starcoder']),
+@click.option('-m', '--model', type=click.Choice(['openai', 'open-assistant', 'starcoder', 'palm']),
               required=True, help='The type of model to use.')
 @click.option('-p', '--prompt', type=str, required=True, help='The prompt to use.')
 def main(dataset: str, token: str, model: str, prompt: str) -> None:
@@ -66,9 +67,12 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
     elif model == 'starcoder':
         llm = Starcoder(api_token = token)
 
+    elif model == 'palm':
+        llm = GooglePalm(api_key = token)
+
     try:
         pandas_ai = PandasAI(llm, verbose=True)
-        response = pandas_ai.run(df, prompt)
+        response = pandas_ai(df, prompt)
         print(response)
 
     except Exception as e: # pylint: disable=W0718 disable=C0103
