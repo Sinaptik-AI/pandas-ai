@@ -3,63 +3,26 @@ import ast
 import io
 import re
 from contextlib import redirect_stdout
-from datetime import date
 from typing import Optional
 
 import astor
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .constants import (
-    END_CODE_TAG,
-    START_CODE_TAG,
-    WHITELISTED_BUILTINS,
-    WHITELISTED_LIBRARIES,
-)
+from .constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from .exceptions import LLMNotFoundError
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .llm.base import LLM
+from .prompts.correct_error_prompt import CorrectErrorPrompt
+from .prompts.generate_python_code import GeneratePythonCodePrompt
+from .prompts.generate_response import GenerateResponsePrompt
 
 
 # pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
     """PandasAI is a wrapper around a LLM to make dataframes conversational"""
 
-    _task_instruction: str = """
-Today is {today_date}.
-You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-This is the result of `print(df.head({rows_to_display}))`:
-{df_head}.
-
-When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
-"""
-    _response_instruction: str = """
-Question: {question}
-Answer: {answer}
-
-Rewrite the answer to the question in a conversational way.
-"""
-
-    _error_correct_instruction: str = """
-Today is {today_date}.
-You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-This is the result of `print(df.head({rows_to_display}))`:
-{df_head}.
-
-The user asked the following question:
-{question}
-
-You generated this python code:
-{code}
-
-It fails with the following error:
-{error_returned}
-
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
-    """
     _llm: LLM
     _verbose: bool = False
     _is_conversational_answer: bool = True
@@ -103,9 +66,7 @@ Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
             # if the user has set enforce_privacy to True
             return answer
 
-        instruction = self._response_instruction.format(
-            question=question, code=code, answer=answer
-        )
+        instruction = GenerateResponsePrompt(question=question, answer=answer)
         return self._llm.call(instruction, "")
 
     def run(
@@ -127,14 +88,12 @@ Make sure to prefix the requested python code with {START_CODE_TAG} exactly and 
             df_head = anonymize_dataframe_head(df_head)
 
         code = self._llm.generate_code(
-            self._task_instruction.format(
-                today_date=date.today(),
+            GeneratePythonCodePrompt(
+                prompt=prompt,
                 df_head=df_head,
                 num_rows=data_frame.shape[0],
                 num_columns=data_frame.shape[1],
                 rows_to_display=rows_to_display,
-                START_CODE_TAG=START_CODE_TAG,
-                END_CODE_TAG=END_CODE_TAG,
             ),
             prompt,
         )
@@ -276,21 +235,14 @@ Code running:
                         raise e
 
                     count += 1
-                    error_correcting_instruction = (
-                        self._error_correct_instruction.format(
-                            today_date=date.today(),
-                            code=code,
-                            error_returned=e,
-                            START_CODE_TAG=START_CODE_TAG,
-                            END_CODE_TAG=END_CODE_TAG,
-                            question=self._original_instructions["question"],
-                            df_head=self._original_instructions["df_head"],
-                            num_rows=self._original_instructions["num_rows"],
-                            num_columns=self._original_instructions["num_columns"],
-                            rows_to_display=self._original_instructions[
-                                "rows_to_display"
-                            ],
-                        )
+                    error_correcting_instruction = CorrectErrorPrompt(
+                        code=code,
+                        error_returned=e,
+                        question=self._original_instructions["question"],
+                        df_head=self._original_instructions["df_head"],
+                        num_rows=self._original_instructions["num_rows"],
+                        num_columns=self._original_instructions["num_columns"],
+                        rows_to_display=self._original_instructions["rows_to_display"],
                     )
                     code_to_run = self._llm.generate_code(
                         error_correcting_instruction, ""
