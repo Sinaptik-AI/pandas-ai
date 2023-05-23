@@ -1,0 +1,37 @@
+site_name: Pandas-ai
+site_url: https://pandasai.readthedocs.io/en/latest/
+repo_url: https://github.com/gventuri/pandas-ai
+site_description: Pandasai Documentation with Markdown
+site_author: pandasai contributors
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+nav:
+    - Home: index.md
+    - Getting Started: getting-started.md
+    - Command Line Tool: pai_cli.md
+    - API:
+        - API/api.md
+        - API/helpers.md
+        - API/llms.md
+    - About:
+        - Release Notes: release-notes.md
+        - Contributing: CONTRIBUTING.md
+        - Documents Building: building_docs.md
+        - License: license.md
+extra:
+    version: "0.2.14"
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        # See: https://mkdocstrings.github.io/python/usage/
+        python:
+          options:
+            docstring_style: sphinx
+markdown_extensions:
+  - markdown_include.include:
+      base_path: .
+  - admonition
