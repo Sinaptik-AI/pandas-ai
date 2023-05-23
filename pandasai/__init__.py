@@ -59,7 +59,7 @@ class PandasAI:
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
 
-    def conversational_answer(self, question: str, code: str, answer: str) -> str:
+    def conversational_answer(self, question: str, answer: str) -> str:
         """Return the conversational answer"""
         if self._enforce_privacy:
             # we don't want to send potentially sensitive data to the LLM server
@@ -126,7 +126,7 @@ Code generated:
         if is_conversational_answer is None:
             is_conversational_answer = self._is_conversational_answer
         if is_conversational_answer:
-            answer = self.conversational_answer(prompt, code, answer)
+            answer = self.conversational_answer(prompt, answer)
             self.log(f"Conversational answer: {answer}")
         return answer
 

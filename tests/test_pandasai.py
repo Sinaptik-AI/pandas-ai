@@ -37,10 +37,7 @@ class TestPandasAI:
     def test_conversational_answer(self, pandasai, llm):
         result = "2"
         llm._output = result
-        assert (
-            pandasai.conversational_answer("What is the sum of 1 + 1?", "1 + 1", 2)
-            == result
-        )
+        assert pandasai.conversational_answer("What is the sum of 1 + 1?", 2) == result
 
     def test_run(self, pandasai, llm):
         df = pd.DataFrame()
@@ -102,14 +99,14 @@ class TestPandasAI:
     def test_conversational_answer_with_privacy_enforcement(self, pandasai, llm):
         pandasai._enforce_privacy = True
         llm.call = Mock(return_value="The answer is 2")
-        assert pandasai.conversational_answer("How much does 1 + 1 do?", "", 2) == 2
+        assert pandasai.conversational_answer("How much does 1 + 1 do?", 2) == 2
         llm.call.assert_not_called()
 
     def test_conversational_answer_without_privacy_enforcement(self, pandasai, llm):
         pandasai._enforce_privacy = False
         llm.call = Mock(return_value="The answer is 2")
         assert (
-            pandasai.conversational_answer("How much does 1 + 1 do?", "", 2)
+            pandasai.conversational_answer("How much does 1 + 1 do?", 2)
             == "The answer is 2"
         )
         llm.call.assert_called()
