@@ -6,10 +6,6 @@ from pandasai import PandasAI
 from pandasai.helpers.from_excel import from_excel
 from pandasai.llm.openai import OpenAI
 
-# convert csv to xlsx for this example
-df = pd.read_csv("examples/data/Loan payments data.csv")
-df.to_excel("examples/data/Loan payments data.xlsx", index=False)
-
 df = from_excel("examples/data/Loan payments data.xlsx")
 
 llm = OpenAI()
