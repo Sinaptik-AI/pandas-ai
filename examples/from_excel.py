@@ -1,7 +1,5 @@
 """Example of using PandasAI with am Excel file."""
 
-import pandas as pd
-
 from pandasai import PandasAI
 from pandasai.helpers.from_excel import from_excel
 from pandasai.llm.openai import OpenAI
