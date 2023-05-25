@@ -133,7 +133,10 @@ Code generated:
             return answer
         except Exception as exception:  # pylint: disable=broad-except
             self.last_error = str(exception)
-            return "Unfortunately, I was not able to answer your question. Please try again. If the problem persists, try rephrasing your question."
+            return (
+                "Unfortunately, I was not able to answer your question. "
+                "Please try again. If the problem persists, try rephrasing your question."
+            )
 
     def __call__(
         self,
