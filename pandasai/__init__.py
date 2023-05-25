@@ -31,13 +31,6 @@ class PandasAI:
     _max_retries: int = 3
     _is_notebook: bool = False
     _original_instructions: dict
-    # = {
-    #     "question": None,
-    #     "df_head": None,
-    #     "num_rows": None,
-    #     "num_columns": None,
-    #     "rows_to_display": None,
-    # }
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -85,26 +78,20 @@ class PandasAI:
 
         rows_to_display = 0 if self._enforce_privacy else 5
 
-        multiple: bool = type(data_frame) == list[pd.DataFrame]
+        multiple: bool = type(data_frame) == list
 
         if multiple:
 
-            heads: list[pd.DataFrame] = []
-            for dataframe in data_frame:
-                df_head = dataframe.head(rows_to_display)
-                if anonymize_df:
-                    df_head = anonymize_dataframe_head(df_head)
-                heads.append(df_head)
+            heads = [anonymize_dataframe_head(dataframe) 
+                     if anonymize_df 
+                     else dataframe.head(rows_to_display) 
+                     for dataframe in data_frame]
 
             code = self._llm.generate_code(
-                MultipleDataframesPrompt(
-                    dataframes=heads,
-                    prompt=prompt,
-                ),
+                MultipleDataframesPrompt(dataframes=heads),
                 prompt,
             )
 
-            # figure out how this affects lebrons legacy
             self._original_instructions = {
                 "question": prompt,
                 "df_head": heads,
@@ -228,7 +215,7 @@ Code generated:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
 
-        multiple: bool = type(data_frame) == list[pd.DataFrame]
+        multiple: bool = type(data_frame) == list
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self.clean_code(code)
         self.last_run_code = code_to_run
@@ -250,9 +237,11 @@ Code running:
                 },
             },
         }
+
         if multiple:
-            for i, dataframe in enumerate(data_frame, start = 1):
-                environment[f"df{i}"] = dataframe
+            environment.update({
+                f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start = 1)
+            })
 
         else:
             environment["df"] = data_frame
@@ -271,7 +260,16 @@ Code running:
                         raise e
 
                     count += 1
-                    if not multiple:
+                    
+                    if multiple:
+                        error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
+                            code=code,
+                            error_returned=e,
+                            question=self._original_instructions["question"],
+                            df_head=self._original_instructions["df_head"],
+                        )
+
+                    else:
                         error_correcting_instruction = CorrectErrorPrompt(
                             code=code,
                             error_returned=e,
@@ -279,14 +277,6 @@ Code running:
                             df_head=self._original_instructions["df_head"],
                             num_rows=self._original_instructions["num_rows"],
                             num_columns=self._original_instructions["num_columns"],
-                            rows_to_display=self._original_instructions["rows_to_display"],
-                        )
-                        
-                    else:
-                        error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
-                            code=code,
-                            question=self._original_instructions["question"],
-                            df_head=self._original_instructions["df_head"],
                             rows_to_display=self._original_instructions["rows_to_display"],
                         )
 
