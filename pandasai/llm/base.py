@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional
 
 import openai
 import requests
-from google import generativeai
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
@@ -253,9 +252,17 @@ class BaseGoogle(LLM):
     def _configure(self, api_key: str):
         if not api_key:
             raise APIKeyNotFoundError("Google Palm API key is required")
+        try:
+            # pylint: disable=import-outside-toplevel
+            import google.generativeai as genai
 
-        generativeai.configure(api_key=api_key)
-        self.genai = generativeai
+            genai.configure(api_key=api_key)
+        except ImportError as ex:
+            raise ImportError(
+                "Could not import google-generativeai python package. "
+                "Please install it with `pip install google-generativeai`."
+            ) from ex
+        self.genai = genai
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
