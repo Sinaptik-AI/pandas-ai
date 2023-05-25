@@ -9,20 +9,20 @@ theme:
   highlightjs: true
 
 nav:
-    - Home: index.md
-    - Getting Started: getting-started.md
-    - Command Line Tool: pai_cli.md
-    - API:
-        - API/api.md
-        - API/helpers.md
-        - API/llms.md
-    - About:
-        - Release Notes: release-notes.md
-        - Contributing: CONTRIBUTING.md
-        - Documents Building: building_docs.md
-        - License: license.md
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Command Line Tool: pai_cli.md
+  - API:
+      - API/api.md
+      - API/helpers.md
+      - API/llms.md
+  - About:
+      - Release Notes: release-notes.md
+      - Contributing: CONTRIBUTING.md
+      - Documents Building: building_docs.md
+      - License: license.md
 extra:
-    version: "0.2.14"
+  version: "0.2.15"
 plugins:
   - search
   - mkdocstrings:
