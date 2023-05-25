@@ -245,7 +245,7 @@ import os
 print(os.listdir())
 """
         pandasai._llm._output = malicious_code
-        assert pandasai.remove_unsafe_imports(malicious_code) == "print(os.listdir())"
+        assert pandasai.clean_code(malicious_code) == "print(os.listdir())"
         assert pandasai.run_code(malicious_code, pd.DataFrame()) == ""
         assert pandasai.last_run_code == "print(os.listdir())"
 
@@ -255,7 +255,7 @@ df = pd.DataFrame([1,2,3])
 print(df)
 """
         pandasai._llm._output = malicious_code
-        assert pandasai.remove_df_overwrites(malicious_code) == "print(df)"
+        assert pandasai.clean_code(malicious_code) == "print(df)"
 
     def test_exception_handling(self, pandasai):
         pandasai.run_code = Mock(
