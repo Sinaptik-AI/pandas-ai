@@ -39,6 +39,7 @@ class PandasAI:
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
+    last_error: Optional[str] = None
 
     def __init__(
         self,
@@ -81,54 +82,58 @@ class PandasAI:
         """Run the LLM with the given prompt"""
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
-        rows_to_display = 0 if self._enforce_privacy else 5
+        try:
+            rows_to_display = 0 if self._enforce_privacy else 5
 
-        df_head = data_frame.head(rows_to_display)
-        if anonymize_df:
-            df_head = anonymize_dataframe_head(df_head)
+            df_head = data_frame.head(rows_to_display)
+            if anonymize_df:
+                df_head = anonymize_dataframe_head(df_head)
 
-        code = self._llm.generate_code(
-            GeneratePythonCodePrompt(
-                prompt=prompt,
-                df_head=df_head,
-                num_rows=data_frame.shape[0],
-                num_columns=data_frame.shape[1],
-                rows_to_display=rows_to_display,
-            ),
-            prompt,
-        )
-        self._original_instructions = {
-            "question": prompt,
-            "df_head": df_head,
-            "num_rows": data_frame.shape[0],
-            "num_columns": data_frame.shape[1],
-            "rows_to_display": rows_to_display,
-        }
-        self.last_code_generated = code
-        self.log(
-            f"""
+            code = self._llm.generate_code(
+                GeneratePythonCodePrompt(
+                    prompt=prompt,
+                    df_head=df_head,
+                    num_rows=data_frame.shape[0],
+                    num_columns=data_frame.shape[1],
+                    rows_to_display=rows_to_display,
+                ),
+                prompt,
+            )
+            self._original_instructions = {
+                "question": prompt,
+                "df_head": df_head,
+                "num_rows": data_frame.shape[0],
+                "num_columns": data_frame.shape[1],
+                "rows_to_display": rows_to_display,
+            }
+            self.last_code_generated = code
+            self.log(
+                f"""
 Code generated:
 ```
 {code}
 ```"""
-        )
-        if show_code and self._in_notebook:
-            self.notebook.create_new_cell(code)
+            )
+            if show_code and self._in_notebook:
+                self.notebook.create_new_cell(code)
 
-        answer = self.run_code(
-            code,
-            data_frame,
-            use_error_correction_framework=use_error_correction_framework,
-        )
-        self.code_output = answer
-        self.log(f"Answer: {answer}")
+            answer = self.run_code(
+                code,
+                data_frame,
+                use_error_correction_framework=use_error_correction_framework,
+            )
+            self.code_output = answer
+            self.log(f"Answer: {answer}")
 
-        if is_conversational_answer is None:
-            is_conversational_answer = self._is_conversational_answer
-        if is_conversational_answer:
-            answer = self.conversational_answer(prompt, answer)
-            self.log(f"Conversational answer: {answer}")
-        return answer
+            if is_conversational_answer is None:
+                is_conversational_answer = self._is_conversational_answer
+            if is_conversational_answer:
+                answer = self.conversational_answer(prompt, answer)
+                self.log(f"Conversational answer: {answer}")
+            return answer
+        except Exception as exception:  # pylint: disable=broad-except
+            self.last_error = str(exception)
+            return "Unfortunately, I was not able to answer your question. Please try again. If the problem persists, try rephrasing your question."
 
     def __call__(
         self,
