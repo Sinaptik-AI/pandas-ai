@@ -78,13 +78,13 @@ class PandasAI:
 
         rows_to_display = 0 if self._enforce_privacy else 5
 
-        multiple: bool = type(data_frame) == list
+        multiple: bool = isinstance(data_frame, list)
 
         if multiple:
 
-            heads = [anonymize_dataframe_head(dataframe) 
-                     if anonymize_df 
-                     else dataframe.head(rows_to_display) 
+            heads = [anonymize_dataframe_head(dataframe)
+                     if anonymize_df
+                     else dataframe.head(rows_to_display)
                      for dataframe in data_frame]
 
             code = self._llm.generate_code(
@@ -97,9 +97,9 @@ class PandasAI:
                 "df_head": heads,
                 "rows_to_display": rows_to_display,
             }
-            
+
         else:
-        
+
             df_head = data_frame.head(rows_to_display)
             if anonymize_df:
                 df_head = anonymize_dataframe_head(df_head)
@@ -215,7 +215,7 @@ Code generated:
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
         """Run the code in the current context and return the result"""
 
-        multiple: bool = type(data_frame) == list
+        multiple: bool = isinstance(data_frame, list)
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self.clean_code(code)
         self.last_run_code = code_to_run
@@ -260,7 +260,7 @@ Code running:
                         raise e
 
                     count += 1
-                    
+
                     if multiple:
                         error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
                             code=code,
@@ -290,8 +290,7 @@ Code running:
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
 
-        pattern = r"^print\((.*)\)$"
-        match = re.match(pattern, last_line)
+        match = re.match(r"^print\((.*)\)$", last_line)
         if match:
             last_line = match.group(1)
 
