@@ -37,7 +37,10 @@ def sheets_input(
     )
 
     values = result.get("values", [])
-    print(values)
-    df = pd.DataFrame(values[1:], columns=values[0])
 
-    return df
+    df_example = pd.DataFrame(values[1:], columns=values[0])
+
+    for col in df_example.columns:
+        df_example[col] = pd.to_numeric(df_example[col], errors="ignore")
+
+    return df_example
