@@ -84,6 +84,38 @@ pandas_ai(
 
 ![Chart](images/histogram-chart.png?raw=true)
 
+Additionally, you can also pass in multiple dataframes to PandasAI and ask questions relating them.
+
+```python
+import pandas as pd
+from pandasai import PandasAI
+
+employees_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Name': ['John', 'Emma', 'Liam', 'Olivia', 'William'],
+    'Department': ['HR', 'Sales', 'IT', 'Marketing', 'Finance']
+}
+
+salaries_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Salary': [5000, 6000, 4500, 7000, 5500]
+}
+
+employees_df = pd.DataFrame(employees_data)
+salaries_df = pd.DataFrame(salaries_data)
+
+
+llm = OpenAI()
+pandas_ai = PandasAI(llm)
+pandas_ai([employees_df, salaries_df], "Who gets paid the most?")
+```
+
+The above code will return the following:
+
+```
+Oh, Olivia gets paid the most.
+```
+
 You can find more examples in the [examples](examples) directory.
 
 ## Command-Line Tool
