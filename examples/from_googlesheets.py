@@ -11,9 +11,6 @@ df = sheets_input(
     "second",
     "../service_account_file.json",
 )
-# specify type of columns, google sheets is not strongly typed
-df["gdp"] = pd.to_numeric(df["gdp"])
-df["happiness_index"] = pd.to_numeric(df["happiness_index"])
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True, conversational=False)
