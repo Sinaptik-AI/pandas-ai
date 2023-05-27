@@ -23,6 +23,9 @@ pandasai.egg-info
 # command line
 /pandasai_cli.egg-info
 
+
+
+
 # pycharm
 .idea/
 .idea

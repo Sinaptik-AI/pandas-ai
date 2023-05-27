@@ -8,7 +8,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 
-def sheets_input(
+def from_google_sheets(
     spreadsheet_id, spreadsheet_name, service_account_file
 ) -> pd.DataFrame:
     """
