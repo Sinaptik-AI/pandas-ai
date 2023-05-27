@@ -1,11 +1,10 @@
-"""Example of using PandasAI with a CSV file."""
-
-import pandas as pd
+"""Example of using PandasAI with am Excel file."""
 
 from pandasai import PandasAI
+from pandasai.helpers.from_excel import from_excel
 from pandasai.llm.openai import OpenAI
 
-df = pd.read_csv("examples/data/Loan payments data.csv")
+df = from_excel("examples/data/Loan payments data.xlsx")
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True)

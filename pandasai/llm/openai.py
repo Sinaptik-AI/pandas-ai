@@ -1,18 +1,19 @@
 """OpenAI LLM"""
 
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import openai
 from dotenv import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from .base import LLM
+from ..prompts.base import Prompt
+from .base import BaseOpenAI
 
 load_dotenv()
 
 
-class OpenAI(LLM):
+class OpenAI(BaseOpenAI):
     """OpenAI LLM"""
 
     _supported_chat_models = [
@@ -25,14 +26,7 @@ class OpenAI(LLM):
     ]
     _supported_completion_models = ["text-davinci-003"]
 
-    api_token: str
     model: str = "gpt-3.5-turbo"
-    temperature: float = 0
-    max_tokens: int = 512
-    top_p: float = 1
-    frequency_penalty: float = 0
-    presence_penalty: float = 0.6
-    stop: Optional[str] = None
 
     def __init__(
         self,
@@ -46,86 +40,22 @@ class OpenAI(LLM):
 
         self._set_params(**kwargs)
 
-    def _set_params(self, **kwargs):
-        valid_params = [
-            "model",
-            "temperature",
-            "max_tokens",
-            "top_p",
-            "frequency_penalty",
-            "presence_penalty",
-            "stop",
-        ]
-        for key, value in kwargs.items():
-            if key in valid_params:
-                setattr(self, key, value)
-
-    def completion(self, prompt: str) -> str:
-        """
-        Query the completion API
-
-        Args:
-            prompt (str): Prompt
-
-        Returns:
-            str: LLM response
-        """
-        params = {
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        """Get the default parameters for calling OpenAI API"""
+        return {
+            **super()._default_params,
             "model": self.model,
-            "prompt": prompt,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "top_p": self.top_p,
-            "frequency_penalty": self.frequency_penalty,
-            "presence_penalty": self.presence_penalty,
         }
 
-        if self.stop is not None:
-            params["stop"] = [self.stop]
-
-        response = openai.Completion.create(**params)
-
-        return response["choices"][0]["text"]
-
-    def chat_completion(self, value: str) -> str:
-        """
-        Query the chat completion API
-
-        Args:
-            value (str): Prompt
-
-        Returns:
-            str: LLM response
-        """
-        params = {
-            "model": self.model,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "top_p": self.top_p,
-            "frequency_penalty": self.frequency_penalty,
-            "presence_penalty": self.presence_penalty,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": value,
-                }
-            ],
-        }
-
-        if self.stop is not None:
-            params["stop"] = [self.stop]
-
-        response = openai.ChatCompletion.create(**params)
-
-        return response["choices"][0]["message"]["content"]
-
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
         Args:
-            instruction (str): Instruction to pass
+            instruction (Prompt): Instruction to pass
             value (str): Value to pass
+            suffix (str): Suffix to pass
 
         Raises:
             UnsupportedOpenAIModelError: Unsupported model
