@@ -14,6 +14,7 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
+from ..prompts.base import Prompt
 
 
 class LLM:
@@ -90,12 +91,12 @@ class LLM:
         return code
 
     @abstractmethod
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
-            instruction (str): Prompt
+            instruction (Prompt): Prompt
             value (str): Value
             suffix (str, optional): Suffix. Defaults to "".
 
@@ -104,7 +105,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: str, prompt: str) -> str:
+    def generate_code(self, instruction: Prompt, prompt: str) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -222,7 +223,7 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """Call the LLM"""
 
         payload = instruction + value + suffix
@@ -301,7 +302,7 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
         Call the Google LLM.
 

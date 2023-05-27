@@ -157,12 +157,11 @@ Code generated:
             use_error_correction_framework,
         )
 
-    def is_unsafe_import(self, node: ast.stmt) -> str:
+    def is_unsafe_import(self, node: ast.stmt) -> bool:
         """Remove non-whitelisted imports from the code to prevent malicious code execution"""
 
-        return (
-            isinstance(node, (ast.Import, ast.ImportFrom))
-            and any(alias.name not in WHITELISTED_LIBRARIES for alias in node.names)
+        return isinstance(node, (ast.Import, ast.ImportFrom)) and any(
+            alias.name not in WHITELISTED_LIBRARIES for alias in node.names
         )
 
     def is_df_overwrite(self, node: ast.stmt) -> str:
@@ -182,9 +181,7 @@ Code generated:
         new_body = [
             node
             for node in tree.body
-            if not (
-                self.is_unsafe_import(node) or self.is_df_overwrite(node)
-            )
+            if not (self.is_unsafe_import(node) or self.is_df_overwrite(node))
         ]
 
         new_tree = ast.Module(body=new_body)
