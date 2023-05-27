@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional
 
 import openai
 import requests
-from google import generativeai
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
@@ -15,6 +14,7 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
+from ..prompts.base import Prompt
 
 
 class LLM:
@@ -91,12 +91,12 @@ class LLM:
         return code
 
     @abstractmethod
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
-            instruction (str): Prompt
+            instruction (Prompt): Prompt
             value (str): Value
             suffix (str, optional): Suffix. Defaults to "".
 
@@ -105,7 +105,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: str, prompt: str) -> str:
+    def generate_code(self, instruction: Prompt, prompt: str) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -223,7 +223,7 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """Call the LLM"""
 
         payload = instruction + value + suffix
@@ -253,9 +253,17 @@ class BaseGoogle(LLM):
     def _configure(self, api_key: str):
         if not api_key:
             raise APIKeyNotFoundError("Google Palm API key is required")
+        try:
+            # pylint: disable=import-outside-toplevel
+            import google.generativeai as genai
 
-        generativeai.configure(api_key=api_key)
-        self.genai = generativeai
+            genai.configure(api_key=api_key)
+        except ImportError as ex:
+            raise ImportError(
+                "Could not import google-generativeai python package. "
+                "Please install it with `pip install google-generativeai`."
+            ) from ex
+        self.genai = genai
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
@@ -294,7 +302,7 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
         Call the Google LLM.
 

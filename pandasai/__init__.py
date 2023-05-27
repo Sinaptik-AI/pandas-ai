@@ -158,8 +158,11 @@ Code generated:
             return answer
         except Exception as exception:  # pylint: disable=broad-except
             self.last_error = str(exception)
-            return "Unfortunately, I was not able to answer your question. \
-                Please try again. If the problem persists, try rephrasing your question."
+            return (
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
 
     def __call__(
         self,
@@ -180,12 +183,11 @@ Code generated:
             use_error_correction_framework,
         )
 
-    def is_unsafe_import(self, node: ast.stmt) -> str:
+    def is_unsafe_import(self, node: ast.stmt) -> bool:
         """Remove non-whitelisted imports from the code to prevent malicious code execution"""
 
-        return (
-            isinstance(node, (ast.Import, ast.ImportFrom))
-            and any(alias.name not in WHITELISTED_LIBRARIES for alias in node.names)
+        return isinstance(node, (ast.Import, ast.ImportFrom)) and any(
+            alias.name not in WHITELISTED_LIBRARIES for alias in node.names
         )
 
     def is_df_overwrite(self, node: ast.stmt) -> str:
@@ -205,9 +207,7 @@ Code generated:
         new_body = [
             node
             for node in tree.body
-            if not (
-                self.is_unsafe_import(node) or self.is_df_overwrite(node)
-            )
+            if not (self.is_unsafe_import(node) or self.is_df_overwrite(node))
         ]
 
         new_tree = ast.Module(body=new_body)

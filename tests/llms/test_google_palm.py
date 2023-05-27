@@ -13,8 +13,8 @@ class MockedCompletion:
         self.result = result
 
 
-class TestOpenAILLM:
-    """Unit tests for the openai LLM class"""
+class TestGooglePalm:
+    """Unit tests for the GooglePalm LLM class"""
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
