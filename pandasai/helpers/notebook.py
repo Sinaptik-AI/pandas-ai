@@ -17,9 +17,7 @@ class Notebook:
         try:
             if "IPKernelApp" not in get_ipython().config:
                 return False
-        except ImportError:
-            return False
-        except AttributeError:
+        except (ImportError, AttributeError):
             return False
         return True
 

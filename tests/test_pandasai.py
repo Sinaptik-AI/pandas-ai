@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from pandasai import PandasAI
-from pandasai.exceptions import LLMNotFoundError
+from pandasai.exceptions import LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 
 
@@ -245,7 +245,7 @@ import os
 print(os.listdir())
 """
         pandasai._llm._output = malicious_code
-        assert pandasai.remove_unsafe_imports(malicious_code) == "print(os.listdir())"
+        assert pandasai.clean_code(malicious_code) == "print(os.listdir())"
         assert pandasai.run_code(malicious_code, pd.DataFrame()) == ""
         assert pandasai.last_run_code == "print(os.listdir())"
 
@@ -255,4 +255,17 @@ df = pd.DataFrame([1,2,3])
 print(df)
 """
         pandasai._llm._output = malicious_code
-        assert pandasai.remove_df_overwrites(malicious_code) == "print(df)"
+        assert pandasai.clean_code(malicious_code) == "print(df)"
+
+    def test_exception_handling(self, pandasai):
+        pandasai.run_code = Mock(
+            side_effect=NoCodeFoundError("No code found in the answer.")
+        )
+
+        result = pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
+        assert result == (
+            "Unfortunately, I was not able to answer your question, "
+            "because of the following error:\n"
+            "\nNo code found in the answer.\n"
+        )
+        assert pandasai.last_error == "No code found in the answer."

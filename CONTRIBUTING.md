@@ -49,7 +49,7 @@ Make sure that the linter does not report any errors or warnings before submitti
 We use `pytest` to test our code. You can run the tests by running the following command:
 
 ```bash
-pytest
+poetry run pytest
 ```
 
 Make sure that all tests pass before submitting a pull request.
