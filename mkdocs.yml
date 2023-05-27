@@ -22,7 +22,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "0.2.15"
+  version: "0.2.16"
 plugins:
   - search
   - mkdocstrings:
