@@ -29,6 +29,7 @@ def sheets_input(
     service = build("sheets", "v4", credentials=creds)
 
     # pylint: disable=no-member
+
     sheet = service.spreadsheets()
     result = (
         sheet.values()
@@ -38,6 +39,7 @@ def sheets_input(
 
     values = result.get("values", [])
     print(values)
-    df = pd.DataFrame(values[1:], columns=values[0])
 
-    return df
+    df_example = pd.DataFrame(values[1:], columns=values[0])
+
+    return df_example

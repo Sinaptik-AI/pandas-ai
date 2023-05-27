@@ -1,11 +1,13 @@
+"""Example of using PandasAI with a Google Sheets file."""
+
 import pandas as pd
-from data.sample_dataframe import dataframe
 
 from pandasai import PandasAI
 from pandasai.helpers.datasource import sheets_input
 from pandasai.llm.openai import OpenAI
 
-# instructions: https://docs.google.com/document/d/1uAmXI3e8Wm26lZQb0bYIJaXRdZi5WLJKNJHT59QMGEc/edit?usp=sharing
+# instructions:
+# https://docs.google.com/document/d/1uAmXI3e8Wm26lZQb0bYIJaXRdZi5WLJKNJHT59QMGEc/edit?usp=sharing
 df = sheets_input(
     "1IRGJFUpCR0-9tPDk2MgPjQCtNft_4a8B1fHgYK7_LM8",
     "second",

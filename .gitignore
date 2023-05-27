@@ -3,6 +3,7 @@
 
 # __pycache__
 __pycache__
+.pytest_cache
 
 # macOS
 .DS_Store
@@ -15,9 +16,17 @@ pandasai.egg-info
 #venv
 /venv
 
+.venv
+
+
 # command line
 /pandasai_cli.egg-info
 
-# service account file
-/service_account_file.json
+
+
+
+
+# pycharm
+.idea/
+.idea
 
