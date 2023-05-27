@@ -134,8 +134,9 @@ Code generated:
         except Exception as exception:  # pylint: disable=broad-except
             self.last_error = str(exception)
             return (
-                "Unfortunately, I was not able to answer your question. "
-                "Please try again. If the problem persists, try rephrasing your question."
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
             )
 
     def __call__(

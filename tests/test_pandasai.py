@@ -263,8 +263,9 @@ print(df)
         )
 
         result = pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
-        assert (
-            result
-            == "Unfortunately, I was not able to answer your question. Please try again. If the problem persists, try rephrasing your question."
+        assert result == (
+            "Unfortunately, I was not able to answer your question, "
+            "because of the following error:\n"
+            "\nNo code found in the answer.\n"
         )
         assert pandasai.last_error == "No code found in the answer."
