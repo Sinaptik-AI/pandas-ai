@@ -1,4 +1,12 @@
-""" Prompt to generate the response to the question in a conversational way """
+""" Prompt to generate the response to the question in a conversational way
+```
+Question: {question}
+Answer: {answer}
+
+Rewrite the answer to the question in a conversational way.
+```
+
+"""
 
 from .base import Prompt
 

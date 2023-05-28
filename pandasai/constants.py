@@ -1,5 +1,8 @@
 """
 Constants used in the pandasai package.
+
+It includes Start & End Code tags, Whilelisted Python Packages and While List Builtin Methods.
+
 """
 
 START_CODE_TAG = "<startCode>"
