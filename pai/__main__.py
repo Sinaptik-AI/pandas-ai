@@ -22,7 +22,8 @@ pai --help
 
 Example:
     ```
-    pai -d "~/pandasai/example/data/Loan payments data.csv" -m "openai" -p "How many loans are from men and have been paid off?"
+    pai -d "~/pandasai/example/data/Loan payments data.csv" -m "openai"
+    -p "How many loans are from men and have been paid off?"
 
     ```
 

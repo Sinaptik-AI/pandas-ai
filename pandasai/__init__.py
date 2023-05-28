@@ -53,6 +53,38 @@ from .prompts.generate_response import GenerateResponsePrompt
 
 # pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
+    """PandasAI is a wrapper around a LLM to make dataframes conversational.
+
+
+    This is a an entry point of `pandasai` object. This class consists of methods to interface the
+    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e df.head() and prompt is
+    passed on to chosen LLMs API end point to     generate a Python code to answer the questions
+    asked. The resultant python code is run on actual data and answer is converted into a
+    conversational form.
+
+    Note:
+        Do not include the `self` parameter in the ``Args`` section.
+    Args:
+        _llm (obj): LLMs option to be used for API access
+        _verbose (bool, optional): To show the intermediate outputs e.g python code
+        generated and execution step on the prompt. Default to False
+        _is_conversational_answer (bool, optional): Whether to return answer in conversational
+        form. Default to False
+        _enforce_privacy (bool, optional): Do not display the data on prompt in case of
+        Sensitive data. Default to False
+        _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
+        _is_notebook (bool, optional): Whether to run code in notebook. Default to False
+        _original_instructions (dict, optional): The dict of instruction to run. Default to None
+        last_code_generated (str, optional): Pass last Code if generated. Default to None
+        last_run_code (str, optional): Pass the last execution / run. Default to None
+        code_output (str, optional): The code output if any. Default to None
+        last_error (str, optional): Error of running code last time. Default to None
+
+
+    Returns:
+        response (str): Returns the Response to a Question related to Data
+
+    """
 
     _llm: LLM
     _verbose: bool = False
@@ -72,37 +104,7 @@ class PandasAI:
     code_output: Optional[str] = None
     last_error: Optional[str] = None
 
-    """PandasAI is a wrapper around a LLM to make dataframes conversational.
-    This is a an entry point of `pandasai` object. This class consists of methods to interface the 
-    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e df.head() and prompt is 
-    passed on to chosen LLMs API end point to     generate a Python code to answer the questions 
-    asked. The resultant python code is run on actual data and answer is converted into a
-    conversational form.
 
-    Note:
-        Do not include the `self` parameter in the ``Args`` section.
-
-    Args:
-        _llm (obj): LLMs option to be used for API access
-        _verbose (bool, optional): To show the intermediate outputs e.g python code 
-        generated and execution step on the prompt. Default to False
-        _is_conversational_answer (bool, optional): Whether to return answer in conversational form.
-         Default to False
-        _enforce_privacy (bool, optional): Do not display the data on prompt in case of 
-        Sensitive data. Default to False
-        _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
-        _is_notebook (bool, optional): Whether to run code in notebook. Default to False
-        _original_instructions (dict, optional): The dict of instruction to run. Default to None
-        last_code_generated (str, optional): Pass last Code if generated. Default to None
-        last_run_code (str, optional): Pass the last execution / run. Default to None
-        code_output (str, optional): The code output if any. Default to None
-        last_error (str, optional): Error of running code last time. Default to None
-
-
-    Returns:
-        response (str): Returns the Response to a Question related to Data
-
-    """
 
     def __init__(
         self,
