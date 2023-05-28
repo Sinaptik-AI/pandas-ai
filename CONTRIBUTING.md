@@ -23,7 +23,7 @@ We use `poetry` as our package manager. You can install poetry by following the 
 Please DO NOT use pip or conda to install the dependencies. Instead, use poetry:
 
 ```bash
-poetry install
+poetry install --all-extras
 ```
 
 ### 📌 Pre-commit
