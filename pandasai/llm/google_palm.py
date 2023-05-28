@@ -1,6 +1,7 @@
 """Google Palm LLM
 
-This module is to run the Google PaLM API hosted and maintained by Google. To read more on Google PaLM follow
+This module is to run the Google PaLM API hosted and maintained by Google. To read more on Google
+PaLM follow
 https://developers.generativeai.google/products/palm.
 
 Example:
@@ -14,8 +15,8 @@ from .base import BaseGoogle
 
 class GooglePalm(BaseGoogle):
     """Google Palm LLM
-    BaseGoogle class is extended for Google Palm model. The default and only model support at the moment is
-    models/text-bison-001.
+    BaseGoogle class is extended for Google Palm model. The default and only model support at the
+    moment is models/text-bison-001.
 
     """
 

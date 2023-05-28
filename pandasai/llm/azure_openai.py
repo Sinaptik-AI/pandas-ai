@@ -1,7 +1,8 @@
 """OpenAI LLM via Microsoft Azure Cloud
 
-This module is to run the OpenAI API when using Microsoft Cloud infrastructure. Azure has implemented the openai API
-access to its platform. For details https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference.
+This module is to run the OpenAI API when using Microsoft Cloud infrastructure. Azure has
+implemented the openai API access to its platform.
+For details https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference.
 
 Example:
     Use below example to call AzureOpenAI class

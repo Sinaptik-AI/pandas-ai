@@ -1,7 +1,7 @@
 """
 This module contains helper functions for anonymizing data and generating random data
-before sending it to the LLM (An External API). Only df.head() is sent to LLM API, hence the df.head() is processed to
-remove any personal or sensitive information.
+before sending it to the LLM (An External API). Only df.head() is sent to LLM API,
+ hence the df.head() is processed to remove any personal or sensitive information.
 
 """
 

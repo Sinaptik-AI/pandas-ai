@@ -1,6 +1,7 @@
 """ Starcoder LLM
-This module is to run the StartCoder API hosted and maintained by HuggingFace.co. To generate HF_TOKEN go to
-https://huggingface.co/settings/tokens after creating Account on the platform.
+This module is to run the StartCoder API hosted and maintained by HuggingFace.co.
+To generate HF_TOKEN go to https://huggingface.co/settings/tokens after creating Account
+on the platform.
 
 Example:
     Use below example to call Starcoder Model

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """ PandasAI is a wrapper around a LLM to make dataframes conversational
 
-This module includes the implementation of basis  PandasAI class with methods to run the LLMs models on Pandas
-dataframes. Following LLMs are implemented so far.
+This module includes the implementation of basis  PandasAI class with methods to run the LLMs
+models on Pandas dataframes. Following LLMs are implemented so far.
 
 Example:
 
-    This module is the Entry point of the `pandasai` package. Following is an example of how to use this Class.
+    This module is the Entry point of the `pandasai` package. Following is an example of how to
+    use this Class.
 
     ```python
     import pandas as pd
@@ -14,8 +15,10 @@ Example:
 
     # Sample DataFrame
     df = pd.DataFrame({
-        "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-        "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+        "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain",
+        "Canada", "Australia", "Japan", "China"],
+        "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416,
+        1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
         "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
     })
 
@@ -70,22 +73,23 @@ class PandasAI:
     last_error: Optional[str] = None
 
     """PandasAI is a wrapper around a LLM to make dataframes conversational.
-    This is a an entry point of `pandasai` object. This class consists of methods to interface the LLMs with Pandas
-    dataframes. A pandas dataframe metadata i.e df.head() and prompt is passed on to chosen LLMs API end point to
-    generate a Python code to answer the questions asked. The resultant python code is run on actual data and answer
-    is converted into a conversational form.
+    This is a an entry point of `pandasai` object. This class consists of methods to interface the 
+    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e df.head() and prompt is 
+    passed on to chosen LLMs API end point to     generate a Python code to answer the questions 
+    asked. The resultant python code is run on actual data and answer is converted into a
+    conversational form.
 
     Note:
         Do not include the `self` parameter in the ``Args`` section.
 
     Args:
         _llm (obj): LLMs option to be used for API access
-        _verbose (bool, optional): To show the intermediate outputs e.g python code generated and execution
-        step on the prompt. Default to False
+        _verbose (bool, optional): To show the intermediate outputs e.g python code 
+        generated and execution step on the prompt. Default to False
         _is_conversational_answer (bool, optional): Whether to return answer in conversational form.
          Default to False
-        _enforce_privacy (bool, optional): Do not display the data on prompt in case of Sensitive data.
-         Default to False
+        _enforce_privacy (bool, optional): Do not display the data on prompt in case of 
+        Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
         _is_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default to None
@@ -114,8 +118,8 @@ class PandasAI:
         Args:
             llm (object): LLMs option to be used for API access. Default is None
             conversational (bool): Whether to return answer in conversational form. Default to True
-            verbose (bool): To show the intermediate outputs e.g python code generated and execution step on the prompt.
-            Default to False
+            verbose (bool): To show the intermediate outputs e.g python code generated and
+             execution step on the prompt.  Default to False
             enforce_privacy (bool): Execute the codes with Privacy Mode ON.  Default to False
         """
         if llm is None:
@@ -165,10 +169,13 @@ class PandasAI:
         Args:
             data_frame (pd.Dataframe): A pandas Dataframe
             prompt (str): A prompt to query about the Dataframe
-            is_conversational_answer (bool): Whether to return answer in conversational form. Default to False
-            show_code (bool): To show the intermediate python code generated on the prompt. Default to False
+            is_conversational_answer (bool): Whether to return answer in conversational form.
+            Default to False
+            show_code (bool): To show the intermediate python code generated on the prompt.
+            Default to False
             anonymize_df (bool): Running the code with Sensitive Data. Default to True
-            use_error_correction_framework (bool): Turn on Error Correction mechanism. Default to True
+            use_error_correction_framework (bool): Turn on Error Correction mechanism.
+            Default to True
 
         Returns: Answer to the Input Questions about the DataFrame
 
@@ -327,12 +334,13 @@ class PandasAI:
         use_error_correction_framework: bool = True,
     ) -> str:
         """
-        A method to execute the python code generated by LLMs to answer the question about the input dataframe.
-        Run the code in the current context and return the result.
+        A method to execute the python code generated by LLMs to answer the question about the
+        input dataframe. Run the code in the current context and return the result.
         Args:
             code (str): A python code to execute
             data_frame (pd.DataFrame): A full Pandas DataFrame
-            use_error_correction_framework (bool): Turn on Error Correction mechanism. Default to True
+            use_error_correction_framework (bool): Turn on Error Correction mechanism.
+            Default to True
 
         Returns:
 
