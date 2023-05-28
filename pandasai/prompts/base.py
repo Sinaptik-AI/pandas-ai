@@ -8,6 +8,8 @@ from pandasai.exceptions import MethodNotImplementedError
 class Prompt:
     """Base class to implement a new Prompt"""
 
+    # pylint: disable=too-few-public-methods
+
     text = None
     _args = {}
 
