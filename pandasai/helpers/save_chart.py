@@ -3,14 +3,15 @@ import ast
 import os
 from datetime import datetime
 from itertools import zip_longest
+from os.path import dirname
 from typing import Union
 
 import astor
 
 
 def compare_ast(
-    node1: Union[ast.expr, list[ast.expr], ast.stmt],
-    node2: Union[ast.expr, list[ast.expr], ast.stmt],
+    node1: Union[ast.expr, list[ast.expr], ast.stmt, ast.AST],
+    node2: Union[ast.expr, list[ast.expr], ast.stmt, ast.AST],
     ignore_args=False,
 ) -> bool:
     """Compare two AST nodes for equality.
@@ -42,19 +43,34 @@ def add_save_chart(code: str) -> str:
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     # define chart save directory
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_root = dirname(dirname(dirname(__file__)))
     chart_save_dir = os.path.join(project_root, f"exports\\charts\\{date}")
     if not os.path.exists(chart_save_dir):
         os.makedirs(chart_save_dir)
 
-    # iterate through the AST and add save chart code
     tree = ast.parse(code)
 
+    # count number of plt.show() calls
+    show_count = sum(
+        compare_ast(node, ast.parse("plt.show()").body[0], ignore_args=True)
+        for node in ast.walk(tree)
+    )
+
+    # if there are no plt.show() calls, return the original code
+    if show_count == 0:
+        return code
+
+    # iterate through the AST and add plt.savefig() calls before plt.show() calls
+    counter = ord("a")
     new_body = []
     for node in tree.body:
         if compare_ast(node, ast.parse("plt.show()").body[0], ignore_args=True):
+            filename = f"chart_{timestamp}"
+            if show_count > 1:
+                filename += f"_{chr(counter)}"
+                counter += 1
             new_body.append(
-                ast.parse(f'plt.savefig(r"{chart_save_dir}\\{timestamp}.png")')
+                ast.parse(f'plt.savefig(r"{chart_save_dir}\\{filename}.png")')
             )
         new_body.append(node)
 
