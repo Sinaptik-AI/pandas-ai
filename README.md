@@ -135,7 +135,7 @@ Options:
 
 - **-d, --dataset**: The file path to the dataset.
 - **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will pull from the `.env` file.
-- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, or `starcoder`.
+- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`, or Google `palm`.
 - **-p, --prompt**: Prompt that PandasAI will run.
 
 To view a full list of available options and their descriptions, run the following command:
