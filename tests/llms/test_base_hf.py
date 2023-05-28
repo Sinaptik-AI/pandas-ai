@@ -4,6 +4,7 @@ import pytest
 import requests
 
 from pandasai.llm.base import HuggingFaceLLM
+from pandasai.prompts.base import Prompt
 
 
 class TestBaseHfLLM:
@@ -51,3 +52,21 @@ class TestBaseHfLLM:
 
         result = huggingface.call("instruction", "value", "suffix")
         assert result == "Generated text"
+
+    def test_call_removes_original_prompt(self, mocker):
+        huggingface = HuggingFaceLLM()
+        huggingface.api_token = "test_token"
+
+        class MockPrompt(Prompt):
+            text: str = "instruction "
+
+        instruction = MockPrompt()
+        value = "value "
+        suffix = "suffix "
+
+        mocker.patch.object(
+            huggingface, "query", return_value="instruction value suffix generated text"
+        )
+
+        result = huggingface.call(instruction, value, suffix)
+        assert result == "generated text"
