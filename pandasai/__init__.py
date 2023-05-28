@@ -49,7 +49,8 @@ from .llm.base import LLM
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
-
+from .prompts.multiple_dataframes import MultipleDataframesPrompt
+from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 
 # pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
@@ -188,27 +189,51 @@ class PandasAI:
         try:
             rows_to_display = 0 if self._enforce_privacy else 5
 
-            df_head = data_frame.head(rows_to_display)
-            if anonymize_df:
-                df_head = anonymize_dataframe_head(df_head)
+            multiple: bool = isinstance(data_frame, list)
 
-            code = self._llm.generate_code(
-                GeneratePythonCodePrompt(
-                    prompt=prompt,
-                    df_head=df_head,
-                    num_rows=data_frame.shape[0],
-                    num_columns=data_frame.shape[1],
-                    rows_to_display=rows_to_display,
-                ),
-                prompt,
-            )
-            self._original_instructions = {
-                "question": prompt,
-                "df_head": df_head,
-                "num_rows": data_frame.shape[0],
-                "num_columns": data_frame.shape[1],
-                "rows_to_display": rows_to_display,
-            }
+            if multiple:
+
+                heads = [anonymize_dataframe_head(dataframe)
+                        if anonymize_df
+                        else dataframe.head(rows_to_display)
+                        for dataframe in data_frame]
+
+                code = self._llm.generate_code(
+                    MultipleDataframesPrompt(dataframes=heads),
+                    prompt,
+                )
+
+                self._original_instructions = {
+                    "question": prompt,
+                    "df_head": heads,
+                    "rows_to_display": rows_to_display,
+                }
+
+            else:
+
+                df_head = data_frame.head(rows_to_display)
+                if anonymize_df:
+                    df_head = anonymize_dataframe_head(df_head)
+
+                code = self._llm.generate_code(
+                    GeneratePythonCodePrompt(
+                        prompt=prompt,
+                        df_head=df_head,
+                        num_rows=data_frame.shape[0],
+                        num_columns=data_frame.shape[1],
+                        rows_to_display=rows_to_display,
+                    ),
+                    prompt,
+                )
+
+                self._original_instructions = {
+                    "question": prompt,
+                    "df_head": df_head,
+                    "num_rows": data_frame.shape[0],
+                    "num_columns": data_frame.shape[1],
+                    "rows_to_display": rows_to_display,
+                }
+
             self.last_code_generated = code
             self.log(
                 f"""
@@ -304,7 +329,7 @@ class PandasAI:
         return (
             isinstance(node, ast.Assign)
             and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "df"
+            and re.match(r"df\d{0,2}$", node.targets[0].id)
         )
 
     def clean_code(self, code: str) -> str:
@@ -350,6 +375,7 @@ class PandasAI:
 
         # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
 
+        multiple: bool = isinstance(data_frame, list)
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self.clean_code(code)
         self.last_run_code = code_to_run
@@ -361,26 +387,32 @@ Code running:
 ```"""
         )
 
+        environment: dict = {
+            "pd": pd,
+            "plt": plt,
+            "__builtins__": {
+                **{
+                    builtin: __builtins__[builtin]
+                    for builtin in WHITELISTED_BUILTINS
+                },
+            },
+        }
+
+        if multiple:
+            environment.update({
+                f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start = 1)
+            })
+
+        else:
+            environment["df"] = data_frame
+
         # Redirect standard output to a StringIO buffer
         with redirect_stdout(io.StringIO()) as output:
             count = 0
             while count < self._max_retries:
                 try:
                     # Execute the code
-                    exec(
-                        code_to_run,
-                        {
-                            "pd": pd,
-                            "df": data_frame,
-                            "plt": plt,
-                            "__builtins__": {
-                                **{
-                                    builtin: __builtins__[builtin]
-                                    for builtin in WHITELISTED_BUILTINS
-                                },
-                            },
-                        },
-                    )
+                    exec(code_to_run, environment)
                     code = code_to_run
                     break
                 except Exception as e:  # pylint: disable=W0718 disable=C0103
@@ -388,15 +420,26 @@ Code running:
                         raise e
 
                     count += 1
-                    error_correcting_instruction = CorrectErrorPrompt(
-                        code=code,
-                        error_returned=e,
-                        question=self._original_instructions["question"],
-                        df_head=self._original_instructions["df_head"],
-                        num_rows=self._original_instructions["num_rows"],
-                        num_columns=self._original_instructions["num_columns"],
-                        rows_to_display=self._original_instructions["rows_to_display"],
-                    )
+
+                    if multiple:
+                        error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
+                            code=code,
+                            error_returned=e,
+                            question=self._original_instructions["question"],
+                            df_head=self._original_instructions["df_head"],
+                        )
+
+                    else:
+                        error_correcting_instruction = CorrectErrorPrompt(
+                            code=code,
+                            error_returned=e,
+                            question=self._original_instructions["question"],
+                            df_head=self._original_instructions["df_head"],
+                            num_rows=self._original_instructions["num_rows"],
+                            num_columns=self._original_instructions["num_columns"],
+                            rows_to_display=self._original_instructions["rows_to_display"],
+                        )
+
                     code_to_run = self._llm.generate_code(
                         error_correcting_instruction, ""
                     )
@@ -407,25 +450,12 @@ Code running:
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
 
-        pattern = r"^print\((.*)\)$"
-        match = re.match(pattern, last_line)
+        match = re.match(r"^print\((.*)\)$", last_line)
         if match:
             last_line = match.group(1)
 
         try:
-            return eval(
-                last_line,
-                {
-                    "pd": pd,
-                    "df": data_frame,
-                    "__builtins__": {
-                        **{
-                            builtin: __builtins__[builtin]
-                            for builtin in WHITELISTED_BUILTINS
-                        },
-                    },
-                },
-            )
+            return eval(last_line, environment)
         except Exception:  # pylint: disable=W0718
             return captured_output
 

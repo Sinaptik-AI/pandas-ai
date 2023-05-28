@@ -1,23 +1,22 @@
-Usage
-=====
-`pandasai` is developed on top of `pandas` api. The objective is to make dataframe conversation 
+# Usage
+
+`pandasai` is developed on top of `pandas` api. The objective is to make dataframe conversation
 using Large Language Models (LLMs).
 
-Installation
-------------
+## Installation
 
-To use pandasai, first install it using pip through [PyPi](https://pypi.org/project/pandasai/) package distribution 
+To use pandasai, first install it using pip through [PyPi](https://pypi.org/project/pandasai/) package distribution
 framework. It is actively developed so be vigilant for versions updates.
 
 ```console
 pip install pandasai
 ```
 
->It is recommended to create a Virtual environment using your preffred choice of Environment Managers e.g conda, 
->Poetry etc
+> It is recommended to create a Virtual environment using your preffred choice of Environment Managers e.g conda,
+> Poetry etc
 
-Getting Started
----------------
+## Getting Started
+
 Below is simple example to get started with `pandasai`.
 
 ```python
@@ -41,16 +40,15 @@ pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 
 ## Generate openai API Token
 
-Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to generate your API_TOKEN with 
+Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to generate your API_TOKEN with
 [openai](https://platform.openai.com/overview).
 
-1. Go to  https://openai.com/api/ and signup with your email address or connect your Google Account.
+1. Go to https://openai.com/api/ and signup with your email address or connect your Google Account.
 2. Go to View API Keys on left side of your Personal Account Settings
 3. Select Create new Secret key
 
-> The API access to openai is a paid service. You have to set up billing. 
->Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
-
+> The API access to openai is a paid service. You have to set up billing.
+> Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
 
 ## Demo in Google Colab
 
@@ -58,7 +56,8 @@ Try out PandasAI in your browser:
 
 [![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1rKz7TudOeCeKGHekw7JFNL4sagN9hon-?usp=sharing)
 
-### Examples 
+### Examples
+
 Other [examples](../examples) are included in the repository along with samples of data.
 
 #### Working with CSV
@@ -81,7 +80,9 @@ print(response)
 ```
 
 #### Working is Pandas Dataframe
+
 Example of using PandasAI with a Pandas DataFrame
+
 ```python
 import pandas as pd
 from data.sample_dataframe import dataframe
@@ -99,8 +100,10 @@ print(response)
 
 ```
 
-#### Plotting 
+#### Plotting
+
 Example of using PandasAI to generate a chart from a Pandas DataFrame
+
 ```python
 import pandas as pd
 from data.sample_dataframe import dataframe
@@ -118,4 +121,38 @@ response = pandas_ai.run(
 )
 print(response)
 # Output: check out images/histogram-chart.png
+```
+
+### Working with multiple dataframes
+
+Example of using PandasAI with multiple Pandas DataFrames
+
+```python
+import pandas as pd
+
+from pandasai import PandasAI
+from pandasai.llm.openai import OpenAI
+
+employees_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Name': ['John', 'Emma', 'Liam', 'Olivia', 'William'],
+    'Department': ['HR', 'Sales', 'IT', 'Marketing', 'Finance']
+}
+
+salaries_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Salary': [5000, 6000, 4500, 7000, 5500]
+}
+
+employees_df = pd.DataFrame(employees_data)
+salaries_df = pd.DataFrame(salaries_data)
+
+llm = OpenAI()
+pandas_ai = PandasAI(llm, verbose=True, conversational=False)
+response = pandas_ai.run(
+    [employees_df, salaries_df],
+    "Who gets paid the most?",
+)
+print(response)
+# Output: Olivia gets paid the most.
 ```
