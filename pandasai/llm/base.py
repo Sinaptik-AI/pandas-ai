@@ -226,7 +226,8 @@ class HuggingFaceLLM(LLM):
     def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """Call the LLM"""
 
-        payload = instruction + value + suffix
+        prompt = str(instruction)
+        payload = prompt + value + suffix
 
         # sometimes the API doesn't return a valid response, so we retry passing the
         # output generated from the previous call as the input
@@ -237,7 +238,7 @@ class HuggingFaceLLM(LLM):
                 break
 
         # replace instruction + value from the inputs to avoid showing it in the output
-        output = response.replace(instruction + value + suffix, "")
+        output = response.replace(prompt + value + suffix, "")
         return output
 
 
