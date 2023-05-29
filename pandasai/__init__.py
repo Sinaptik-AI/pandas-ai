@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-""" PandasAI is a wrapper around a LLM to make dataframes conversational
+"""
+PandasAI is a wrapper around a LLM to make dataframes conversational
 
 This module includes the implementation of basis  PandasAI class with methods to run the LLMs
 models on Pandas dataframes. Following LLMs are implemented so far.
@@ -61,11 +62,12 @@ from .prompts.multiple_dataframes import MultipleDataframesPrompt
 
 # pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
-    """PandasAI is a wrapper around a LLM to make dataframes conversational.
+    """
+    PandasAI is a wrapper around a LLM to make dataframes conversational.
 
 
-    This is a an entry point of `pandasai` object. This class consists of methods to interface the
-    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e df.head() and prompt is
+    This is an entry point of `pandasai` object. This class consists of methods to interface the
+    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e. df.head() and prompt is
     passed on to chosen LLMs API end point to     generate a Python code to answer the questions
     asked. The resultant python code is run on actual data and answer is converted into a
     conversational form.
@@ -74,7 +76,7 @@ class PandasAI:
         Do not include the `self` parameter in the ``Args`` section.
     Args:
         _llm (obj): LLMs option to be used for API access
-        _verbose (bool, optional): To show the intermediate outputs e.g python code
+        _verbose (bool, optional): To show the intermediate outputs e.g. python code
         generated and execution step on the prompt. Default to False
         _is_conversational_answer (bool, optional): Whether to return answer in conversational
         form. Default to False
@@ -89,8 +91,7 @@ class PandasAI:
         last_error (str, optional): Error of running code last time. Default to None
 
 
-    Returns:
-        response (str): Returns the Response to a Question related to Data
+    Returns (str): Response to a Question related to Data
 
     """
 
@@ -127,9 +128,10 @@ class PandasAI:
         Args:
             llm (object): LLMs option to be used for API access. Default is None
             conversational (bool): Whether to return answer in conversational form. Default to True
-            verbose (bool): To show the intermediate outputs e.g python code generated and
+            verbose (bool): To show the intermediate outputs e.g. python code generated and
              execution step on the prompt.  Default to False
             enforce_privacy (bool): Execute the codes with Privacy Mode ON.  Default to False
+            save_charts (bool): Save the charts generated in the notebook. Default to False
         """
         if llm is None:
             raise LLMNotFoundError(
@@ -145,7 +147,8 @@ class PandasAI:
         self._in_notebook = self.notebook.in_notebook()
 
     def conversational_answer(self, question: str, answer: str) -> str:
-        """Returns the answer in conversational form about the resultant data.
+        """
+        Returns the answer in conversational form about the resultant data.
 
         Args:
             question (str): A question in Conversational form
@@ -186,7 +189,7 @@ class PandasAI:
             use_error_correction_framework (bool): Turn on Error Correction mechanism.
             Default to True
 
-        Returns: Answer to the Input Questions about the DataFrame
+        Returns (str): Answer to the Input Questions about the DataFrame
 
         """
 
@@ -284,7 +287,8 @@ class PandasAI:
         use_error_correction_framework: bool = True,
     ) -> str:
         """
-        __call__ method of PandasAI class. It call `run` method
+        __call__ method of PandasAI class. It calls the `run` method.
+
         Args:
             data_frame:
             prompt:
@@ -293,7 +297,7 @@ class PandasAI:
             anonymize_df:
             use_error_correction_framework:
 
-        Returns:
+        Returns (str): Answer to the Input Questions about the DataFrame.
 
         """
 
@@ -307,7 +311,8 @@ class PandasAI:
         )
 
     def _is_unsafe_import(self, node: ast.stmt) -> bool:
-        """Remove non-whitelisted imports from the code to prevent malicious code execution
+        """
+        Remove non-whitelisted imports from the code to prevent malicious code execution
 
         Args:
             node (object): ast.stmt
@@ -328,13 +333,14 @@ class PandasAI:
 
         return False
 
-    def _is_df_overwrite(self, node: ast.stmt) -> str:
+    def _is_df_overwrite(self, node: ast.stmt) -> bool:
         """
         Remove df declarations from the code to prevent malicious code execution. A helper method.
+
         Args:
             node (object): ast.stmt
 
-        Returns (str):
+        Returns (bool):
 
         """
 
@@ -347,6 +353,7 @@ class PandasAI:
     def _clean_code(self, code: str) -> str:
         """
         A method to clean the code to prevent malicious code execution
+
         Args:
             code(str): A python code
 
@@ -374,13 +381,14 @@ class PandasAI:
         """
         A method to execute the python code generated by LLMs to answer the question about the
         input dataframe. Run the code in the current context and return the result.
+
         Args:
             code (str): A python code to execute
             data_frame (pd.DataFrame): A full Pandas DataFrame
             use_error_correction_framework (bool): Turn on Error Correction mechanism.
             Default to True
 
-        Returns:
+        Returns (str): String representation of the result of the code execution.
 
         """
 
