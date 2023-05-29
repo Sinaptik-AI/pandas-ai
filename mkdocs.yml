@@ -24,7 +24,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "0.2.16"
+  version: "0.3.0"
 plugins:
   - search
   - mkdocstrings:
@@ -37,4 +37,3 @@ markdown_extensions:
   - markdown_include.include:
       base_path: .
   - admonition
-
