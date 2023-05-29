@@ -70,9 +70,11 @@ def add_save_chart(code: str) -> str:
                 filename += f"_{chr(counter)}"
                 counter += 1
             new_body.append(
-                ast.parse(f'plt.savefig(r"{chart_save_dir}\\{filename}.png")')
+                ast.parse(f"plt.savefig(r'{chart_save_dir}\\{filename}.png')")
             )
         new_body.append(node)
+
+    new_body.append(ast.parse(f"print(r'Charts saved to: {chart_save_dir}')"))
 
     new_tree = ast.Module(body=new_body)
     return astor.to_source(new_tree).strip()
