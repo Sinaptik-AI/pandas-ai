@@ -1,4 +1,4 @@
-""" PandasAI is a wrapper around a LLM to make dataframes convesational """
+""" PandasAI is a wrapper around a LLM to make dataframes conversational """
 import ast
 import io
 import re
@@ -13,6 +13,7 @@ from .constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from .exceptions import LLMNotFoundError
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
+from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
@@ -48,6 +49,7 @@ class PandasAI:
         conversational=True,
         verbose=False,
         enforce_privacy=False,
+        save_charts=False,
     ):
         if llm is None:
             raise LLMNotFoundError(
@@ -57,6 +59,7 @@ class PandasAI:
         self._is_conversational_answer = conversational
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
+        self._save_charts = save_charts
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -223,6 +226,11 @@ Code generated:
         """Run the code in the current context and return the result"""
 
         multiple: bool = isinstance(data_frame, list)
+
+        # Add save chart code
+        if self._save_charts:
+            code = add_save_chart(code)
+
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self.clean_code(code)
         self.last_run_code = code_to_run
