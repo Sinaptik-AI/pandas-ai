@@ -16,6 +16,7 @@ openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 google-generativeai = { version = "^0.1.0rc2", optional = true }
+mkdocs = "1.4.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -32,7 +33,7 @@ click = "^8.1.3"
 google = ["google-generativeai"]
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "1.3.0"
+mkdocs = "1.4.0"
 mkdocstrings-python = "0.7.1"
 markdown-include = "^0.6.0"
 
