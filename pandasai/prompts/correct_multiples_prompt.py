@@ -9,6 +9,7 @@ from .base import Prompt
 
 class CorrectMultipleDataframesErrorPrompt(Prompt):
     """Prompt to generate Python code"""
+    # pylint: disable=too-few-public-methods
 
     text: str = """
 You are provided with the following pandas dataframes:"""
@@ -19,7 +20,7 @@ You are provided with the following pandas dataframes:"""
         error_returned: Exception,
         question: str,
         df_head: list[pd.DataFrame],
-    ):
+    ): # pylint: disable=super-init-not-called
         for i, dataframe in enumerate(df_head, start=1):
             row, col = dataframe.shape
             self.text += f"""

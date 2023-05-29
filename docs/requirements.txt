@@ -31,7 +31,7 @@ markupsafe==2.1.1
     #   mkdocstrings
 mergedeep==1.3.4
     # via mkdocs
-mkdocs==1.3.0
+mkdocs==1.4.0
     # via
     #   -r docs/requirements.in
     #   mkdocs-autorefs

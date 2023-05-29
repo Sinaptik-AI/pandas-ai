@@ -13,9 +13,11 @@ nav:
   - Getting Started: getting-started.md
   - Command Line Tool: pai_cli.md
   - API:
-      - API/api.md
-      - API/helpers.md
+      - API/pandasai.md
+      - API/prompts.md
       - API/llms.md
+      - API/helpers.md
+      - API/pai.md
   - About:
       - Release Notes: release-notes.md
       - Contributing: CONTRIBUTING.md
@@ -30,8 +32,9 @@ plugins:
         # See: https://mkdocstrings.github.io/python/usage/
         python:
           options:
-            docstring_style: sphinx
+            docstring_style: google
 markdown_extensions:
   - markdown_include.include:
       base_path: .
   - admonition
+
