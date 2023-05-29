@@ -230,25 +230,6 @@ files = [
 ]
 
 [[package]]
-name = "beautifulsoup4"
-version = "4.12.2"
-description = "Screen-scraping library"
-category = "main"
-optional = false
-python-versions = ">=3.6.0"
-files = [
-    {file = "beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
-    {file = "beautifulsoup4-4.12.2.tar.gz", hash = "sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da"},
-]
-
-[package.dependencies]
-soupsieve = ">1.2"
-
-[package.extras]
-html5lib = ["html5lib"]
-lxml = ["lxml"]
-
-[[package]]
 name = "black"
 version = "23.3.0"
 description = "The uncompromising code formatter."
@@ -423,7 +404,7 @@ files = [
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -732,7 +713,7 @@ files = [
 name = "ghp-import"
 version = "2.1.0"
 description = "Copy your docs directly to the gh-pages branch."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -745,21 +726,6 @@ python-dateutil = ">=2.8.1"
 
 [package.extras]
 dev = ["flake8", "markdown", "twine", "wheel"]
-
-[[package]]
-name = "google"
-version = "3.0.0"
-description = "Python bindings to the Google search engine."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "google-3.0.0-py2.py3-none-any.whl", hash = "sha256:889cf695f84e4ae2c55fbc0cfdaf4c1e729417fa52ab1db0485202ba173e4935"},
-    {file = "google-3.0.0.tar.gz", hash = "sha256:143530122ee5130509ad5e989f0512f7cb218b2d4eddbafbad40fd10e8d8ccbe"},
-]
-
-[package.dependencies]
-beautifulsoup4 = "*"
 
 [[package]]
 name = "google-ai-generativelanguage"
@@ -994,7 +960,7 @@ files = [
 name = "importlib-metadata"
 version = "6.6.0"
 description = "Read metadata from Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1123,7 +1089,7 @@ testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1263,14 +1229,14 @@ files = [
 
 [[package]]
 name = "markdown"
-version = "3.4.3"
-description = "Python implementation of John Gruber's Markdown."
-category = "dev"
+version = "3.3.7"
+description = "Python implementation of Markdown."
+category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 files = [
-    {file = "Markdown-3.4.3-py3-none-any.whl", hash = "sha256:065fd4df22da73a625f14890dd77eb8040edcbd68794bcd35943be14490608b2"},
-    {file = "Markdown-3.4.3.tar.gz", hash = "sha256:8bf101198e004dc93e84a12a7395e31aac6a9c9942848ae1d99b9d72cf9b3520"},
+    {file = "Markdown-3.3.7-py3-none-any.whl", hash = "sha256:f5da449a6e1c989a4cea2631aa8ee67caa5a2ef855d551c88f9e309f4634c621"},
+    {file = "Markdown-3.3.7.tar.gz", hash = "sha256:cbb516f16218e643d8e0a95b309f77eb118cb138d39a4f27851e6a63581db874"},
 ]
 
 [package.dependencies]
@@ -1297,7 +1263,7 @@ markdown = "*"
 name = "markupsafe"
 version = "2.1.2"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1447,7 +1413,7 @@ files = [
 name = "mergedeep"
 version = "1.3.4"
 description = "A deep merge function for 🐍."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -1457,25 +1423,25 @@ files = [
 
 [[package]]
 name = "mkdocs"
-version = "1.3.0"
+version = "1.4.0"
 description = "Project documentation with Markdown."
-category = "dev"
+category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "mkdocs-1.3.0-py3-none-any.whl", hash = "sha256:26bd2b03d739ac57a3e6eed0b7bcc86168703b719c27b99ad6ca91dc439aacde"},
-    {file = "mkdocs-1.3.0.tar.gz", hash = "sha256:b504405b04da38795fec9b2e5e28f6aa3a73bb0960cb6d5d27ead28952bd35ea"},
+    {file = "mkdocs-1.4.0-py3-none-any.whl", hash = "sha256:ce057e9992f017b8e1496b591b6c242cbd34c2d406e2f9af6a19b97dd6248faa"},
+    {file = "mkdocs-1.4.0.tar.gz", hash = "sha256:e5549a22d59e7cb230d6a791edd2c3d06690908454c0af82edc31b35d57e3069"},
 ]
 
 [package.dependencies]
-click = ">=3.3"
+click = ">=7.0"
 ghp-import = ">=1.0"
-importlib-metadata = ">=4.3"
-Jinja2 = ">=2.10.2"
-Markdown = ">=3.2.1"
+importlib-metadata = {version = ">=4.3", markers = "python_version < \"3.10\""}
+Jinja2 = ">=2.11.1"
+Markdown = ">=3.2.1,<3.4"
 mergedeep = ">=1.3.4"
 packaging = ">=20.5"
-PyYAML = ">=3.10"
+PyYAML = ">=5.1"
 pyyaml-env-tag = ">=0.1"
 watchdog = ">=2.0"
 
@@ -2270,7 +2236,7 @@ files = [
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -2320,7 +2286,7 @@ files = [
 name = "pyyaml-env-tag"
 version = "0.1"
 description = "A custom YAML tag for referencing environment variables in YAML files. "
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -2395,18 +2361,6 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
-]
-
-[[package]]
-name = "soupsieve"
-version = "2.4.1"
-description = "A modern CSS selector implementation for Beautiful Soup."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "soupsieve-2.4.1-py3-none-any.whl", hash = "sha256:1c1bfee6819544a3447586c889157365a27e10d88cde3ad3da0cf0ddf646feb8"},
-    {file = "soupsieve-2.4.1.tar.gz", hash = "sha256:89d12b2d5dfcd2c9e8c22326da9d9aa9cb3dfab0a83a024f05704076ee8d35ea"},
 ]
 
 [[package]]
@@ -2556,7 +2510,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "coverage-enable-subprocess
 name = "watchdog"
 version = "3.0.0"
 description = "Filesystem events monitoring"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2799,4 +2753,4 @@ google = ["google-generativeai"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8c485fa1726e3e13de3021ac04f7dc75502d33f19f669e6ca0c5652882c716f1"
+content-hash = "faf5aff3e0bb280f624371ffb9d9a96d66a028d39421d7ccb6339afd11da82a3"
