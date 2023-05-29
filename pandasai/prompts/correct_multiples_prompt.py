@@ -9,6 +9,7 @@ from .base import Prompt
 
 class CorrectMultipleDataframesErrorPrompt(Prompt):
     """Prompt to generate Python code"""
+    # pylint: disable=too-few-public-methods
 
     text: str = """
 You are provided with the following pandas dataframes:"""

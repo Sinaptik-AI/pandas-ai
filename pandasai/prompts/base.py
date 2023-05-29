@@ -14,6 +14,7 @@ class Prompt:
     _args = {}
 
     def __init__(self, **kwargs):
+
         """
         __init__ method of Base class of Prompt Module
         Args:

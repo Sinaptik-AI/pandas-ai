@@ -11,6 +11,7 @@ from .base import Prompt
 
 class MultipleDataframesPrompt(Prompt):
     """Prompt to generate Python code"""
+    # pylint: disable=too-few-public-methods
 
     text: str = """
 Today is {today_date}.

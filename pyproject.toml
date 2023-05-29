@@ -16,6 +16,7 @@ openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 google-generativeai = { version = "^0.1.0rc2", optional = true }
+google = "^3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
