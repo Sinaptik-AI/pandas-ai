@@ -13,7 +13,7 @@ class Prompt:
     text = None
     _args = {}
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs): # pylint: disable=super-init-not-called
 
         """
         __init__ method of Base class of Prompt Module
