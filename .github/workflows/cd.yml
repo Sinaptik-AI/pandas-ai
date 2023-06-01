@@ -20,5 +20,5 @@ jobs:
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
           ignore_dev_requirements: "yes"
-          repository_url: https://upload.pypi.org/
+          repository_url: https://upload.pypi.org/legacy/
           repository_name: pandasai
