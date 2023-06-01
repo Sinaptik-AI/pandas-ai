@@ -41,8 +41,13 @@ import astor
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
+from .constants import (
+    WHITELISTED_BUILTINS,
+    WHITELISTED_LIBRARIES,
+    WHITELISTED_OPTIONAL_LIBRARIES,
+)
 from .exceptions import BadImportError, LLMNotFoundError
+from .helpers._optional import import_optional_dependency
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
@@ -315,6 +320,9 @@ class PandasAI:
             for alias in node.names:
                 if alias.name in WHITELISTED_BUILTINS:
                     return True
+                if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
+                    import_optional_dependency(alias.name)
+                    continue
                 if alias.name not in WHITELISTED_LIBRARIES:
                     raise BadImportError(alias.name)
 

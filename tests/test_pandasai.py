@@ -271,6 +271,20 @@ print(os.listdir())
         with pytest.raises(BadImportError):
             pandasai._clean_code(malicious_code)
 
+    def test_clean_code_raise_import_error(self, pandasai):
+        """Test that clean code raises an ImportError when
+        the code contains an import statement for an optional library."""
+        optional_code = """
+import seaborn as sns
+print(sns.__version__)
+"""
+        pandasai._llm._output = optional_code
+
+        # patch the import of seaborn to raise an ImportError
+        with pytest.raises(ImportError):
+            with patch.dict("sys.modules", {"seaborn": None}):
+                pandasai._clean_code(optional_code)
+
     def test_remove_df_overwrites(self, pandasai):
         malicious_code = """
 df = pd.DataFrame([1,2,3])
