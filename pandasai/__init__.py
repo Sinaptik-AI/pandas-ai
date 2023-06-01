@@ -41,17 +41,23 @@ import astor
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
-from .exceptions import LLMNotFoundError
+from .constants import (
+    WHITELISTED_BUILTINS,
+    WHITELISTED_LIBRARIES,
+    WHITELISTED_OPTIONAL_LIBRARIES,
+)
+from .exceptions import BadImportError, LLMNotFoundError
+from .helpers._optional import import_optional_dependency
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
 from .prompts.correct_error_prompt import CorrectErrorPrompt
+from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
+
 
 # pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
@@ -106,8 +112,6 @@ class PandasAI:
     code_output: Optional[str] = None
     last_error: Optional[str] = None
 
-
-
     def __init__(
         self,
         llm=None,
@@ -141,7 +145,6 @@ class PandasAI:
         self._in_notebook = self.notebook.in_notebook()
 
     def conversational_answer(self, question: str, answer: str) -> str:
-
         """Returns the answer in conversational form about the resultant data.
 
         Args:
@@ -195,11 +198,12 @@ class PandasAI:
             multiple: bool = isinstance(data_frame, list)
 
             if multiple:
-
-                heads = [anonymize_dataframe_head(dataframe)
-                        if anonymize_df
-                        else dataframe.head(rows_to_display)
-                        for dataframe in data_frame]
+                heads = [
+                    anonymize_dataframe_head(dataframe)
+                    if anonymize_df
+                    else dataframe.head(rows_to_display)
+                    for dataframe in data_frame
+                ]
 
                 code = self._llm.generate_code(
                     MultipleDataframesPrompt(dataframes=heads),
@@ -213,7 +217,6 @@ class PandasAI:
                 }
 
             else:
-
                 df_head = data_frame.head(rows_to_display)
                 if anonymize_df:
                     df_head = anonymize_dataframe_head(df_head)
@@ -303,8 +306,7 @@ class PandasAI:
             use_error_correction_framework,
         )
 
-    def is_unsafe_import(self, node: ast.stmt) -> bool:
-
+    def _is_unsafe_import(self, node: ast.stmt) -> bool:
         """Remove non-whitelisted imports from the code to prevent malicious code execution
 
         Args:
@@ -314,12 +316,19 @@ class PandasAI:
 
         """
 
-        return isinstance(node, (ast.Import, ast.ImportFrom)) and any(
-            alias.name not in WHITELISTED_LIBRARIES for alias in node.names
-        )
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                if alias.name in WHITELISTED_BUILTINS:
+                    return True
+                if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
+                    import_optional_dependency(alias.name)
+                    continue
+                if alias.name not in WHITELISTED_LIBRARIES:
+                    raise BadImportError(alias.name)
 
-    def is_df_overwrite(self, node: ast.stmt) -> str:
+        return False
 
+    def _is_df_overwrite(self, node: ast.stmt) -> str:
         """
         Remove df declarations from the code to prevent malicious code execution. A helper method.
         Args:
@@ -335,8 +344,7 @@ class PandasAI:
             and re.match(r"df\d{0,2}$", node.targets[0].id)
         )
 
-    def clean_code(self, code: str) -> str:
-
+    def _clean_code(self, code: str) -> str:
         """
         A method to clean the code to prevent malicious code execution
         Args:
@@ -351,7 +359,7 @@ class PandasAI:
         new_body = [
             node
             for node in tree.body
-            if not (self.is_unsafe_import(node) or self.is_df_overwrite(node))
+            if not (self._is_unsafe_import(node) or self._is_df_overwrite(node))
         ]
 
         new_tree = ast.Module(body=new_body)
@@ -385,7 +393,7 @@ class PandasAI:
             code = add_save_chart(code)
 
         # Get the code to run removing unsafe imports and df overwrites
-        code_to_run = self.clean_code(code)
+        code_to_run = self._clean_code(code)
         self.last_run_code = code_to_run
         self.log(
             f"""
@@ -399,17 +407,14 @@ Code running:
             "pd": pd,
             "plt": plt,
             "__builtins__": {
-                **{
-                    builtin: __builtins__[builtin]
-                    for builtin in WHITELISTED_BUILTINS
-                },
+                **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
             },
         }
 
         if multiple:
-            environment.update({
-                f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start = 1)
-            })
+            environment.update(
+                {f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start=1)}
+            )
 
         else:
             environment["df"] = data_frame
@@ -430,11 +435,13 @@ Code running:
                     count += 1
 
                     if multiple:
-                        error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
-                            code=code,
-                            error_returned=e,
-                            question=self._original_instructions["question"],
-                            df_head=self._original_instructions["df_head"],
+                        error_correcting_instruction = (
+                            CorrectMultipleDataframesErrorPrompt(
+                                code=code,
+                                error_returned=e,
+                                question=self._original_instructions["question"],
+                                df_head=self._original_instructions["df_head"],
+                            )
                         )
 
                     else:
@@ -445,7 +452,9 @@ Code running:
                             df_head=self._original_instructions["df_head"],
                             num_rows=self._original_instructions["num_rows"],
                             num_columns=self._original_instructions["num_columns"],
-                            rows_to_display=self._original_instructions["rows_to_display"],
+                            rows_to_display=self._original_instructions[
+                                "rows_to_display"
+                            ],
                         )
 
                     code_to_run = self._llm.generate_code(

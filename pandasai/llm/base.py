@@ -28,6 +28,7 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
+from ..helpers._optional import import_optional_dependency
 from ..prompts.base import Prompt
 
 
@@ -152,7 +153,6 @@ class BaseOpenAI(LLM, ABC):
     stop: Optional[str] = None
 
     def _set_params(self, **kwargs):
-
         """
         Set Parameters
         Args:
@@ -180,7 +180,6 @@ class BaseOpenAI(LLM, ABC):
 
     @property
     def _default_params(self) -> Dict[str, Any]:
-
         """
         Get the default parameters for calling OpenAI API
 
@@ -278,7 +277,6 @@ class HuggingFaceLLM(LLM):
         return response.json()[0]["generated_text"]
 
     def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
-
         """
         A call method of HuggingFaceLLM class.
         Args:
@@ -309,7 +307,7 @@ class HuggingFaceLLM(LLM):
 class BaseGoogle(LLM):
     """Base class to implement a new Google LLM
 
-     LLM base class is extended to be used with Google Palm API.
+    LLM base class is extended to be used with Google Palm API.
     """
 
     genai: Any
@@ -330,16 +328,11 @@ class BaseGoogle(LLM):
 
         if not api_key:
             raise APIKeyNotFoundError("Google Palm API key is required")
-        try:
-            # pylint: disable=import-outside-toplevel
-            import google.generativeai as genai
 
-            genai.configure(api_key=api_key)
-        except ImportError as ex:
-            raise ImportError(
-                "Could not import google-generativeai python package. "
-                "Please install it with `pip install google-generativeai`."
-            ) from ex
+        err_msg = "Install google-generativeai >= 0.1 for Google Palm API"
+        genai = import_optional_dependency("google.generativeai", extra=err_msg)
+
+        genai.configure(api_key=api_key)
         self.genai = genai
 
     def _valid_params(self):

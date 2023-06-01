@@ -76,3 +76,10 @@ WHITELISTED_BUILTINS = [
     "vars",
     "zip",
 ]
+WHITELISTED_OPTIONAL_LIBRARIES = [
+    "sklearn",
+    "statsmodels",
+    "seaborn",
+    "plotly",
+    "ggplot",
+]
