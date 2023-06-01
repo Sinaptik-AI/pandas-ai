@@ -1,5 +1,18 @@
 # Command-Line Tool
-[Pai] is the command line tool designed to provide a convenient way to interact with `pandasai` through a command line interface (CLI).
+[Pai] is the command line tool designed to provide a convenient way to interact with `pandasai` through a command line interface (CLI). In order to access the CLI tool, make sure to create a virtualenv for testing purpose and to install project dependencies in your local virtual environment using `pip` by running the following command:
+```
+pip install -e .
+```
+Alternatively, you can use `poetry` to create and activate the virtual environment by running the following command:
+```
+poetry shell
+```
+Inside the activated virtual environment, install the project dependencies by running the following command:
+```
+poetry install
+```
+
+By following these steps, you will now have the necessary environment to access the CLI tool. 
 
 ```
 pai [OPTIONS]
