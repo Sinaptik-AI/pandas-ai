@@ -1,11 +1,10 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 
 import pandas as pd
+from data.sample_dataframe import dataframe
 
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
-
-from data.sample_dataframe import dataframe
 
 df = pd.DataFrame(dataframe)
 
@@ -16,6 +15,9 @@ print(response)
 # Output: 20901884461056
 
 # Dataframe is returned
-response = pandas_ai(df, "Filter the dataframe to show only countries with happiness index greater than 6.0")
-print(f'Response type::{type(response)}')
+response = pandas_ai(
+    df,
+    "Filter the dataframe to show only countries with happiness index greater than 6.0",
+)
+print(f"Response type::{type(response)}")
 print(response)

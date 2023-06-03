@@ -258,7 +258,6 @@ class PandasAI:
                 use_error_correction_framework=use_error_correction_framework,
             )
             answer_df = self.parse_dataframe(answer)
-            return_df = answer_df is not None
             self.code_output = answer
             self.log(f"Answer: {answer}")
 
@@ -269,7 +268,7 @@ class PandasAI:
                 self.log(f"Conversational answer: {answer}")
             # return dataframe if applicable with explicit check
             # since df truth value is ambiguous
-            return answer_df if return_df else answer
+            return answer_df if answer_df is not None else answer
         except Exception as exception:  # pylint: disable=broad-except
             self.last_error = str(exception)
             return (
@@ -288,8 +287,8 @@ class PandasAI:
             Dataframe parsed from the answer string
 
         """
-        try: # try parsing the string as a dataframe
-            lines = answer.strip().split('\n')
+        try:  # try parsing the string as a dataframe
+            lines = answer.strip().split("\n")
             columns = [column.strip() for column in lines[0].split()]
             rows = [row.strip().split() for row in lines[1:]]
             # remove index if it is in df string
@@ -299,7 +298,7 @@ class PandasAI:
             self.log("Returning dataframe...")
             return None if dataframe.empty else dataframe
         except Exception as _:  # pylint: disable=broad-except
-            return None    # explicitly return None
+            return None  # explicitly return None
 
     def __call__(
         self,
