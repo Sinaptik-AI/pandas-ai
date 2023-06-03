@@ -10,7 +10,7 @@ END_CODE_TAG = "<endCode>"
 WHITELISTED_LIBRARIES = [
     "pandas",
     "numpy",
-    "matplotlib.pyplot",
+    "matplotlib",
 ]
 WHITELISTED_BUILTINS = [
     "abs",
