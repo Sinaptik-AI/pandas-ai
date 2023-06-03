@@ -318,20 +318,12 @@ class PandasAI:
 
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             for alias in node.names:
-                if alias.name in WHITELISTED_BUILTINS:
+                if alias.name in WHITELISTED_BUILTINS or alias.name == "pandas":
                     return True
                 if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
                     import_optional_dependency(alias.name)
                     continue
-                if (
-                    alias.name not in WHITELISTED_LIBRARIES
-                    and alias.name != "pandas"
-                    or any(
-                        "." in alias.name
-                        and alias.name.rsplit(".", 1)[0] == whitelisted_lib
-                        for whitelisted_lib in WHITELISTED_LIBRARIES
-                    )
-                ):
+                if alias.name.split(".")[0] not in WHITELISTED_LIBRARIES:
                     raise BadImportError(alias.name)
 
         return False
