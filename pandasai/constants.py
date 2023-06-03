@@ -8,7 +8,6 @@ It includes Start & End Code tags, Whitelisted Python Packages and While List Bu
 START_CODE_TAG = "<startCode>"
 END_CODE_TAG = "<endCode>"
 WHITELISTED_LIBRARIES = [
-    "pandas",
     "numpy",
     "matplotlib",
 ]
