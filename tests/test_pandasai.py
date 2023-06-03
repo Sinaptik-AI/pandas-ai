@@ -90,7 +90,7 @@ class TestPandasAI:
   5    6    7    8
   9   10   11   12"""
         df = pandasai.parse_dataframe(df_string)
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, pd.DataFrame) # df should be extracted from string
 
     def test_parse_dataframe_with_invalid_string(self, pandasai):
         df_string1 = "Hello from the other side."

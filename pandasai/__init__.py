@@ -292,11 +292,9 @@ class PandasAI:
             lines = answer.strip().split('\n')
             columns = [column.strip() for column in lines[0].split()]
             rows = [row.strip().split() for row in lines[1:]]
-            print(rows)
-            # remove index if it is in string
+            # remove index if it is in df string
             if len(columns) < len(rows[0]) and all(row[0].isdigit() for row in rows):
                 rows = [row[1:] for row in rows]
-            print(rows)
             dataframe = pd.DataFrame(rows, columns=columns)
             self.log("Returning dataframe...")
             return None if dataframe.empty else dataframe
