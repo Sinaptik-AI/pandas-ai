@@ -83,6 +83,41 @@ class TestPandasAI:
             pandasai.run(df, "What number comes before 2?")
             mock_print.assert_not_called()
 
+    def test_parse_dataframe(self, pandasai):
+        df_string = """
+              A    B    C    D
+  1    2    3    4
+  5    6    7    8
+  9   10   11   12"""
+        df = pandasai.parse_dataframe(df_string)
+        assert isinstance(df, pd.DataFrame)
+
+    def test_parse_dataframe_with_invalid_string(self, pandasai):
+        df_string1 = "Hello from the other side."
+        df_string2 = "Hello\n from the\n other side."
+        assert pandasai.parse_dataframe(df_string1) is None
+        assert pandasai.parse_dataframe(df_string2) is None
+
+    def test_run_return_dataframe(self, pandasai, llm):
+        df = pd.DataFrame()
+        df_string = """A    B    C    D
+          1    2    3    4
+          5    6    7    8
+          9   10   11   12"""
+        pandasai.run_code = Mock(return_value=df_string)
+        assert isinstance(pandasai.run(df, "Return countries with HI > 6"), pd.DataFrame)
+
+    def test_run_return_dataframe_with_index(self, pandasai, llm):
+        df = pd.DataFrame()
+        df_string = """A    B    C    D
+               0   1    2    3    4
+               1   5    6    7    8
+               2   9   10   11   12"""
+        pandasai.run_code = Mock(return_value=df_string)
+        assert isinstance(pandasai.run(df, "Return countries with HI > 6"), pd.DataFrame)
+
+
+
     def test_run_code(self, llm):
         df = pd.DataFrame()
         pandasai = PandasAI(llm=llm)
@@ -305,3 +340,6 @@ print(df)
             "\nNo code found in the answer.\n"
         )
         assert pandasai.last_error == "No code found in the answer."
+
+
+

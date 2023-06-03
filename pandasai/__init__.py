@@ -163,34 +163,6 @@ class PandasAI:
         instruction = GenerateResponsePrompt(question=question, answer=answer)
         return self._llm.call(instruction, "")
 
-    def _run(self,
-        data_frame: pd.DataFrame,
-        prompt: str,
-        is_conversational_answer: bool = None,
-        show_code: bool = False,
-        anonymize_df: bool = True,
-        use_error_correction_framework: bool = True,):
-        answer = """
-        country             gdp  happiness_index
-   United States  19294482071552             6.94
-  United Kingdom   2891615567872             7.16
-          France   2411255037952             6.66
-         Germany   3435817336832             7.07
-           Italy   1745433788416             6.38
-           Spain   1181205135360             6.40
-          Canada   1607402389504             7.23
-       Australia   1490967855104             7.22"""
-        df = self.parse_dataframe(answer)
-        self.code_output = answer
-        self.log(f"Answer: {answer}")
-        if is_conversational_answer is None:
-            is_conversational_answer = self._is_conversational_answer
-        if is_conversational_answer:
-            answer = self.conversational_answer(prompt, answer)
-            self.log(f"Conversational answer: {answer}")
-        return answer if df is None else df
-
-
     def run(
         self,
         data_frame: pd.DataFrame,
@@ -248,6 +220,7 @@ class PandasAI:
                 df_head = data_frame.head(rows_to_display)
                 if anonymize_df:
                     df_head = anonymize_dataframe_head(df_head)
+
                 code = self._llm.generate_code(
                     GeneratePythonCodePrompt(
                         prompt=prompt,
@@ -258,6 +231,7 @@ class PandasAI:
                     ),
                     prompt,
                 )
+
                 self._original_instructions = {
                     "question": prompt,
                     "df_head": df_head,
@@ -287,6 +261,7 @@ class PandasAI:
             return_df = answer_df is not None
             self.code_output = answer
             self.log(f"Answer: {answer}")
+
             if is_conversational_answer is None:
                 is_conversational_answer = self._is_conversational_answer
             if is_conversational_answer:
@@ -306,7 +281,6 @@ class PandasAI:
     def parse_dataframe(self, answer: str) -> Optional[pd.DataFrame]:
         """
         Parses the answer to check if it is a dataframe.
-        Exception thrown during parsing should be handled by the caller
         Args:
             answer: String representation of a possible dataframe
 
@@ -314,13 +288,18 @@ class PandasAI:
             Dataframe parsed from the answer string
 
         """
-        try:
+        try: # try parsing the string as a dataframe
             lines = answer.strip().split('\n')
-            columns = [column.strip() for column in lines[0].split(',')]
-            rows = [row.strip().split(',') for row in lines[1:]]
+            columns = [column.strip() for column in lines[0].split()]
+            rows = [row.strip().split() for row in lines[1:]]
+            print(rows)
+            # remove index if it is in string
+            if len(columns) < len(rows[0]) and all(row[0].isdigit() for row in rows):
+                rows = [row[1:] for row in rows]
+            print(rows)
             dataframe = pd.DataFrame(rows, columns=columns)
             self.log("Returning dataframe...")
-            return dataframe
+            return None if dataframe.empty else dataframe
         except Exception as _:  # pylint: disable=broad-except
             return None    # explicitly return None
 
