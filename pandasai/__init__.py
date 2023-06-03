@@ -323,7 +323,10 @@ class PandasAI:
                 if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
                     import_optional_dependency(alias.name)
                     continue
-                if alias.name not in WHITELISTED_LIBRARIES:
+                if not any(
+                    alias.name.startswith(whitelisted_lib)
+                    for whitelisted_lib in WHITELISTED_LIBRARIES
+                ):
                     raise BadImportError(alias.name)
 
         return False
