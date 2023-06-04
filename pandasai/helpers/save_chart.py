@@ -65,7 +65,7 @@ def add_save_chart(code: str) -> str:
 
     # define chart save directory
     project_root = dirname(dirname(dirname(__file__)))
-    chart_save_dir = os.path.join(project_root, f"exports\\charts\\{date}")
+    chart_save_dir = os.path.join(project_root, "exports", "charts", date)
 
     tree = ast.parse(code)
 
