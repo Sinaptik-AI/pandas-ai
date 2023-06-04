@@ -56,7 +56,7 @@ from pandasai.llm.openai import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 pandas_ai = PandasAI(llm, conversational=False)
-pandas_ai(df, prompt='Which are the 5 happiest countries?')
+pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 ```
 
 The above code will return the following:
@@ -73,7 +73,7 @@ Name: country, dtype: object
 Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
 
 ```python
-pandas_ai(df, prompt='What is the sum of the GDPs of the 2 unhappiest countries?')
+pandas_ai.run(df, prompt='What is the sum of the GDPs of the 2 unhappiest countries?')
 ```
 
 The above code will return the following:
@@ -87,7 +87,7 @@ The above code will return the following:
 You can also ask PandasAI to draw a graph:
 
 ```python
-pandas_ai(
+pandas_ai.run(
     df,
     "Plot the histogram of countries showing for each the gdp, using different colors for each bar",
 )
@@ -122,7 +122,7 @@ salaries_df = pd.DataFrame(salaries_data)
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm)
-pandas_ai([employees_df, salaries_df], "Who gets paid the most?")
+pandas_ai.run([employees_df, salaries_df], "Who gets paid the most?")
 ```
 
 The above code will return the following:
