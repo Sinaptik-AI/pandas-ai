@@ -77,7 +77,7 @@ class PandasAI:
         _verbose (bool, optional): To show the intermediate outputs e.g python code
         generated and execution step on the prompt. Default to False
         _is_conversational_answer (bool, optional): Whether to return answer in conversational
-        form. Default to False
+        form. Default to True
         _enforce_privacy (bool, optional): Do not display the data on prompt in case of
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
