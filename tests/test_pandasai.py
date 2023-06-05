@@ -9,6 +9,7 @@ import pytest
 
 from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
+from pandasai.helpers.cache import Cache
 from pandasai.llm.fake import FakeLLM
 
 # pylint: disable=too-many-public-methods
@@ -25,7 +26,7 @@ class TestPandasAI:
 
     @pytest.fixture
     def pandasai(self, llm):
-        return PandasAI(llm)
+        return PandasAI(llm, enable_cache=False)
 
     def test_init(self, pandasai):
         assert pandasai._llm is not None
@@ -314,3 +315,23 @@ print(df)
             "\nNo code found in the answer.\n"
         )
         assert pandasai.last_error == "No code found in the answer."
+
+    def test_cache(self, pandasai):
+        pandasai.clear_cache()
+        pandasai._enable_cache = True
+        pandasai._llm.call = Mock(return_value='print("Hello world")')
+        assert pandasai._cache.get("How many countries are in the dataframe?") == None
+        pandasai(
+            pd.DataFrame(),
+            "How many countries are in the dataframe?",
+        )
+        assert (
+            pandasai._cache.get("How many countries are in the dataframe?")
+            == 'print("Hello world")'
+        )
+        pandasai(
+            pd.DataFrame(),
+            "How many countries are in the dataframe?",
+        )
+        assert pandasai._llm.call.call_count == 1
+        pandasai._cache.delete("How many countries are in the dataframe?")

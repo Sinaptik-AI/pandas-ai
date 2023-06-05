@@ -23,3 +23,6 @@ pandasai.egg-info
 # pycharm
 .idea/
 .idea
+
+# cache
+cache.db

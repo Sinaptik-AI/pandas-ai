@@ -52,6 +52,7 @@ from .constants import (
 from .exceptions import BadImportError, LLMNotFoundError
 from .helpers._optional import import_optional_dependency
 from .helpers.anonymizer import anonymize_dataframe_head
+from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
@@ -110,6 +111,8 @@ class PandasAI:
         "num_columns": None,
         "rows_to_display": None,
     }
+    _cache: Cache = Cache()
+    _enable_cache: bool = True
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -122,6 +125,7 @@ class PandasAI:
         verbose=False,
         enforce_privacy=False,
         save_charts=False,
+        enable_cache=True,
     ):
         """
 
@@ -144,6 +148,7 @@ class PandasAI:
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
+        self._enable_cache = enable_cache
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -198,62 +203,69 @@ class PandasAI:
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         try:
-            rows_to_display = 0 if self._enforce_privacy else 5
-
-            multiple: bool = isinstance(data_frame, list)
-
-            if multiple:
-                heads = [
-                    anonymize_dataframe_head(dataframe)
-                    if anonymize_df
-                    else dataframe.head(rows_to_display)
-                    for dataframe in data_frame
-                ]
-
-                code = self._llm.generate_code(
-                    MultipleDataframesPrompt(dataframes=heads),
-                    prompt,
-                )
-
-                self._original_instructions = {
-                    "question": prompt,
-                    "df_head": heads,
-                    "rows_to_display": rows_to_display,
-                }
-
+            if self._enable_cache and self._cache.get(prompt):
+                self.log("Using cached response")
+                code = self._cache.get(prompt)
             else:
-                df_head = data_frame.head(rows_to_display)
-                if anonymize_df:
-                    df_head = anonymize_dataframe_head(df_head)
+                rows_to_display = 0 if self._enforce_privacy else 5
 
-                code = self._llm.generate_code(
-                    GeneratePythonCodePrompt(
-                        prompt=prompt,
-                        df_head=df_head,
-                        num_rows=data_frame.shape[0],
-                        num_columns=data_frame.shape[1],
-                        rows_to_display=rows_to_display,
-                    ),
-                    prompt,
+                multiple: bool = isinstance(data_frame, list)
+
+                if multiple:
+                    heads = [
+                        anonymize_dataframe_head(dataframe)
+                        if anonymize_df
+                        else dataframe.head(rows_to_display)
+                        for dataframe in data_frame
+                    ]
+
+                    code = self._llm.generate_code(
+                        MultipleDataframesPrompt(dataframes=heads),
+                        prompt,
+                    )
+
+                    self._original_instructions = {
+                        "question": prompt,
+                        "df_head": heads,
+                        "rows_to_display": rows_to_display,
+                    }
+
+                else:
+                    df_head = data_frame.head(rows_to_display)
+                    if anonymize_df:
+                        df_head = anonymize_dataframe_head(df_head)
+
+                    code = self._llm.generate_code(
+                        GeneratePythonCodePrompt(
+                            prompt=prompt,
+                            df_head=df_head,
+                            num_rows=data_frame.shape[0],
+                            num_columns=data_frame.shape[1],
+                            rows_to_display=rows_to_display,
+                        ),
+                        prompt,
+                    )
+
+                    self._original_instructions = {
+                        "question": prompt,
+                        "df_head": df_head,
+                        "num_rows": data_frame.shape[0],
+                        "num_columns": data_frame.shape[1],
+                        "rows_to_display": rows_to_display,
+                    }
+
+                self.last_code_generated = code
+                self.log(
+                    f"""
+                        Code generated:
+                        ```
+                        {code}
+                        ```
+                    """
                 )
 
-                self._original_instructions = {
-                    "question": prompt,
-                    "df_head": df_head,
-                    "num_rows": data_frame.shape[0],
-                    "num_columns": data_frame.shape[1],
-                    "rows_to_display": rows_to_display,
-                }
+                self._cache.set(prompt, code)
 
-            self.last_code_generated = code
-            self.log(
-                f"""
-                    Code generated:
-                    ```
-                    {code}
-                    ```
-                """
-            )
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
 
@@ -278,6 +290,12 @@ class PandasAI:
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    def clear_cache(self):
+        """
+        Clears the cache of the PandasAI instance.
+        """
+        self._cache.clear()
 
     def __call__(
         self,

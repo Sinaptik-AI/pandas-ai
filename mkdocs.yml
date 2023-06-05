@@ -11,6 +11,7 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Cache: cache.md
   - Command Line Tool: pai_cli.md
   - API:
       - API/pandasai.md
