@@ -7,10 +7,20 @@ It includes Start & End Code tags, Whitelisted Python Packages and While List Bu
 
 START_CODE_TAG = "<startCode>"
 END_CODE_TAG = "<endCode>"
+
+# List of Python packages that are whitelisted for import in generated code
+#   and are installed by default.
 WHITELISTED_LIBRARIES = [
     "numpy",
-    "matplotlib",
 ]
+
+# List of Python packages that are added to the environment by default.
+ENVIRONMENT_DEFAULTS = {
+    "pandas": "pd",
+    "matplotlib.pyplot": "plt",
+}
+
+# List of Python builtin libraries that are added to the environment by default.
 WHITELISTED_BUILTINS = [
     "abs",
     "all",
@@ -76,6 +86,9 @@ WHITELISTED_BUILTINS = [
     "vars",
     "zip",
 ]
+
+# List of Python packages that are whitelisted for import in generated code
+#   but are not installed by default.
 WHITELISTED_OPTIONAL_LIBRARIES = [
     "sklearn",
     "statsmodels",
