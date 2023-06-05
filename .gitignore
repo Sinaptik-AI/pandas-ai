@@ -25,4 +25,7 @@ pandasai.egg-info
 .idea
 
 # cache
+
+# cache
 cache.db
+cache_*.db

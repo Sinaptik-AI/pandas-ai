@@ -1,5 +1,6 @@
 """Cache module for caching queries."""
 
+import os
 import shelve
 
 
@@ -55,3 +56,9 @@ class Cache:
         """Clean the cache."""
 
         self.cache.clear()
+
+    def destroy(self) -> None:
+        """Destroy the cache."""
+
+        self.cache.close()
+        os.remove(self.filename + ".db")
