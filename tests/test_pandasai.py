@@ -251,6 +251,15 @@ print(set([1, 2, 3]))
         assert pandasai.run_code(builtins_code, pd.DataFrame()) == {1, 2, 3}
         assert pandasai.last_run_code == "print(set([1, 2, 3]))"
 
+    def test_clean_code_remove_environment_defaults(self, pandasai):
+        pandas_code = """
+import pandas as pd
+print(df.size)
+"""
+        pandasai._llm._output = pandas_code
+        pandasai.run_code(pandas_code, pd.DataFrame())
+        assert pandasai.last_run_code == "print(df.size)"
+
     def test_clean_code_keep_whitelist(self, pandasai):
         safe_code = """
 import numpy as np
