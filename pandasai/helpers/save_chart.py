@@ -62,11 +62,6 @@ def add_save_chart(code: str) -> str:
     """
     date = datetime.now().strftime("%Y-%m-%d")
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-
-    # define chart save directory
-    project_root = dirname(dirname(dirname(__file__)))
-    chart_save_dir = os.path.join(project_root, "exports", "charts", date)
-
     tree = ast.parse(code)
 
     # count number of plt.show() calls
@@ -79,6 +74,9 @@ def add_save_chart(code: str) -> str:
     if show_count == 0:
         return code
 
+    # define chart save directory
+    project_root = dirname(dirname(dirname(__file__)))
+    chart_save_dir = os.path.join(project_root, "exports", "charts", date)
     if not os.path.exists(chart_save_dir):
         os.makedirs(chart_save_dir)
 
@@ -91,9 +89,9 @@ def add_save_chart(code: str) -> str:
             if show_count > 1:
                 filename += f"_{chr(counter)}"
                 counter += 1
-            new_body.append(
-                ast.parse(f"plt.savefig(r'{chart_save_dir}\\{filename}.png')")
-            )
+
+            chart_save_path = os.path.join(chart_save_dir, f"{filename}.png")
+            new_body.append(ast.parse(f"plt.savefig(r'{chart_save_path}')"))
         new_body.append(node)
 
     new_body.append(ast.parse(f"print(r'Charts saved to: {chart_save_dir}')"))
