@@ -69,9 +69,9 @@ def add_save_chart(code: str) -> str:
             if show_count > 1:
                 filename += f"_{chr(counter)}"
                 counter += 1
-            new_body.append(
-                ast.parse(f"plt.savefig(r'{chart_save_dir}\\{filename}.png')")
-            )
+
+            chart_save_path = os.path.join(chart_save_dir, f"{filename}.png")
+            new_body.append(ast.parse(f"plt.savefig(r'{chart_save_path}')"))
         new_body.append(node)
 
     new_body.append(ast.parse(f"print(r'Charts saved to: {chart_save_dir}')"))
