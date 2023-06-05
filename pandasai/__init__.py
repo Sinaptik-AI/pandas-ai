@@ -35,6 +35,7 @@ Example:
 import ast
 import io
 import re
+import sys
 from contextlib import redirect_stdout
 from typing import Optional
 
@@ -43,6 +44,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from .constants import (
+    ENVIRONMENT_DEFAULTS,
     WHITELISTED_BUILTINS,
     WHITELISTED_LIBRARIES,
     WHITELISTED_OPTIONAL_LIBRARIES,
@@ -323,12 +325,15 @@ class PandasAI:
 
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             for alias in node.names:
-                if alias.name in WHITELISTED_BUILTINS:
+                if (
+                    alias.name in WHITELISTED_BUILTINS
+                    or alias.name in ENVIRONMENT_DEFAULTS
+                ):
                     return True
                 if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
                     import_optional_dependency(alias.name)
                     continue
-                if alias.name not in WHITELISTED_LIBRARIES:
+                if alias.name.split(".")[0] not in WHITELISTED_LIBRARIES:
                     raise BadImportError(alias.name)
 
         return False
@@ -412,8 +417,10 @@ Code running:
         )
 
         environment: dict = {
-            "pd": pd,
-            "plt": plt,
+            **{
+                alias: sys.modules[library]
+                for library, alias in ENVIRONMENT_DEFAULTS.items()
+            },
             "__builtins__": {
                 **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
             },
