@@ -34,7 +34,7 @@ df = pd.DataFrame({
 from pandasai.llm.openai import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-pandas_ai = PandasAI(llm, conversational=False)
+pandas_ai = PandasAI(llm)
 pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
 ```
 
@@ -73,7 +73,7 @@ from pandasai.llm.openai import OpenAI
 df = pd.read_csv("data/Loan payments data.csv")
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True)
+pandas_ai = PandasAI(llm, verbose=True, conversational=True)
 response = pandas_ai.run(df, "How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
@@ -93,7 +93,7 @@ from pandasai.llm.openai import OpenAI
 df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True, conversational=False)
+pandas_ai = PandasAI(llm, verbose=True)
 response = pandas_ai.run(df, "Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056
@@ -148,11 +148,49 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True, conversational=False)
+pandas_ai = PandasAI(llm, verbose=True)
 response = pandas_ai.run(
     [employees_df, salaries_df],
     "Who gets paid the most?",
 )
 print(response)
 # Output: Olivia gets paid the most.
+```
+
+### Chain of commands
+
+You can chain commands by passing the output of one command to the next one. In the example, we first filter the original
+dataframe by gender and then by loans that have been paid off.
+
+```python
+import pandas as pd
+
+from pandasai import PandasAI
+from pandasai.llm.openai import OpenAI
+
+df = pd.read_csv("examples/data/Loan payments data.csv")
+
+llm = OpenAI()
+pandas_ai = PandasAI(llm, verbose=True)
+
+# We filter by males only
+from_males_df = pandas_ai(df, "Filter the dataframe by males")
+paid_from_males_df = pandas_ai(from_males_df, "Filter the dataframe by loans that have been paid off")
+print(paid_from_males_df)
+# Output:
+# [247 rows x 11 columns]
+#          Loan_ID loan_status  Principal  terms effective_date    due_date     paid_off_time  past_due_days  age             education Gender
+# 0    xqd20166231     PAIDOFF       1000     30       9/8/2016   10/7/2016   9/14/2016 19:31            NaN   45  High School or Below   male
+# 3    xqd20160004     PAIDOFF       1000     15       9/8/2016   9/22/2016   9/22/2016 20:00            NaN   27               college   male
+# 5    xqd20160706     PAIDOFF        300      7       9/9/2016   9/15/2016    9/9/2016 13:45            NaN   35       Master or Above   male
+# 6    xqd20160007     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/7/2016 23:07            NaN   29               college   male
+# 7    xqd20160008     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/5/2016 20:33            NaN   36               college   male
+# ..           ...         ...        ...    ...            ...         ...               ...            ...  ...                   ...    ...
+# 294  xqd20160295     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 13:00            NaN   36              Bechalor   male
+# 296  xqd20160297     PAIDOFF        800     15      9/14/2016   9/28/2016    9/21/2016 4:42            NaN   27               college   male
+# 297  xqd20160298     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   29  High School or Below   male
+# 298  xqd20160299     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   40  High School or Below   male
+# 299  xqd20160300     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 11:00            NaN   28               college   male
+
+# [247 rows x 11 columns]
 ```

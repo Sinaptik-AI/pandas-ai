@@ -27,7 +27,7 @@ Example:
     from pandasai.llm.openai import OpenAI
     llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-    pandas_ai = PandasAI(llm, conversational=False)
+    pandas_ai = PandasAI(llm)
     pandas_ai(df, prompt='Which are the 5 happiest countries?')
 
     ```
@@ -37,7 +37,7 @@ import io
 import re
 import sys
 from contextlib import redirect_stdout
-from typing import Optional
+from typing import Optional, Union
 
 import astor
 import matplotlib.pyplot as plt
@@ -81,7 +81,7 @@ class PandasAI:
         _verbose (bool, optional): To show the intermediate outputs e.g. python code
         generated and execution step on the prompt. Default to False
         _is_conversational_answer (bool, optional): Whether to return answer in conversational
-        form. Default to True
+        form. Default to False
         _enforce_privacy (bool, optional): Do not display the data on prompt in case of
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
@@ -99,7 +99,7 @@ class PandasAI:
 
     _llm: LLM
     _verbose: bool = False
-    _is_conversational_answer: bool = True
+    _is_conversational_answer: bool = False
     _enforce_privacy: bool = False
     _max_retries: int = 3
     _is_notebook: bool = False
@@ -118,7 +118,7 @@ class PandasAI:
     def __init__(
         self,
         llm=None,
-        conversational=True,
+        conversational=False,
         verbose=False,
         enforce_privacy=False,
         save_charts=False,
@@ -129,7 +129,7 @@ class PandasAI:
 
         Args:
             llm (object): LLMs option to be used for API access. Default is None
-            conversational (bool): Whether to return answer in conversational form. Default to True
+            conversational (bool): Whether to return answer in conversational form. Default to False
             verbose (bool): To show the intermediate outputs e.g. python code generated and
              execution step on the prompt.  Default to False
             enforce_privacy (bool): Execute the codes with Privacy Mode ON.  Default to False
@@ -176,7 +176,7 @@ class PandasAI:
         show_code: bool = False,
         anonymize_df: bool = True,
         use_error_correction_framework: bool = True,
-    ) -> str:
+    ) -> Union[str, pd.DataFrame]:
         """
         Run the PandasAI to make Dataframes Conversational.
 
@@ -287,7 +287,7 @@ class PandasAI:
         show_code: bool = False,
         anonymize_df: bool = True,
         use_error_correction_framework: bool = True,
-    ) -> str:
+    ) -> Union[str, pd.DataFrame]:
         """
         __call__ method of PandasAI class. It calls the `run` method.
 

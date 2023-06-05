@@ -10,7 +10,7 @@ from .data.sample_dataframe import dataframe
 df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True, conversational=False)
+pandas_ai = PandasAI(llm, verbose=True)
 response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056

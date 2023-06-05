@@ -34,7 +34,7 @@ pip install pandasai
 
 > Disclaimer: GDP data was collected from [this source](https://ourworldindata.org/grapher/gross-domestic-product?tab=table), published by World Development Indicators - World Bank (2022.05.26) and collected at National accounts data - World Bank / OECD. It relates to the year of 2020. Happiness indexes were extracted from [the World Happiness Report](https://ftnnews.com/images/stories/documents/2020/WHR20.pdf). Another useful [link](https://data.world/makeovermonday/2020w19-world-happiness-report-2020).
 
-PandasAI is designed to be used in conjunction with [pandas](https://github.com/pandas-dev/pandas). It makes Pandas conversational, allowing you to ask questions about your data and get answers back, in the form of pandas DataFrames. 
+PandasAI is designed to be used in conjunction with [pandas](https://github.com/pandas-dev/pandas). It makes Pandas conversational, allowing you to ask questions about your data and get answers back, in the form of pandas DataFrames.
 
 ### Queries
 
@@ -55,7 +55,7 @@ df = pd.DataFrame({
 from pandasai.llm.openai import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-pandas_ai = PandasAI(llm, conversational=False)
+pandas_ai = PandasAI(llm)
 pandas_ai(df, prompt='Which are the 5 happiest countries?')
 ```
 
@@ -136,19 +136,24 @@ You can find more examples in the [examples](examples) directory.
 ## Command-Line Tool
 
 Pai is the command line tool designed to provide a convenient way to interact with PandasAI through a command line interface (CLI). In order to access the CLI tool, make sure to create a virtualenv for testing purpose and to install project dependencies in your local virtual environment using `pip` by running the following command:
+
 ```
 pip install -e .
 ```
+
 Alternatively, you can use `poetry` to create and activate the virtual environment by running the following command:
+
 ```
 poetry shell
 ```
+
 Inside the activated virtual environment, install the project dependencies by running the following command:
+
 ```
 poetry install
 ```
 
-By following these steps, you will now have the necessary environment to access the CLI tool. 
+By following these steps, you will now have the necessary environment to access the CLI tool.
 
 ```
 pai [OPTIONS]

@@ -29,7 +29,7 @@ class TestPandasAI:
 
     def test_init(self, pandasai):
         assert pandasai._llm is not None
-        assert pandasai._is_conversational_answer is True
+        assert pandasai._is_conversational_answer is False
         assert pandasai._verbose is False
 
     def test_init_without_llm(self):
@@ -44,7 +44,7 @@ class TestPandasAI:
     def test_run(self, pandasai, llm):
         df = pd.DataFrame()
         llm._output = "1"
-        assert pandasai.run(df, "What number comes before 2?") == "1"
+        assert pandasai.run(df, "What number comes before 2?") == 1
 
     def test_run_with_conversational_answer(self, pandasai, llm):
         df = pd.DataFrame()
