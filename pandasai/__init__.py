@@ -36,6 +36,7 @@ import ast
 import io
 import re
 import sys
+import uuid
 from contextlib import redirect_stdout
 from typing import Optional, Union
 
@@ -92,6 +93,7 @@ class PandasAI:
         last_run_code (str, optional): Pass the last execution / run. Default to None
         code_output (str, optional): The code output if any. Default to None
         last_error (str, optional): Error of running code last time. Default to None
+        prompt_id (str, optional): Unique ID to differentiate calls. Default to None
 
 
     Returns (str): Response to a Question related to Data
@@ -117,6 +119,7 @@ class PandasAI:
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
     last_error: Optional[str] = None
+    prompt_id: Optional[str] = None
 
     def __init__(
         self,
@@ -201,6 +204,8 @@ class PandasAI:
         """
 
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
+
+        self.prompt_id = str(uuid.uuid4())
 
         try:
             if self._enable_cache and self._cache.get(prompt):
@@ -421,7 +426,7 @@ class PandasAI:
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code)
+            code = add_save_chart(code, self.prompt_id)
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)

@@ -26,7 +26,7 @@ df.plot()
 plt.show()
 """
         line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code))
+        tree = ast.parse(add_save_chart(chart_code, "test_folder"))
         show_node = ast.parse("plt.show()").body[0]
         show_call_pos = [
             i
@@ -53,7 +53,7 @@ df.plot('b')
 plt.show()
 """
         line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code))
+        tree = ast.parse(add_save_chart(chart_code, "test_folder"))
         show_node = ast.parse("plt.show()").body[0]
         show_call_pos = [
             i
