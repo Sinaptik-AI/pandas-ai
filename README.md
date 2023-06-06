@@ -30,6 +30,13 @@ The documentation for PandasAI can be found [here](https://pandas-ai.readthedocs
 pip install pandasai
 ```
 
+### Optional Installs
+
+Pandas AI optionally supports Google PaLM. To install Pandas AI with this extra dependency, run
+```bash
+pip install pandasai[google]
+```
+
 ## Usage
 
 > Disclaimer: GDP data was collected from [this source](https://ourworldindata.org/grapher/gross-domestic-product?tab=table), published by World Development Indicators - World Bank (2022.05.26) and collected at National accounts data - World Bank / OECD. It relates to the year of 2020. Happiness indexes were extracted from [the World Happiness Report](https://ftnnews.com/images/stories/documents/2020/WHR20.pdf). Another useful [link](https://data.world/makeovermonday/2020w19-world-happiness-report-2020).
