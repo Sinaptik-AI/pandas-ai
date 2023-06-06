@@ -81,3 +81,23 @@ class TestAnonymizeDataFrameHead:
         with pytest.raises(TypeError):
             anonymized_df_head = anonymize_dataframe_head(df, force_conversion=False)
             assert anonymized_df_head.dtypes.all() == df.dtypes.all()
+
+    def test_anonymize_dataframe_head_with_boolean(self):
+        data = {
+            "Email": [
+                "john.doe@gmail.com",
+                "jane.doe@yahoo.com",
+                "jake.doe@hotmail.com",
+            ],
+            "Phone": ["+1 (123) 456-7890", "+1 (234) 567-8901", "+1 (345) 678-9012"],
+            "Credit Card": [
+                "1234-5678-9012-3456",
+                "2345-6789-0123-4567",
+                "3456-7890-1234-5678",
+            ],
+            "Grade": [True, False, True],
+        }
+        df = pd.DataFrame(data)
+        df["Grade"] = df["Grade"].astype("boolean")
+        anonymized_df_head = anonymize_dataframe_head(df)
+        assert anonymized_df_head.dtypes.all() == df.dtypes.all()
