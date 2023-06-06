@@ -10,7 +10,7 @@ packages = [{include = "pandasai"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 python-dotenv = "^1.0.0"
-pandas = "^2.0.1"
+pandas = "1.5.3"
 astor = "^0.8.1"
 openai = "^0.27.5"
 ipython = "^8.13.1"
