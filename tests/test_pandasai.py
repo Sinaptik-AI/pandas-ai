@@ -337,6 +337,10 @@ print(df)
         assert pandasai._llm.call.call_count == 1
         pandasai._cache.delete("How many countries are in the dataframe?")
 
+    def test_process_id(self, pandasai):
+        process_id = pandasai.process_id()
+        assert isinstance(UUID(process_id, version=4), UUID)
+
     def test_last_prompt_id(self, pandasai):
         pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
         prompt_id = pandasai.last_prompt_id()

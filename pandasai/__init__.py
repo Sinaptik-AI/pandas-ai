@@ -152,6 +152,7 @@ class PandasAI:
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
         self._enable_cache = enable_cache
+        self._process_id = str(uuid.uuid4())
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -206,6 +207,7 @@ class PandasAI:
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._prompt_id = str(uuid.uuid4())
+        self.log(f"Prompt ID: {self._prompt_id}")
 
         try:
             if self._enable_cache and self._cache.get(prompt):
@@ -518,6 +520,10 @@ Code running:
         """Log a message"""
         if self._verbose:
             print(message)
+
+    def process_id(self) -> str:
+        """Return the id of this PandasAI object."""
+        return self._process_id
 
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
