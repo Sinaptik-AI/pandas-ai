@@ -115,11 +115,11 @@ class PandasAI:
     }
     _cache: Cache = Cache()
     _enable_cache: bool = True
+    _prompt_id: Optional[str] = None
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
     last_error: Optional[str] = None
-    prompt_id: Optional[str] = None
 
     def __init__(
         self,
@@ -205,7 +205,7 @@ class PandasAI:
 
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
-        self.prompt_id = str(uuid.uuid4())
+        self._prompt_id = str(uuid.uuid4())
 
         try:
             if self._enable_cache and self._cache.get(prompt):
@@ -426,7 +426,7 @@ class PandasAI:
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code, self.prompt_id)
+            code = add_save_chart(code, self._prompt_id)
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
@@ -518,3 +518,9 @@ Code running:
         """Log a message"""
         if self._verbose:
             print(message)
+
+    def last_prompt_id(self) -> str:
+        """Return the id of the last prompt that was run."""
+        if self._prompt_id is None:
+            raise ValueError("Pandas AI has not been run yet.")
+        return self._prompt_id
