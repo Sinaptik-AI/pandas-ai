@@ -60,5 +60,5 @@ class Cache:
     def destroy(self) -> None:
         """Destroy the cache."""
 
-        self.cache.close()
-        os.remove(self.filename + ".db")
+        if os.path.exists(self.filename + ".db"):
+            os.remove(self.filename + ".db")
