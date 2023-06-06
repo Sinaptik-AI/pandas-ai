@@ -12,7 +12,9 @@ Pandas AI is a Python library that adds generative artificial intelligence capab
 
 <!-- Add images/pandas-ai.png -->
 
-![PandasAI](images/pandas-ai.png?raw=true)
+<div align="center">
+<img src="images/pandas-ai.png?raw=true" alt="PandasAI"/>
+</div>
 
 ## Demo
 
