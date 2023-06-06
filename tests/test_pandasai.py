@@ -3,6 +3,7 @@
 from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
+from uuid import UUID
 
 import pandas as pd
 import pytest
@@ -335,3 +336,16 @@ print(df)
         )
         assert pandasai._llm.call.call_count == 1
         pandasai._cache.delete("How many countries are in the dataframe?")
+
+    def test_process_id(self, pandasai):
+        process_id = pandasai.process_id()
+        assert isinstance(UUID(process_id, version=4), UUID)
+
+    def test_last_prompt_id(self, pandasai):
+        pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
+        prompt_id = pandasai.last_prompt_id()
+        assert isinstance(UUID(prompt_id, version=4), UUID)
+
+    def test_last_prompt_id_no_prompt(self, pandasai):
+        with pytest.raises(ValueError):
+            pandasai.last_prompt_id()

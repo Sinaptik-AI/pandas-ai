@@ -36,6 +36,7 @@ import ast
 import io
 import re
 import sys
+import uuid
 from contextlib import redirect_stdout
 from typing import Optional, Union
 
@@ -92,6 +93,7 @@ class PandasAI:
         last_run_code (str, optional): Pass the last execution / run. Default to None
         code_output (str, optional): The code output if any. Default to None
         last_error (str, optional): Error of running code last time. Default to None
+        prompt_id (str, optional): Unique ID to differentiate calls. Default to None
 
 
     Returns (str): Response to a Question related to Data
@@ -113,6 +115,7 @@ class PandasAI:
     }
     _cache: Cache = Cache()
     _enable_cache: bool = True
+    _prompt_id: Optional[str] = None
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -149,6 +152,7 @@ class PandasAI:
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
         self._enable_cache = enable_cache
+        self._process_id = str(uuid.uuid4())
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -201,6 +205,9 @@ class PandasAI:
         """
 
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
+
+        self._prompt_id = str(uuid.uuid4())
+        self.log(f"Prompt ID: {self._prompt_id}")
 
         try:
             if self._enable_cache and self._cache.get(prompt):
@@ -421,7 +428,7 @@ class PandasAI:
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code)
+            code = add_save_chart(code, self._prompt_id)
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
@@ -513,3 +520,13 @@ Code running:
         """Log a message"""
         if self._verbose:
             print(message)
+
+    def process_id(self) -> str:
+        """Return the id of this PandasAI object."""
+        return self._process_id
+
+    def last_prompt_id(self) -> str:
+        """Return the id of the last prompt that was run."""
+        if self._prompt_id is None:
+            raise ValueError("Pandas AI has not been run yet.")
+        return self._prompt_id
