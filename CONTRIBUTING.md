@@ -36,10 +36,10 @@ pre-commit install
 
 ### 🧹 Linting
 
-We use `pylint` to lint our code. You can run the linter by running the following command:
+We use `ruff` to lint our code. You can run the linter by running the following command:
 
 ```bash
-pylint pandasai examples
+ruff pandasai examples
 ```
 
 Make sure that the linter does not report any errors or warnings before submitting a pull request.
