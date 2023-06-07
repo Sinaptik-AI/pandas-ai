@@ -22,7 +22,7 @@ jobs:
         run: pip install poetry==1.4.2
       - name: Install dependencies
         run: poetry install --all-extras
-      - name: Lint with pylint
-        run: poetry run pylint pandasai examples
+      - name: Lint with ruff
+        run: bash scripts/lint.sh
       - name: Test with pytest
         run: poetry run pytest

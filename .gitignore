@@ -5,6 +5,9 @@
 __pycache__
 .pytest_cache
 
+# ruff cache
+.ruff_cache
+
 # macOS
 .DS_Store
 

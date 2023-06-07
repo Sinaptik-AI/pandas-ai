@@ -48,8 +48,8 @@ pai = "pai.__main__:main"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.pylint]
-ignore = "tests_*"
+[tool.ruff]
+exclude = ["tests_*"]
 
 [tool.pytest.ini_options]
 env = [
