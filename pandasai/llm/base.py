@@ -386,7 +386,7 @@ class BaseGoogle(LLM):
         Call the Google LLM.
 
         Args:
-            instruction (str): Instruction to pass
+            instruction (object): Instruction to pass
             value (str): Value to pass
             suffix (str): Suffix to pass
 

@@ -1,9 +1,6 @@
 """Unit tests for the correct multiples prompt class"""
 
-from datetime import date
-
 import pandas as pd
-import pytest
 
 from pandasai.prompts.correct_multiples_prompt import (
     CorrectMultipleDataframesErrorPrompt,

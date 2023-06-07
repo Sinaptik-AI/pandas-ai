@@ -4,17 +4,25 @@ import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from pandasai.llm.openai import OpenAI
+from pandasai.prompts.base import Prompt
 
 
 class TestOpenAILLM:
     """Unit tests for the openai LLM class"""
+
+    @pytest.fixture
+    def prompt(self):
+        class MockPrompt(Prompt):
+            text: str = "instruction"
+
+        return MockPrompt()
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
             OpenAI().type
 
     def test_type_with_token(self):
-        OpenAI(api_token="test").type == "openai"
+        assert OpenAI(api_token="test").type == "openai"
 
     def test_params_setting(self):
         llm = OpenAI(
@@ -75,21 +83,21 @@ class TestOpenAILLM:
         result = openai.chat_completion("Hi")
         assert result == expected_response
 
-    def test_call_with_unsupported_model(self):
+    def test_call_with_unsupported_model(self, prompt):
         with pytest.raises(UnsupportedOpenAIModelError):
             llm = OpenAI(api_token="test", model="not a model")
-            llm.call(instruction="test", value="test")
+            llm.call(instruction=prompt, value="test")
 
-    def test_call_supported_completion_model(self, mocker):
+    def test_call_supported_completion_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="text-davinci-003")
         mocker.patch.object(openai, "completion", return_value="response")
 
-        result = openai.call(instruction="instruction", value="value")
+        result = openai.call(instruction=prompt, value="value")
         assert result == "response"
 
-    def test_call_supported_chat_model(self, mocker):
+    def test_call_supported_chat_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="gpt-4")
         mocker.patch.object(openai, "chat_completion", return_value="response")
 
-        result = openai.call(instruction="instruction", value="value")
+        result = openai.call(instruction=prompt, value="value")
         assert result == "response"

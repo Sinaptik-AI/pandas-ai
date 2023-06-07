@@ -10,7 +10,6 @@ import pytest
 
 from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
-from pandasai.helpers.cache import Cache
 from pandasai.llm.fake import FakeLLM
 
 # pylint: disable=too-many-public-methods
@@ -249,7 +248,6 @@ import set
 print(set([1, 2, 3]))
 """
         pandasai._llm._output = builtins_code
-        assert pandasai._clean_code(builtins_code) == "print(set([1, 2, 3]))"
         assert pandasai.run_code(builtins_code, pd.DataFrame()) == {1, 2, 3}
         assert pandasai.last_run_code == "print(set([1, 2, 3]))"
 
@@ -269,7 +267,6 @@ print(np.array([1, 2, 3]))
 """
         safe_code = safe_code.strip()
         pandasai._llm._output = safe_code
-        assert pandasai._clean_code(safe_code) == safe_code
         assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
         assert pandasai.last_run_code == safe_code
 
@@ -280,10 +277,10 @@ print(os.listdir())
 """
         pandasai._llm._output = malicious_code
         with pytest.raises(BadImportError):
-            pandasai._clean_code(malicious_code)
+            pandasai.run_code(malicious_code, pd.DataFrame())
 
     def test_clean_code_raise_import_error(self, pandasai):
-        """Test that clean code raises an ImportError when
+        """Test that an ImportError is raised when
         the code contains an import statement for an optional library."""
         optional_code = """
 import seaborn as sns
@@ -294,7 +291,7 @@ print(sns.__version__)
         # patch the import of seaborn to raise an ImportError
         with pytest.raises(ImportError):
             with patch.dict("sys.modules", {"seaborn": None}):
-                pandasai._clean_code(optional_code)
+                pandasai.run_code(optional_code, pd.DataFrame())
 
     def test_remove_df_overwrites(self, pandasai):
         malicious_code = """
@@ -302,7 +299,8 @@ df = pd.DataFrame([1,2,3])
 print(df)
 """
         pandasai._llm._output = malicious_code
-        assert pandasai._clean_code(malicious_code) == "print(df)"
+        pandasai.run_code(malicious_code, pd.DataFrame())
+        assert pandasai.last_run_code == "print(df)"
 
     def test_exception_handling(self, pandasai):
         pandasai.run_code = Mock(
@@ -321,7 +319,7 @@ print(df)
         pandasai.clear_cache()
         pandasai._enable_cache = True
         pandasai._llm.call = Mock(return_value='print("Hello world")')
-        assert pandasai._cache.get("How many countries are in the dataframe?") == None
+        assert pandasai._cache.get("How many countries are in the dataframe?") is None
         pandasai(
             pd.DataFrame(),
             "How many countries are in the dataframe?",

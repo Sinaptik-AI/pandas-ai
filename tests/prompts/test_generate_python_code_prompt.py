@@ -2,8 +2,6 @@
 
 from datetime import date
 
-import pytest
-
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 

@@ -6,6 +6,7 @@ from google import generativeai
 
 from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.llm.google_palm import GooglePalm
+from pandasai.prompts.base import Prompt
 
 
 class MockedCompletion:
@@ -15,6 +16,13 @@ class MockedCompletion:
 
 class TestGooglePalm:
     """Unit tests for the GooglePalm LLM class"""
+
+    @pytest.fixture
+    def prompt(self):
+        class MockPrompt(Prompt):
+            text: str = "Hello"
+
+        return MockPrompt()
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
@@ -39,44 +47,44 @@ class TestGooglePalm:
         assert llm.top_k == 0.5
         assert llm.max_output_tokens == 64
 
-    def test_validations(self):
+    def test_validations(self, prompt):
         with pytest.raises(
             ValueError, match=re.escape("temperature must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", temperature=-1).call("Hello", "World")
+            GooglePalm(api_key="test", temperature=-1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("temperature must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", temperature=1.1).call("Hello", "World")
+            GooglePalm(api_key="test", temperature=1.1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_p must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", top_p=-1).call("Hello", "World")
+            GooglePalm(api_key="test", top_p=-1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_p must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", top_p=1.1).call("Hello", "World")
+            GooglePalm(api_key="test", top_p=1.1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", top_k=-1).call("Hello", "World")
+            GooglePalm(api_key="test", top_k=-1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
         ):
-            GooglePalm(api_key="test", top_k=1.1).call("Hello", "World")
+            GooglePalm(api_key="test", top_k=1.1).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("max_output_tokens must be greater than zero")
         ):
-            GooglePalm(api_key="test", max_output_tokens=0).call("Hello", "World")
+            GooglePalm(api_key="test", max_output_tokens=0).call(prompt, "World")
 
         with pytest.raises(ValueError, match=re.escape("model is required.")):
-            GooglePalm(api_key="test", model="").call("Hello", "World")
+            GooglePalm(api_key="test", model="").call(prompt, "World")
 
     def test_text_generation(self, mocker):
         llm = GooglePalm(api_key="test")
@@ -89,7 +97,7 @@ class TestGooglePalm:
         result = llm._generate_text("Hi")
         assert result == expected_text
 
-    def test_call(self, mocker):
+    def test_call(self, mocker, prompt):
         llm = GooglePalm(api_key="test")
         expected_text = "This is the expected text."
         expected_response = MockedCompletion(expected_text)
@@ -97,5 +105,5 @@ class TestGooglePalm:
             generativeai, "generate_text", return_value=expected_response
         )
 
-        result = llm.call(instruction="hello", value="world", suffix="!")
+        result = llm.call(instruction=prompt, value="world", suffix="!")
         assert result == expected_text
