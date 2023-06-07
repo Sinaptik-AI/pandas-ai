@@ -5,7 +5,7 @@ using Large Language Models (LLMs).
 
 ## Installation
 
-To use pandasai, first install it using pip through [PyPi](https://pypi.org/project/pandasai/) package distribution
+To use `pandasai`, first install it using pip through [PyPi](https://pypi.org/project/pandasai/) package distribution
 framework. It is actively developed so be vigilant for versions updates.
 
 ```console
@@ -14,6 +14,14 @@ pip install pandasai
 
 > It is recommended to create a Virtual environment using your preffred choice of Environment Managers e.g conda,
 > Poetry etc
+
+### Optional Installs
+
+`pandasai` optionally supports Google PaLM. To install `pandasai` with this extra dependency, run
+
+```console
+pip install pandasai[google]
+```
 
 ## Getting Started
 
