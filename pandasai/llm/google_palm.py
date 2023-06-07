@@ -1,7 +1,7 @@
 """Google Palm LLM
 
-This module is to run the Google PaLM API hosted and maintained by Google. To read more on Google
-PaLM follow
+This module is to run the Google PaLM API hosted and maintained by Google.
+To read more on Google PaLM follow
 https://developers.generativeai.google/products/palm.
 
 Example:
@@ -15,8 +15,8 @@ from .base import BaseGoogle
 
 class GooglePalm(BaseGoogle):
     """Google Palm LLM
-    BaseGoogle class is extended for Google Palm model. The default and only model support at the
-    moment is models/text-bison-001.
+    BaseGoogle class is extended for Google Palm model. The default and only model
+    support at the moment is models/text-bison-001.
 
     """
 
@@ -33,9 +33,7 @@ class GooglePalm(BaseGoogle):
         self._set_params(**kwargs)
 
     def _valid_params(self):
-        """Returns if the Parameters are valid or Not
-
-        """
+        """Returns if the Parameters are valid or Not"""
         return super()._valid_params() + ["model"]
 
     def _validate(self):

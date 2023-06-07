@@ -11,11 +11,11 @@ class Notebook:
     """Baseclass to implement Notebook helper functions"""
 
     def in_notebook(self) -> bool:
-
         """
         Checks whether the code is running inside a notebook environment.
 
-        Returns (bool): True if the code is running inside a Jupyter notebook, False otherwise.
+        Returns (bool): True if the code is running inside a Jupyter notebook,
+        False otherwise.
         """
         try:
             if "IPKernelApp" not in get_ipython().config:
@@ -25,10 +25,9 @@ class Notebook:
         return True
 
     def create_new_cell(self, contents: str) -> None:
-
         """
-        Creates a new code cell in the Jupyter notebook and populates it with the specified
-        contents.
+        Creates a new code cell in the Jupyter notebook and populates
+        it with the specified contents.
         Args:
             contents (str): The contents to be added to the new code cell.
 
@@ -36,8 +35,8 @@ class Notebook:
             If the IPython module is not installed.
 
         AttributeError:
-            If the 'get_ipython()' call raises an AttributeError, which can happen if the code is
-            not running inside a Jupyter notebook.
+            If the 'get_ipython()' call raises an AttributeError, which can happen
+            if the code is not running inside a Jupyter notebook.
 
         Returns: None
 

@@ -1,8 +1,8 @@
 """ Open Assistant LLM
 
-This module is to run the HuggingFace OpenAssistant API hosted and maintained by HuggingFace.co.
-To generate HF_TOKEN go to https://huggingface.co/settings/tokens after creating Account on
-the platform.
+This module is to run the HuggingFace OpenAssistant API hosted and maintained by
+HuggingFace.co. To generate HF_TOKEN go to https://huggingface.co/settings/tokens after
+creating Account on the platform.
 
 Example:
     Use below example to call Starcoder Model
@@ -23,8 +23,8 @@ load_dotenv()
 
 class OpenAssistant(HuggingFaceLLM):
     """Open Assistant LLM
-     A base HuggingFaceLLM class is extended to use OpenAssistant Model via its API.
-     Currently `oasst-sft-1-pythia-12b` is supported via this module.
+    A base HuggingFaceLLM class is extended to use OpenAssistant Model via its API.
+    Currently `oasst-sft-1-pythia-12b` is supported via this module.
     """
 
     api_token: str
@@ -35,7 +35,6 @@ class OpenAssistant(HuggingFaceLLM):
     _max_retries: int = 10
 
     def __init__(self, api_token: Optional[str] = None):
-
         """
         __init__ method of OpenAssistant Calss
 

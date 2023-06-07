@@ -10,16 +10,11 @@ import pytest
 
 from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
-from pandasai.helpers.cache import Cache
 from pandasai.llm.fake import FakeLLM
-
-# pylint: disable=too-many-public-methods
 
 
 class TestPandasAI:
     """Unit tests for the PandasAI class"""
-
-    # pylint: disable=missing-function-docstring protected-access invalid-name
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
@@ -133,7 +128,7 @@ Using the provided dataframe, df, return the python code and make sure to prefix
 How many countries are in the dataframe?
 
 Code:
-"""
+"""  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?")
         assert pandasai._llm.last_prompt == expected_prompt
 
@@ -170,7 +165,7 @@ This is the result of `print(df.head(5))`:
 0  (743) 226-2382   linda55@nguyen-williams.info     Rachel Davis   54     5416931670890256
 1    +1 123456789   oliverdouglas@lee-harris.biz  Nathan Richards   21  3109-2849-2297-7926
 2      0002223334  sara41@mitchell-rodriguez.com     Monica Scott   27  4795 0612 5882 4558.
-"""
+"""  # noqa: E501
         pandasai.run(df, "How many people are in the dataframe?", anonymize_df=True)
         assert (
             expected_non_anonymized_data_frame_substring
@@ -196,7 +191,7 @@ Using the provided dataframe, df, return the python code and make sure to prefix
 How many countries are in the dataframe?
 
 Code:
-"""
+"""  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?", anonymize_df=False)
         assert pandasai._llm.last_prompt == expected_prompt
 
@@ -321,7 +316,7 @@ print(df)
         pandasai.clear_cache()
         pandasai._enable_cache = True
         pandasai._llm.call = Mock(return_value='print("Hello world")')
-        assert pandasai._cache.get("How many countries are in the dataframe?") == None
+        assert pandasai._cache.get("How many countries are in the dataframe?") is None
         pandasai(
             pd.DataFrame(),
             "How many countries are in the dataframe?",

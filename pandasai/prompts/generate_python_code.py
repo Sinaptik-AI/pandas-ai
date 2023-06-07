@@ -10,8 +10,7 @@ dataframe `df`. Using the provided dataframe, df, return the python code and mak
 the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG}
 exactly to get the answer to the following question:
 ```
-"""
-# pylint:disable=duplicate-code
+"""  # noqa: E501
 
 from datetime import date
 
@@ -22,7 +21,6 @@ from .base import Prompt
 
 class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
-    # pylint: disable=too-few-public-methods
 
     text: str = """
 Today is {today_date}.
@@ -32,7 +30,7 @@ This is the result of `print(df.head({rows_to_display}))`:
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
-"""
+"""  # noqa: E501
 
     def __init__(self, **kwargs):
         super().__init__(
