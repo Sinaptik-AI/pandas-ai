@@ -210,6 +210,8 @@ llm = Starcoder(api_token="YOUR_HF_API_KEY")
 llm = Falcon(api_token="YOUR_HF_API_KEY")
 ```
 
+Please note that at the moment OpenAI provides the best results, as the prompts are specifically designed for OpenAI and might hallucinate with other LLMs.
+
 ## License
 
 PandasAI is licensed under the MIT License. See the LICENSE file for more details.
@@ -232,10 +234,10 @@ pre-commit install
 
 ### Todo
 
-- [ ] Add support for more LLMs
+- [x] Add support for more LLMs
 - [x] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
-- [ ] Add unit tests
+- [x] Add unit tests
 - [x] Add contributing guidelines
 - [x] Add CI
 - [x] Add support for conversational responses
