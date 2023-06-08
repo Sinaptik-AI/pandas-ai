@@ -45,3 +45,17 @@ The middleware can then be used as follows:
 ```python
 pandas_ai = PandasAI(llm, middlewares=[PrintMiddleware()])
 ```
+
+## Built-in middlewares
+
+`pandasai` comes with a few built-in middlewares that can be used to modify the generated code.
+
+### `StreanlitMiddleware`
+
+The `StreamlitMiddleware` middleware adds the compatibility required to run the generated code in a Streamlit app.
+
+```python
+from pandasai import StreamlitMiddleware
+
+pandas_ai = PandasAI(llm, middlewares=[StreamlitMiddleware()])
+```
