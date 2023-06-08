@@ -2,8 +2,6 @@
 
 from datetime import date
 
-import pytest
-
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 
 
