@@ -148,11 +148,16 @@ class PandasAI:
         """
 
         # configure the logging
+        # noinspection PyArgumentList
+        # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s [%(levelname)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
-            filename=("pandasai.log"),
+            handlers=[
+                logging.FileHandler("pandasai.log"),
+                logging.StreamHandler(sys.stdout),
+            ],
         )
         self._logger = logging.getLogger(__name__)
 
