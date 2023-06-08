@@ -150,14 +150,14 @@ class PandasAI:
         # configure the logging
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
+        handlers = [logging.FileHandler("pandasai.log")]
+        if verbose:
+            handlers.append(logging.StreamHandler(sys.stdout))
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s [%(levelname)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[
-                logging.FileHandler("pandasai.log"),
-                logging.StreamHandler(sys.stdout),
-            ],
+            handlers=handlers,
         )
         self._logger = logging.getLogger(__name__)
 
@@ -556,8 +556,7 @@ Code running:
 
     def log(self, message: str):
         """Log a message"""
-        if self._verbose:
-            self._logger.info(message)
+        self._logger.info(message)
 
     def process_id(self) -> str:
         """Return the id of this PandasAI object."""
