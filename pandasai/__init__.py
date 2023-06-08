@@ -34,6 +34,7 @@ Example:
 """
 import ast
 import io
+import logging
 import re
 import sys
 import uuid
@@ -145,6 +146,11 @@ class PandasAI:
             enforce_privacy (bool): Execute the codes with Privacy Mode ON.  Default to False
             save_charts (bool): Save the charts generated in the notebook. Default to False
         """
+
+        # configure the logging
+        logging.basicConfig(level=logging.INFO)
+        self._logger = logging.getLogger(__name__)
+
         if llm is None:
             raise LLMNotFoundError(
                 "An LLM should be provided to instantiate a PandasAI instance"
@@ -541,7 +547,7 @@ Code running:
     def log(self, message: str):
         """Log a message"""
         if self._verbose:
-            print(message)
+            self._logger.info(message)
 
     def process_id(self) -> str:
         """Return the id of this PandasAI object."""
