@@ -148,7 +148,12 @@ class PandasAI:
         """
 
         # configure the logging
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            filename=("pandasai.log"),
+        )
         self._logger = logging.getLogger(__name__)
 
         if llm is None:
