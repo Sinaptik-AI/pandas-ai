@@ -15,7 +15,7 @@ class Middleware(ABC):
     _has_run: str = False
 
     @abstractmethod
-    def run(self, code: str = None) -> str:
+    def run(self, code: str) -> str:
         """Run the middleware"""
         raise MethodNotImplementedError
 

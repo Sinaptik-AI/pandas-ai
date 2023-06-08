@@ -117,7 +117,7 @@ class PandasAI:
     _cache: Cache = Cache()
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
-    _middlewares: List[Middleware] = []
+    _middlewares: List[Middleware] = None
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -131,7 +131,7 @@ class PandasAI:
         enforce_privacy=False,
         save_charts=False,
         enable_cache=True,
-        middlewares=[],
+        middlewares=None,
     ):
         """
 
@@ -156,10 +156,12 @@ class PandasAI:
         self._save_charts = save_charts
         self._enable_cache = enable_cache
         self._process_id = str(uuid.uuid4())
-        self._middlewares = middlewares
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
+
+        if middlewares is not None:
+            self.add_middlewares(*middlewares)
 
     def conversational_answer(self, question: str, answer: str) -> str:
         """
@@ -280,7 +282,7 @@ class PandasAI:
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
 
-            for middleware in self._middlewares:
+            for middleware in self._middlewares if self._middlewares else []:
                 code = middleware(code)
 
             answer = self.run_code(
@@ -314,6 +316,8 @@ class PandasAI:
             *middlewares: A list of middlewares
 
         """
+        if self._middlewares is None:
+            self._middlewares = []
         self._middlewares.extend(middlewares)
 
     def clear_cache(self):
