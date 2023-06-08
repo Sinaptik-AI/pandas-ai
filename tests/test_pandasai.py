@@ -11,6 +11,7 @@ import pytest
 from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
+from pandasai.middlewares.base import Middleware
 
 # pylint: disable=too-many-public-methods
 
@@ -27,6 +28,14 @@ class TestPandasAI:
     @pytest.fixture
     def pandasai(self, llm):
         return PandasAI(llm, enable_cache=False)
+
+    @pytest.fixture
+    def test_middleware(self):
+        class TestMiddleware(Middleware):
+            def run(self, code: str) -> str:
+                return "print('Overwritten by middleware')"
+
+        return TestMiddleware
 
     def test_init(self, pandasai):
         assert pandasai._llm is not None
@@ -347,3 +356,18 @@ print(df)
     def test_last_prompt_id_no_prompt(self, pandasai):
         with pytest.raises(ValueError):
             pandasai.last_prompt_id()
+
+    def test_add_middlewares(self, pandasai, test_middleware):
+        middleware = test_middleware()
+        pandasai.add_middlewares(middleware)
+        assert pandasai._middlewares == [middleware]
+
+    def test_middlewares(self, pandasai, test_middleware):
+        middleware = test_middleware()
+        pandasai._middlewares = [middleware]
+        assert pandasai._middlewares == [middleware]
+        assert (
+            pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
+            == "Overwritten by middleware"
+        )
+        assert middleware.has_run

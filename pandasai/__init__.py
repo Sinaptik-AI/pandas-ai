@@ -38,7 +38,7 @@ import re
 import sys
 import uuid
 from contextlib import redirect_stdout
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import astor
 import matplotlib.pyplot as plt
@@ -57,6 +57,7 @@ from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
+from .middlewares.base import Middleware
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
@@ -116,6 +117,7 @@ class PandasAI:
     _cache: Cache = Cache()
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
+    _middlewares: List[Middleware] = []
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -129,6 +131,7 @@ class PandasAI:
         enforce_privacy=False,
         save_charts=False,
         enable_cache=True,
+        middlewares=[],
     ):
         """
 
@@ -153,6 +156,7 @@ class PandasAI:
         self._save_charts = save_charts
         self._enable_cache = enable_cache
         self._process_id = str(uuid.uuid4())
+        self._middlewares = middlewares
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -276,6 +280,9 @@ class PandasAI:
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
 
+            for middleware in self._middlewares:
+                code = middleware(code)
+
             answer = self.run_code(
                 code,
                 data_frame,
@@ -292,11 +299,22 @@ class PandasAI:
             return answer
         except Exception as exception:  # pylint: disable=broad-except
             self.last_error = str(exception)
+            print(exception)
             return (
                 "Unfortunately, I was not able to answer your question, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    def add_middlewares(self, *middlewares: List[Middleware]):
+        """
+        Add middlewares to PandasAI instance.
+
+        Args:
+            *middlewares: A list of middlewares
+
+        """
+        self._middlewares.extend(middlewares)
 
     def clear_cache(self):
         """
