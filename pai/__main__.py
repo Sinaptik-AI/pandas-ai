@@ -97,12 +97,12 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
             ".xml": pd.read_xml,
         }
         if ext in file_format:
-            df = file_format[ext](dataset)  # pylint: disable=C0103
+            df = file_format[ext](dataset)
         else:
             print("Unsupported file format.")
             return
 
-    except Exception as e:  # pylint: disable=W0718 disable=C0103
+    except Exception as e:
         print(e)
         return
 
@@ -126,5 +126,5 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
         response = pandas_ai(df, prompt)
         print(response)
 
-    except Exception as e:  # pylint: disable=W0718 disable=C0103
+    except Exception as e:
         print(e)

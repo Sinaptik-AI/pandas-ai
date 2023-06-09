@@ -29,8 +29,6 @@ from .base import Prompt
 class CorrectErrorPrompt(Prompt):
     """Prompt to Correct Python code on Error"""
 
-    # pylint: disable=too-few-public-methods
-
     text: str = """
 Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
