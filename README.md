@@ -163,7 +163,7 @@ Options:
 
 - **-d, --dataset**: The file path to the dataset.
 - **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will pull from the `.env` file.
-- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`, or Google `palm`.
+- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`, `falcon`, `azure-openai` or `google-palm`.
 - **-p, --prompt**: Prompt that PandasAI will run.
 
 To view a full list of available options and their descriptions, run the following command:
@@ -205,7 +205,12 @@ llm = OpenAI(api_token="YOUR_API_KEY")
 
 # Starcoder
 llm = Starcoder(api_token="YOUR_HF_API_KEY")
+
+# Falcon
+llm = Falcon(api_token="YOUR_HF_API_KEY")
 ```
+
+Please note that at the moment OpenAI provides the best results, as the prompts are specifically designed for OpenAI and might hallucinate with other LLMs.
 
 ## License
 
@@ -229,10 +234,10 @@ pre-commit install
 
 ### Todo
 
-- [ ] Add support for more LLMs
+- [x] Add support for more LLMs
 - [x] Make PandasAI available from a CLI
 - [ ] Create a web interface for PandasAI
-- [ ] Add unit tests
+- [x] Add unit tests
 - [x] Add contributing guidelines
 - [x] Add CI
 - [x] Add support for conversational responses

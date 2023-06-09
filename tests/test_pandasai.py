@@ -11,6 +11,7 @@ import pytest
 from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
+from pandasai.middlewares.base import Middleware
 
 
 class TestPandasAI:
@@ -23,6 +24,14 @@ class TestPandasAI:
     @pytest.fixture
     def pandasai(self, llm):
         return PandasAI(llm, enable_cache=False)
+
+    @pytest.fixture
+    def test_middleware(self):
+        class TestMiddleware(Middleware):
+            def run(self, code: str) -> str:
+                return "print('Overwritten by middleware')"
+
+        return TestMiddleware
 
     def test_init(self, pandasai):
         assert pandasai._llm is not None
@@ -244,7 +253,6 @@ import set
 print(set([1, 2, 3]))
 """
         pandasai._llm._output = builtins_code
-        assert pandasai._clean_code(builtins_code) == "print(set([1, 2, 3]))"
         assert pandasai.run_code(builtins_code, pd.DataFrame()) == {1, 2, 3}
         assert pandasai.last_run_code == "print(set([1, 2, 3]))"
 
@@ -264,7 +272,6 @@ print(np.array([1, 2, 3]))
 """
         safe_code = safe_code.strip()
         pandasai._llm._output = safe_code
-        assert pandasai._clean_code(safe_code) == safe_code
         assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
         assert pandasai.last_run_code == safe_code
 
@@ -275,10 +282,10 @@ print(os.listdir())
 """
         pandasai._llm._output = malicious_code
         with pytest.raises(BadImportError):
-            pandasai._clean_code(malicious_code)
+            pandasai.run_code(malicious_code, pd.DataFrame())
 
     def test_clean_code_raise_import_error(self, pandasai):
-        """Test that clean code raises an ImportError when
+        """Test that an ImportError is raised when
         the code contains an import statement for an optional library."""
         optional_code = """
 import seaborn as sns
@@ -289,7 +296,7 @@ print(sns.__version__)
         # patch the import of seaborn to raise an ImportError
         with pytest.raises(ImportError):
             with patch.dict("sys.modules", {"seaborn": None}):
-                pandasai._clean_code(optional_code)
+                pandasai.run_code(optional_code, pd.DataFrame())
 
     def test_remove_df_overwrites(self, pandasai):
         malicious_code = """
@@ -297,7 +304,8 @@ df = pd.DataFrame([1,2,3])
 print(df)
 """
         pandasai._llm._output = malicious_code
-        assert pandasai._clean_code(malicious_code) == "print(df)"
+        pandasai.run_code(malicious_code, pd.DataFrame())
+        assert pandasai.last_run_code == "print(df)"
 
     def test_exception_handling(self, pandasai):
         pandasai.run_code = Mock(
@@ -344,3 +352,18 @@ print(df)
     def test_last_prompt_id_no_prompt(self, pandasai):
         with pytest.raises(ValueError):
             pandasai.last_prompt_id()
+
+    def test_add_middlewares(self, pandasai, test_middleware):
+        middleware = test_middleware()
+        pandasai.add_middlewares(middleware)
+        assert pandasai._middlewares == [middleware]
+
+    def test_middlewares(self, pandasai, test_middleware):
+        middleware = test_middleware()
+        pandasai._middlewares = [middleware]
+        assert pandasai._middlewares == [middleware]
+        assert (
+            pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
+            == "Overwritten by middleware"
+        )
+        assert middleware.has_run

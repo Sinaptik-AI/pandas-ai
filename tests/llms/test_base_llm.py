@@ -21,6 +21,7 @@ class TestBaseLLM:
         code = "`print('Hello World')`"
         assert LLM()._polish_code(code) == "print('Hello World')"
         code = "print('Hello World')"
+        assert LLM()._polish_code(code) == "print('Hello World')"
 
     def test_is_python_code(self):
         code = "python print('Hello World')"
@@ -68,6 +69,7 @@ print('Hello World')
 """
 
         assert LLM()._extract_code(code) == "print('Hello World')"
+
         code = """Sure, here is your code:
 
 <startCode>
@@ -76,3 +78,5 @@ print('Hello World')
 
 ```
 """
+
+        assert LLM()._extract_code(code) == "print('Hello World')"

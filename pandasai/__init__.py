@@ -35,11 +35,12 @@ Example:
 """
 import ast
 import io
+import logging
 import re
 import sys
 import uuid
 from contextlib import redirect_stdout
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import astor
 import matplotlib.pyplot as plt  # noqa: F401
@@ -58,6 +59,7 @@ from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
+from .middlewares.base import Middleware
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
@@ -119,6 +121,7 @@ class PandasAI:
     _cache: Cache = Cache()
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
+    _middlewares: List[Middleware] = None
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -132,6 +135,7 @@ class PandasAI:
         enforce_privacy=False,
         save_charts=False,
         enable_cache=True,
+        middlewares=None,
     ):
         """
 
@@ -148,6 +152,21 @@ class PandasAI:
             save_charts (bool): Save the charts generated in the notebook.
             Default to False
         """
+
+        # configure the logging
+        # noinspection PyArgumentList
+        # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
+        handlers = [logging.FileHandler("pandasai.log")]
+        if verbose:
+            handlers.append(logging.StreamHandler(sys.stdout))
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            handlers=handlers,
+        )
+        self._logger = logging.getLogger(__name__)
+
         if llm is None:
             raise LLMNotFoundError(
                 "An LLM should be provided to instantiate a PandasAI instance"
@@ -162,6 +181,9 @@ class PandasAI:
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
+
+        if middlewares is not None:
+            self.add_middlewares(*middlewares)
 
     def conversational_answer(self, question: str, answer: str) -> str:
         """
@@ -282,6 +304,9 @@ class PandasAI:
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
 
+            for middleware in self._middlewares if self._middlewares else []:
+                code = middleware(code)
+
             answer = self.run_code(
                 code,
                 data_frame,
@@ -298,11 +323,24 @@ class PandasAI:
             return answer
         except Exception as exception:
             self.last_error = str(exception)
+            print(exception)
             return (
                 "Unfortunately, I was not able to answer your question, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    def add_middlewares(self, *middlewares: List[Middleware]):
+        """
+        Add middlewares to PandasAI instance.
+
+        Args:
+            *middlewares: A list of middlewares
+
+        """
+        if self._middlewares is None:
+            self._middlewares = []
+        self._middlewares.extend(middlewares)
 
     def clear_cache(self):
         """
@@ -524,8 +562,7 @@ Code running:
 
     def log(self, message: str):
         """Log a message"""
-        if self._verbose:
-            print(message)
+        self._logger.info(message)
 
     def process_id(self) -> str:
         """Return the id of this PandasAI object."""

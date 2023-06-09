@@ -5,7 +5,7 @@ HuggingFace.co. To generate HF_TOKEN go to https://huggingface.co/settings/token
 creating Account on the platform.
 
 Example:
-    Use below example to call Starcoder Model
+    Use below example to call OpenAssistant Model
 
     >>> from pandasai.llm.open_assistant import OpenAssistant
 """

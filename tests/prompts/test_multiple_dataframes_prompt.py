@@ -3,7 +3,6 @@
 from datetime import date
 
 import pandas as pd
-import pytest  # noqa: F401
 
 from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 

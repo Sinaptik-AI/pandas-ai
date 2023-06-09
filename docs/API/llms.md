@@ -33,6 +33,14 @@ Starcoder wrapper extended through Base HuggingFace Class
     options:
       show_root_heading: true
 
+### Falcon
+
+Falcon wrapper extended through Base HuggingFace Class
+
+::: pandasai.llm.falcon
+    options:
+      show_root_heading: true
+
 ### Azure OpenAI
 
 OpenAI API through Azure Platform wrapper

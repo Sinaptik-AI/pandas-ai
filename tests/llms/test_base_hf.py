@@ -1,4 +1,4 @@
-"""Unit tests for the base huggignface LLM class"""
+"""Unit tests for the base huggingface LLM class"""
 
 import pytest
 import requests
@@ -13,6 +13,13 @@ class TestBaseHfLLM:
     @pytest.fixture
     def api_response(self):
         return [{"generated_text": "Some text"}]
+
+    @pytest.fixture
+    def prompt(self):
+        class MockPrompt(Prompt):
+            text: str = "instruction"
+
+        return MockPrompt()
 
     def test_type(self):
         assert HuggingFaceLLM().type == "huggingface-llm"
@@ -44,13 +51,13 @@ class TestBaseHfLLM:
         # Check that the result is correct
         assert result == api_response[0]["generated_text"]
 
-    def test_call(self, mocker):
+    def test_call(self, mocker, prompt):
         huggingface = HuggingFaceLLM()
         huggingface.api_token = "test_token"
 
         mocker.patch.object(huggingface, "call", return_value="Generated text")
 
-        result = huggingface.call("instruction", "value", "suffix")
+        result = huggingface.call(prompt, "value", "suffix")
         assert result == "Generated text"
 
     def test_call_removes_original_prompt(self, mocker):

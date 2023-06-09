@@ -32,3 +32,6 @@ cache/
 
 # exports
 exports/
+
+# logs
+*.log

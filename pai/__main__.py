@@ -10,7 +10,8 @@ Options:
 - **-d, --dataset**: The file path to the dataset.
 - **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will
 pull from the `.env` file.
-- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, or `starcoder`.
+- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`,
+`falcon`, `azure-openai` or `google-palm`.
 - **-p, --prompt**: Prompt that PandasAI will run.
 
 To view a full list of available options and their descriptions, run the following
@@ -56,7 +57,7 @@ from pandasai.llm.starcoder import Starcoder
 @click.option(
     "-m",
     "--model",
-    type=click.Choice(["openai", "open-assistant", "starcoder", "palm"]),
+    type=click.Choice(["openai", "open-assistant", "starcoder", "falcon", "palm"]),
     required=True,
     help="The type of model to use.",
 )
@@ -96,12 +97,12 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
             ".xml": pd.read_xml,
         }
         if ext in file_format:
-            df = file_format[ext](dataset)
+            df = file_format[ext](dataset)  # pylint: disable=C0103
         else:
             print("Unsupported file format.")
             return
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718 disable=C0103
         print(e)
         return
 
@@ -114,6 +115,9 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
     elif model == "starcoder":
         llm = Starcoder(api_token=token)
 
+    elif model == "falcon":
+        llm = Starcoder(api_token=token)
+
     elif model == "palm":
         llm = GooglePalm(api_key=token)
 
@@ -122,5 +126,5 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
         response = pandas_ai(df, prompt)
         print(response)
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718 disable=C0103
         print(e)

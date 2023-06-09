@@ -1,9 +1,5 @@
 """Unit tests for generate response prompt class"""
 
-from datetime import date
-
-import pytest
-
 from pandasai.prompts.generate_response import GenerateResponsePrompt
 
 
