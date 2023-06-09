@@ -1,7 +1,7 @@
 """OpenAI LLM via Microsoft Azure Cloud
 
-This module is to run the OpenAI API when using Microsoft Cloud infrastructure. Azure has
-implemented the openai API access to its platform.
+This module is to run the OpenAI API when using Microsoft Cloud infrastructure.
+Azure has implemented the openai API access to its platform.
 For details https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference.
 
 Example:
@@ -41,16 +41,18 @@ class AzureOpenAI(BaseOpenAI):
         api_base: Optional[str] = None,
         api_version: Optional[str] = None,
         deployment_name: str = None,
-        **kwargs, ):
-
+        **kwargs,
+    ):
         """
         __init__ method of AzureOpenAI Class
 
         Args:
             api_token (str): Azure OpenAI API token.
             api_base (str): Base url of the Azure endpoint.
-                It should look like the following: <https://YOUR_RESOURCE_NAME.openai.azure.com/>
-            api_version (str): Version of the Azure OpenAI API. Be aware the API version may change.
+                It should look like the following:
+                <https://YOUR_RESOURCE_NAME.openai.azure.com/>
+            api_version (str): Version of the Azure OpenAI API. Be aware the API
+            version may change.
             deployment_name: Custom name of the deployed model
             **kwargs: Inference Parameters
         """
@@ -96,7 +98,6 @@ class AzureOpenAI(BaseOpenAI):
 
     @property
     def _default_params(self) -> Dict[str, Any]:
-
         """Get the default parameters for calling OpenAI API
 
         Returns: A dict of Default Params
@@ -105,7 +106,6 @@ class AzureOpenAI(BaseOpenAI):
         return {**super()._default_params, "engine": self.engine}
 
     def call(self, instruction: str, value: str, suffix: str = "") -> str:
-
         """
         Call the Azure OpenAI LLM.
 

@@ -68,5 +68,6 @@ class BadImportError(Exception):
         """
         self.library_name = library_name
         super().__init__(
-            f"Generated code includes import of {library_name} which is not in whitelist."
+            f"Generated code includes import of {library_name} which"
+            " is not in whitelist."
         )

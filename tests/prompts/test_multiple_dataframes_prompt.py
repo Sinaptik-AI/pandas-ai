@@ -43,5 +43,5 @@ This is the result of `print(df2.head())`:
 4  50  5  6
 When asked about the data, your response should include a python code that describes the dataframes provided.
 Using the provided dataframes and no other dataframes, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
-"""
+"""  # noqa: E501
         )

@@ -9,7 +9,6 @@ from .base import Prompt
 
 class CorrectMultipleDataframesErrorPrompt(Prompt):
     """Prompt to generate Python code"""
-    # pylint: disable=too-few-public-methods
 
     text: str = """
 You are provided with the following pandas dataframes:"""
@@ -20,7 +19,7 @@ You are provided with the following pandas dataframes:"""
         error_returned: Exception,
         question: str,
         df_head: list[pd.DataFrame],
-    ): # pylint: disable=super-init-not-called
+    ):
         for i, dataframe in enumerate(df_head, start=1):
             row, col = dataframe.shape
             self.text += f"""
@@ -40,7 +39,7 @@ It fails with the following error:
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
 Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
-"""
+"""  # noqa: E501
 
         self.text += instruction
 

@@ -1,6 +1,6 @@
 """ Driver code for the CLI tool
-Pai is the command line tool designed to provide a convenient way to interact with PandasAI
-through a command line interface (CLI).
+Pai is the command line tool designed to provide a convenient way to interact with
+PandasAI through a command line interface (CLI).
 
 ```
 pai [OPTIONS]
@@ -8,12 +8,14 @@ pai [OPTIONS]
 Options:
 
 - **-d, --dataset**: The file path to the dataset.
-- **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will pull
-from the `.env` file.
-- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`, `falcon`, `azure-openai` or `google-palm`.
+- **-t, --token**: Your HuggingFace or OpenAI API token, if no token provided pai will
+pull from the `.env` file.
+- **-m, --model**: Choice of LLM, either `openai`, `open-assistant`, `starcoder`,
+`falcon`, `azure-openai` or `google-palm`.
 - **-p, --prompt**: Prompt that PandasAI will run.
 
-To view a full list of available options and their descriptions, run the following command:
+To view a full list of available options and their descriptions, run the following
+command:
 
 ```
 pai --help
@@ -95,12 +97,12 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
             ".xml": pd.read_xml,
         }
         if ext in file_format:
-            df = file_format[ext](dataset)  # pylint: disable=C0103
+            df = file_format[ext](dataset)
         else:
             print("Unsupported file format.")
             return
 
-    except Exception as e:  # pylint: disable=W0718 disable=C0103
+    except Exception as e:
         print(e)
         return
 
@@ -124,5 +126,5 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
         response = pandas_ai(df, prompt)
         print(response)
 
-    except Exception as e:  # pylint: disable=W0718 disable=C0103
+    except Exception as e:
         print(e)

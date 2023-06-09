@@ -3,12 +3,13 @@ repos:
     rev: 23.3.0
     hooks:
       - id: black
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.220'
     hooks:
-      - id: isort
-        name: isort
-        args: [--profile, black]
+      - id: ruff
+        name: ruff
+        # Respect `exclude` and `extend-exclude` settings.
+        args: ["--force-exclude"]
   - repo: local
     hooks:
       - id: pytest-check

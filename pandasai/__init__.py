@@ -2,13 +2,13 @@
 """
 PandasAI is a wrapper around a LLM to make dataframes conversational
 
-This module includes the implementation of basis  PandasAI class with methods to run the LLMs
-models on Pandas dataframes. Following LLMs are implemented so far.
+This module includes the implementation of basis  PandasAI class with methods to run
+the LLMs models on Pandas dataframes. Following LLMs are implemented so far.
 
 Example:
 
-    This module is the Entry point of the `pandasai` package. Following is an example of how to
-    use this Class.
+    This module is the Entry point of the `pandasai` package. Following is an example
+    of how to use this Class.
 
     ```python
     import pandas as pd
@@ -16,10 +16,11 @@ Example:
 
     # Sample DataFrame
     df = pd.DataFrame({
-        "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain",
-        "Canada", "Australia", "Japan", "China"],
-        "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416,
-        1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+        "country": ["United States", "United Kingdom", "France", "Germany", "Italy",
+        "Spain", "Canada", "Australia", "Japan", "China"],
+        "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832,
+        1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440,
+        14631844184064],
         "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
     })
 
@@ -42,7 +43,7 @@ from contextlib import redirect_stdout
 from typing import List, Optional, Union
 
 import astor
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: F401
 import pandas as pd
 
 from .constants import (
@@ -66,17 +67,16 @@ from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
 
 
-# pylint: disable=too-many-instance-attributes disable=too-many-arguments
 class PandasAI:
     """
     PandasAI is a wrapper around a LLM to make dataframes conversational.
 
 
-    This is an entry point of `pandasai` object. This class consists of methods to interface the
-    LLMs with Pandas     dataframes. A pandas dataframe metadata i.e. df.head() and prompt is
-    passed on to chosen LLMs API end point to     generate a Python code to answer the questions
-    asked. The resultant python code is run on actual data and answer is converted into a
-    conversational form.
+    This is an entry point of `pandasai` object. This class consists of methods
+    to interface the LLMs with Pandas     dataframes. A pandas dataframe metadata i.e.
+    df.head() and prompt is passed on to chosen LLMs API end point to generate a Python
+    code to answer the questions asked. The resultant python code is run on actual data
+    and answer is converted into a conversational form.
 
     Note:
         Do not include the `self` parameter in the ``Args`` section.
@@ -84,14 +84,17 @@ class PandasAI:
         _llm (obj): LLMs option to be used for API access
         _verbose (bool, optional): To show the intermediate outputs e.g. python code
         generated and execution step on the prompt. Default to False
-        _is_conversational_answer (bool, optional): Whether to return answer in conversational
-        form. Default to False
+        _is_conversational_answer (bool, optional): Whether to return answer in
+        conversational form. Default to False
         _enforce_privacy (bool, optional): Do not display the data on prompt in case of
         Sensitive data. Default to False
-        _max_retries (int, optional): max no. of tries to generate code on failure. Default to 3
+        _max_retries (int, optional): max no. of tries to generate code on failure.
+        Default to 3
         _is_notebook (bool, optional): Whether to run code in notebook. Default to False
-        _original_instructions (dict, optional): The dict of instruction to run. Default to None
-        last_code_generated (str, optional): Pass last Code if generated. Default to None
+        _original_instructions (dict, optional): The dict of instruction to run. Default
+        to None
+        last_code_generated (str, optional): Pass last Code if generated. Default to
+        None
         last_run_code (str, optional): Pass the last execution / run. Default to None
         code_output (str, optional): The code output if any. Default to None
         last_error (str, optional): Error of running code last time. Default to None
@@ -140,11 +143,14 @@ class PandasAI:
 
         Args:
             llm (object): LLMs option to be used for API access. Default is None
-            conversational (bool): Whether to return answer in conversational form. Default to False
-            verbose (bool): To show the intermediate outputs e.g. python code generated and
-             execution step on the prompt.  Default to False
-            enforce_privacy (bool): Execute the codes with Privacy Mode ON.  Default to False
-            save_charts (bool): Save the charts generated in the notebook. Default to False
+            conversational (bool): Whether to return answer in conversational form.
+            Default to False
+            verbose (bool): To show the intermediate outputs e.g. python code
+            generated and execution step on the prompt.  Default to False
+            enforce_privacy (bool): Execute the codes with Privacy Mode ON.
+            Default to False
+            save_charts (bool): Save the charts generated in the notebook.
+            Default to False
         """
 
         # configure the logging
@@ -214,10 +220,10 @@ class PandasAI:
         Args:
             data_frame (pd.Dataframe): A pandas Dataframe
             prompt (str): A prompt to query about the Dataframe
-            is_conversational_answer (bool): Whether to return answer in conversational form.
-            Default to False
-            show_code (bool): To show the intermediate python code generated on the prompt.
-            Default to False
+            is_conversational_answer (bool): Whether to return answer in conversational
+            form. Default to False
+            show_code (bool): To show the intermediate python code generated on the
+            prompt. Default to False
             anonymize_df (bool): Running the code with Sensitive Data. Default to True
             use_error_correction_framework (bool): Turn on Error Correction mechanism.
             Default to True
@@ -315,7 +321,7 @@ class PandasAI:
                 answer = self.conversational_answer(prompt, answer)
                 self.log(f"Conversational answer: {answer}")
             return answer
-        except Exception as exception:  # pylint: disable=broad-except
+        except Exception as exception:
             self.last_error = str(exception)
             print(exception)
             return (
@@ -403,7 +409,8 @@ class PandasAI:
 
     def _is_df_overwrite(self, node: ast.stmt) -> bool:
         """
-        Remove df declarations from the code to prevent malicious code execution. A helper method.
+        Remove df declarations from the code to prevent malicious code execution.
+        A helper method.
 
         Args:
             node (object): ast.stmt
@@ -447,8 +454,9 @@ class PandasAI:
         use_error_correction_framework: bool = True,
     ) -> str:
         """
-        A method to execute the python code generated by LLMs to answer the question about the
-        input dataframe. Run the code in the current context and return the result.
+        A method to execute the python code generated by LLMs to answer the question
+        about the input dataframe. Run the code in the current context and return the
+        result.
 
         Args:
             code (str): A python code to execute
@@ -459,8 +467,6 @@ class PandasAI:
         Returns (str): String representation of the result of the code execution.
 
         """
-
-        # pylint: disable=W0122 disable=W0123 disable=W0702:bare-except
 
         multiple: bool = isinstance(data_frame, list)
 
@@ -506,7 +512,7 @@ Code running:
                     exec(code_to_run, environment)
                     code = code_to_run
                     break
-                except Exception as e:  # pylint: disable=W0718 disable=C0103
+                except Exception as e:
                     if not use_error_correction_framework:
                         raise e
 
@@ -551,7 +557,7 @@ Code running:
 
         try:
             return eval(last_line, environment)
-        except Exception:  # pylint: disable=W0718
+        except Exception:
             return captured_output
 
     def log(self, message: str):

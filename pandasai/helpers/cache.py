@@ -6,7 +6,8 @@ from os.path import dirname
 
 
 class Cache:
-    """Cache class for caching queries. It is used to cache queries to avoid save time and money.
+    """Cache class for caching queries. It is used to cache queries
+    to save time and money.
 
     Args:
         filename (str): filename to store the cache.

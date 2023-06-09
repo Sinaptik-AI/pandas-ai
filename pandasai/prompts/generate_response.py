@@ -13,7 +13,6 @@ from .base import Prompt
 
 class GenerateResponsePrompt(Prompt):
     """Prompt to generate the response to the question in a conversational way"""
-    # pylint: disable=too-few-public-methods
 
     text: str = """
 Question: {question}

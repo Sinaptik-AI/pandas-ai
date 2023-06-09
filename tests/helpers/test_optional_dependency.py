@@ -10,8 +10,6 @@ import pytest
 
 from pandasai.helpers._optional import VERSIONS, import_optional_dependency
 
-# pylint: disable=missing-function-docstring
-
 
 def test_import_optional():
     match = "Missing .*notapackage.* pip .* conda .* notapackage"
