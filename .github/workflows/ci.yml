@@ -23,6 +23,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --all-extras
       - name: Lint with ruff
-        run: poetry run ruff check pandasai examples
+        run: poetry run ruff pandasai examples
       - name: Test with pytest
         run: poetry run pytest
