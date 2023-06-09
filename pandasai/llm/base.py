@@ -22,6 +22,10 @@ from typing import Any, Dict, Optional
 import openai
 import requests
 
+from langchain import HuggingFacePipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+import torch
+
 from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
@@ -48,7 +52,7 @@ class LLM:
         Returns:
             str: Type of LLM a string
         """
-        raise APIKeyNotFoundError("Type has not been implemented")
+        return ("HuggingFace")
 
     def _polish_code(self, code: str) -> str:
         """
@@ -250,9 +254,6 @@ class HuggingFaceLLM(LLM):
     """
 
     last_prompt: Optional[str] = None
-    api_token: str
-    _api_url: str = "https://api-inference.huggingface.co/models/"
-    _max_retries: int = 3
 
     @property
     def type(self) -> str:
@@ -267,14 +268,27 @@ class HuggingFaceLLM(LLM):
         Returns: Generated Response
 
         """
-
-        headers = {"Authorization": f"Bearer {self.api_token}"}
-
-        response = requests.post(
-            self._api_url, headers=headers, json=payload, timeout=60
-        )
-
-        return response.json()[0]["generated_text"]
+        model_path = "D:/Falcon/Falcon-7b/"
+        model_name = "tiiuae/falcon-7b-instruct"
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        pipeline = pipeline(
+    "text-generation", #task
+    model=model_path,
+    tokenizer=tokenizer,
+    return_full_text=True,
+    torch_dtype=torch.bfloat16,
+    trust_remote_code=True,
+    #device_map="auto",
+    device=device,
+    max_length=2048,
+    do_sample=True,
+    top_k=10,
+    num_return_sequences=1,
+    eos_token_id=tokenizer.eos_token_id,
+    repetition_penalty=1.1    
+)
+        llm = HuggingFacePipeline(pipeline = pipeline, model_kwargs = {'temperature':0})
+        return llm_chain.run(payload)
 
     def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         """
