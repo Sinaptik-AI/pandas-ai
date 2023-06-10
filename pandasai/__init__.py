@@ -472,7 +472,7 @@ class PandasAI:
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code, self._prompt_id)
+            code = add_save_chart(code, self._prompt_id, not self._verbose)
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
