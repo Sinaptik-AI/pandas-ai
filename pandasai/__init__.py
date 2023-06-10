@@ -60,6 +60,7 @@ from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
 from .middlewares.base import Middleware
+from .middlewares.charts import ChartsMiddleware
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
@@ -121,7 +122,7 @@ class PandasAI:
     _cache: Cache = Cache()
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
-    _middlewares: List[Middleware] = None
+    _middlewares: List[Middleware] = [ChartsMiddleware()]
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -304,7 +305,7 @@ class PandasAI:
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
 
-            for middleware in self._middlewares if self._middlewares else []:
+            for middleware in self._middlewares:
                 code = middleware(code)
 
             answer = self.run_code(
@@ -338,8 +339,6 @@ class PandasAI:
             *middlewares: A list of middlewares
 
         """
-        if self._middlewares is None:
-            self._middlewares = []
         self._middlewares.extend(middlewares)
 
     def clear_cache(self):

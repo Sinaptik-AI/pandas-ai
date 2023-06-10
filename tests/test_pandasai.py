@@ -356,7 +356,7 @@ print(df)
     def test_add_middlewares(self, pandasai, test_middleware):
         middleware = test_middleware()
         pandasai.add_middlewares(middleware)
-        assert pandasai._middlewares == [middleware]
+        assert pandasai._middlewares[len(pandasai._middlewares) - 1] == middleware
 
     def test_middlewares(self, pandasai, test_middleware):
         middleware = test_middleware()
