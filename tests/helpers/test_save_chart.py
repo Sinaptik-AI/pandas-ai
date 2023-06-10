@@ -34,12 +34,9 @@ plt.show()
             if compare_ast(node, show_node, ignore_args=True)
         ][0]
         expected_node = ast.parse("plt.savefig()").body[0]
-        assert len(tree.body) == line_count + 2
+        assert len(tree.body) == line_count + 1
         assert compare_ast(
             tree.body[show_call_pos - 1], expected_node, ignore_args=True
-        )
-        assert compare_ast(
-            tree.body[-1], ast.parse("print()").body[0], ignore_args=True
         )
 
     def test_save_multiple_charts(self):
@@ -62,7 +59,7 @@ plt.show()
         ]
         expected_node = ast.parse("plt.savefig()").body[0]
 
-        assert len(tree.body) == line_count + 3
+        assert len(tree.body) == line_count + 2
 
         # check first node is plt.savefig() and filename ends with a
         actual_node = tree.body[show_call_pos[0] - 1]
