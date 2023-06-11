@@ -40,7 +40,7 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
-def import_optional_dependency(
+def import_dependency(
     name: str,
     extra: str = "",
     errors: str = "raise",

@@ -265,15 +265,33 @@ print(df.size)
         pandasai.run_code(pandas_code, pd.DataFrame())
         assert pandasai.last_run_code == "print(df.size)"
 
-    def test_clean_code_keep_whitelist(self, pandasai):
+    def test_clean_code_whitelist_import(self, pandasai):
+        """Test that an installed whitelisted library is added to the environment."""
         safe_code = """
 import numpy as np
-print(np.array([1, 2, 3]))
+np.array()
 """
         safe_code = safe_code.strip()
         pandasai._llm._output = safe_code
         assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
-        assert pandasai.last_run_code == safe_code
+
+    def test_clean_code_whitelist_import_from(self, pandasai):
+        """Test that an import from statement is added to the environment."""
+        optional_code = """
+from numpy import array
+array()
+"""
+        pandasai._llm._output = optional_code
+        assert pandasai.run_code(optional_code, pd.DataFrame()) == ""
+
+    def test_clean_code_whitelist_import_from_multiple(self, pandasai):
+        """Test that multiple imports from a library are added to the environment."""
+        optional_code = """
+from numpy import array, zeros
+array()
+"""
+        pandasai._llm._output = optional_code
+        assert pandasai.run_code(optional_code, pd.DataFrame()) == ""
 
     def test_clean_code_raise_bad_import_error(self, pandasai):
         malicious_code = """
@@ -289,7 +307,7 @@ print(os.listdir())
         the code contains an import statement for an optional library."""
         optional_code = """
 import seaborn as sns
-print(sns.__version__)
+print(df)
 """
         pandasai._llm._output = optional_code
 

@@ -8,23 +8,23 @@ import types
 
 import pytest
 
-from pandasai.helpers._optional import VERSIONS, import_optional_dependency
+from pandasai.helpers._optional import VERSIONS, import_dependency
 
 
 def test_import_optional():
     match = "Missing .*notapackage.* pip .* conda .* notapackage"
     with pytest.raises(ImportError, match=match) as exc_info:
-        import_optional_dependency("notapackage")
+        import_dependency("notapackage")
     # The original exception should be there as context:
     assert isinstance(exc_info.value.__context__, ImportError)
 
-    result = import_optional_dependency("notapackage", errors="ignore")
+    result = import_dependency("notapackage", errors="ignore")
     assert result is None
 
 
 def test_xlrd_version_fallback():
     pytest.importorskip("xlrd")
-    import_optional_dependency("xlrd")
+    import_dependency("xlrd")
 
 
 def test_bad_version(monkeypatch):
@@ -36,18 +36,18 @@ def test_bad_version(monkeypatch):
 
     match = "Pandas requires .*1.0.0.* of .fakemodule.*'0.9.0'"
     with pytest.raises(ImportError, match=match):
-        import_optional_dependency("fakemodule")
+        import_dependency("fakemodule")
 
     # Test min_version parameter
-    result = import_optional_dependency("fakemodule", min_version="0.8")
+    result = import_dependency("fakemodule", min_version="0.8")
     assert result is module
 
     with pytest.warns(UserWarning):
-        result = import_optional_dependency("fakemodule", errors="warn")
+        result = import_dependency("fakemodule", errors="warn")
     assert result is None
 
     module.__version__ = "1.0.0"  # exact match is OK
-    result = import_optional_dependency("fakemodule")
+    result = import_dependency("fakemodule")
     assert result is module
 
 
@@ -65,14 +65,14 @@ def test_submodule(monkeypatch):
 
     match = "Pandas requires .*1.0.0.* of .fakemodule.*'0.9.0'"
     with pytest.raises(ImportError, match=match):
-        import_optional_dependency("fakemodule.submodule")
+        import_dependency("fakemodule.submodule")
 
     with pytest.warns(UserWarning):
-        result = import_optional_dependency("fakemodule.submodule", errors="warn")
+        result = import_dependency("fakemodule.submodule", errors="warn")
     assert result is None
 
     module.__version__ = "1.0.0"  # exact match is OK
-    result = import_optional_dependency("fakemodule.submodule")
+    result = import_dependency("fakemodule.submodule")
     assert result is submodule
 
 
@@ -83,4 +83,4 @@ def test_no_version_raises(monkeypatch):
     monkeypatch.setitem(VERSIONS, name, "1.0.0")
 
     with pytest.raises(ImportError, match="Can't determine .* fakemodule"):
-        import_optional_dependency(name)
+        import_dependency(name)
