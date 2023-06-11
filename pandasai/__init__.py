@@ -270,7 +270,7 @@ class PandasAI:
                     df_head = data_frame.head(rows_to_display)
                     if anonymize_df:
                         df_head = anonymize_dataframe_head(df_head)
-
+                    df_head=df_head.to_csv(index=False)
                     code = self._llm.generate_code(
                         GeneratePythonCodePrompt(
                             prompt=prompt,
