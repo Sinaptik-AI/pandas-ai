@@ -385,3 +385,16 @@ print(df)
             == "Overwritten by middleware"
         )
         assert middleware.has_run
+
+    def test_custom_whitelisted_dependencies(self, pandasai):
+        code = """
+import my_custom_library
+my_custom_library.do_something()
+"""
+        pandasai._llm._output = code
+
+        with pytest.raises(BadImportError):
+            pandasai._clean_code(code)
+
+        pandasai._custom_whitelisted_dependencies = ["my_custom_library"]
+        assert pandasai._clean_code(code) == "my_custom_library.do_something()"

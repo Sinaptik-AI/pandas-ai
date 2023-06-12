@@ -120,6 +120,7 @@ class PandasAI:
     _prompt_id: Optional[str] = None
     _middlewares: List[Middleware] = [ChartsMiddleware()]
     _additional_dependencies: List[dict] = []
+    _custom_whitelisted_dependencies: List[str] = []
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -134,6 +135,7 @@ class PandasAI:
         save_charts=False,
         enable_cache=True,
         middlewares=None,
+        custom_whitelisted_dependencies=None,
     ):
         """
 
@@ -149,6 +151,11 @@ class PandasAI:
             Default to False
             save_charts (bool): Save the charts generated in the notebook.
             Default to False
+            enable_cache (bool): Enable the cache to store the results.
+            Default to True
+            middlewares (list): List of middlewares to be used. Default to None
+            custom_whitelisted_dependencies (list): List of custom dependencies to
+            be used. Default to None
         """
 
         # configure the logging
@@ -182,6 +189,9 @@ class PandasAI:
 
         if middlewares is not None:
             self.add_middlewares(*middlewares)
+
+        if custom_whitelisted_dependencies is not None:
+            self._custom_whitelisted_dependencies = custom_whitelisted_dependencies
 
     def conversational_answer(self, question: str, answer: str) -> str:
         """
@@ -401,7 +411,7 @@ class PandasAI:
         if library == "pandas":
             return
 
-        if library in WHITELISTED_LIBRARIES:
+        if library in WHITELISTED_LIBRARIES + self._custom_whitelisted_dependencies:
             for alias in node.names:
                 self._additional_dependencies.append(
                     {

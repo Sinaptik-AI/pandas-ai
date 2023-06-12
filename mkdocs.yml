@@ -13,6 +13,7 @@ nav:
   - Getting Started: getting-started.md
   - Cache: cache.md
   - Middlewares: middlewares.md
+  - Custom Optional Arguments: custom_optional_arguments.md
   - Command Line Tool: pai_cli.md
   - API:
       - API/pandasai.md
