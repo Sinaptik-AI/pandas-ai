@@ -22,6 +22,8 @@ VERSIONS = {
     "seaborn": "0.12.2",
     "plotly": "5.14.1",
     "ggplot": "0.11.5",
+    "numpy": "1.21.2",
+    "matplotlib": "3.7.3",
 }
 
 # A mapping from import name to package name (on PyPI) for packages where

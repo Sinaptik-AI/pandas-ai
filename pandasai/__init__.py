@@ -401,28 +401,6 @@ class PandasAI:
         if library == "pandas":
             return
 
-        # Current add to environment implementation:
-        # {
-        #   lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
-        #   for lib in self._additional_dependencies
-        #   },
-
-        # from matplotlib.font_manager import FontProperties
-        #   node.module: matplotlib.font_manager
-        #   node.names.alias.name: [FontProperties]
-        #   Test: passes
-
-        # from matplotlib.pyplot import plot, show
-        #   node.module: matplotlib.pyplot
-        #   node.names.alias.name: [plot, show]
-        #   Test: passes
-
-        # import matplotlib.pyplot as plt
-        #   node.module: matplotlib
-        #   node.names.alias.name: [pyplot]
-        #   TODO: Test fails.
-        #    Imports and ImportFroms need to be handled differently
-
         if library in WHITELISTED_LIBRARIES:
             for alias in node.names:
                 self._additional_dependencies.append(
