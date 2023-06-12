@@ -43,17 +43,13 @@ from contextlib import redirect_stdout
 from typing import List, Optional, Union
 
 import astor
-import matplotlib.pyplot as plt  # noqa: F401
 import pandas as pd
-
 from .constants import (
-    ENVIRONMENT_DEFAULTS,
     WHITELISTED_BUILTINS,
     WHITELISTED_LIBRARIES,
-    WHITELISTED_OPTIONAL_LIBRARIES,
 )
 from .exceptions import BadImportError, LLMNotFoundError
-from .helpers._optional import import_optional_dependency
+from .helpers._optional import import_dependency
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.cache import Cache
 from .helpers.notebook import Notebook
@@ -123,6 +119,7 @@ class PandasAI:
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
     _middlewares: List[Middleware] = [ChartsMiddleware()]
+    _additional_dependencies: List[dict] = []
     last_code_generated: Optional[str] = None
     last_run_code: Optional[str] = None
     code_output: Optional[str] = None
@@ -380,36 +377,47 @@ class PandasAI:
             use_error_correction_framework,
         )
 
-    def _is_unsafe_import(self, node: ast.stmt) -> bool:
+    def _check_imports(self, node: Union[ast.Import, ast.ImportFrom]):
         """
-        Remove non-whitelisted imports from the code to prevent malicious code execution
+        Add whitelisted imports to _additional_dependencies.
 
         Args:
-            node (object): ast.stmt
+            node (object): ast.Import or ast.ImportFrom
 
-        Returns (bool): A flag if unsafe_imports found.
+        Raises:
+            BadImportError: If the import is not whitelisted
 
         """
+        # clear recent optional dependencies
+        self._additional_dependencies = []
 
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
+        if isinstance(node, ast.Import):
+            module = node.names[0].name
+        else:
+            module = node.module
+
+        library = module.split(".")[0]
+
+        if library == "pandas":
+            return
+
+        if library in WHITELISTED_LIBRARIES:
             for alias in node.names:
-                if (
-                    alias.name in WHITELISTED_BUILTINS
-                    or alias.name in ENVIRONMENT_DEFAULTS
-                ):
-                    return True
-                if alias.name in WHITELISTED_OPTIONAL_LIBRARIES:
-                    import_optional_dependency(alias.name)
-                    continue
-                if alias.name.split(".")[0] not in WHITELISTED_LIBRARIES:
-                    raise BadImportError(alias.name)
+                self._additional_dependencies.append(
+                    {
+                        "module": module,
+                        "name": alias.name,
+                        "alias": alias.asname or alias.name,
+                    }
+                )
+            return
 
-        return False
+        if library not in WHITELISTED_BUILTINS:
+            raise BadImportError(library)
 
     def _is_df_overwrite(self, node: ast.stmt) -> bool:
         """
         Remove df declarations from the code to prevent malicious code execution.
-        A helper method.
 
         Args:
             node (object): ast.stmt
@@ -437,11 +445,15 @@ class PandasAI:
 
         tree = ast.parse(code)
 
-        new_body = [
-            node
-            for node in tree.body
-            if not (self._is_unsafe_import(node) or self._is_df_overwrite(node))
-        ]
+        new_body = []
+
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                self._check_imports(node)
+                continue
+            if self._is_df_overwrite(node):
+                continue
+            new_body.append(node)
 
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree).strip()
@@ -485,9 +497,12 @@ Code running:
         )
 
         environment: dict = {
+            "pd": pd,
             **{
-                alias: sys.modules[library]
-                for library, alias in ENVIRONMENT_DEFAULTS.items()
+                lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
+                if hasattr(import_dependency(lib["module"]), lib["name"])
+                else import_dependency(lib["module"])
+                for lib in self._additional_dependencies
             },
             "__builtins__": {
                 **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},

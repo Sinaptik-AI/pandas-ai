@@ -28,7 +28,7 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..helpers._optional import import_optional_dependency
+from ..helpers._optional import import_dependency
 from ..prompts.base import Prompt
 
 
@@ -330,7 +330,7 @@ class BaseGoogle(LLM):
             raise APIKeyNotFoundError("Google Palm API key is required")
 
         err_msg = "Install google-generativeai >= 0.1 for Google Palm API"
-        genai = import_optional_dependency("google.generativeai", extra=err_msg)
+        genai = import_dependency("google.generativeai", extra=err_msg)
 
         genai.configure(api_key=api_key)
         self.genai = genai
