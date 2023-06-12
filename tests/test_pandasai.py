@@ -271,9 +271,9 @@ print(df.size)
 import numpy as np
 np.array()
 """
-        safe_code = safe_code.strip()
         pandasai._llm._output = safe_code
         assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
+        assert pandasai.last_run_code == "np.array()"
 
     def test_clean_code_whitelist_import_from(self, pandasai):
         """Test that an import from statement is added to the environment."""
