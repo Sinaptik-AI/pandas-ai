@@ -35,3 +35,6 @@ exports/
 
 # logs
 *.log
+
+# vscode
+.vscode
