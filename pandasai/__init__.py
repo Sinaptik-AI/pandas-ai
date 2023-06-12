@@ -522,6 +522,8 @@ Code running:
             "pd": pd,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
+                if hasattr(import_dependency(lib["module"]), lib["name"])
+                else import_dependency(lib["module"])
                 for lib in self._additional_dependencies
             },
             "__builtins__": {
