@@ -85,4 +85,9 @@ WHITELISTED_LIBRARIES = [
     "ggplot",
     "matplotlib",
     "numpy",
+    "datetime",
+    "json",
+    "io",
+    "base64",
+    "scipy",
 ]

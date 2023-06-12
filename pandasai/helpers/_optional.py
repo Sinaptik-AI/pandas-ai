@@ -24,6 +24,7 @@ VERSIONS = {
     "ggplot": "0.11.5",
     "numpy": "1.21.2",
     "matplotlib": "3.7.3",
+    "scipy": "1.9.0",
 }
 
 # A mapping from import name to package name (on PyPI) for packages where
