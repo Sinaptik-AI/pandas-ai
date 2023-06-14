@@ -11,13 +11,13 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - LLMs:
-      - llms.md
-      - LLMs/langchain-llms.md
   - Cache: cache.md
   - Middlewares: middlewares.md
   - Custom Optional Arguments: custom_optional_arguments.md
   - Command Line Tool: pai_cli.md
+   - LLMs:
+      - llms.md
+      - LLMs/langchain-llms.md
   - API:
       - API/pandasai.md
       - API/prompts.md
