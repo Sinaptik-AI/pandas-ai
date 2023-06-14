@@ -36,7 +36,7 @@ class OpenAssistant(HuggingFaceLLM):
 
     def __init__(self, api_token: Optional[str] = None):
         """
-        __init__ method of OpenAssistant Calss
+        __init__ method of OpenAssistant Class
 
         Raises:
             APIKeyNotFoundError: HuggingFace Hub API key is required

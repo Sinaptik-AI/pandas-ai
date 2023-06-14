@@ -12,6 +12,7 @@ from pandasai import PandasAI
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
+from langchain.llms import OpenAI
 
 
 class TestPandasAI:
@@ -398,3 +399,13 @@ my_custom_library.do_something()
 
         pandasai._custom_whitelisted_dependencies = ["my_custom_library"]
         assert pandasai._clean_code(code) == "my_custom_library.do_something()"
+
+    def test_load_llm_with_pandasai_llm(self, pandasai, llm):
+        pandasai._load_llm(llm)
+        assert pandasai._llm == llm
+
+    def test_load_llm_with_langchain_llm(self, pandasai):
+        langchain_llm = OpenAI(openai_api_key="fake_key")
+
+        pandasai._load_llm(langchain_llm)
+        assert pandasai._llm._langchain_llm == langchain_llm

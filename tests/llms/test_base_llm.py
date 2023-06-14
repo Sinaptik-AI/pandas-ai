@@ -13,6 +13,9 @@ class TestBaseLLM:
         with pytest.raises(APIKeyNotFoundError):
             LLM().type
 
+    def test_is_pandasai_llm(self):
+        assert LLM().is_pandasai_llm() is True
+
     def test_polish_code(self):
         code = "python print('Hello World')"
         assert LLM()._polish_code(code) == "print('Hello World')"

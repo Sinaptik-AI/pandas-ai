@@ -55,6 +55,7 @@ from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .llm.base import LLM
+from .llm.langchain import LangchainLLM
 from .middlewares.base import Middleware
 from .middlewares.charts import ChartsMiddleware
 from .prompts.correct_error_prompt import CorrectErrorPrompt
@@ -176,7 +177,7 @@ class PandasAI:
             raise LLMNotFoundError(
                 "An LLM should be provided to instantiate a PandasAI instance"
             )
-        self._llm = llm
+        self._load_llm(llm)
         self._is_conversational_answer = conversational
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
@@ -192,6 +193,26 @@ class PandasAI:
 
         if custom_whitelisted_dependencies is not None:
             self._custom_whitelisted_dependencies = custom_whitelisted_dependencies
+
+    def _load_llm(self, llm):
+        """
+        Check if it is a PandasAI LLM or a Langchain LLM.
+        If it is a Langchain LLM, wrap it in a PandasAI LLM.
+
+        Args:
+            llm (object): LLMs option to be used for API access
+
+        Raises:
+            BadImportError: If the LLM is a Langchain LLM but the langchain package
+            is not installed
+        """
+
+        try:
+            llm.is_pandasai_llm()
+        except AttributeError:
+            llm = LangchainLLM(llm)
+
+        self._llm = llm
 
     def conversational_answer(self, question: str, answer: str) -> str:
         """

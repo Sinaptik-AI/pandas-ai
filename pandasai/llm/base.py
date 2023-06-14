@@ -37,6 +37,15 @@ class LLM:
 
     last_prompt: Optional[str] = None
 
+    def is_pandasai_llm(self) -> bool:
+        """
+        Return True if the LLM is from pandasAI.
+
+        Returns:
+            bool: True if the LLM is from pandasAI
+        """
+        return True
+
     @property
     def type(self) -> str:
         """
