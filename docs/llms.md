@@ -69,3 +69,41 @@ llm = Falcon() # no need to pass the API key, it will be read from the environme
 
 pandas_ai = PandasAI(llm=llm)
 ```
+
+## Google PaLM
+
+In order to use Google PaLM models, you need to have a Google Cloud API key. You can get one [here](https://developers.generativeai.google/tutorials/setup).
+
+Once you have an API key, you can use it to instantiate a Google PaLM object:
+
+```python
+from pandasai import PandasAI
+from pandasai.llm.google_palm import GooglePalm
+
+llm = GooglePalm(google_cloud_api_key="my-google-cloud-api-key")
+pandas_ai = PandasAI(llm=llm)
+```
+
+## Azure OpenAI
+
+In order to use Azure OpenAI models, you need to have an Azure API key. You can get one [here](https://azure.microsoft.com/it-it/products/cognitive-services/openai-service).
+
+Once you have an API key, you can use it to instantiate an Azure OpenAI object:
+
+```python
+from pandasai import PandasAI
+from pandasai.llm.azure_openai import AzureOpenAI
+
+llm = AzureOpenAI(azure_openai_api_key="my-azure-openai-api-key")
+pandas_ai = PandasAI(llm=llm)
+```
+
+As an alternative, you can set the `AZURE_OPENAI_KEY` environment variable and instantiate the Azure OpenAI object without passing the API key:
+
+```python
+from pandasai import PandasAI
+from pandasai.llm.azure_openai import AzureOpenAI
+
+llm = AzureOpenAI() # no need to pass the API key, it will be read from the environment variable
+pandas_ai = PandasAI(llm=llm)
+```
