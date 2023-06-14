@@ -33,7 +33,7 @@ class MyCustomMiddleware:
 The following example shows how to create a middleware that adds a `print` statement to the generated code:
 
 ```python
-from pandasai import Middleware
+from pandasai.middlewares.base import Middleware
 
 class PrintMiddleware(Middleware):
     def run(self, code: str) -> str:
@@ -55,7 +55,8 @@ pandas_ai = PandasAI(llm, middlewares=[PrintMiddleware()])
 The `StreamlitMiddleware` middleware adds the compatibility required to run the generated code in a Streamlit app.
 
 ```python
-from pandasai import StreamlitMiddleware
+from pandasai import PandasAI
+from pandasai.middlewares.streamlit import StreamlitMiddleware
 
 pandas_ai = PandasAI(llm, middlewares=[StreamlitMiddleware()])
 ```
