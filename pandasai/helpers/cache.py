@@ -2,7 +2,7 @@
 import glob
 import os
 import shelve
-from os.path import dirname
+from pathlib import Path
 
 
 class Cache:
@@ -15,10 +15,8 @@ class Cache:
 
     def __init__(self, filename="cache"):
         # define cache directory and create directory if it does not exist
-        project_root = dirname(dirname(dirname(__file__)))
-        cache_dir = os.path.join(project_root, "cache")
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
+        cache_dir = os.path.join(Path.cwd(), "cache")
+        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
         self.filepath = os.path.join(cache_dir, filename)
         self.cache = shelve.open(self.filepath)
