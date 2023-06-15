@@ -26,7 +26,7 @@ Using the provided dataframes and no other dataframes, return the python code an
 
             self.text += f"""
 Dataframe df{i}, with {row} rows and {col} columns.
-This is the result of `print(df{i}.head())`:
+This is the metadata of the dataframe df{i}:
 {dataframe}"""
 
         self.text += self.instruction

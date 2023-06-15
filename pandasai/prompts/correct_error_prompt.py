@@ -2,7 +2,7 @@
 ```
 Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-This is the result of `print(df.head({rows_to_display}))`:
+This is the metadata of the dataframe:
 {df_head}.
 
 The user asked the following question:
@@ -32,7 +32,7 @@ class CorrectErrorPrompt(Prompt):
     text: str = """
 Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-This is the result of `print(df.head({rows_to_display}))`:
+This is the metadata of the dataframe:
 {df_head}.
 
 The user asked the following question:

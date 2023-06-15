@@ -26,7 +26,7 @@ class TestMultipleDataframesPrompt:
 Today is {date.today()}.
 You are provided with the following pandas dataframes:
 Dataframe df1, with 5 rows and 3 columns.
-This is the result of `print(df1.head())`:
+This is the metadata of the dataframe df1:
     A  B  C
 0  10  1  2
 1  20  2  3
@@ -34,7 +34,7 @@ This is the result of `print(df1.head())`:
 3  40  4  5
 4  50  5  6
 Dataframe df2, with 5 rows and 3 columns.
-This is the result of `print(df2.head())`:
+This is the metadata of the dataframe df2:
     A  B  C
 0  10  1  2
 1  20  2  3

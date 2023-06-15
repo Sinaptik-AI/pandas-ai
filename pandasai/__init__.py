@@ -114,7 +114,6 @@ class PandasAI:
         "df_head": None,
         "num_rows": None,
         "num_columns": None,
-        "rows_to_display": None,
     }
     _cache: Cache = Cache()
     _enable_cache: bool = True
@@ -291,7 +290,6 @@ class PandasAI:
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": heads,
-                        "rows_to_display": rows_to_display,
                     }
 
                 else:
@@ -305,7 +303,6 @@ class PandasAI:
                             df_head=df_head,
                             num_rows=data_frame.shape[0],
                             num_columns=data_frame.shape[1],
-                            rows_to_display=rows_to_display,
                         ),
                         prompt,
                     )
@@ -315,7 +312,6 @@ class PandasAI:
                         "df_head": df_head,
                         "num_rows": data_frame.shape[0],
                         "num_columns": data_frame.shape[1],
-                        "rows_to_display": rows_to_display,
                     }
 
                 self.last_code_generated = code
@@ -581,9 +577,6 @@ Code running:
                             df_head=self._original_instructions["df_head"],
                             num_rows=self._original_instructions["num_rows"],
                             num_columns=self._original_instructions["num_columns"],
-                            rows_to_display=self._original_instructions[
-                                "rows_to_display"
-                            ],
                         )
 
                     code_to_run = self._llm.generate_code(

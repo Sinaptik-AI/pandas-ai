@@ -19,7 +19,6 @@ class TestCorrectErrorPrompt:
                     answer="df.head(5)",
                     num_rows=5,
                     num_columns=5,
-                    rows_to_display=5,
                     df_head="df.head()",
                     error_returned="error",
                 )
@@ -27,7 +26,7 @@ class TestCorrectErrorPrompt:
             == f"""
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 5 rows and 5 columns.
-This is the result of `print(df.head(5))`:
+This is the metadata of the dataframe:
 df.head().
 
 The user asked the following question:
@@ -41,5 +40,5 @@ error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
 Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
-"""
+"""  # noqa: E501
         )

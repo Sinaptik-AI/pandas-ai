@@ -128,7 +128,7 @@ class TestPandasAI:
         expected_prompt = f"""
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
-This is the result of `print(df.head(0))`:
+This is the metadata of the dataframe:
 Empty DataFrame
 Columns: [country]
 Index: [].
@@ -190,7 +190,7 @@ This is the result of `print(df.head(5))`:
         expected_prompt = f"""
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
-This is the result of `print(df.head(5))`:
+This is the metadata of the dataframe:
           country
 0   United States
 1  United Kingdom

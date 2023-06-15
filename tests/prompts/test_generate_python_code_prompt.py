@@ -16,16 +16,15 @@ class TestGeneratePythonCodePrompt:
                     df_head="df.head()",
                     num_rows=10,
                     num_columns=5,
-                    rows_to_display=5,
                 )
             )
             == f"""
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 10 rows and 5 columns.
-This is the result of `print(df.head(5))`:
+This is the metadata of the dataframe:
 df.head().
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
-"""
+"""  # noqa: E501
         )
