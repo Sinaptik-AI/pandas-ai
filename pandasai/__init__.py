@@ -93,7 +93,8 @@ class PandasAI:
         to None
         last_code_generated (str, optional): Pass last Code if generated. Default to
         None
-        last_run_code (str, optional): Pass the last execution / run. Default to None
+        last_code_executed (str, optional): Pass the last execution / run. Default to
+        None
         code_output (str, optional): The code output if any. Default to None
         last_error (str, optional): Error of running code last time. Default to None
         prompt_id (str, optional): Unique ID to differentiate calls. Default to None
@@ -122,7 +123,7 @@ class PandasAI:
     _additional_dependencies: List[dict] = []
     _custom_whitelisted_dependencies: List[str] = []
     last_code_generated: Optional[str] = None
-    last_run_code: Optional[str] = None
+    last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
     last_error: Optional[str] = None
 
@@ -514,7 +515,7 @@ class PandasAI:
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
-        self.last_run_code = code_to_run
+        self.last_code_executed = code_to_run
         self.log(
             f"""
 Code running:

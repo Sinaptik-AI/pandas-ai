@@ -94,7 +94,7 @@ class TestPandasAI:
         df = pd.DataFrame()
         pandasai = PandasAI(llm=llm)
         assert pandasai.run_code("1 + 1", df) == 2
-        assert pandasai.last_run_code == "1 + 1"
+        assert pandasai.last_code_executed == "1 + 1"
 
     def test_run_code_invalid_code(self):
         df = pd.DataFrame()
@@ -255,7 +255,7 @@ print(set([1, 2, 3]))
 """
         pandasai._llm._output = builtins_code
         assert pandasai.run_code(builtins_code, pd.DataFrame()) == {1, 2, 3}
-        assert pandasai.last_run_code == "print(set([1, 2, 3]))"
+        assert pandasai.last_code_executed == "print(set([1, 2, 3]))"
 
     def test_clean_code_remove_environment_defaults(self, pandasai):
         pandas_code = """
@@ -264,7 +264,7 @@ print(df.size)
 """
         pandasai._llm._output = pandas_code
         pandasai.run_code(pandas_code, pd.DataFrame())
-        assert pandasai.last_run_code == "print(df.size)"
+        assert pandasai.last_code_executed == "print(df.size)"
 
     def test_clean_code_whitelist_import(self, pandasai):
         """Test that an installed whitelisted library is added to the environment."""
@@ -274,7 +274,7 @@ np.array()
 """
         pandasai._llm._output = safe_code
         assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
-        assert pandasai.last_run_code == "np.array()"
+        assert pandasai.last_code_executed == "np.array()"
 
     def test_clean_code_whitelist_import_from(self, pandasai):
         """Test that an import from statement is added to the environment."""
@@ -324,7 +324,7 @@ print(df)
 """
         pandasai._llm._output = malicious_code
         pandasai.run_code(malicious_code, pd.DataFrame())
-        assert pandasai.last_run_code == "print(df)"
+        assert pandasai.last_code_executed == "print(df)"
 
     def test_exception_handling(self, pandasai):
         pandasai.run_code = Mock(
