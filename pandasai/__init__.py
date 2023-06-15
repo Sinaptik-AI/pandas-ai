@@ -235,7 +235,7 @@ class PandasAI:
 
     def run(
         self,
-        data_frame: pd.DataFrame,
+        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
         prompt: str,
         is_conversational_answer: bool = None,
         show_code: bool = False,
@@ -246,7 +246,7 @@ class PandasAI:
         Run the PandasAI to make Dataframes Conversational.
 
         Args:
-            data_frame (pd.Dataframe): A pandas Dataframe
+            data_frame (Union[pd.DataFrame, List[pd.DataFrame]]): A pandas Dataframe
             prompt (str): A prompt to query about the Dataframe
             is_conversational_answer (bool): Whether to return answer in conversational
             form. Default to False
@@ -373,7 +373,7 @@ class PandasAI:
 
     def __call__(
         self,
-        data_frame: pd.DataFrame,
+        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
         prompt: str,
         is_conversational_answer: bool = None,
         show_code: bool = False,
