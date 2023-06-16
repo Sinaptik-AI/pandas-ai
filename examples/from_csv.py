@@ -2,9 +2,11 @@
 import os
 
 import pandas as pd
+from llm_client import LLMAPIClientType, init_sync_llm_api_client
 
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
+from pandasai.llm.client_sdk import ClientSDK
 
 df = pd.read_csv("examples/data/Loan payments data.csv")
 
@@ -15,10 +17,6 @@ print(response)
 # Output: 247 loans have been paid off by men.
 
 # With ClientSDK
-
-from llm_client import LLMAPIClientType, init_sync_llm_api_client
-
-from pandasai.llm.client_sdk import ClientSDK
 
 llm_client = init_sync_llm_api_client(
     LLMAPIClientType.OPEN_AI, api_key=os.environ["OPENAI_API_KEY"]
