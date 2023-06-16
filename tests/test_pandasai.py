@@ -339,9 +339,8 @@ print(df)
         )
         assert pandasai.last_error == "No code found in the answer."
 
-    def test_cache(self, pandasai):
-        pandasai.clear_cache()
-        pandasai._enable_cache = True
+    def test_cache(self, llm):
+        pandasai = PandasAI(llm=llm)
         pandasai._llm.call = Mock(return_value='print("Hello world")')
         assert pandasai._cache.get("How many countries are in the dataframe?") is None
         pandasai(

@@ -116,7 +116,7 @@ class PandasAI:
         "num_rows": None,
         "num_columns": None,
     }
-    _cache: Cache = Cache()
+    _cache: Cache = None
     _enable_cache: bool = True
     _prompt_id: Optional[str] = None
     _middlewares: List[Middleware] = [ChartsMiddleware()]
@@ -182,11 +182,14 @@ class PandasAI:
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
-        self._enable_cache = enable_cache
         self._process_id = str(uuid.uuid4())
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
+
+        self._enable_cache = enable_cache
+        if self._enable_cache:
+            self._cache = Cache()
 
         if middlewares is not None:
             self.add_middlewares(*middlewares)
@@ -267,7 +270,7 @@ class PandasAI:
         self.log(f"Prompt ID: {self._prompt_id}")
 
         try:
-            if self._enable_cache and self._cache.get(prompt):
+            if self._enable_cache and self._cache and self._cache.get(prompt):
                 self.log("Using cached response")
                 code = self._cache.get(prompt)
             else:
@@ -325,7 +328,8 @@ class PandasAI:
                     """
                 )
 
-                self._cache.set(prompt, code)
+                if self._enable_cache and self._cache:
+                    self._cache.set(prompt, code)
 
             if show_code and self._in_notebook:
                 self.notebook.create_new_cell(code)
@@ -370,7 +374,8 @@ class PandasAI:
         """
         Clears the cache of the PandasAI instance.
         """
-        self._cache.clear()
+        if self._cache:
+            self._cache.clear()
 
     def __call__(
         self,
