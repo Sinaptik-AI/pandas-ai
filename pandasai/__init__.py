@@ -416,9 +416,6 @@ class PandasAI:
             BadImportError: If the import is not whitelisted
 
         """
-        # clear recent optional dependencies
-        self._additional_dependencies = []
-
         if isinstance(node, ast.Import):
             module = node.names[0].name
         else:
@@ -474,6 +471,9 @@ class PandasAI:
         tree = ast.parse(code)
 
         new_body = []
+
+        # clear recent optional dependencies
+        self._additional_dependencies = []
 
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):

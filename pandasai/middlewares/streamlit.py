@@ -20,5 +20,6 @@ class StreamlitMiddleware(Middleware):
             str: Modified code
         """
 
-        code = code.replace("plt.show()", "st.pyplot()")
+        code = code.replace("plt.show()", "st.pyplot(plt.gcf())")
+        code = "import streamlit as st\n" + code
         return code
