@@ -607,9 +607,14 @@ Code running:
 
                     code_to_run = self._retry_run_code(code, e, multiple)
 
-        captured_output = output.getvalue()
+        captured_output = output.getvalue().strip()
+        if len(captured_output.split("\n")) > 1:
+            return captured_output
 
         # Evaluate the last line and return its value or the captured output
+        # We do this because we want to return the right value and the right
+        # type of the value. For example, if the last line is `df.head()`, we
+        # want to return the head of the dataframe, not the captured output.
         lines = code.strip().split("\n")
         last_line = lines[-1].strip()
 
@@ -618,7 +623,15 @@ Code running:
             last_line = match.group(1)
 
         try:
-            return eval(last_line, environment)
+            result = eval(last_line, environment)
+
+            # In some cases, the result is a tuple of values. For example, when
+            # the last line is `print("Hello", "World")`, the result is a tuple
+            # of two strings. In this case, we want to return a string
+            if isinstance(result, tuple):
+                result = " ".join([str(element) for element in result])
+
+            return result
         except Exception:
             return captured_output
 

@@ -608,3 +608,23 @@ Make sure to prefix the requested python code with <startCode> exactly and suffi
 Code:
 """  # noqa: E501
         )
+
+    def test_catches_multiple_prints(self, pandasai):
+        code = """
+print("Hello world")
+print("Hello world again")
+"""
+
+        response = pandasai.run_code(code, pd.DataFrame())
+        assert (
+            response
+            == """Hello world
+Hello world again"""
+        )
+
+    def test_catches_print_with_multiple_args(self, pandasai):
+        code = """name = "John"
+print('Hello', name)"""
+
+        response = pandasai.run_code(code, pd.DataFrame())
+        assert response == "Hello John"
