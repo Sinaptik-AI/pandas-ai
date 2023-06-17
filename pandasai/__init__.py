@@ -39,6 +39,7 @@ import logging
 import re
 import sys
 import uuid
+import time
 from contextlib import redirect_stdout
 from typing import List, Optional, Union
 
@@ -91,6 +92,15 @@ class PandasAI:
         _is_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default
         to None
+        _cache (Cache, optional): Cache object to store the results. Default to None
+        _enable_cache (bool, optional): Whether to enable cache. Default to True
+        _prompt_id (str, optional): Unique ID to differentiate calls. Default to None
+        _middlewares (List[Middleware], optional): List of middlewares to run. Default
+        to [ChartsMiddleware()]
+        _additional_dependencies (List[dict], optional): List of additional dependencies
+        to be added. Default to []
+        _custom_whitelisted_dependencies (List[str], optional): List of custom
+        whitelisted dependencies. Default to []
         last_code_generated (str, optional): Pass last Code if generated. Default to
         None
         last_code_executed (str, optional): Pass the last execution / run. Default to
@@ -122,6 +132,7 @@ class PandasAI:
     _middlewares: List[Middleware] = [ChartsMiddleware()]
     _additional_dependencies: List[dict] = []
     _custom_whitelisted_dependencies: List[str] = []
+    _start_time: float = 0
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -264,6 +275,8 @@ class PandasAI:
 
         """
 
+        self._start_time = time.time()
+
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._prompt_id = str(uuid.uuid4())
@@ -350,6 +363,9 @@ class PandasAI:
             if is_conversational_answer:
                 answer = self.conversational_answer(prompt, answer)
                 self.log(f"Conversational answer: {answer}")
+
+            self.log(f"Executed in: {time.time() - self._start_time}s")
+
             return answer
         except Exception as exception:
             self.last_error = str(exception)
