@@ -6,6 +6,8 @@ from unittest.mock import Mock, patch
 from uuid import UUID
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 
 from pandasai import PandasAI
@@ -25,6 +27,49 @@ class TestPandasAI:
     @pytest.fixture
     def pandasai(self, llm):
         return PandasAI(llm, enable_cache=False)
+
+    @pytest.fixture
+    def sample_df(self, llm):
+        return pd.DataFrame(
+            {
+                "country": [
+                    "United States",
+                    "United Kingdom",
+                    "France",
+                    "Germany",
+                    "Italy",
+                    "Spain",
+                    "Canada",
+                    "Australia",
+                    "Japan",
+                    "China",
+                ],
+                "gdp": [
+                    19294482071552,
+                    2891615567872,
+                    2411255037952,
+                    3435817336832,
+                    1745433788416,
+                    1181205135360,
+                    1607402389504,
+                    1490967855104,
+                    4380756541440,
+                    14631844184064,
+                ],
+                "happiness_index": [
+                    6.94,
+                    7.16,
+                    6.66,
+                    7.07,
+                    6.38,
+                    6.4,
+                    7.23,
+                    7.22,
+                    5.87,
+                    5.12,
+                ],
+            }
+        )
 
     @pytest.fixture
     def test_middleware(self):
@@ -408,3 +453,158 @@ my_custom_library.do_something()
 
         pandasai._load_llm(langchain_llm)
         assert pandasai._llm._langchain_llm == langchain_llm
+
+    def test_get_environment(self, pandasai):
+        pandasai._additional_dependencies = [
+            {"name": "pyplot", "alias": "plt", "module": "matplotlib"},
+            {"name": "numpy", "alias": "np", "module": "numpy"},
+        ]
+        assert pandasai._get_environment() == {
+            "pd": pd,
+            "plt": plt,
+            "np": np,
+            "__builtins__": {
+                "abs": abs,
+                "all": all,
+                "any": any,
+                "ascii": ascii,
+                "bin": bin,
+                "bool": bool,
+                "bytearray": bytearray,
+                "bytes": bytes,
+                "callable": callable,
+                "chr": chr,
+                "classmethod": classmethod,
+                "complex": complex,
+                "delattr": delattr,
+                "dict": dict,
+                "dir": dir,
+                "divmod": divmod,
+                "enumerate": enumerate,
+                "filter": filter,
+                "float": float,
+                "format": format,
+                "frozenset": frozenset,
+                "getattr": getattr,
+                "hasattr": hasattr,
+                "hash": hash,
+                "help": help,
+                "hex": hex,
+                "id": id,
+                "input": input,
+                "int": int,
+                "isinstance": isinstance,
+                "issubclass": issubclass,
+                "iter": iter,
+                "len": len,
+                "list": list,
+                "locals": locals,
+                "map": map,
+                "max": max,
+                "memoryview": memoryview,
+                "min": min,
+                "next": next,
+                "object": object,
+                "oct": oct,
+                "open": open,
+                "ord": ord,
+                "pow": pow,
+                "print": print,
+                "property": property,
+                "range": range,
+                "repr": repr,
+                "reversed": reversed,
+                "round": round,
+                "set": set,
+                "setattr": setattr,
+                "slice": slice,
+                "sorted": sorted,
+                "staticmethod": staticmethod,
+                "str": str,
+                "sum": sum,
+                "super": super,
+                "tuple": tuple,
+                "type": type,
+                "vars": vars,
+                "zip": zip,
+            },
+        }
+
+    def test_retry_on_error_with_single_df(self, pandasai, sample_df):
+        code = 'print("Hello world")'
+
+        pandasai._original_instructions = {
+            "question": "Print hello world",
+            "df_head": sample_df.head(),
+            "num_rows": 10,
+            "num_columns": 3,
+        }
+        pandasai._retry_run_code(code, e=Exception("Test error"), multiple=False)
+        assert (
+            pandasai.last_prompt
+            == f"""
+Today is {date.today()}.
+You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
+This is the metadata of the dataframe:
+          country             gdp  happiness_index
+0   United States  19294482071552             6.94
+1  United Kingdom   2891615567872             7.16
+2          France   2411255037952             6.66
+3         Germany   3435817336832             7.07
+4           Italy   1745433788416             6.38.
+
+The user asked the following question:
+Print hello world
+
+You generated this python code:
+print("Hello world")
+
+It fails with the following error:
+Test error
+
+Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
+
+
+Code:
+"""  # noqa: E501
+        )
+
+    def test_retry_on_error_with_multiple_df(self, pandasai, sample_df):
+        code = 'print("Hello world")'
+
+        pandasai._original_instructions = {
+            "question": "Print hello world",
+            "df_head": [sample_df.head()],
+            "num_rows": 10,
+            "num_columns": 3,
+        }
+        pandasai._retry_run_code(code, e=Exception("Test error"), multiple=True)
+        assert (
+            pandasai.last_prompt
+            == """
+You are provided with the following pandas dataframes:
+Dataframe df1, with 5 rows and 3 columns.
+This is the metadata of the dataframe df1:
+          country             gdp  happiness_index
+0   United States  19294482071552             6.94
+1  United Kingdom   2891615567872             7.16
+2          France   2411255037952             6.66
+3         Germany   3435817336832             7.07
+4           Italy   1745433788416             6.38
+The user asked the following question:
+Print hello world
+
+You generated this python code:
+print("Hello world")
+
+It fails with the following error:
+Test error
+
+Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
+
+
+Code:
+"""  # noqa: E501
+        )

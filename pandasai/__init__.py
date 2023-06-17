@@ -491,6 +491,58 @@ class PandasAI:
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree).strip()
 
+    def _get_environment(self) -> dict:
+        """
+        Returns the environment for the code to be executed.
+
+        Returns (dict): A dictionary of environment variables
+        """
+
+        return {
+            "pd": pd,
+            **{
+                lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
+                if hasattr(import_dependency(lib["module"]), lib["name"])
+                else import_dependency(lib["module"])
+                for lib in self._additional_dependencies
+            },
+            "__builtins__": {
+                **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
+            },
+        }
+
+    def _retry_run_code(self, code: str, e: Exception, multiple: bool = False):
+        """
+        A method to retry the code execution with error correction framework.
+
+        Args:
+            code (str): A python code
+            e (Exception): An exception
+            multiple (bool): A boolean to indicate if the code is for multiple
+            dataframes
+
+        Returns (str): A python code
+        """
+
+        if multiple:
+            error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
+                code=code,
+                error_returned=e,
+                question=self._original_instructions["question"],
+                df_head=self._original_instructions["df_head"],
+            )
+        else:
+            error_correcting_instruction = CorrectErrorPrompt(
+                code=code,
+                error_returned=e,
+                question=self._original_instructions["question"],
+                df_head=self._original_instructions["df_head"],
+                num_rows=self._original_instructions["num_rows"],
+                num_columns=self._original_instructions["num_columns"],
+            )
+
+        return self._llm.generate_code(error_correcting_instruction, "")
+
     def run_code(
         self,
         code: str,
@@ -529,24 +581,12 @@ Code running:
 ```"""
         )
 
-        environment: dict = {
-            "pd": pd,
-            **{
-                lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
-                if hasattr(import_dependency(lib["module"]), lib["name"])
-                else import_dependency(lib["module"])
-                for lib in self._additional_dependencies
-            },
-            "__builtins__": {
-                **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
-            },
-        }
+        environment: dict = self._get_environment()
 
         if multiple:
             environment.update(
                 {f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start=1)}
             )
-
         else:
             environment["df"] = data_frame
 
@@ -565,29 +605,7 @@ Code running:
 
                     count += 1
 
-                    if multiple:
-                        error_correcting_instruction = (
-                            CorrectMultipleDataframesErrorPrompt(
-                                code=code,
-                                error_returned=e,
-                                question=self._original_instructions["question"],
-                                df_head=self._original_instructions["df_head"],
-                            )
-                        )
-
-                    else:
-                        error_correcting_instruction = CorrectErrorPrompt(
-                            code=code,
-                            error_returned=e,
-                            question=self._original_instructions["question"],
-                            df_head=self._original_instructions["df_head"],
-                            num_rows=self._original_instructions["num_rows"],
-                            num_columns=self._original_instructions["num_columns"],
-                        )
-
-                    code_to_run = self._llm.generate_code(
-                        error_correcting_instruction, ""
-                    )
+                    code_to_run = self._retry_run_code(code, e, multiple)
 
         captured_output = output.getvalue()
 
@@ -617,3 +635,9 @@ Code running:
         if self._prompt_id is None:
             raise ValueError("Pandas AI has not been run yet.")
         return self._prompt_id
+
+    @property
+    def last_prompt(self) -> str:
+        """Return the last prompt that was executed."""
+        if self._llm:
+            return self._llm.last_prompt
