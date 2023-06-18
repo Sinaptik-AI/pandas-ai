@@ -55,6 +55,7 @@ from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
+from .helpers.shortcuts import Shortcuts
 from .llm.base import LLM
 from .llm.langchain import LangchainLLM
 from .middlewares.base import Middleware
@@ -66,7 +67,7 @@ from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
 
 
-class PandasAI:
+class PandasAI(Shortcuts):
     """
     PandasAI is a wrapper around a LLM to make dataframes conversational.
 

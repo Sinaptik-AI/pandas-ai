@@ -135,9 +135,19 @@ class TestPandasAI:
             pandasai.run(df, "What number comes before 2?")
             mock_print.assert_not_called()
 
-    def test_run_code(self, llm):
+    def test_run_code(self, pandasai):
+        df = pd.DataFrame({"a": [1, 2, 3]})
+        code = """
+df["b"] = df["a"] + 1
+df
+"""
+        pandasai._llm._output = code
+        assert pandasai.run_code(code, df).equals(
+            pd.DataFrame({"a": [1, 2, 3], "b": [2, 3, 4]})
+        )
+
+    def test_run_code_for_calculations(self, pandasai):
         df = pd.DataFrame()
-        pandasai = PandasAI(llm=llm)
         assert pandasai.run_code("1 + 1", df) == 2
         assert pandasai.last_code_executed == "1 + 1"
 
@@ -628,3 +638,13 @@ print('Hello', name)"""
 
         response = pandasai.run_code(code, pd.DataFrame())
         assert response == "Hello John"
+
+    def test_shortcut(self, pandasai):
+        pandasai.run = Mock(return_value="Hello world")
+        pandasai.clean_data(pd.DataFrame())
+        pandasai.run.assert_called_once()
+
+    def test_shortcut_with_multiple_df(self, pandasai):
+        pandasai.run = Mock(return_value="Hello world")
+        pandasai.clean_data([pd.DataFrame(), pd.DataFrame()])
+        pandasai.run.assert_called_once()

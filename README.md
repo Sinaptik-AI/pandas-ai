@@ -133,6 +133,26 @@ Oh, Olivia gets paid the most.
 
 You can find more examples in the [examples](examples) directory.
 
+### ⚡️ Shortcuts
+
+PandasAI also provides a number of shortcuts (beta) to make it easier to ask questions to your data. For example, you can ask PandasAI to `clean_data`, `impute_missing_values`, `generate_features`, `plot_histogram`, and many many more.
+
+```python
+# Clean data
+pandas_ai.clean_data(df)
+
+# Impute missing values
+pandas_ai.impute_missing_values(df)
+
+# Generate features
+pandas_ai.generate_features(df)
+
+# Plot histogram
+pandas_ai.plot_histogram(df, column="gdp")
+```
+
+Learn more about the shortcuts [here](https://pandas-ai.readthedocs.io/en/latest/shortcuts/).
+
 ## 🔒 Privacy & Security
 
 In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
