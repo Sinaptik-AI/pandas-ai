@@ -625,7 +625,7 @@ Code running:
                     code_to_run = self._retry_run_code(code, e, multiple)
 
         captured_output = output.getvalue().strip()
-        if len(captured_output.split("\n")) > 1:
+        if code.count("print(") > 1:
             return captured_output
 
         # Evaluate the last line and return its value or the captured output
