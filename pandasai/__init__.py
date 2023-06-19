@@ -134,6 +134,7 @@ class PandasAI(Shortcuts):
     _additional_dependencies: List[dict] = []
     _custom_whitelisted_dependencies: List[str] = []
     _start_time: float = 0
+    _enable_logging: bool = True
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -149,6 +150,7 @@ class PandasAI(Shortcuts):
         enable_cache=True,
         middlewares=None,
         custom_whitelisted_dependencies=None,
+        enable_logging=True,
     ):
         """
 
@@ -169,12 +171,17 @@ class PandasAI(Shortcuts):
             middlewares (list): List of middlewares to be used. Default to None
             custom_whitelisted_dependencies (list): List of custom dependencies to
             be used. Default to None
+            enable_logging (bool): Enable the logging. Default to True
         """
 
         # configure the logging
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
-        handlers = [logging.FileHandler("pandasai.log")]
+        if enable_logging:
+            handlers = [logging.FileHandler("pandasai.log")]
+        else:
+            handlers = []
+
         if verbose:
             handlers.append(logging.StreamHandler(sys.stdout))
         logging.basicConfig(
