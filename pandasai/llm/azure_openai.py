@@ -16,8 +16,6 @@ from typing import Any, Dict, Optional
 
 import openai
 from dotenv import load_dotenv
-from openai import InvalidRequestError
-from openai.error import APIConnectionError
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from .base import BaseOpenAI
@@ -41,6 +39,7 @@ class AzureOpenAI(BaseOpenAI):
         api_base: Optional[str] = None,
         api_version: Optional[str] = None,
         deployment_name: str = None,
+        is_chat_model: Optional[bool] = False,
         **kwargs,
     ):
         """
@@ -51,15 +50,17 @@ class AzureOpenAI(BaseOpenAI):
             api_base (str): Base url of the Azure endpoint.
                 It should look like the following:
                 <https://YOUR_RESOURCE_NAME.openai.azure.com/>
-            api_version (str): Version of the Azure OpenAI API. Be aware the API
-            version may change.
-            deployment_name: Custom name of the deployed model
+            api_version (str): Version of the Azure OpenAI API.
+                Be aware the API version may change.
+            deployment_name (str): Custom name of the deployed model
+            is_chat_model (bool): Whether ``deployment_name`` corresponds to a Chat
+                or a Completion model
             **kwargs: Inference Parameters
         """
 
         self.api_token = api_token or os.getenv("AZURE_OPENAI_KEY") or None
         self.api_base = api_base or os.getenv("AZURE_OPENAI_ENDPOINT") or None
-        self.api_version = api_version or "2023-03-15-preview"
+        self.api_version = api_version or "2023-05-15"
         if self.api_token is None:
             raise APIKeyNotFoundError("Azure OpenAI key is required")
         if self.api_base is None:
@@ -72,27 +73,9 @@ class AzureOpenAI(BaseOpenAI):
 
         if deployment_name is None:
             raise UnsupportedOpenAIModelError("Model deployment name is required.")
-        try:
-            model_name = openai.Deployment.retrieve(deployment_name).model
-            model_capabilities = openai.Model.retrieve(model_name).capabilities
-            if (
-                not model_capabilities.completion
-                and not model_capabilities.chat_completion
-            ):
-                raise UnsupportedOpenAIModelError(
-                    "Model deployment name does not correspond to a "
-                    "chat nor a completion model."
-                )
-            self.is_chat_model = model_capabilities.chat_completion
-            self.engine = deployment_name
-        except InvalidRequestError as ex:
-            raise UnsupportedOpenAIModelError(
-                "Model deployment name does not correspond to a valid model entity."
-            ) from ex
-        except APIConnectionError as ex:
-            raise UnsupportedOpenAIModelError(
-                f"Invalid Azure OpenAI Base Endpoint {api_base}"
-            ) from ex
+
+        self.is_chat_model = is_chat_model
+        self.engine = deployment_name
 
         self._set_params(**kwargs)
 
