@@ -6,25 +6,8 @@ from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from pandasai.llm.azure_openai import AzureOpenAI
 
 
-class MockedOpenAIObject:
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-def mock_deployment(mocker, completion=True, chat_completion=True):
-    openai_mock_deploy = mocker.patch("openai.Deployment.retrieve")
-    openai_mock_deploy.return_value = MockedOpenAIObject(model="test-model")
-
-    openai_mock_model = mocker.patch("openai.Model.retrieve")
-    capabilities = MockedOpenAIObject(
-        completion=completion, chat_completion=chat_completion
-    )
-    openai_mock_model.return_value = MockedOpenAIObject(capabilities=capabilities)
-
-
-class TestOpenAILLM:
-    """Unit tests for the openai LLM class"""
+class TestAzureOpenAILLM:
+    """Unit tests for the Azure Openai LLM class"""
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
@@ -39,29 +22,17 @@ class TestOpenAILLM:
             AzureOpenAI(api_token="test", api_base="test")
 
     def test_type_with_token(self, mocker):
-        mock_deployment(mocker)
         assert (
-            AzureOpenAI(api_token="test", api_base="test", deployment_name="test").type
-            == "azure-openai"
+                AzureOpenAI(api_token="test", api_base="test", deployment_name="test").type
+                == "azure-openai"
         )
 
-    def test_with_nonexistent_deployment(self):
-        with pytest.raises(UnsupportedOpenAIModelError):
-            # test is no valid deployment name nor api endpoint
-            AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
-
-    def test_with_invalid_model_type(self, mocker):
-        mock_deployment(mocker, False, False)
-        with pytest.raises(UnsupportedOpenAIModelError):
-            # model is not capable of chat nor completion
-            AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
-
     def test_params_setting(self, mocker):
-        mock_deployment(mocker)
         llm = AzureOpenAI(
             api_token="test",
             api_base="test",
             deployment_name="Deployed-GPT-3",
+            is_chat_model=True,
             temperature=0.5,
             max_tokens=50,
             top_p=1.0,
@@ -71,6 +42,7 @@ class TestOpenAILLM:
         )
 
         assert llm.engine == "Deployed-GPT-3"
+        assert llm.is_chat_model
         assert llm.temperature == 0.5
         assert llm.max_tokens == 50
         assert llm.top_p == 1.0
@@ -79,7 +51,6 @@ class TestOpenAILLM:
         assert llm.stop == ["\n"]
 
     def test_completion(self, mocker):
-        mock_deployment(mocker)
         openai_mock = mocker.patch("openai.Completion.create")
         expected_text = "This is the generated text."
         openai_mock.return_value = {"choices": [{"text": expected_text}]}
@@ -100,8 +71,12 @@ class TestOpenAILLM:
         assert result == expected_text
 
     def test_chat_completion(self, mocker):
-        mock_deployment(mocker, chat_completion=True)
-        openai = AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
+        openai = AzureOpenAI(
+            api_token="test",
+            api_base="test",
+            deployment_name="test",
+            is_chat_model=True
+        )
         expected_response = {
             "choices": [
                 {
