@@ -40,7 +40,7 @@ import re
 import sys
 import uuid
 from contextlib import redirect_stdout
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Type
 
 import astor
 import pandas as pd
@@ -58,6 +58,7 @@ from .llm.base import LLM
 from .llm.langchain import LangchainLLM
 from .middlewares.base import Middleware
 from .middlewares.charts import ChartsMiddleware
+from .prompts.base import Prompt
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
@@ -136,6 +137,7 @@ class PandasAI:
         enable_cache=True,
         middlewares=None,
         custom_whitelisted_dependencies=None,
+        non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
     ):
         """
 
@@ -156,6 +158,8 @@ class PandasAI:
             middlewares (list): List of middlewares to be used. Default to None
             custom_whitelisted_dependencies (list): List of custom dependencies to
             be used. Default to None
+            non_default_prompts (dict): Mapping from keys to replacement prompt classes.
+            Used to override specific types of prompts. Defaults to None.
         """
 
         # configure the logging
@@ -183,6 +187,23 @@ class PandasAI:
         self._save_charts = save_charts
         self._enable_cache = enable_cache
         self._process_id = str(uuid.uuid4())
+
+        non_default_prompts = {} if non_default_prompts is None else non_default_prompts
+        self._multiple_dataframes_prompt = non_default_prompts.get(
+            "multiple_dataframes", MultipleDataframesPrompt
+        )
+        self._generate_response_prompt = non_default_prompts.get(
+            "generate_response", GenerateResponsePrompt
+        )
+        self._generate_python_code_prompt = non_default_prompts.get(
+            "generate_python_code", GeneratePythonCodePrompt
+        )
+        self._correct_multiple_dataframes_error_prompt = non_default_prompts.get(
+            "correct_multiple_dataframes_error", CorrectMultipleDataframesErrorPrompt
+        )
+        self._correct_error_prompt = non_default_prompts.get(
+            "correct_error", CorrectErrorPrompt
+        )
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -230,7 +251,7 @@ class PandasAI:
             # if the user has set enforce_privacy to True
             return answer
 
-        instruction = GenerateResponsePrompt(question=question, answer=answer)
+        instruction = self._generate_response_prompt(question=question, answer=answer)
         return self._llm.call(instruction, "")
 
     def run(
@@ -283,7 +304,7 @@ class PandasAI:
                     ]
 
                     code = self._llm.generate_code(
-                        MultipleDataframesPrompt(dataframes=heads),
+                        self._multiple_dataframes_prompt(dataframes=heads),
                         prompt,
                     )
 
@@ -298,7 +319,7 @@ class PandasAI:
                         df_head = anonymize_dataframe_head(df_head)
 
                     code = self._llm.generate_code(
-                        GeneratePythonCodePrompt(
+                        self._generate_python_code_prompt(
                             prompt=prompt,
                             df_head=df_head,
                             num_rows=data_frame.shape[0],
@@ -561,7 +582,7 @@ Code running:
 
                     if multiple:
                         error_correcting_instruction = (
-                            CorrectMultipleDataframesErrorPrompt(
+                            self._correct_multiple_dataframes_error_prompt(
                                 code=code,
                                 error_returned=e,
                                 question=self._original_instructions["question"],
@@ -570,7 +591,7 @@ Code running:
                         )
 
                     else:
-                        error_correcting_instruction = CorrectErrorPrompt(
+                        error_correcting_instruction = self._correct_error_prompt(
                             code=code,
                             error_returned=e,
                             question=self._original_instructions["question"],
