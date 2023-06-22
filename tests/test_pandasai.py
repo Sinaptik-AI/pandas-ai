@@ -1,5 +1,5 @@
 """Unit tests for the PandasAI class"""
-
+import datetime
 from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -8,7 +8,8 @@ from uuid import UUID
 import pandas as pd
 import pytest
 
-from pandasai import PandasAI
+from pandasai import PandasAI, Prompt
+from pandasai.constants import START_CODE_TAG, END_CODE_TAG
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
@@ -409,3 +410,37 @@ my_custom_library.do_something()
 
         pandasai._load_llm(langchain_llm)
         assert pandasai._llm._langchain_llm == langchain_llm
+
+    def test_replace_generate_code_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = (
+                "{today_date} | {num_rows} | {num_columns} | {df_head} | "
+                "{START_CODE_TAG} | {END_CODE_TAG} | "
+            )
+
+            def __init__(self, **kwargs):
+                super().__init__(
+                    **kwargs,
+                    START_CODE_TAG=START_CODE_TAG,
+                    END_CODE_TAG=END_CODE_TAG,
+                    today_date=datetime.date.today(),
+                )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_python_code": ReplacementPrompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        df = pd.DataFrame()
+        pai(df, question, use_error_correction_framework=False)
+        expected_last_prompt = (
+            str(
+                ReplacementPrompt(
+                    num_rows=df.shape[0], num_columns=df.shape[1], df_head=df.head()
+                )
+            )
+            + question
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
