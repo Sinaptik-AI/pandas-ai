@@ -650,17 +650,11 @@ print('Hello', name)"""
         pandasai.run.assert_called_once()
 
     def test_replace_generate_code_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = "{num_rows} | {num_columns} | {df_head} | "
-
-            def __init__(self, **kwargs):
-                super().__init__(
-                    **kwargs,
-                )
+        replacement_prompt = "{num_rows} | {num_columns} | {df_head} | ".format
 
         pai = PandasAI(
             llm,
-            non_default_prompts={"generate_python_code": ReplacementPrompt},
+            non_default_prompts={"generate_python_code": replacement_prompt},
             enable_cache=False,
         )
         question = "Will this work?"
@@ -668,7 +662,7 @@ print('Hello', name)"""
         pai(df, question, use_error_correction_framework=False)
         expected_last_prompt = (
             str(
-                ReplacementPrompt(
+                replacement_prompt(
                     num_rows=df.shape[0], num_columns=df.shape[1], df_head=df.head()
                 )
             )
@@ -678,20 +672,14 @@ print('Hello', name)"""
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = (
-                "{num_rows} | {num_columns} | {df_head} | "
-                "{question} | {code} | {error_returned} |"
-            )
-
-            def __init__(self, **kwargs):
-                super().__init__(
-                    **kwargs,
-                )
+        replacement_prompt = (
+            "{num_rows} | {num_columns} | {df_head} | "
+            "{question} | {code} | {error_returned} |".format
+        )
 
         pai = PandasAI(
             llm,
-            non_default_prompts={"correct_error": ReplacementPrompt},
+            non_default_prompts={"correct_error": replacement_prompt},
             enable_cache=False,
         )
 
@@ -711,7 +699,7 @@ print('Hello', name)"""
 
         expected_last_prompt = (
             str(
-                ReplacementPrompt(
+                replacement_prompt(
                     code=erroneous_code,
                     error_returned="name 'a' is not defined",
                     question=question,
@@ -759,42 +747,32 @@ print('Hello', name)"""
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_generate_response_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = "{question} | {answer} | "
-
-            def __init__(self, **kwargs):
-                super().__init__(
-                    **kwargs,
-                )
+        replacement_prompt = "{question} | {answer} | ".format
 
         pai = PandasAI(
             llm,
-            non_default_prompts={"generate_response": ReplacementPrompt},
+            non_default_prompts={"generate_response": replacement_prompt},
             enable_cache=False,
         )
         question = "Will this work?"
         answer = "No it won't"
         pai.conversational_answer(question, answer)
         expected_last_prompt = (
-            str(ReplacementPrompt(question=question, answer=answer))
+            str(replacement_prompt(question=question, answer=answer))
             + ""  # "value" parameter passed as empty string
             + ""  # "suffix" parameter defaults to empty string
         )
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = "{df_head} | " "{question} | {code} | {error_returned} |"
-
-            def __init__(self, **kwargs):
-                super().__init__(
-                    **kwargs,
-                )
+        replacement_prompt = (
+            "{df_head} | " "{question} | {code} | {error_returned} |".format
+        )
 
         pai = PandasAI(
             llm,
             non_default_prompts={
-                "correct_multiple_dataframes_error": ReplacementPrompt
+                "correct_multiple_dataframes_error": replacement_prompt
             },
             enable_cache=False,
         )
@@ -811,7 +789,7 @@ print('Hello', name)"""
 
         expected_last_prompt = (
             str(
-                ReplacementPrompt(
+                replacement_prompt(
                     code=erroneous_code,
                     error_returned="name 'a' is not defined",
                     question=question,
