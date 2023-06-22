@@ -1,5 +1,4 @@
 """Unit tests for the PandasAI class"""
-import datetime
 from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -9,7 +8,6 @@ import pandas as pd
 import pytest
 
 from pandasai import PandasAI, Prompt
-from pandasai.constants import START_CODE_TAG, END_CODE_TAG
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
@@ -413,17 +411,11 @@ my_custom_library.do_something()
 
     def test_replace_generate_code_prompt(self, llm):
         class ReplacementPrompt(Prompt):
-            text = (
-                "{today_date} | {num_rows} | {num_columns} | {df_head} | "
-                "{START_CODE_TAG} | {END_CODE_TAG} | "
-            )
+            text = "{num_rows} | {num_columns} | {df_head} | "
 
             def __init__(self, **kwargs):
                 super().__init__(
                     **kwargs,
-                    START_CODE_TAG=START_CODE_TAG,
-                    END_CODE_TAG=END_CODE_TAG,
-                    today_date=datetime.date.today(),
                 )
 
         pai = PandasAI(
@@ -448,17 +440,13 @@ my_custom_library.do_something()
     def test_correct_error_prompt(self, llm):
         class ReplacementPrompt(Prompt):
             text = (
-                "{today_date} | {num_rows} | {num_columns} | {df_head} | "
-                "{question} | {code} | {error_returned} | "
-                "{START_CODE_TAG} | {END_CODE_TAG}"
+                "{num_rows} | {num_columns} | {df_head} | "
+                "{question} | {code} | {error_returned} |"
             )
 
             def __init__(self, **kwargs):
                 super().__init__(
                     **kwargs,
-                    START_CODE_TAG=START_CODE_TAG,
-                    END_CODE_TAG=END_CODE_TAG,
-                    today_date=datetime.date.today(),
                 )
 
         pai = PandasAI(
@@ -496,8 +484,6 @@ my_custom_library.do_something()
         )
         assert llm.last_prompt == expected_last_prompt
 
-    # GenerateResponsePrompt
-    # CorrectMultipleDataframesErrorPrompt
     def test_multiple_dataframes_prompt(self, llm):
         class ReplacementPrompt(Prompt):
             text = ""
