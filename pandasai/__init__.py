@@ -42,7 +42,6 @@ import uuid
 import time
 from contextlib import redirect_stdout
 from typing import List, Optional, Union
-import traceback
 
 import astor
 import pandas as pd
@@ -382,7 +381,7 @@ class PandasAI(Shortcuts):
             return (
                 "Unfortunately, I was not able to answer your question, "
                 "because of the following error:\n"
-                f"\n{exception}\n\n{traceback.format_exc()}"
+                f"\n{exception}"
             )
 
     def add_middlewares(self, *middlewares: List[Middleware]):

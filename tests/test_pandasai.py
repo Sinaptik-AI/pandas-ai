@@ -390,7 +390,7 @@ print(df)
         assert result == (
             "Unfortunately, I was not able to answer your question, "
             "because of the following error:\n"
-            "\nNo code found in the answer.\n"
+            "\nNo code found in the answer."
         )
         assert pandasai.last_error == "No code found in the answer."
 
