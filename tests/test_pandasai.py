@@ -495,3 +495,38 @@ my_custom_library.do_something()
             + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
+
+    # GenerateResponsePrompt
+    # CorrectMultipleDataframesErrorPrompt
+    def test_multiple_dataframes_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = ""
+
+            def __init__(self, dataframes, **kwargs):
+                super().__init__(
+                    **kwargs,
+                )
+                for df in dataframes:
+                    self.text += f"\n{df}\n"
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"multiple_dataframes": ReplacementPrompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        pai(
+            dataframes,
+            question,
+            anonymize_df=False,
+            use_error_correction_framework=False,
+        )
+
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        expected_last_prompt = (
+            str(ReplacementPrompt(dataframes=heads)) + question + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
