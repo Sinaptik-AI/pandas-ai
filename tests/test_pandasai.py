@@ -480,6 +480,7 @@ my_custom_library.do_something()
                     num_columns=num_columns,
                 )
             )
+            + ""  # "prompt" parameter passed as empty string
             + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
@@ -514,5 +515,70 @@ my_custom_library.do_something()
 
         expected_last_prompt = (
             str(ReplacementPrompt(dataframes=heads)) + question + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_generate_response_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = "{question} | {answer} | "
+
+            def __init__(self, **kwargs):
+                super().__init__(
+                    **kwargs,
+                )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_response": ReplacementPrompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        answer = "No it won't"
+        pai.conversational_answer(question, answer)
+        expected_last_prompt = (
+            str(ReplacementPrompt(question=question, answer=answer))
+            + ""  # "value" parameter passed as empty string
+            + ""  # "suffix" parameter defaults to empty string
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = "{df_head} | " "{question} | {code} | {error_returned} |"
+
+            def __init__(self, **kwargs):
+                super().__init__(
+                    **kwargs,
+                )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={
+                "correct_multiple_dataframes_error": ReplacementPrompt
+            },
+            enable_cache=False,
+        )
+
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = heads
+        pai.run_code(erroneous_code, dataframes, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                ReplacementPrompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=heads,
+                )
+            )
+            + ""  # "prompt" parameter passed as empty string
+            + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
