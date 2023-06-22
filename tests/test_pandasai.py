@@ -444,3 +444,54 @@ my_custom_library.do_something()
             + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
+
+    def test_correct_error_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = (
+                "{today_date} | {num_rows} | {num_columns} | {df_head} | "
+                "{question} | {code} | {error_returned} | "
+                "{START_CODE_TAG} | {END_CODE_TAG}"
+            )
+
+            def __init__(self, **kwargs):
+                super().__init__(
+                    **kwargs,
+                    START_CODE_TAG=START_CODE_TAG,
+                    END_CODE_TAG=END_CODE_TAG,
+                    today_date=datetime.date.today(),
+                )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"correct_error": ReplacementPrompt},
+            enable_cache=False,
+        )
+
+        df = pd.DataFrame()
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        num_rows = df.shape[0]
+        num_columns = df.shape[1]
+        df_head = df.head()
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = df_head
+        pai._original_instructions["num_rows"] = num_rows
+        pai._original_instructions["num_columns"] = num_columns
+        pai.run_code(erroneous_code, df, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                ReplacementPrompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=df_head,
+                    num_rows=num_rows,
+                    num_columns=num_columns,
+                )
+            )
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
