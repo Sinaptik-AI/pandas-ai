@@ -17,20 +17,27 @@ class TestAzureOpenAILLM:
         with pytest.raises(APIKeyNotFoundError):
             AzureOpenAI(api_token="test")
 
-    def test_type_without_deployment(self):
-        with pytest.raises(UnsupportedOpenAIModelError):
+    def test_type_without_api_version(self):
+        with pytest.raises(APIKeyNotFoundError):
             AzureOpenAI(api_token="test", api_base="test")
 
-    def test_type_with_token(self, mocker):
-        assert (
-                AzureOpenAI(api_token="test", api_base="test", deployment_name="test").type
-                == "azure-openai"
-        )
+    def test_type_without_deployment(self):
+        with pytest.raises(UnsupportedOpenAIModelError):
+            AzureOpenAI(api_token="test", api_base="test", api_version="test")
 
-    def test_params_setting(self, mocker):
+    def test_type_with_token(self):
+        assert AzureOpenAI(
+            api_token="test",
+            api_base="test",
+            api_version="test",
+            deployment_name="test"
+        ).type == "azure-openai"
+
+    def test_params_setting(self):
         llm = AzureOpenAI(
             api_token="test",
             api_base="test",
+            api_version="test",
             deployment_name="Deployed-GPT-3",
             is_chat_model=True,
             temperature=0.5,
@@ -55,7 +62,12 @@ class TestAzureOpenAILLM:
         expected_text = "This is the generated text."
         openai_mock.return_value = {"choices": [{"text": expected_text}]}
 
-        openai = AzureOpenAI(api_token="test", api_base="test", deployment_name="test")
+        openai = AzureOpenAI(
+            api_token="test",
+            api_base="test",
+            api_version="test",
+            deployment_name="test"
+        )
         result = openai.completion("Some prompt.")
 
         openai_mock.assert_called_once_with(
@@ -74,6 +86,7 @@ class TestAzureOpenAILLM:
         openai = AzureOpenAI(
             api_token="test",
             api_base="test",
+            api_version="test",
             deployment_name="test",
             is_chat_model=True
         )

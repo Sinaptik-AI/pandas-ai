@@ -34,13 +34,13 @@ class AzureOpenAI(BaseOpenAI):
     engine: str
 
     def __init__(
-        self,
-        api_token: Optional[str] = None,
-        api_base: Optional[str] = None,
-        api_version: Optional[str] = None,
-        deployment_name: str = None,
-        is_chat_model: Optional[bool] = False,
-        **kwargs,
+            self,
+            api_token: Optional[str] = None,
+            api_base: Optional[str] = None,
+            api_version: Optional[str] = None,
+            deployment_name: str = None,
+            is_chat_model: Optional[bool] = False,
+            **kwargs,
     ):
         """
         __init__ method of AzureOpenAI Class
@@ -58,14 +58,24 @@ class AzureOpenAI(BaseOpenAI):
             **kwargs: Inference Parameters
         """
 
-        self.api_token = api_token or os.getenv("AZURE_OPENAI_KEY") or None
-        self.api_base = api_base or os.getenv("AZURE_OPENAI_ENDPOINT") or None
-        self.api_version = api_version or "2023-05-15"
+        self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
+        self.api_base = api_base or os.getenv("OPENAI_API_BASE") or None
+        self.api_version = api_version or os.getenv("OPENAI_API_VERSION")
         if self.api_token is None:
-            raise APIKeyNotFoundError("Azure OpenAI key is required")
+            raise APIKeyNotFoundError(
+                "Azure OpenAI key is required. Please add an environment variable "
+                "`OPENAI_API_KEY` or pass `api_token` as a named parameter"
+            )
         if self.api_base is None:
-            raise APIKeyNotFoundError("Azure OpenAI base endpoint is required")
-
+            raise APIKeyNotFoundError(
+                "Azure OpenAI base is required. Please add an environment variable "
+                "`OPENAI_API_BASE` or pass `api_base` as a named parameter"
+            )
+        if self.api_version is None:
+            raise APIKeyNotFoundError(
+                "Azure OpenAI version is required. Please add an environment variable "
+                "`OPENAI_API_VERSION` or pass `api_version` as a named parameter"
+            )
         openai.api_key = self.api_token
         openai.api_base = self.api_base
         openai.api_version = self.api_version
