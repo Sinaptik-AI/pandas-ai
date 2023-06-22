@@ -23,6 +23,7 @@ VERSIONS = {
     "plotly": "5.14.1",
     "ggplot": "0.11.5",
     "scipy": "1.9.0",
+    "streamlit": "1.23.1",
 }
 
 # A mapping from import name to package name (on PyPI) for packages where

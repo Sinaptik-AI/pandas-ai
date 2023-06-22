@@ -43,7 +43,7 @@ from pandasai.llm.openai import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 pandas_ai = PandasAI(llm)
-pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
+pandas_ai(df, prompt='Which are the 5 happiest countries?')
 ```
 
 ## Generate openai API Token
@@ -82,7 +82,7 @@ df = pd.read_csv("data/Loan payments data.csv")
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True, conversational=True)
-response = pandas_ai.run(df, "How many loans are from men and have been paid off?")
+response = pandas_ai(df, "How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -102,7 +102,7 @@ df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai.run(df, "Calculate the sum of the gdp of north american countries")
+response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056
 
@@ -123,7 +123,7 @@ df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm)
-response = pandas_ai.run(
+response = pandas_ai(
     df,
     "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
 )
@@ -157,7 +157,7 @@ salaries_df = pd.DataFrame(salaries_data)
 
 llm = OpenAI()
 pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai.run(
+response = pandas_ai(
     [employees_df, salaries_df],
     "Who gets paid the most?",
 )
