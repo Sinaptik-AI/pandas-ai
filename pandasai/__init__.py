@@ -188,21 +188,8 @@ class PandasAI:
         self._enable_cache = enable_cache
         self._process_id = str(uuid.uuid4())
 
-        non_default_prompts = {} if non_default_prompts is None else non_default_prompts
-        self._multiple_dataframes_prompt = non_default_prompts.get(
-            "multiple_dataframes", MultipleDataframesPrompt
-        )
-        self._generate_response_prompt = non_default_prompts.get(
-            "generate_response", GenerateResponsePrompt
-        )
-        self._generate_python_code_prompt = non_default_prompts.get(
-            "generate_python_code", GeneratePythonCodePrompt
-        )
-        self._correct_multiple_dataframes_error_prompt = non_default_prompts.get(
-            "correct_multiple_dataframes_error", CorrectMultipleDataframesErrorPrompt
-        )
-        self._correct_error_prompt = non_default_prompts.get(
-            "correct_error", CorrectErrorPrompt
+        self._non_default_prompts = (
+            {} if non_default_prompts is None else non_default_prompts
         )
 
         self.notebook = Notebook()
@@ -251,8 +238,10 @@ class PandasAI:
             # if the user has set enforce_privacy to True
             return answer
 
-        instruction = self._generate_response_prompt(question=question, answer=answer)
-        return self._llm.call(instruction, "")
+        generate_response_instruction = self._non_default_prompts.get(
+            "generate_response", GenerateResponsePrompt
+        )(question=question, answer=answer)
+        return self._llm.call(generate_response_instruction, "")
 
     def run(
         self,
@@ -303,8 +292,11 @@ class PandasAI:
                         for dataframe in data_frame
                     ]
 
+                    multiple_dataframes_instruction = self._non_default_prompts.get(
+                        "multiple_dataframes", MultipleDataframesPrompt
+                    )
                     code = self._llm.generate_code(
-                        self._multiple_dataframes_prompt(dataframes=heads),
+                        multiple_dataframes_instruction(dataframes=heads),
                         prompt,
                     )
 
@@ -318,13 +310,16 @@ class PandasAI:
                     if anonymize_df:
                         df_head = anonymize_dataframe_head(df_head)
 
+                    generate_code_instruction = self._non_default_prompts.get(
+                        "generate_python_code", GeneratePythonCodePrompt
+                    )(
+                        prompt=prompt,
+                        df_head=df_head,
+                        num_rows=data_frame.shape[0],
+                        num_columns=data_frame.shape[1],
+                    )
                     code = self._llm.generate_code(
-                        self._generate_python_code_prompt(
-                            prompt=prompt,
-                            df_head=df_head,
-                            num_rows=data_frame.shape[0],
-                            num_columns=data_frame.shape[1],
-                        ),
+                        generate_code_instruction,
                         prompt,
                     )
 
@@ -581,17 +576,20 @@ Code running:
                     count += 1
 
                     if multiple:
-                        error_correcting_instruction = (
-                            self._correct_multiple_dataframes_error_prompt(
-                                code=code,
-                                error_returned=e,
-                                question=self._original_instructions["question"],
-                                df_head=self._original_instructions["df_head"],
-                            )
+                        error_correcting_instruction = self._non_default_prompts.get(
+                            "correct_multiple_dataframes_error",
+                            CorrectMultipleDataframesErrorPrompt,
+                        )(
+                            code=code,
+                            error_returned=e,
+                            question=self._original_instructions["question"],
+                            df_head=self._original_instructions["df_head"],
                         )
 
                     else:
-                        error_correcting_instruction = self._correct_error_prompt(
+                        error_correcting_instruction = self._non_default_prompts.get(
+                            "correct_error", CorrectErrorPrompt
+                        )(
                             code=code,
                             error_returned=e,
                             question=self._original_instructions["question"],
