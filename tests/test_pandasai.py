@@ -437,7 +437,7 @@ my_custom_library.do_something()
         )
         assert llm.last_prompt == expected_last_prompt
 
-    def test_correct_error_prompt(self, llm):
+    def test_replace_correct_error_prompt(self, llm):
         class ReplacementPrompt(Prompt):
             text = (
                 "{num_rows} | {num_columns} | {df_head} | "
@@ -484,7 +484,7 @@ my_custom_library.do_something()
         )
         assert llm.last_prompt == expected_last_prompt
 
-    def test_multiple_dataframes_prompt(self, llm):
+    def test_replace_multiple_dataframes_prompt(self, llm):
         class ReplacementPrompt(Prompt):
             text = ""
 
