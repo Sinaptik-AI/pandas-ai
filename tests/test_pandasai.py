@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from pandasai import PandasAI
+from pandasai import PandasAI, Prompt
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
@@ -648,3 +648,155 @@ print('Hello', name)"""
         pandasai.run = Mock(return_value="Hello world")
         pandasai.clean_data([pd.DataFrame(), pd.DataFrame()])
         pandasai.run.assert_called_once()
+
+    def test_replace_generate_code_prompt(self, llm):
+        replacement_prompt = "{num_rows} | {num_columns} | {df_head} | ".format
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_python_code": replacement_prompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        df = pd.DataFrame()
+        pai(df, question, use_error_correction_framework=False)
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    num_rows=df.shape[0], num_columns=df.shape[1], df_head=df.head()
+                )
+            )
+            + question
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_correct_error_prompt(self, llm):
+        replacement_prompt = (
+            "{num_rows} | {num_columns} | {df_head} | "
+            "{question} | {code} | {error_returned} |".format
+        )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"correct_error": replacement_prompt},
+            enable_cache=False,
+        )
+
+        df = pd.DataFrame()
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        num_rows = df.shape[0]
+        num_columns = df.shape[1]
+        df_head = df.head()
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = df_head
+        pai._original_instructions["num_rows"] = num_rows
+        pai._original_instructions["num_columns"] = num_columns
+        pai.run_code(erroneous_code, df, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=df_head,
+                    num_rows=num_rows,
+                    num_columns=num_columns,
+                )
+            )
+            + ""  # "prompt" parameter passed as empty string
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_multiple_dataframes_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = ""
+
+            def __init__(self, dataframes, **kwargs):
+                super().__init__(
+                    **kwargs,
+                )
+                for df in dataframes:
+                    self.text += f"\n{df}\n"
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"multiple_dataframes": ReplacementPrompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        pai(
+            dataframes,
+            question,
+            anonymize_df=False,
+            use_error_correction_framework=False,
+        )
+
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        expected_last_prompt = (
+            str(ReplacementPrompt(dataframes=heads)) + question + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_generate_response_prompt(self, llm):
+        replacement_prompt = "{question} | {answer} | ".format
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_response": replacement_prompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        answer = "No it won't"
+        pai.conversational_answer(question, answer)
+        expected_last_prompt = (
+            str(replacement_prompt(question=question, answer=answer))
+            + ""  # "value" parameter passed as empty string
+            + ""  # "suffix" parameter defaults to empty string
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
+        replacement_prompt = (
+            "{df_head} | " "{question} | {code} | {error_returned} |".format
+        )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={
+                "correct_multiple_dataframes_error": replacement_prompt
+            },
+            enable_cache=False,
+        )
+
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = heads
+        pai.run_code(erroneous_code, dataframes, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=heads,
+                )
+            )
+            + ""  # "prompt" parameter passed as empty string
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
