@@ -15,7 +15,7 @@ nav:
   - Shortcuts: shortcuts.md
   - Middlewares: middlewares.md
   - Custom prompts: custom-prompts.md
-  - Custom Optional Arguments: custom_optional_arguments.md
+  - Custom Optional Arguments: custom-optional-dependencies.md
   - Command Line Tool: pai_cli.md
   - LLMs:
       - llms.md
