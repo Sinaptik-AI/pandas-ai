@@ -114,7 +114,7 @@ class TransformMatplotlibAST(ast.NodeTransformer):
         """
 
         import_stmts = ast.parse(
-            "import base64\nfrom io import BytesIO\nfrom matplotlib.figure ",
+            "import base64\nfrom io import BytesIO\nfrom matplotlib.figure "
             "import Figure",
         ).body
         transformed_body = [self.visit(n) for n in node.body]

@@ -210,6 +210,7 @@ class PandasAI(Shortcuts):
         if self._enable_cache:
             self._cache = Cache()
 
+        self._middlewares = []
         if middlewares is not None:
             self.add_middlewares(*middlewares)
 
@@ -451,6 +452,8 @@ class PandasAI(Shortcuts):
             module = node.module
 
         library = module.split(".")[0]
+
+        print("library", library)
 
         if library == "pandas":
             return
