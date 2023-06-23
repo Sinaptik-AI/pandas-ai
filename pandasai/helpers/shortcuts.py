@@ -130,6 +130,32 @@ y_pred = {y_pred}
 """,
         )
 
+    def boxplot(self, df: pd.DataFrame, col: str | list[str] | None = None, by: str | list[str] | None = None, style: str | None = None):
+        """Draw a box plot to show distributions with respect to categories. The user can provide style info """
+        if not isinstance(col, (str, list, type(None))):
+            raise TypeError("The 'col' argument must be a string, a list of strings, or None.")
+        if not isinstance(by, (str, list, type(None))):
+            raise TypeError("The 'by' argument must be a string, a list of strings, or None.")
+
+        prompt = "Plot a box-and-whisker plot"
+
+        if isinstance(col, str):
+            prompt += f" for the variable '{col}'"
+        elif isinstance(col, list):
+            var_list = [f"'{v}'" for v in col]
+            if len(var_list) > 1:
+                prompt += f" for the variables {', '.join(var_list[:-1])} and {var_list[-1]}"
+            else:
+                prompt += f" for the variable {var_list[0]}"
+
+        if by is not None:
+            prompt += f" grouped by '{by}'"
+
+        if style is not None:
+            prompt += f"\nStyle: '''{style}'''"
+
+        self.run(df, prompt)
+
     def rolling_mean(self, df: pd.DataFrame, column: str, window: int) -> pd.DataFrame:
         """Calculate the rolling mean."""
 
