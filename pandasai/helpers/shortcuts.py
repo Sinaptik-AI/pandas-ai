@@ -131,7 +131,19 @@ y_pred = {y_pred}
         )
 
     def boxplot(self, df: pd.DataFrame, col: str | list[str] | None = None, by: str | list[str] | None = None, style: str | None = None):
-        """Draw a box plot to show distributions with respect to categories. The user can provide style info """
+        """
+        Draw a box plot to show distributions with respect to categories.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing the data.
+            col (str | list[str] | None): The column(s) of interest for the box plot. Defaults to None.
+            by (str | list[str] | None): The grouping variable(s) for the box plot. Defaults to None.
+            style (str | None): The textual description of the desired style. Defaults to None.
+
+        Returns: 
+            str: LLM response
+        """
+        
         if not isinstance(col, (str, list, type(None))):
             raise TypeError("The 'col' argument must be a string, a list of strings, or None.")
         if not isinstance(by, (str, list, type(None))):

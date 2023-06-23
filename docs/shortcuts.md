@@ -49,15 +49,6 @@ pandas_ai.plot_bar_chart(df, x = ['a', 'b', 'c'], y = [1, 2, 3])
 
 This shortcut will plot a bar chart of the data frame.
 
-### plot_bar_chart
-
-```python
-df = pd.read_csv('data.csv')
-pandas_ai.plot_bar_chart(df, x = ['a', 'b', 'c'])
-```
-
-This shortcut will plot a bar chart of the data frame.
-
 ### plot_histogram
 
 ```python
@@ -111,6 +102,17 @@ pandas_ai.plot_roc_curve(df, y_true = [1, 2, 3], y_pred = [1, 2, 3])
 ```
 
 This shortcut will plot a ROC curve of the data frame.
+
+### boxplot
+
+```python
+df = pd.read_csv('data.csv')
+pandas_ai.boxplot(df, col='A', by='B', style='Highlight outliers with a x')
+```
+
+This shortcut plots a box-and-whisker plot using the DataFrame `df`, focusing on the `'A'` column and grouping the data by the `'B'` column.
+
+The `style` parameter allows users to communicate their desired plot customizations to the Language Model, providing flexibility for further refinement and adaptability to specific visual requirements.
 
 ### rolling_mean
 
