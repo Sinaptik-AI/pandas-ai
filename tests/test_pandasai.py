@@ -188,7 +188,7 @@ country
 .
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+Using the provided dataframe, df, return the python code to get the answer to the following question:
 How many countries are in the dataframe?
 
 Code:
@@ -252,7 +252,7 @@ France
 .
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
+Using the provided dataframe, df, return the python code to get the answer to the following question:
 How many countries are in the dataframe?
 
 Code:
@@ -281,26 +281,6 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         assert (
             pandasai._llm._extract_code(code)
             == "result = {'happiness': 1, 'gdp': 0.43}"
-        )
-
-        code = """```python<startCode>
-result = {'happiness': 0.3, 'gdp': 5.5}<endCode>```"""
-        assert (
-            pandasai._llm._extract_code(code)
-            == "result = {'happiness': 0.3, 'gdp': 5.5}"
-        )
-
-        code = """<startCode>```python
-result = {'happiness': 0.49, 'gdp': 25.5}```<endCode>"""
-        assert (
-            pandasai._llm._extract_code(code)
-            == "result = {'happiness': 0.49, 'gdp': 25.5}"
-        )
-        code = """<startCode>```python
-result = {'happiness': 0.49, 'gdp': 25.5}```"""
-        assert (
-            pandasai._llm._extract_code(code)
-            == "result = {'happiness': 0.49, 'gdp': 25.5}"
         )
 
     def test_clean_code_remove_builtins(self, pandasai):
@@ -573,7 +553,6 @@ It fails with the following error:
 Test error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 
 
 Code:
@@ -612,7 +591,6 @@ It fails with the following error:
 Test error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 
 
 Code:
