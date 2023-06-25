@@ -42,6 +42,7 @@ from pandasai.llm.google_palm import GooglePalm
 from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.openai import OpenAI
 from pandasai.llm.starcoder import Starcoder
+from pandasai.llm.falcon import Falcon
 
 
 @click.command()
@@ -116,7 +117,7 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
         llm = Starcoder(api_token=token)
 
     elif model == "falcon":
-        llm = Starcoder(api_token=token)
+        llm = Falcon(api_token=token)
 
     elif model == "palm":
         llm = GooglePalm(api_key=token)

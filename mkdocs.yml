@@ -12,8 +12,14 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Cache: cache.md
+  - Shortcuts: shortcuts.md
   - Middlewares: middlewares.md
+  - Custom prompts: custom-prompts.md
+  - Custom Optional Arguments: custom-optional-dependencies.md
   - Command Line Tool: pai_cli.md
+  - LLMs:
+      - llms.md
+      - LLMs/langchain-llms.md
   - API:
       - API/pandasai.md
       - API/prompts.md
@@ -26,7 +32,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "0.5.0"
+  version: "0.6.3"
 plugins:
   - search
   - mkdocstrings:
