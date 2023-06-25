@@ -184,9 +184,8 @@ df
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
-Empty DataFrame
-Columns: [country]
-Index: [].
+country
+.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
@@ -246,10 +245,11 @@ This is the result of `print(df.head(5))`:
 Today is {date.today()}.
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
-          country
-0   United States
-1  United Kingdom
-2          France.
+country
+United States
+United Kingdom
+France
+.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
@@ -663,7 +663,9 @@ print('Hello', name)"""
         expected_last_prompt = (
             str(
                 replacement_prompt(
-                    num_rows=df.shape[0], num_columns=df.shape[1], df_head=df.head()
+                    num_rows=df.shape[0],
+                    num_columns=df.shape[1],
+                    df_head=df.head().to_csv(index=False),
                 )
             )
             + question
