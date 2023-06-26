@@ -1,4 +1,4 @@
-"""Example of using PandasAI to generate a chart from a Pandas DataFrame"""
+"""Example of using PandasAI to generate and save a chart from a Pandas DataFrame"""
 
 import pandas as pd
 import os
@@ -20,4 +20,4 @@ response = pandas_ai(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )
-# Output: check out images/histogram-chart.png
+# Output: check out $pwd/exports/charts/{hashid}/chart.png
