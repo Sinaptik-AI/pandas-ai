@@ -82,12 +82,14 @@ class GooglePalm(BaseGoogle):
 
 class GoogleVertexai(BaseGoogle):
     """Google Palm Vertexai LLM
-    BaseGoogle class is extended for Google Palm model using Vertexai. The default model
-    support at the moment is text-bison-001. However, user can choose to use code-bison-001 too.
+    BaseGoogle class is extended for Google Palm model using Vertexai.
+    The default model support at the moment is text-bison-001.
+    However, user can choose to use code-bison-001 too.
 
     """
 
-    def __init__(self,  project_id: str, location: str, model: Optional[str] = None, **kwargs):
+    def __init__(self,  project_id: str, location: str,
+                 model: Optional[str] = None, **kwargs):
 
         """
         A init class to implement the Google Vertexai Models
@@ -136,7 +138,8 @@ class GoogleVertexai(BaseGoogle):
         """
         self._validate()
 
-        vertexai = self.vertexai
+        vertexai = self.vertexai # --fix
+        print(vertexai.__version__)
         from vertexai.preview.language_models import (CodeGenerationModel,
                                                       TextGenerationModel)
 
