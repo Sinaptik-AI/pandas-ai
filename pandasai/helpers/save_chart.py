@@ -49,9 +49,12 @@ def compare_ast(
     return node1 == node2
 
 
-def add_save_chart(code: str, folder_name: str,
-                   save_charts_path: str = None,
-                   print_save_dir: bool = True) -> str:
+def add_save_chart(
+    code: str,
+    folder_name: str,
+    save_charts_path: str = None,
+    print_save_dir: bool = True,
+) -> str:
     """
     Add line to code that save charts to a file, if plt.show() is called.
 

@@ -33,6 +33,7 @@ Example:
 
     ```
 """
+
 import ast
 import io
 import logging
@@ -42,7 +43,8 @@ import uuid
 import time
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Dict, Type
-
+import importlib.metadata
+__version__ = importlib.metadata.version(__package__ or __name__)
 import astor
 import pandas as pd
 from .constants import (
@@ -629,10 +631,9 @@ class PandasAI(Shortcuts):
 
         # Add save chart code
         if self._save_charts:
-
-            code = add_save_chart(code, self._prompt_id,
-                                  self._save_charts_path,
-                                  not self._verbose)
+            code = add_save_chart(
+                code, self._prompt_id, self._save_charts_path, not self._verbose
+            )
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)

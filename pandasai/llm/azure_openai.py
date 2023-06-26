@@ -34,13 +34,13 @@ class AzureOpenAI(BaseOpenAI):
     engine: str
 
     def __init__(
-            self,
-            api_token: Optional[str] = None,
-            api_base: Optional[str] = None,
-            api_version: Optional[str] = None,
-            deployment_name: str = None,
-            is_chat_model: Optional[bool] = False,
-            **kwargs,
+        self,
+        api_token: Optional[str] = None,
+        api_base: Optional[str] = None,
+        api_version: Optional[str] = None,
+        deployment_name: str = None,
+        is_chat_model: Optional[bool] = False,
+        **kwargs,
     ):
         """
         __init__ method of AzureOpenAI Class
