@@ -34,6 +34,7 @@ Example:
     ```
 """
 import ast
+import os
 import io
 import logging
 import re
@@ -160,6 +161,7 @@ class PandasAI(Shortcuts):
         verbose=False,
         enforce_privacy=False,
         save_charts=False,
+        save_charts_path=None,
         enable_cache=True,
         middlewares=None,
         custom_whitelisted_dependencies=None,
@@ -217,6 +219,7 @@ class PandasAI(Shortcuts):
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
+        self._save_charts_path = save_charts_path
         self._process_id = str(uuid.uuid4())
 
         self._non_default_prompts = (
@@ -627,7 +630,10 @@ class PandasAI(Shortcuts):
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code, self._prompt_id, not self._verbose)
+
+            code = add_save_chart(code, self._prompt_id,
+                                  self._save_charts_path,
+                                  not self._verbose)
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
