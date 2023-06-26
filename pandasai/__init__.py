@@ -68,6 +68,18 @@ from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
 
 
+def get_version():
+    """
+    Get the version from the package metadata
+    """
+    from importlib.metadata import version
+
+    return version("pandasai")
+
+
+__version__ = get_version()
+
+
 class PandasAI(Shortcuts):
     """
     PandasAI is a wrapper around a LLM to make dataframes conversational.
@@ -334,7 +346,7 @@ class PandasAI(Shortcuts):
                     df_head = data_frame.head(rows_to_display)
                     if anonymize_df:
                         df_head = anonymize_dataframe_head(df_head)
-                    df_head=df_head.to_csv(index=False)
+                    df_head = df_head.to_csv(index=False)
 
                     generate_code_instruction = self._non_default_prompts.get(
                         "generate_python_code", GeneratePythonCodePrompt

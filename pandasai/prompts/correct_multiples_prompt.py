@@ -2,8 +2,6 @@
 
 import pandas as pd
 
-from pandasai.constants import END_CODE_TAG, START_CODE_TAG
-
 from .base import Prompt
 
 
@@ -38,7 +36,6 @@ It fails with the following error:
 {error_returned}
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
 """  # noqa: E501
 
         self.text += instruction
