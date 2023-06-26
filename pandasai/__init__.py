@@ -34,7 +34,6 @@ Example:
     ```
 """
 import ast
-import os
 import io
 import logging
 import re
