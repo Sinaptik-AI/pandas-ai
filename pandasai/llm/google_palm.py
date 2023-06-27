@@ -88,9 +88,9 @@ class GoogleVertexai(BaseGoogle):
 
     """
 
-    def __init__(self,  project_id: str, location: str,
-                 model: Optional[str] = None, **kwargs):
-
+    def __init__(
+        self, project_id: str, location: str, model: Optional[str] = None, **kwargs
+    ):
         """
         A init class to implement the Google Vertexai Models
 
@@ -138,20 +138,22 @@ class GoogleVertexai(BaseGoogle):
         """
         self._validate()
 
-        vertexai = self.vertexai # --fix
+        vertexai = self.vertexai  # --fix
         print(vertexai.__version__)
-        from vertexai.preview.language_models import (CodeGenerationModel,
-                                                      TextGenerationModel)
+        from vertexai.preview.language_models import (
+            CodeGenerationModel,
+            TextGenerationModel,
+        )
 
         if self.model == "code-bison@001":
-
             code_generation = CodeGenerationModel.from_pretrained(self.model)
 
-            completion = code_generation.predict(prefix=prompt,
-                                    temperature=self.temperature,
-                                    max_output_tokens=self.max_output_tokens)
+            completion = code_generation.predict(
+                prefix=prompt,
+                temperature=self.temperature,
+                max_output_tokens=self.max_output_tokens,
+            )
         else:
-
             text_generation = TextGenerationModel.from_pretrained(self.model)
 
             completion = text_generation.predict(

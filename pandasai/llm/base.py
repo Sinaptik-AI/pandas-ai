@@ -337,7 +337,6 @@ class BaseGoogle(LLM):
         self.genai = genai
 
     def _configurevertexai(self, project_id: str, location: str):
-
         """
         Configure Google VertexAi
         Args:
@@ -352,7 +351,6 @@ class BaseGoogle(LLM):
         vertexai = import_dependency("vertexai", extra=err_msg)
         vertexai.init(project=project_id, location=location)
         self.vertexai = vertexai
-
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
