@@ -313,9 +313,9 @@ class BaseGoogle(LLM):
 
     genai: Any
     temperature: Optional[float] = 0
-    top_p: Optional[float] = None
-    top_k: Optional[float] = None
-    max_output_tokens: Optional[int] = None
+    top_p: Optional[float] = 0.8
+    top_k: Optional[float] = 0.3
+    max_output_tokens: Optional[int] = 1000
 
     def _configure(self, api_key: str):
         """
@@ -335,6 +335,24 @@ class BaseGoogle(LLM):
 
         genai.configure(api_key=api_key)
         self.genai = genai
+
+    def _configurevertexai(self, project_id: str, location: str):
+
+        """
+        Configure Google VertexAi
+        Args:
+            project_id: GCP Project
+            location: Location of Project
+
+        Returns: Vertexai Object
+
+        """
+
+        err_msg = "Install google-cloud-aiplatform for Google Vertexai"
+        vertexai = import_dependency("vertexai", extra=err_msg)
+        vertexai.init(project=project_id, location=location)
+        self.vertexai = vertexai
+
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
@@ -394,6 +412,6 @@ class BaseGoogle(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
-        prompt = str(instruction) + str(value) + suffix
+        self.last_prompt = str(instruction) + value
+        prompt = str(instruction) + value + suffix
         return self._generate_text(prompt)

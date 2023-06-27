@@ -84,6 +84,31 @@ llm = GooglePalm(google_cloud_api_key="my-google-cloud-api-key")
 pandas_ai = PandasAI(llm=llm)
 ```
 
+## Google Vertexai
+
+In order to use Google PaLM models through Vertexai api, you need to have
+
+1. Google Cloud Project
+2. Region of Project Set up
+3. Install optional dependency `google-cloud-aiplatform `
+4. Authentication of `gcloud` 
+
+
+Once you have basic setup, you can use it to instantiate a Google PaLM through vertex ai:
+
+```python
+from pandasai import PandasAI
+from pandasai.llm.google_palm import GoogleVertexai
+
+llm = GoogleVertexai(project_id="generative-ai-training",
+                     location="us-central1",
+                     model="text-bison@001")
+
+pandas_ai = PandasAI(llm=llm)
+
+```
+
+
 ## Azure OpenAI
 
 In order to use Azure OpenAI models, you need to have an Azure API key. You can get one [here](https://azure.microsoft.com/it-it/products/cognitive-services/openai-service).
