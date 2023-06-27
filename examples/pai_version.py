@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a CSV file."""
+"""Prints the version of pandasai."""
 
 
 import pandasai as pai
