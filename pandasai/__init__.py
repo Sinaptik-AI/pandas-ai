@@ -106,7 +106,7 @@ class PandasAI(Shortcuts):
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure.
         Default to 3
-        _is_notebook (bool, optional): Whether to run code in notebook. Default to False
+        _in_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None
@@ -136,7 +136,7 @@ class PandasAI(Shortcuts):
     _is_conversational_answer: bool = False
     _enforce_privacy: bool = False
     _max_retries: int = 3
-    _is_notebook: bool = False
+    _in_notebook: bool = False
     _original_instructions: dict = {
         "question": None,
         "df_head": None,
