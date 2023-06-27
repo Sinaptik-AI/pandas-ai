@@ -44,6 +44,7 @@ import time
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Dict, Type
 import importlib.metadata
+
 __version__ = importlib.metadata.version(__package__ or __name__)
 import astor
 import pandas as pd
@@ -311,6 +312,7 @@ class PandasAI(Shortcuts):
 
         self._start_time = time.time()
 
+        self.log(f"Question: {prompt}")
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._prompt_id = str(uuid.uuid4())
