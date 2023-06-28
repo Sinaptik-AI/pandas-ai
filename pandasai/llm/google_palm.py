@@ -138,8 +138,6 @@ class GoogleVertexai(BaseGoogle):
         """
         self._validate()
 
-        vertexai = self.vertexai  # --fix
-        print(vertexai.__version__)
         from vertexai.preview.language_models import (
             CodeGenerationModel,
             TextGenerationModel,
