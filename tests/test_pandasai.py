@@ -399,12 +399,12 @@ print(df)
 
     def test_last_prompt_id(self, pandasai):
         pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
-        prompt_id = pandasai.last_prompt_id()
+        prompt_id = pandasai.last_prompt_id
         assert isinstance(UUID(prompt_id, version=4), UUID)
 
     def test_last_prompt_id_no_prompt(self, pandasai):
         with pytest.raises(ValueError):
-            pandasai.last_prompt_id()
+            pandasai.last_prompt_id
 
     def test_add_middlewares(self, pandasai, test_middleware):
         middleware = test_middleware()
@@ -780,3 +780,13 @@ print('Hello', name)"""
             + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
+
+    def test_saves_logs(self, llm):
+        pandas_ai = PandasAI(llm)
+        assert pandas_ai.logs == []
+        pandas_ai.log("a")
+        pandas_ai.log("b")
+        assert pandas_ai.logs == [
+            "a",
+            "b",
+        ]

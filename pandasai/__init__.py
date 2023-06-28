@@ -111,6 +111,9 @@ class PandasAI(Shortcuts):
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None
         _enable_cache (bool, optional): Whether to enable cache. Default to True
+        _logger (logging.Logger, optional): Logger object to log the messages. Default
+        to None
+        _logs (List[dict], optional): List of logs to be stored. Default to []
         _prompt_id (str, optional): Unique ID to differentiate calls. Default to None
         _middlewares (List[Middleware], optional): List of middlewares to run. Default
         to [ChartsMiddleware()]
@@ -151,6 +154,8 @@ class PandasAI(Shortcuts):
     _custom_whitelisted_dependencies: List[str] = []
     _start_time: float = 0
     _enable_logging: bool = True
+    _logger: logging.Logger = None
+    _logs: List[str] = []
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -223,6 +228,7 @@ class PandasAI(Shortcuts):
         self._save_charts = save_charts
         self._save_charts_path = save_charts_path
         self._process_id = str(uuid.uuid4())
+        self._logs = []
 
         self._non_default_prompts = (
             {} if non_default_prompts is None else non_default_prompts
@@ -705,11 +711,18 @@ Code running:
     def log(self, message: str):
         """Log a message"""
         self._logger.info(message)
+        self._logs.append(message)
+
+    @property
+    def logs(self) -> List[str]:
+        """Return the logs"""
+        return self._logs
 
     def process_id(self) -> str:
         """Return the id of this PandasAI object."""
         return self._process_id
 
+    @property
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
         if self._prompt_id is None:
