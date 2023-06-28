@@ -1,5 +1,5 @@
 """Unit tests for the openai LLM class"""
-
+import openai
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
@@ -32,6 +32,19 @@ class TestAzureOpenAILLM:
             api_version="test",
             deployment_name="test"
         ).type == "azure-openai"
+
+    def test_proxy(self):
+        proxy = "http://proxy.mycompany.com:8080"
+        client = AzureOpenAI(
+            api_token="test",
+            api_base="test",
+            api_version="test",
+            deployment_name="test",
+            openai_proxy=proxy
+        )
+        assert client.openai_proxy == proxy
+        assert openai.proxy["http"] == proxy
+        assert openai.proxy["https"] == proxy
 
     def test_params_setting(self):
         llm = AzureOpenAI(

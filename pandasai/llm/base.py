@@ -152,6 +152,8 @@ class BaseOpenAI(LLM, ABC):
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
     stop: Optional[str] = None
+    # support explicit proxy for OpenAI
+    openai_proxy: Optional[str] = None
 
     def _set_params(self, **kwargs):
         """
