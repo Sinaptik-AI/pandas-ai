@@ -92,6 +92,13 @@ def sheet_to_df(sheet)->list:
         cols = df[0]
         data = df[1:]
         df = pd.DataFrame(data, columns=cols)
+
+        #Cast all the numeric columns to numeric types
+        for col in df.columns:
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except:
+                pass
         dfs.append(df)
     
     return dfs
@@ -130,7 +137,13 @@ def select_df(prompt, dfs)->pd.DataFrame:
         similarity = 0
         for col in cleaned_columns:
             for word in nouns:
-                similarity = max(jaro.jaro_winkler_metric(col, word), similarity)
+                temp_similarity = jaro.jaro_winkler_metric(col, word)
+
+                #Preserve the number of exact matches without having a bias for larger spreadsheets
+                if temp_similarity == 1:
+                    similarity += 1
+                else:
+                    similarity = max(similarity, temp_similarity)
 
         similarities.append(similarity)
     
@@ -149,34 +162,20 @@ def select_df(prompt, dfs)->pd.DataFrame:
     #Return the df with the highest similarity
     return dfs[similarities.index(max_similarity)]
 
-def google_sheets_ai(pandas_ai, url, prompt, verbose=False)->str:
+def google_sheets_ai(url, prompt)->pd.DataFrame:
     """
-    Returns the result of the pandasai function on the dataframe from a google sheet that best matches the prompt
+    Returns the dataframe from a google sheet that best matches the prompt
 
     Args:
-        pandasai (function): The pandasai function to use
         url (str): The URL of the Google Sheet
         prompt (str): The prompt to match
 
     Returns:
-        result (str): The result of the pandasai function on the dataframe that best matches the prompt
+        df (pd.DataFrame): The dataframe that best matches the prompt
     """
 
     sheet = get_google_sheet(url)
-    
     dfs = sheet_to_df(sheet)
-    if verbose:
-        print("Dataframes found:")
-        for df in dfs:
-            print(df)
-        print('*'*100)
-        print()
-
     df = select_df(prompt, dfs)
-    if verbose:
-        print("Selected dataframe:")
-        print(df)
-        print('*'*100)
-        print()
-
-    return pandas_ai(df, prompt)
+    
+    return df
