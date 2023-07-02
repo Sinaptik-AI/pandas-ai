@@ -8,6 +8,7 @@ from uuid import UUID
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import pyperclip
 import pytest
 
 from pandasai import PandasAI, Prompt
@@ -790,3 +791,8 @@ print('Hello', name)"""
             "a",
             "b",
         ]
+
+    def test_copy_to_clipboard(self, llm):
+        pandas_ai = PandasAI(llm)
+        pandas_ai.copy_to_clipboard("a")
+        assert pyperclip.paste() == "a"
