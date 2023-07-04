@@ -1,11 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import string
-import spacy
-import jaro
 import re
-import warnings
 
 
 def get_google_sheet(src) -> list:
@@ -112,93 +108,16 @@ def sheet_to_df(sheet) -> list:
     return dfs
 
 
-def select_df(prompt, dfs) -> pd.DataFrame:
+def from_google_sheets(url) -> list:
     """
-    Returns the dataframe that best matches the prompt
-
-    Args:
-        prompt (str): The prompt to match
-        dfs (list): A list of dataframes from the Google Sheet
-
-    Returns:
-        df (pd.DataFrame): The dataframe that best matches the prompt
-    """
-
-    if len(dfs) == 0:
-        raise ValueError("No dataframes found in the Google Sheet")
-
-    # Simplify the prompt to just the nouns
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(prompt)
-    nouns = [
-        token.text for token in doc if (token.pos_ == "NOUN" or token.pos_ == "PROPN")
-    ]
-    nouns = [
-        word.lower() for word in nouns
-    ]  # lowercase all the words (done after finding the nouns to preserve proper nouns)
-
-    all_columns = [df.columns for df in dfs]
-
-    # Find the similarity between the prompt subject and each df
-    similarities = []
-    for columns in all_columns:
-        # Preprocess the columns
-        cleaned_columns = [
-            col.lower()
-            .strip()
-            .translate(str.maketrans("", "", string.punctuation))
-            .split()
-            for col in columns
-        ]
-        cleaned_columns = [
-            word for col in cleaned_columns for word in col
-        ]  # flatten the list
-
-        # Find the similarity
-        similarity = 0
-        for col in cleaned_columns:
-            for word in nouns:
-                temp_similarity = jaro.jaro_winkler_metric(col, word)
-
-                # Preserve the number of exact matches without having a bias
-                if temp_similarity == 1:
-                    similarity += 1
-                else:
-                    similarity = max(similarity, temp_similarity)
-
-        similarities.append(similarity)
-
-    max_similarity = max(similarities)
-
-    # Check if the similarity score is ambiguous
-    if similarities.count(max_similarity) > 1:
-        warnings.warn(
-            """
-            The prompt is too ambiguous. 
-            - Please be more specific about the data table you are referencing.
-            - Note that google sheets ai can only handle one dataframe at a time.
-            """,
-            UserWarning,
-        )
-
-    # Return the df with the highest similarity
-    return dfs[similarities.index(max_similarity)]
-
-
-def google_sheets_ai(url, prompt) -> pd.DataFrame:
-    """
-    Returns the dataframe from a google sheet that best matches the prompt
+    Returns the dataframes that are in a google sheet
 
     Args:
         url (str): The URL of the Google Sheet
-        prompt (str): The prompt to match
-
     Returns:
-        df (pd.DataFrame): The dataframe that best matches the prompt
+        dfs (list): A list of dataframes from the Google Sheet
     """
 
     sheet = get_google_sheet(url)
     dfs = sheet_to_df(sheet)
-    df = select_df(prompt, dfs)
-
-    return df
+    return dfs
