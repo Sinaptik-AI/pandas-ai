@@ -16,7 +16,7 @@ class TestLangchainLLM:
         class FakeOpenAI(OpenAI):
             openai_api_key = "fake_key"
 
-            def __call__(self, _prompt):
+            def __call__(self, _prompt, stop=None, callbacks=None, **kwargs):
                 return Mock(return_value="Custom response")()
 
         langchain_llm = FakeOpenAI()
