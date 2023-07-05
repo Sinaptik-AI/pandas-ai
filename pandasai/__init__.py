@@ -38,10 +38,10 @@ import ast
 import io
 import logging
 import re
-import sys
 import uuid
 import time
-import pyperclip
+import subprocess
+import sys
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Dict, Type
 import importlib.metadata
@@ -723,6 +723,46 @@ Code running:
         self._logger.info(message)
         self._logs.append(message)
 
+    def copy_to_clipboard(self, text: str):
+        """
+        Copy text to clipboard
+
+        Args:
+            text (str): Text to copy to clipboard
+        """
+        if sys.platform == "win32":
+            command = "echo " + text.strip() + "| clip"
+            subprocess.run(command, shell=True)
+        elif sys.platform == "darwin":
+            command = "echo " + text.strip() + "| pbcopy"
+            subprocess.run(command, shell=True)
+        elif sys.platform.startswith("linux"):
+            command = "echo " + text.strip() + "| xclip -selection clipboard"
+            subprocess.run(command, shell=True)
+        else:
+            raise Exception("Can't copy to clipboard, unsupported OS.")
+
+    def paste_from_clipboard(self) -> str:
+        """
+        Paste text from clipboard
+
+        Returns (str): Text from clipboard
+        """
+        if sys.platform == "win32":
+            command = 'powershell.exe -command "Get-Clipboard"'
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        elif sys.platform == "darwin":
+            command = "pbpaste"
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        elif sys.platform.startswith("linux"):
+            command = "xclip -selection clipboard -o"
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        else:
+            raise Exception("Can't paste from clipboard, unsupported OS.")
+
     @property
     def logs(self) -> List[str]:
         """Return the logs"""
@@ -744,7 +784,3 @@ Code running:
         """Return the last prompt that was executed."""
         if self._llm:
             return self._llm.last_prompt
-
-    def copy_to_clipboard(self, code: str):
-        """Copy the code to clipboard"""
-        pyperclip.copy(code)
