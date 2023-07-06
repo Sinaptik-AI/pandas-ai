@@ -553,8 +553,8 @@ class PandasAI(Shortcuts):
                 continue
             new_body.append(node)
 
-        new_tree = ast.Module(body=new_body)
-        return astor.to_source(new_tree).strip()
+        new_tree = ast.Module(body=new_body, type_ignores=tree.type_ignores)
+        return ast.unparse(new_tree).strip()
 
     def _get_environment(self) -> dict:
         """
