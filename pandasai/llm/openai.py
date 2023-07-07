@@ -24,7 +24,7 @@ load_dotenv()
 class OpenAI(BaseOpenAI):
     """OpenAI LLM using BaseOpenAI Class.
 
-    An API call to OpenAi API is sent and response is recorded and returned.
+    An API call to OpenAI API is sent and response is recorded and returned.
     The default chat model is **gpt-3.5-turbo** while **text-davinci-003** is only
     supported completion model.
     The list of supported Chat models includes ["gpt-4", "gpt-4-0314", "gpt-4-32k",
@@ -54,7 +54,7 @@ class OpenAI(BaseOpenAI):
         """
         __init__ method of OpenAI Class
         Args:
-            api_token (str): API Token fro OpenAI platform.
+            api_token (str): API Token for OpenAI platform.
             **kwargs: Extended Parameters inferred from BaseOpenAI class
 
         Returns: Response generated from OpenAI API
