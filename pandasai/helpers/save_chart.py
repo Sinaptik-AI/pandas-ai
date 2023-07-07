@@ -113,4 +113,4 @@ def add_save_chart(
     logging.info(chart_save_msg)
 
     new_tree = ast.Module(body=new_body)
-    return astor.to_source(new_tree, pretty_source=lambda x:''.join(x)).strip()
+    return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
