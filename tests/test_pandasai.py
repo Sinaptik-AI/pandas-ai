@@ -1,5 +1,6 @@
 """Unit tests for the PandasAI class"""
 
+import sys
 from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -194,7 +195,10 @@ How many countries are in the dataframe?
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?")
-        assert pandasai._llm.last_prompt == expected_prompt
+        last_prompt = pandasai._llm.last_prompt
+        if sys.platform.startswith('win'):
+            last_prompt = last_prompt.replace('\r\n', '\n')
+        assert last_prompt == expected_prompt
 
     def test_run_with_anonymized_df(self, pandasai):
         df = pd.DataFrame(
@@ -258,7 +262,10 @@ How many countries are in the dataframe?
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?", anonymize_df=False)
-        assert pandasai._llm.last_prompt == expected_prompt
+        last_prompt = pandasai._llm.last_prompt
+        if sys.platform.startswith('win'):
+            last_prompt = last_prompt.replace('\r\n', '\n')
+        assert last_prompt == expected_prompt
 
     def test_run_with_print_at_the_end(self, pandasai, llm):
         code = """
