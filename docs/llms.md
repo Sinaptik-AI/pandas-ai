@@ -28,6 +28,38 @@ pandas_ai = PandasAI(llm=llm)
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `OpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.
 
+### Count tokens
+
+You can count the number of tokens used by a prompt as follows:
+
+```python
+"""Example of using PandasAI with a Pandas DataFrame"""
+
+import pandas as pd
+from data.sample_dataframe import dataframe
+
+from pandasai import PandasAI
+from pandasai.llm.openai import OpenAI
+from pandasai.helpers.openai_info import get_openai_callback
+
+df = pd.DataFrame(dataframe)
+
+llm = OpenAI()
+
+# conversational=False is supposed to display lower usage and cost
+pandas_ai = PandasAI(llm, enable_cache=False, conversational=True)
+
+with get_openai_callback() as cb:
+    response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
+
+    print(response)
+    print(cb)
+#  The sum of the GDP of North American countries is 19,294,482,071,552.
+#  Tokens Used: 375
+#	Prompt Tokens: 210
+#	Completion Tokens: 165
+# Total Cost (USD): $ 0.000750
+```
 
 ## HuggingFace models
 
@@ -94,8 +126,7 @@ In order to use Google PaLM models through Vertexai api, you need to have
 1. Google Cloud Project
 2. Region of Project Set up
 3. Install optional dependency `google-cloud-aiplatform `
-4. Authentication of `gcloud` 
-
+4. Authentication of `gcloud`
 
 Once you have basic setup, you can use it to instantiate a Google PaLM through vertex ai:
 
@@ -110,7 +141,6 @@ llm = GoogleVertexai(project_id="generative-ai-training",
 pandas_ai = PandasAI(llm=llm)
 
 ```
-
 
 ## Azure OpenAI
 
@@ -144,5 +174,3 @@ pandas_ai = PandasAI(llm=llm)
 ```
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `AzureOpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.
-
-
