@@ -217,7 +217,7 @@ class BaseOpenAI(LLM, ABC):
         response = openai.Completion.create(**params)
 
         openai_handler = openai_callback_var.get()
-        if openai_handler is not None:
+        if openai_handler:
             openai_handler(response)
 
         return response["choices"][0]["text"]
@@ -246,9 +246,9 @@ class BaseOpenAI(LLM, ABC):
             params["stop"] = [self.stop]
 
         response = openai.ChatCompletion.create(**params)
-        openai_handler = openai_callback_var.get()
 
-        if openai_handler is not None:
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
             openai_handler(response)
 
         return response["choices"][0]["message"]["content"]

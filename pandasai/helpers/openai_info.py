@@ -28,11 +28,9 @@ def get_openai_token_cost_for_model(
 ) -> float:
     """
     Get the cost in USD for a given model and number of tokens.
-
     Args:
         model_name: Name of the model
         num_tokens: Number of tokens.
-
     Returns:
         Cost in USD.
     """
@@ -92,10 +90,8 @@ openai_callback_var: ContextVar[Optional[OpenAICallbackHandler]] = ContextVar(
 def get_openai_callback() -> Generator[OpenAICallbackHandler, None, None]:
     """Get the OpenAI callback handler in a context manager.
     which conveniently exposes token and cost information.
-
     Returns:
         OpenAICallbackHandler: The OpenAI callback handler.
-
     Example:
         >>> with get_openai_callback() as cb:
         ...     # Use the OpenAI callback handler
@@ -104,5 +100,3 @@ def get_openai_callback() -> Generator[OpenAICallbackHandler, None, None]:
     openai_callback_var.set(cb)
     yield cb
     openai_callback_var.set(None)
-
-
