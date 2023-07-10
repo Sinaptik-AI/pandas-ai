@@ -28,6 +28,7 @@ from ..exceptions import (
     NoCodeFoundError,
 )
 from ..helpers._optional import import_dependency
+from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
 
 
@@ -215,6 +216,10 @@ class BaseOpenAI(LLM, ABC):
 
         response = openai.Completion.create(**params)
 
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
+            openai_handler(response)
+
         return response["choices"][0]["text"]
 
     def chat_completion(self, value: str) -> str:
@@ -241,6 +246,10 @@ class BaseOpenAI(LLM, ABC):
             params["stop"] = [self.stop]
 
         response = openai.ChatCompletion.create(**params)
+
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
+            openai_handler(response)
 
         return response["choices"][0]["message"]["content"]
 
