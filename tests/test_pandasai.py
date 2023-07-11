@@ -182,22 +182,87 @@ df
         pandasai._is_conversational_answer = True
 
         expected_prompt = f"""
-Today is {date.today()}.
-You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
-This is the metadata of the dataframe:
-country
-.
+Date: {date.today()}
+You are provided with a pandas DataFrame, 'df', with the following metadata:
 
-When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code to get the answer to the following question:
+Number of Rows: 3
+Number of Columns: 1
+Data Preview: 
+country
+
+
+Here is a placeholder Python code with a clear structure and naming convention based on the phases of data analysis. Your task is to generate the specific code within this template and ensure the requested python code is prefixed with <startCode> exactly and suffix the code with <endCode> exactly.
+
+# The Python code should be structured as follows:
+
+#TODO: Import any necessary libraries
+
+class DataFrameAnalysis:
+    def __init__(self, df):
+        self.df = df.copy()  # To ensure the original df is not modified in place
+        self.df_output = []  # An array to store multiple outputs
+        self.df_output.append(dict(type = "dataframe", result = self.df))  # Add the initial dataframe as the first output
+        # TODO: Add additional items to the df_output list as necessary to support other output types such as plots, etc.
+
+    # 1. Prepare: Preprocessing and cleaning data if necessary
+    def prepare_data(self):
+        # TODO: Insert your generated Python code here
+        self.prepare_data_hook()
+
+    # 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    def process_data(self):
+        # TODO: Insert your generated Python code here
+        self.process_data_hook()
+
+    # 3. Analyze: Conducting the actual analysis
+    def analyze_data(self):
+        # TODO: Insert your generated Python code here
+        # If generating a plot, create a figure and axes using plt.subplots(),
+        # and generate the plot on the axes object. Do not include plt.show() in this method.
+        # Any output should be added to the df_output list.  
+
+        self.analyze_data_hook()
+
+    # 4. Output: Returning the result in a standardized format
+    def output_data(self):
+        # TODO: Insert your generated Python code here
+        self.output_data_hook()
+        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc. If returning self.df, use self.df_output[0].  
+
+        return self.df_output
+
+    # Hook methods
+    def prepare_data_hook(self):
+        pass
+
+    def process_data_hook(self):
+        pass
+
+    def analyze_data_hook(self):
+        pass
+
+    def output_data_hook(self):
+        pass
+
+    def run(self):
+        self.prepare_data()
+        self.process_data()
+        self.analyze_data()
+        return self.output_data()
+
+# The following code should be outside the class definition and remain unchanged
+analysis = DataFrameAnalysis(df)
+result = analysis.run()
+
+Using the provided DataFrame, 'df', please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
 How many countries are in the dataframe?
 
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?")
         last_prompt = pandasai._llm.last_prompt
-        if sys.platform.startswith('win'):
-            last_prompt = last_prompt.replace('\r\n', '\n')
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
 
     def test_run_with_anonymized_df(self, pandasai):
@@ -246,25 +311,90 @@ This is the result of `print(df.head(5))`:
         pandasai._is_conversational_answer = False
 
         expected_prompt = f"""
-Today is {date.today()}.
-You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
-This is the metadata of the dataframe:
+Date: {date.today()}
+You are provided with a pandas DataFrame, 'df', with the following metadata:
+
+Number of Rows: 3
+Number of Columns: 1
+Data Preview: 
 country
 United States
 United Kingdom
 France
-.
 
-When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code to get the answer to the following question:
+
+Here is a placeholder Python code with a clear structure and naming convention based on the phases of data analysis. Your task is to generate the specific code within this template and ensure the requested python code is prefixed with <startCode> exactly and suffix the code with <endCode> exactly.
+
+# The Python code should be structured as follows:
+
+#TODO: Import any necessary libraries
+
+class DataFrameAnalysis:
+    def __init__(self, df):
+        self.df = df.copy()  # To ensure the original df is not modified in place
+        self.df_output = []  # An array to store multiple outputs
+        self.df_output.append(dict(type = "dataframe", result = self.df))  # Add the initial dataframe as the first output
+        # TODO: Add additional items to the df_output list as necessary to support other output types such as plots, etc.
+
+    # 1. Prepare: Preprocessing and cleaning data if necessary
+    def prepare_data(self):
+        # TODO: Insert your generated Python code here
+        self.prepare_data_hook()
+
+    # 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    def process_data(self):
+        # TODO: Insert your generated Python code here
+        self.process_data_hook()
+
+    # 3. Analyze: Conducting the actual analysis
+    def analyze_data(self):
+        # TODO: Insert your generated Python code here
+        # If generating a plot, create a figure and axes using plt.subplots(),
+        # and generate the plot on the axes object. Do not include plt.show() in this method.
+        # Any output should be added to the df_output list.  
+
+        self.analyze_data_hook()
+
+    # 4. Output: Returning the result in a standardized format
+    def output_data(self):
+        # TODO: Insert your generated Python code here
+        self.output_data_hook()
+        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc. If returning self.df, use self.df_output[0].  
+
+        return self.df_output
+
+    # Hook methods
+    def prepare_data_hook(self):
+        pass
+
+    def process_data_hook(self):
+        pass
+
+    def analyze_data_hook(self):
+        pass
+
+    def output_data_hook(self):
+        pass
+
+    def run(self):
+        self.prepare_data()
+        self.process_data()
+        self.analyze_data()
+        return self.output_data()
+
+# The following code should be outside the class definition and remain unchanged
+analysis = DataFrameAnalysis(df)
+result = analysis.run()
+
+Using the provided DataFrame, 'df', please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
 How many countries are in the dataframe?
 
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?", anonymize_df=False)
         last_prompt = pandasai._llm.last_prompt
-        if sys.platform.startswith('win'):
-            last_prompt = last_prompt.replace('\r\n', '\n')
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
 
     def test_run_with_print_at_the_end(self, pandasai, llm):

@@ -30,6 +30,10 @@ from ..exceptions import (
 from ..helpers._optional import import_dependency
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
+from ..constants import (
+    START_CODE_TAG,
+    END_CODE_TAG,
+)
 
 
 class LLM:
@@ -107,6 +111,13 @@ class LLM:
             str: Extracted code from the response
         """
         code = response
+        match = re.search(
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            code,
+            re.DOTALL,
+        )
+        if match:
+            code = match.group(1).strip()
         if len(code.split(separator)) > 1:
             code = code.split(separator)[1]
         code = self._polish_code(code)
@@ -137,7 +148,8 @@ class LLM:
         Returns:
             str: Code
         """
-        return self._extract_code(self.call(instruction, prompt, suffix="\n\nCode:\n"))
+        code = self.call(instruction, prompt, suffix="\n\nCode:\n")
+        return self._extract_code(code)
 
 
 class BaseOpenAI(LLM, ABC):
@@ -148,7 +160,7 @@ class BaseOpenAI(LLM, ABC):
 
     api_token: str
     temperature: float = 0
-    max_tokens: int = 512
+    max_tokens: int = 1000
     top_p: float = 1
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
