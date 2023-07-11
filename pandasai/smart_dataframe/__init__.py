@@ -49,6 +49,13 @@ from ..constants import (
 )
 from ..exceptions import BadImportError
 
+try:
+    import polars as pl
+
+    DataFrameType = Union[pd.DataFrame, pl.DataFrame]
+except ImportError:
+    DataFrameType = pd.DataFrame
+
 
 class Config(BaseModel):
     save_logs: bool = True
@@ -79,14 +86,20 @@ class SmartDataframe:
     _start_time: float
     _last_prompt_id: uuid
     _middlewares: list = [ChartsMiddleware()]
+    _engine: str
 
     last_code_generated: str
     last_code_executed: str
 
-    def __init__(self, df: pd.DataFrame, config: Config = None, logger: Logger = None):
+    def __init__(
+        self,
+        df: DataFrameType,
+        config: Config = None,
+        logger: Logger = None,
+    ):
         """
         Args:
-            df (pd.DataFrame): Pandas dataframe to be used
+            df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
             config (Config, optional): Config to be used. Defaults to None.
         """
 
@@ -108,6 +121,8 @@ class SmartDataframe:
         if self._config.enable_cache:
             self._cache = Cache()
 
+        self.load_engine()
+
     def __getattr__(self, attr):
         return getattr(self._df, attr)
 
@@ -116,6 +131,23 @@ class SmartDataframe:
 
     def __getitem__(self, key):
         return self._df[key]
+
+    def load_engine(self):
+        try:
+            import polars as pl
+
+            if isinstance(self._df, pl.DataFrame):
+                self._engine = "polars"
+        except ImportError:
+            pass
+
+        if isinstance(self._df, pd.DataFrame):
+            self._engine = "pandas"
+
+        if self._engine is None:
+            raise ValueError(
+                "Invalid input data. Must be a Pandas or Polars dataframe."
+            )
 
     def load_config(self, config: Config):
         """
