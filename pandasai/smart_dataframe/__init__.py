@@ -108,6 +108,15 @@ class SmartDataframe:
         if self._config.enable_cache:
             self._cache = Cache()
 
+    def __getattr__(self, attr):
+        return getattr(self._df, attr)
+
+    def __dir__(self):
+        return dir(self._df)
+
+    def __getitem__(self, key):
+        return self._df[key]
+
     def load_config(self, config: Config):
         """
         Load a config to be used to run the queries.
