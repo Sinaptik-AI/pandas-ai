@@ -56,7 +56,7 @@ class DataFrameAnalysis:
         # TODO: Insert your generated Python code here
         # If generating a plot, create a figure and axes using plt.subplots(),
         # and generate the plot on the axes object. Do not include plt.show() in this method.
-        # Any output should be added to the df_output list.  
+        # Any output should be added to the df_output list.
 
         self.analyze_data_hook()
 

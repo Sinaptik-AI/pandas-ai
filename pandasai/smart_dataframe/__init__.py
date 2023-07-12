@@ -47,9 +47,11 @@ from ..constants import (
 )
 from ..exceptions import BadImportError
 
+polars_imported = False
 try:
     import polars as pl
 
+    polars_imported = True
     DataFrameType = Union[pd.DataFrame, pl.DataFrame]
 except ImportError:
     DataFrameType = pd.DataFrame
@@ -89,6 +91,7 @@ class SmartDataframe:
 
     last_code_generated: str
     last_code_executed: str
+    last_result: list
 
     def __init__(
         self,
@@ -131,16 +134,14 @@ class SmartDataframe:
     def __getitem__(self, key):
         return self._df[key]
 
-    def load_engine(self):
-        try:
-            import polars as pl
+    def __repr__(self):
+        return repr(self._df)
 
+    def load_engine(self):
+        if polars_imported:
             if isinstance(self._df, pl.DataFrame):
                 self._engine = "polars"
-        except ImportError:
-            pass
-
-        if isinstance(self._df, pd.DataFrame):
+        elif isinstance(self._df, pd.DataFrame):
             self._engine = "pandas"
 
         if self._engine is None:
@@ -281,21 +282,31 @@ class SmartDataframe:
             for middleware in self._middlewares:
                 code = middleware(code)
 
-            answer = self.run_code(
+            results = self.run_code(
                 code,
                 self._df,
                 use_error_correction_framework=self._config.use_error_correction_framework,
             )
-            self.code_output = answer
-            self._logger.log(f"Answer: {answer}")
+            self.last_result = results
+            self._logger.log(f"Answer: {results}")
 
-            if self._config.conversational_answer:
-                answer = self.conversational_answer(query, answer)
-                self._logger.log(f"Conversational answer: {answer}")
+            if len(results) > 1:
+                output = results[1]
 
-            self._logger.log(f"Executed in: {time.time() - self._start_time}s")
+                if self._config.conversational_answer:
+                    # TODO: remove the conversational answer from the result as it is
+                    # not needed anymore
+                    output = self.conversational_answer(query, output["result"])
+                    self._logger.log(f"Conversational answer: {output}")
 
-            return answer
+                self._logger.log(f"Executed in: {time.time() - self._start_time}s")
+
+                if output["type"] == "dataframe":
+                    return SmartDataframe(
+                        output["result"], config=self._config.__dict__
+                    )
+
+                return output["result"]
         except Exception as exception:
             self.last_error = str(exception)
             print(exception)
