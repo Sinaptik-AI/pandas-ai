@@ -128,7 +128,7 @@ frozenlist = ">=1.1.0"
 name = "altair"
 version = "5.0.1"
 description = "Vega-Altair: A declarative statistical visualization library for Python."
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -284,7 +284,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "blinker"
 version = "1.6.2"
 description = "Fast, simple object-to-object and broadcast signaling"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -296,7 +296,7 @@ files = [
 name = "brewer2mpl"
 version = "1.4.1"
 description = "Connect colorbrewer2.org color maps to Python and matplotlib"
-category = "dev"
+category = "main"
 optional = true
 python-versions = "*"
 files = [
@@ -430,7 +430,7 @@ files = [
 name = "click"
 version = "8.1.4"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -760,7 +760,7 @@ files = [
 name = "ggplot"
 version = "0.11.5"
 description = "ggplot for python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = "*"
 files = [
@@ -801,7 +801,7 @@ dev = ["flake8", "markdown", "twine", "wheel"]
 name = "gitdb"
 version = "4.0.10"
 description = "Git Object Database"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -816,7 +816,7 @@ smmap = ">=3.0.1,<6"
 name = "gitpython"
 version = "3.1.32"
 description = "GitPython is a Python library used to interact with Git repositories"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -880,14 +880,14 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-auth"
-version = "2.21.0"
+version = "2.22.0"
 description = "Google Authentication Library"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "google-auth-2.21.0.tar.gz", hash = "sha256:b28e8048e57727e7cf0e5bd8e7276b212aef476654a09511354aa82753b45c66"},
-    {file = "google_auth-2.21.0-py2.py3-none-any.whl", hash = "sha256:da3f18d074fa0f5a7061d99b9af8cee3aa6189c987af7c1b07d94566b6b11268"},
+    {file = "google-auth-2.22.0.tar.gz", hash = "sha256:164cba9af4e6e4e40c3a4f90a1a6c12ee56f14c0b4868d1ca91b32826ab334ce"},
+    {file = "google_auth-2.22.0-py2.py3-none-any.whl", hash = "sha256:d61d1b40897407b574da67da1a833bdc10d5a11642566e506565d1b1a46ba873"},
 ]
 
 [package.dependencies]
@@ -1388,7 +1388,7 @@ files = [
 name = "importlib-metadata"
 version = "6.8.0"
 description = "Read metadata from Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -1499,7 +1499,7 @@ testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1517,7 +1517,7 @@ i18n = ["Babel (>=2.7)"]
 name = "joblib"
 version = "1.3.1"
 description = "Lightweight pipelining with Python functions"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -1527,14 +1527,14 @@ files = [
 
 [[package]]
 name = "jsonschema"
-version = "4.18.0"
+version = "4.18.1"
 description = "An implementation of JSON Schema validation for Python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "jsonschema-4.18.0-py3-none-any.whl", hash = "sha256:b508dd6142bd03f4c3670534c80af68cd7bbff9ea830b9cf2625d4a3c49ddf60"},
-    {file = "jsonschema-4.18.0.tar.gz", hash = "sha256:8caf5b57a990a98e9b39832ef3cb35c176fe331414252b6e1b26fd5866f891a4"},
+    {file = "jsonschema-4.18.1-py3-none-any.whl", hash = "sha256:e5fde3cb78f3be8cf49150390ee4efbb8e73c46ea467d42cd4ec16e364495eb3"},
+    {file = "jsonschema-4.18.1.tar.gz", hash = "sha256:b5896514b46cc9283e9951bfebf51cc72fa3eab229919c0469f94e11b4387776"},
 ]
 
 [package.dependencies]
@@ -1551,7 +1551,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 name = "jsonschema-specifications"
 version = "2023.6.1"
 description = "The JSON Schema meta-schemas and vocabularies, exposed as a Registry"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -1561,6 +1561,22 @@ files = [
 
 [package.dependencies]
 referencing = ">=0.28.0"
+
+[[package]]
+name = "kaleido"
+version = "0.2.0"
+description = "Static image export for web-based visualization libraries with zero dependencies"
+category = "main"
+optional = true
+python-versions = "*"
+files = [
+    {file = "kaleido-0.2.0-py2.py3-none-macosx_10_11_x86_64.whl", hash = "sha256:73f46490168f9af7aac3b01035ad8851457e5b0088bc61425ae3c56bf0968065"},
+    {file = "kaleido-0.2.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:3af187bf6cc2b3af61f5737bf1b10f4ea75ba53391ae20e6df96784f6ca0a9a1"},
+    {file = "kaleido-0.2.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9db17625f5c6ae4600762b97c1d8296d67be20f34a8854ebe5fb264acb5eed97"},
+    {file = "kaleido-0.2.0-py2.py3-none-manylinux2014_aarch64.whl", hash = "sha256:f264b876c7ea6622425fe25db8731e8dff4308a9e5a8753bdc78cdb4ffa1aadd"},
+    {file = "kaleido-0.2.0-py2.py3-none-win32.whl", hash = "sha256:54f41f426d18ff3cecf42549ff122fa841f15ab75c8fa8e19b40c3b282d19e8b"},
+    {file = "kaleido-0.2.0-py2.py3-none-win_amd64.whl", hash = "sha256:e083250f8a7b950fcb3978655960662aed74926629f2a278b4ad83787ce22020"},
+]
 
 [[package]]
 name = "kiwisolver"
@@ -1731,7 +1747,7 @@ markdown = "*"
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -1756,7 +1772,7 @@ testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
 name = "markupsafe"
 version = "2.1.3"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1930,7 +1946,7 @@ traitlets = "*"
 name = "mdurl"
 version = "0.1.2"
 description = "Markdown URL utilities"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -2356,7 +2372,7 @@ files = [
 name = "patsy"
 version = "0.5.3"
 description = "A Python package for describing statistical models and for building design matrices."
-category = "dev"
+category = "main"
 optional = true
 python-versions = "*"
 files = [
@@ -2498,7 +2514,7 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-
 name = "plotly"
 version = "5.15.0"
 description = "An open-source, interactive data visualization library for Python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.6"
 files = [
@@ -2656,7 +2672,7 @@ tests = ["pytest"]
 name = "pyarrow"
 version = "12.0.1"
 description = "Python library for Apache Arrow"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -2774,7 +2790,7 @@ email = ["email-validator (>=1.0.3)"]
 name = "pydeck"
 version = "0.8.0"
 description = "Widget for deck.gl maps"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -2825,7 +2841,7 @@ pyyaml = "*"
 name = "pympler"
 version = "1.0.1"
 description = "A development tool to measure, monitor and analyze the memory behavior of Python objects."
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.6"
 files = [
@@ -2953,7 +2969,7 @@ files = [
 name = "pytz-deprecation-shim"
 version = "0.1.0.post0"
 description = "Shims to make deprecation of pytz easier"
-category = "dev"
+category = "main"
 optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
@@ -3033,7 +3049,7 @@ pyyaml = "*"
 name = "referencing"
 version = "0.29.1"
 description = "JSON Referencing + Python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -3071,7 +3087,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 name = "rich"
 version = "13.4.2"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7.0"
 files = [
@@ -3090,7 +3106,7 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 name = "rpds-py"
 version = "0.8.10"
 description = "Python bindings to Rust's persistent data structures (rpds)"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -3238,7 +3254,7 @@ files = [
 name = "scikit-learn"
 version = "1.3.0"
 description = "A set of python modules for machine learning and data mining"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -3281,7 +3297,7 @@ tests = ["black (>=23.3.0)", "matplotlib (>=3.1.3)", "mypy (>=1.3)", "numpydoc (
 name = "scipy"
 version = "1.9.3"
 description = "Fundamental algorithms for scientific computing in Python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -3320,7 +3336,7 @@ test = ["asv", "gmpy2", "mpmath", "pytest", "pytest-cov", "pytest-xdist", "sciki
 name = "seaborn"
 version = "0.12.2"
 description = "Statistical data visualization"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -3428,7 +3444,7 @@ files = [
 name = "smmap"
 version = "5.0.0"
 description = "A pure Python implementation of a sliding window memory map manager"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.6"
 files = [
@@ -3539,7 +3555,7 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 name = "statsmodels"
 version = "0.14.0"
 description = "Statistical computations and models for Python"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
@@ -3585,7 +3601,7 @@ docs = ["ipykernel", "jupyter-client", "matplotlib", "nbconvert", "nbformat", "n
 name = "streamlit"
 version = "1.24.1"
 description = "A faster way to build and share data apps"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.8, !=3.9.7"
 files = [
@@ -3641,7 +3657,7 @@ doc = ["reno", "sphinx", "tornado (>=4.5)"]
 name = "threadpoolctl"
 version = "3.1.0"
 description = "threadpoolctl"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.6"
 files = [
@@ -3653,7 +3669,7 @@ files = [
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -3677,7 +3693,7 @@ files = [
 name = "toolz"
 version = "0.12.0"
 description = "List processing tools and functional utilities"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.5"
 files = [
@@ -3689,7 +3705,7 @@ files = [
 name = "tornado"
 version = "6.3.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">= 3.8"
 files = [
@@ -3775,7 +3791,7 @@ typing-extensions = ">=3.7.4"
 name = "tzdata"
 version = "2023.3"
 description = "Provider of IANA time zone data"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=2"
 files = [
@@ -3787,7 +3803,7 @@ files = [
 name = "tzlocal"
 version = "4.3.1"
 description = "tzinfo object for the local timezone"
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.7"
 files = [
@@ -3823,7 +3839,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "validators"
 version = "0.20.0"
 description = "Python Data Validation for Humans™."
-category = "dev"
+category = "main"
 optional = true
 python-versions = ">=3.4"
 files = [
@@ -3861,7 +3877,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 name = "watchdog"
 version = "3.0.0"
 description = "Filesystem events monitoring"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -4014,13 +4030,18 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
+ggplot = ["ggplot"]
 google = ["google-generativeai"]
 google-cloud = ["google-cloud-aiplatform"]
 langchain = ["langchain"]
+numpy = ["numpy"]
+plotly = ["kaleido", "plotly"]
 polars = ["polars"]
-tests = []
+seaborn = ["seaborn"]
+statsmodels = ["statsmodels"]
+tests = ["numpy", "seaborn"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "8cdd56a57c6261d494e206dccecce894450a44eb694cc5be2028ec87f549a351"
+content-hash = "50432c85d7290920ec44a2003656593ee083856e176508e56f4caf8a7793c5f5"

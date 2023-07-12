@@ -21,7 +21,7 @@ class GeneratePythonCodePrompt(Prompt):
 
     text: str = """
 Date: {today_date}
-You are provided with a pandas DataFrame, 'df', with the following metadata:
+You are provided with a {engine} DataFrame, 'df', with the following metadata:
 
 Number of Rows: {num_rows}
 Number of Columns: {num_columns}
@@ -44,42 +44,24 @@ class DataFrameAnalysis:
     # 1. Prepare: Preprocessing and cleaning data if necessary
     def prepare_data(self):
         # TODO: Insert your generated Python code here
-        self.prepare_data_hook()
 
     # 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     def process_data(self):
         # TODO: Insert your generated Python code here
-        self.process_data_hook()
 
     # 3. Analyze: Conducting the actual analysis
     def analyze_data(self):
         # TODO: Insert your generated Python code here
-        # If generating a plot, create a figure and axes using plt.subplots(),
-        # and generate the plot on the axes object. Do not include plt.show() in this method.
+        # If generating a plot, create a figure and axes using plt.subplots() and
+        # save it to an image in exports/charts/temp_chart.png and do not show the chart
         # Any output should be added to the df_output list.
-
-        self.analyze_data_hook()
 
     # 4. Output: Returning the result in a standardized format
     def output_data(self):
         # TODO: Insert your generated Python code here
-        self.output_data_hook()
         # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc. If returning self.df, use self.df_output[0].  
 
         return self.df_output
-
-    # Hook methods
-    def prepare_data_hook(self):
-        pass
-
-    def process_data_hook(self):
-        pass
-
-    def analyze_data_hook(self):
-        pass
-
-    def output_data_hook(self):
-        pass
 
     def run(self):
         self.prepare_data()

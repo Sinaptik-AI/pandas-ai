@@ -23,6 +23,7 @@ import time
 import uuid
 import astor
 import re
+import sys
 
 import pandas as pd
 from ..helpers._optional import import_dependency
@@ -138,9 +139,8 @@ class SmartDataframe:
         return repr(self._df)
 
     def load_engine(self):
-        if polars_imported:
-            if isinstance(self._df, pl.DataFrame):
-                self._engine = "polars"
+        if polars_imported and isinstance(self._df, pl.DataFrame):
+            self._engine = "polars"
         elif isinstance(self._df, pd.DataFrame):
             self._engine = "pandas"
 
@@ -212,6 +212,16 @@ class SmartDataframe:
         self._last_prompt_id = uuid.uuid4()
         self._logger.log(f"Prompt ID: {self._last_prompt_id}")
 
+    def _is_running_in_console(self) -> bool:
+        """
+        Check if the code is running in console or not.
+
+        Returns:
+            bool: True if running in console else False
+        """
+
+        return sys.stdout.isatty()
+
     def query(self, query: str):
         """
         Run a query on the dataframe.
@@ -249,6 +259,7 @@ class SmartDataframe:
                     df_head=df_head,
                     num_rows=self._df.shape[0],
                     num_columns=self._df.shape[1],
+                    engine=self._engine,
                 )
                 code = self._llm.generate_code(
                     generate_code_instruction,
@@ -305,8 +316,20 @@ class SmartDataframe:
                     return SmartDataframe(
                         output["result"], config=self._config.__dict__
                     )
+                elif output["type"] == "plot":
+                    import matplotlib.pyplot as plt
+                    import matplotlib.image as mpimg
 
-                return output["result"]
+                    # Load the image file
+                    image = mpimg.imread(output["result"])
+
+                    # Display the image
+                    plt.imshow(image)
+                    plt.axis("off")
+                    plt.show(block=self._is_running_in_console())
+                    plt.close("all")
+                else:
+                    return output["result"]
         except Exception as exception:
             self.last_error = str(exception)
             print(exception)

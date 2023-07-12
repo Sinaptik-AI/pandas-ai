@@ -15,11 +15,20 @@ astor = "^0.8.1"
 openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
+pydantic = "^1"
 google-generativeai = {version = "^0.1.0rc2", optional = true}
 google-cloud-aiplatform = {version = "^1.26.1", optional = true}
 langchain = {version = "^0.0.199", optional = true}
 polars = {version = "^0.10.0", optional = true}
-pydantic = "^1"
+statsmodels = {version = "^0.14.0", optional = true}
+scikit-learn = {version = "^1.2.2", optional = true}
+seaborn = {version = "^0.12.2", optional = true}
+plotly = {version = "^5.15.0", optional = true}
+kaleido = {version = "0.2.0", optional = true}
+ggplot = {version = "^0.11.5", optional = true}
+numpy = {version = "^1.17", optional = true}
+scipy = {version = "^1.9.0", optional = true}
+streamlit = {version = "^1.23.1", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
@@ -39,16 +48,11 @@ tests = ["numpy", "seaborn"]
 langchain = ["langchain"]
 google-cloud = ["google-cloud-aiplatform"]
 polars = ["polars"]
-
-[tool.poetry.group.whitelist.dependencies]
-statsmodels = {version = "^0.14.0", optional = true}
-scikit-learn = {version = "^1.2.2", optional = true}
-seaborn = {version = "^0.12.2", optional = true}
-plotly = {version = "^5.14.1", optional = true}
-ggplot = {version = "^0.11.5", optional = true}
-numpy = {version = "^1.17", optional = true}
-scipy = {version = "^1.9.0", optional = true}
-streamlit = {version = "^1.23.1", optional = true}
+numpy = ["numpy"]
+ggplot = ["ggplot"]
+seaborn = ["seaborn"]
+plotly = ["plotly", "kaleido"]
+statsmodels = ["statsmodels"]
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.4.0"
