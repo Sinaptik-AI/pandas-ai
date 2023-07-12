@@ -37,7 +37,7 @@ Here is a placeholder Python code with a clear structure and naming convention b
 class DataFrameAnalysis:
     def __init__(self, df):
         self.df = df.copy()  # To ensure the original df is not modified in place
-        self.df_output = []  # An array to store multiple outputs
+        self.df_output = []  # An array to store multiple outputs (possible types: text, plot, dataframe)
         self.df_output.append(dict(type = "dataframe", result = self.df))  # Add the initial dataframe as the first output
         # TODO: Add additional items to the df_output list as necessary to support other output types such as plots, etc.
 
