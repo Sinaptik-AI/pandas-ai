@@ -26,7 +26,7 @@ import re
 import sys
 
 import pandas as pd
-from ..helpers._optional import import_dependency
+from ..helpers.optional import import_dependency
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 

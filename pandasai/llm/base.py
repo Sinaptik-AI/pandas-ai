@@ -27,7 +27,7 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..helpers._optional import import_dependency
+from ..helpers.optional import import_dependency
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
 from ..constants import (

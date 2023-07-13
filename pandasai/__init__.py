@@ -53,7 +53,7 @@ from .constants import (
     WHITELISTED_LIBRARIES,
 )
 from .exceptions import BadImportError, LLMNotFoundError
-from .helpers._optional import import_dependency
+from .helpers.optional import import_dependency
 from .helpers.anonymizer import anonymize_dataframe_head
 from .helpers.cache import Cache
 from .helpers.notebook import Notebook
