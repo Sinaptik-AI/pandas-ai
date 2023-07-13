@@ -14,7 +14,7 @@ df = pd.DataFrame(dataframe)
 # The name of your deployed model
 # This will correspond to the custom name you chose for your
 # deployment when you deployed a model.
-deployment_name = 'YOUR-MODEL-DEPLOYMENT-NAME'
+deployment_name = "YOUR-MODEL-DEPLOYMENT-NAME"
 
 llm = AzureOpenAI(
     deployment_name=deployment_name,

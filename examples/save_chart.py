@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from data.sample_dataframe import dataframe
 
-from pandasai import PandasAI
+from pandasai.smart_dataframe import SmartDataframe
 from pandasai.llm.openai import OpenAI
 
 df = pd.DataFrame(dataframe)
@@ -12,11 +12,16 @@ df = pd.DataFrame(dataframe)
 llm = OpenAI()
 
 user_defined_path = os.getcwd()
-pandas_ai = PandasAI(llm, save_charts=True,
-                     save_charts_path=user_defined_path,
-                     verbose=True)
-response = pandas_ai(
+df = SmartDataframe(
     df,
+    config={
+        "llm": llm,
+        "save_charts_path": user_defined_path,
+        "save_charts": True,
+        "verbose": True,
+    },
+)
+response = df.query(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )
