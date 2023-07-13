@@ -1,6 +1,6 @@
 """Unit tests for the streamlit middleware class"""
 
-from pandasai import PandasAI
+from pandasai.smart_datalake import SmartDatalake
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.streamlit import StreamlitMiddleware
 
@@ -22,16 +22,16 @@ st.pyplot(plt.gcf())"""
     def test_streamlit_middleware_optional_dependency(self, monkeypatch):
         """Test the streamlit middleware installs the optional dependency"""
 
-        llm = FakeLLM("plt.show()")
-        pandasai = PandasAI(llm, middlewares=[StreamlitMiddleware()])
-
         df = []
+        llm = FakeLLM("plt.show()")
+        dl = SmartDatalake(
+            df, config={"llm": llm, "middlewares": [StreamlitMiddleware()]}
+        )
 
-        pandasai(
-            df,
+        dl.query(
             "Plot the histogram of countries showing for each the gpd, using different"
             "colors for each bar",
         )
-        assert pandasai._additional_dependencies == [
+        assert dl._additional_dependencies == [
             {"module": "streamlit", "name": "streamlit", "alias": "st"}
         ]

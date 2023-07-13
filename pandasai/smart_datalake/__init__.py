@@ -35,11 +35,11 @@ from ..helpers.logger import Logger
 from ..helpers.anonymizer import anonymize_dataframe_head
 from ..helpers.cache import Cache
 from ..helpers.save_chart import add_save_chart
-from pydantic import BaseModel
+from ..helpers.df_config import Config
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_response import GenerateResponsePrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
-from typing import Union, List
+from typing import Union, List, Any
 from ..middlewares.base import Middleware
 from ..middlewares.charts import ChartsMiddleware
 from ..constants import (
@@ -56,26 +56,6 @@ try:
     DataFrameType = Union[pd.DataFrame, pl.DataFrame]
 except ImportError:
     DataFrameType = pd.DataFrame
-
-
-class Config(BaseModel):
-    save_logs: bool = True
-    verbose: bool = False
-    enforce_privacy: bool = False
-    enable_cache: bool = True
-    anonymize_dataframe: bool = True
-    use_error_correction_framework: bool = True
-    conversational_answer: bool = False
-    custom_prompts: dict = {}
-    save_charts: bool = False
-    save_charts_path: str = "charts"
-    custom_whitelisted_dependencies: List[str] = []
-    max_retries: int = 3
-    middlewares: List[Middleware] = []
-    llm: Union[LLM, LangchainLLM] = None
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class SmartDatalake:
@@ -95,7 +75,7 @@ class SmartDatalake:
 
     def __init__(
         self,
-        dfs: List[DataFrameType],
+        dfs: List[Union[DataFrameType, Any]],
         config: Config = None,
         logger: Logger = None,
     ):
@@ -105,7 +85,18 @@ class SmartDatalake:
             config (Config, optional): Config to be used. Defaults to None.
         """
 
-        self._dfs = dfs
+        smart_dfs = []
+        for df in dfs:
+            if isinstance(df, pd.DataFrame) or (
+                polars_imported and isinstance(df, pl.DataFrame)
+            ):
+                from ..smart_dataframe import SmartDataframe
+
+                smart_dfs.append(SmartDataframe(df, config, logger))
+            else:
+                smart_dfs.append(df)
+
+        self._dfs = smart_dfs
 
         if config:
             self.load_config(config)
@@ -556,3 +547,14 @@ Code running:
     @property
     def last_prompt(self):
         return self._llm.last_prompt
+
+    @property
+    def last_prompt_id(self) -> str:
+        """Return the id of the last prompt that was run."""
+        if self._last_prompt_id is None:
+            raise ValueError("Pandas AI has not been run yet.")
+        return self._last_prompt_id
+
+    @property
+    def logs(self):
+        return self._logger.logs
