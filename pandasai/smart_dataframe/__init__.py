@@ -36,9 +36,9 @@ try:
     import polars as pl
 
     polars_imported = True
-    DataFrameType = Union[pd.DataFrame, pl.DataFrame]
+    DataFrameType = Union[pd.DataFrame, pl.DataFrame, str]
 except ImportError:
-    DataFrameType = pd.DataFrame
+    DataFrameType = Union[pd.DataFrame, str]
 
 
 class SmartDataframe:
@@ -64,7 +64,7 @@ class SmartDataframe:
             config (Config, optional): Config to be used. Defaults to None.
         """
 
-        self._df = df
+        self._load_df(df)
 
         self.load_config(config)
 
@@ -81,9 +81,38 @@ class SmartDataframe:
         if self._config.enable_cache:
             self._cache = Cache()
 
-        self.load_engine()
+        self._load_engine()
 
-    def load_engine(self):
+    def _load_df(self, df: DataFrameType):
+        """
+        Load a dataframe into the smart dataframe
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe or path to a file
+        """
+        self._df = self._import_from_file(df) if isinstance(df, str) else df
+
+    def _import_from_file(self, file_path: str):
+        """
+        Import a dataframe from a file (csv, parquet, xlsx)
+
+        Args:
+            file_path (str): Path to the file to be imported.
+
+        Returns:
+            pd.DataFrame: Pandas dataframe
+        """
+
+        if file_path.endswith(".csv"):
+            return pd.read_csv(file_path)
+        elif file_path.endswith(".parquet"):
+            return pd.read_parquet(file_path)
+        elif file_path.endswith(".xlsx"):
+            return pd.read_excel(file_path)
+        else:
+            raise ValueError("Invalid file format.")
+
+    def _load_engine(self):
         if polars_imported and isinstance(self._df, pl.DataFrame):
             self.engine = "polars"
         elif isinstance(self._df, pd.DataFrame):
