@@ -325,6 +325,14 @@ class HuggingFaceLLM(LLM):
 
         # replace instruction + value from the inputs to avoid showing it in the output
         output = response.replace(prompt + value + suffix, "")
+        ans = ""
+        for line in output.split("\n"):
+            if line.find("utput:") != -1:
+                break
+            ans = ans + line
+        if len(ans.split("'''")) > 0:
+            ans = ans.split("'''")[0]
+        output = ans
         return output
 
 
