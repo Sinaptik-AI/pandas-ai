@@ -317,7 +317,7 @@ class HuggingFaceLLM(LLM):
         for line in output.split("\n"):
             if line.find("utput:") != -1:
                 break
-            ans = ans + "\n" + line
+            ans = ans + line
         if len(ans.split("'''")) > 0:
             ans = ans.split("'''")[0]
         output = ans
