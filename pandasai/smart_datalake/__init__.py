@@ -29,7 +29,6 @@ import pandas as pd
 from ..helpers._optional import import_dependency
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
-from ..smart_dataframe import SmartDataframe
 
 # from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
@@ -199,6 +198,28 @@ class SmartDatalake:
 
         return sys.stdout.isatty()
 
+    def get_dfs_data_for_prompt(self):
+        rows_to_display = 0 if self._config.enforce_privacy else 5
+
+        result = []
+        for df in self._dfs:
+            df_head = df.head(rows_to_display)
+
+            if self._config.anonymize_dataframe:
+                df_head = anonymize_dataframe_head(df_head)
+
+            df_head_csv = df_head.to_csv(index=False)
+            num_rows = df.shape[0]
+            num_columns = df.shape[1]
+
+            df_dict = {
+                "df_head": df_head_csv,
+                "num_rows": num_rows,
+                "num_columns": num_columns,
+            }
+            result.append(df_dict)
+        return result
+
     def query(self, query: str):
         """
         Run a query on the dataframe.
@@ -217,28 +238,20 @@ class SmartDatalake:
 
         self._assign_prompt_id()
 
-        df = self._dfs[0]
-
         try:
             if self._config.enable_cache and self._cache and self._cache.get(query):
                 self._logger.log("Using cached response")
                 code = self._cache.get(query)
             else:
-                rows_to_display = 0 if self._config.enforce_privacy else 5
-
-                df_head = df.head(rows_to_display)
-                if self._config.anonymize_dataframe:
-                    df_head = anonymize_dataframe_head(df_head)
-                df_head = df_head.to_csv(index=False)
+                dfs = self.get_dfs_data_for_prompt()
 
                 generate_code_instruction = self._config.custom_prompts.get(
                     "generate_python_code", GeneratePythonCodePrompt
                 )(
                     prompt=query,
-                    df_head=df_head,
-                    num_rows=df.shape[0],
-                    num_columns=df.shape[1],
-                    engine=df.engine,
+                    dfs=dfs,
+                    # TODO: find a better way to determine the engine
+                    engine=self._dfs[0].engine,
                 )
                 code = self._llm.generate_code(
                     generate_code_instruction,
@@ -247,9 +260,7 @@ class SmartDatalake:
 
                 self._original_instructions = {
                     "question": query,
-                    "df_head": df_head,
-                    "num_rows": df.shape[0],
-                    "num_columns": df.shape[1],
+                    "dfs": dfs,
                 }
 
                 if self._config.enable_cache and self._cache:
@@ -274,7 +285,6 @@ class SmartDatalake:
 
             results = self.execute_code(
                 code,
-                df,
                 use_error_correction_framework=self._config.use_error_correction_framework,
             )
             self.last_result = results
@@ -292,6 +302,8 @@ class SmartDatalake:
                 self._logger.log(f"Executed in: {time.time() - self._start_time}s")
 
                 if output["type"] == "dataframe":
+                    from ..smart_dataframe import SmartDataframe
+
                     return SmartDataframe(
                         output["result"], config=self._config.__dict__
                     )
@@ -343,7 +355,6 @@ class SmartDatalake:
     def execute_code(
         self,
         code: str,
-        data_frame: pd.DataFrame,
         use_error_correction_framework: bool = True,
     ) -> str:
         """
@@ -362,8 +373,6 @@ class SmartDatalake:
             on the generated code.
 
         """
-
-        multiple: bool = isinstance(data_frame, list)
 
         # Add save chart code
         if self._config.save_charts:
@@ -386,32 +395,23 @@ Code running:
         )
 
         environment: dict = self._get_environment()
+        count = 0
+        while count < self._config.max_retries:
+            try:
+                # Execute the code
+                exec(code_to_run, environment)
+                code = code_to_run
+                break
+            except Exception as e:
+                if not use_error_correction_framework:
+                    raise e
 
-        if multiple:
-            environment.update(
-                {f"df{i}": dataframe for i, dataframe in enumerate(data_frame, start=1)}
-            )
-        else:
-            environment["df"] = data_frame
+                count += 1
 
-            count = 0
-            while count < self._config.max_retries:
-                try:
-                    # Execute the code
-                    exec(code_to_run, environment)
-                    code = code_to_run
-                    break
-                except Exception as e:
-                    if not use_error_correction_framework:
-                        raise e
+                code_to_run = self._retry_run_code(code, e)
 
-                    count += 1
+        result = environment.get("result", None)
 
-                    code_to_run = self._retry_run_code(code, e, multiple)
-
-            result = environment.get("result", None)
-
-            return result
         return result
 
     def _get_environment(self) -> dict:
@@ -421,8 +421,13 @@ Code running:
         Returns (dict): A dictionary of environment variables
         """
 
+        dfs = []
+        for df in self._dfs:
+            dfs.append(df.original)
+
         return {
             "pd": pd,
+            "dfs": dfs,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])
@@ -436,14 +441,13 @@ Code running:
             },
         }
 
-    def _retry_run_code(self, code: str, e: Exception, multiple: bool = False):
+    def _retry_run_code(self, code: str, e: Exception):
         """
         A method to retry the code execution with error correction framework.
 
         Args:
             code (str): A python code
             e (Exception): An exception
-            multiple (bool): A boolean to indicate if the code is for multiple
             dataframes
 
         Returns (str): A python code
@@ -457,7 +461,8 @@ Code running:
             code=code,
             error_returned=e,
             question=self._original_instructions["question"],
-            df_head=self._original_instructions["df_head"],
+            # TODO: make it so we pass all the heads and info
+            df_head=self._original_instructions["dfs"][0]["df_head"],
             num_rows=self._original_instructions["num_rows"],
             num_columns=self._original_instructions["num_columns"],
         )

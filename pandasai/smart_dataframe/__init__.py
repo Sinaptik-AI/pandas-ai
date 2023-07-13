@@ -86,8 +86,7 @@ class SmartDataframe:
 
         self._df = df
 
-        if config:
-            self.load_config(config)
+        self.load_config(config)
 
         if logger:
             self._logger = logger
@@ -135,11 +134,14 @@ class SmartDataframe:
             config (Config): Config to be used
         """
 
-        if config["llm"]:
-            self.load_llm(config["llm"])
+        if config is None:
+            self._config = Config()
+        else:
+            if config["llm"]:
+                self.load_llm(config["llm"])
 
-        # TODO: fallback to default config from pandasai
-        self._config = Config(**config)
+            # TODO: fallback to default config from pandasai
+            self._config = Config(**config)
 
     def load_llm(self, llm: LLM):
         """
@@ -197,7 +199,7 @@ class SmartDataframe:
         config = Config(**config_dict).__dict__
 
         self._dl = SmartDatalake([self], config=config, logger=self._logger)
-        self._dl.query(query)
+        return self._dl.query(query)
 
     @property
     def last_prompt(self):
@@ -210,3 +212,7 @@ class SmartDataframe:
     @property
     def last_result(self):
         return self._dl.last_result
+
+    @property
+    def original(self):
+        return self._df

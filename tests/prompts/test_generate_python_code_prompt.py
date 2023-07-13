@@ -10,20 +10,19 @@ class TestGeneratePythonCodePrompt:
 
     def test_str_with_args(self):
         """Test that the __str__ method is implemented"""
+
+        dfs = [{"df_head": "df.head()", "num_rows": 5, "num_columns": 10}]
         assert (
-            str(
-                GeneratePythonCodePrompt(
-                    df_head="df.head()", num_rows=10, num_columns=5, engine="pandas"
-                )
-            )
+            str(GeneratePythonCodePrompt(engine="pandas", dfs=dfs))
             == f"""
 Date: {date.today()}
-You are provided with a pandas DataFrame, 'df', with the following metadata:
+You are provided with the following pandas DataFrames with the following metadata:
 
-Number of Rows: 10
-Number of Columns: 5
-Data Preview: 
+Dataframe dfs[0], with 5 rows and 10 columns.
+This is the metadata of the dataframe dfs[0]:
 df.head()
+
+
 
 Here is a placeholder Python code with a clear structure and naming convention based on the phases of data analysis. Your task is to generate the specific code within this template and ensure the requested python code is prefixed with <startCode> exactly and suffix the code with <endCode> exactly.
 
@@ -32,10 +31,10 @@ Here is a placeholder Python code with a clear structure and naming convention b
 #TODO: Import any necessary libraries
 
 class DataFrameAnalysis:
-    def __init__(self, df):
-        self.df = df.copy()  # To ensure the original df is not modified in place
+    def __init__(self, dfs: list):
+        self.dfs: list = dfs.copy()  # To ensure the original dfs are not modified in place
         self.df_output = []  # An array to store multiple outputs (possible types: text, plot, dataframe)
-        self.df_output.append(dict(type = "dataframe", result = self.df))  # Add the initial dataframe as the first output
+        self.df_output.append(dict(type = "dataframe", result = self.dfs))  # Add the initial dataframes as the first output
         # TODO: Add additional items to the df_output list as necessary to support other output types such as plots, etc.
 
     # 1. Prepare: Preprocessing and cleaning data if necessary
@@ -56,7 +55,7 @@ class DataFrameAnalysis:
     # 4. Output: Returning the result in a standardized format
     def output_data(self):
         # TODO: Insert your generated Python code here
-        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc. If returning self.df, use self.df_output[0].  
+        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc.
 
         return self.df_output
 
@@ -67,9 +66,9 @@ class DataFrameAnalysis:
         return self.output_data()
 
 # The following code should be outside the class definition and remain unchanged
-analysis = DataFrameAnalysis(df)
+analysis = DataFrameAnalysis(dfs)
 result = analysis.run()
 
-Using the provided DataFrame, 'df', please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
+Using the provided DataFrames, please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
 """  # noqa: E501
         )

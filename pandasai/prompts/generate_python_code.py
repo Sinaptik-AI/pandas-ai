@@ -21,12 +21,9 @@ class GeneratePythonCodePrompt(Prompt):
 
     text: str = """
 Date: {today_date}
-You are provided with a {engine} DataFrame, 'df', with the following metadata:
+You are provided with the following {engine} DataFrames with the following metadata:
 
-Number of Rows: {num_rows}
-Number of Columns: {num_columns}
-Data Preview: 
-{df_head}
+{dataframes}
 
 Here is a placeholder Python code with a clear structure and naming convention based on the phases of data analysis. Your task is to generate the specific code within this template and ensure the requested python code is prefixed with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly.
 
@@ -35,10 +32,10 @@ Here is a placeholder Python code with a clear structure and naming convention b
 #TODO: Import any necessary libraries
 
 class DataFrameAnalysis:
-    def __init__(self, df):
-        self.df = df.copy()  # To ensure the original df is not modified in place
+    def __init__(self, dfs: list):
+        self.dfs: list = dfs.copy()  # To ensure the original dfs are not modified in place
         self.df_output = []  # An array to store multiple outputs (possible types: text, plot, dataframe)
-        self.df_output.append(dict(type = "dataframe", result = self.df))  # Add the initial dataframe as the first output
+        self.df_output.append(dict(type = "dataframe", result = self.dfs))  # Add the initial dataframes as the first output
         # TODO: Add additional items to the df_output list as necessary to support other output types such as plots, etc.
 
     # 1. Prepare: Preprocessing and cleaning data if necessary
@@ -59,7 +56,7 @@ class DataFrameAnalysis:
     # 4. Output: Returning the result in a standardized format
     def output_data(self):
         # TODO: Insert your generated Python code here
-        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc. If returning self.df, use self.df_output[0].  
+        # TODO: Set the result type and value in the df_output dictionary. The result could be a DataFrame, plot, etc.
 
         return self.df_output
 
@@ -70,16 +67,25 @@ class DataFrameAnalysis:
         return self.output_data()
 
 # The following code should be outside the class definition and remain unchanged
-analysis = DataFrameAnalysis(df)
+analysis = DataFrameAnalysis(dfs)
 result = analysis.run()
 
-Using the provided DataFrame, 'df', please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
+Using the provided DataFrames, please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
 """  # noqa: E501
 
     def __init__(self, **kwargs):
+        dataframes = ""
+        for index, df in enumerate(kwargs["dfs"], start=1):
+            dataframes += f"""Dataframe dfs[{index-1}], with {df["num_rows"]} rows and {df["num_columns"]} columns.
+This is the metadata of the dataframe dfs[{index-1}]:
+{df["df_head"]}
+
+"""  # noqa: E501
+
         super().__init__(
             **kwargs,
             today_date=date.today(),
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
+            dataframes=dataframes,
         )
