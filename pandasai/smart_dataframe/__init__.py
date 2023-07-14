@@ -24,7 +24,7 @@ from ..llm.langchain import LangchainLLM
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
 
-# from ..helpers.shortcuts import Shortcuts
+from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from typing import Union, List
@@ -41,7 +41,7 @@ except ImportError:
     DataFrameType = Union[pd.DataFrame, str]
 
 
-class SmartDataframe:
+class SmartDataframe(Shortcuts):
     engine: str
 
     _df: pd.DataFrame

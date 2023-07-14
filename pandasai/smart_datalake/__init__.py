@@ -30,7 +30,6 @@ from ..helpers.optional import import_dependency
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 
-# from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.anonymizer import anonymize_dataframe_head
 from ..helpers.cache import Cache

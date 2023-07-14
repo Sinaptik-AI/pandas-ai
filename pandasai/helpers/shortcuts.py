@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 class Shortcuts(ABC):
     @abstractmethod
-    def run(self, df: pd.DataFrame, prompt: str) -> Union[str, pd.DataFrame]:
+    def query(self, prompt: str) -> Union[str, pd.DataFrame]:
         """
         Run method from PandasAI class.
 
@@ -19,7 +19,7 @@ class Shortcuts(ABC):
 
         pass
 
-    def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
+    def clean_data(self) -> pd.DataFrame:
         """
         Do data cleaning and return the dataframe.
 
@@ -30,16 +30,15 @@ class Shortcuts(ABC):
             pd.DataFrame: The cleaned DataFrame.
         """
 
-        return self.run(
-            df,
+        return self.query(
             """
 1. Copy the dataframe to a new variable named df_cleaned.
 2. Do data cleaning.
 3. Return df_cleaned.
-""",
+"""
         )
 
-    def impute_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+    def impute_missing_values(self) -> pd.DataFrame:
         """
         Do missing value imputation and return the dataframe.
 
@@ -50,16 +49,15 @@ class Shortcuts(ABC):
             pd.DataFrame: The DataFrame with imputed missing values.
         """
 
-        return self.run(
-            df,
+        return self.query(
             """
 1. Copy the dataframe to a new variable named df_imputed.
 2. Do the imputation of missing values.
 3. Return df_imputed.
-""",
+"""
         )
 
-    def generate_features(self, df: pd.DataFrame) -> pd.DataFrame:
+    def generate_features(self) -> pd.DataFrame:
         """
         Do feature generation and return the dataframe.
 
@@ -70,16 +68,15 @@ class Shortcuts(ABC):
             pd.DataFrame: The DataFrame with generated features.
         """
 
-        return self.run(
-            df,
+        return self.query(
             """
 1. Copy the dataframe to a new variable named df_features.
 2. Do feature generation.
 3. Return df_features.
-""",
+"""
         )
 
-    def plot_pie_chart(self, df: pd.DataFrame, labels: list, values: list) -> None:
+    def plot_pie_chart(self, labels: list, values: list) -> None:
         """
         Plot a pie chart.
 
@@ -92,16 +89,15 @@ class Shortcuts(ABC):
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a pie chart with the following labels and values:
 labels = {labels}
 values = {values}
-""",
+"""
         )
 
-    def plot_bar_chart(self, df: pd.DataFrame, x: list, y: list) -> None:
+    def plot_bar_chart(self, x: list, y: list) -> None:
         """
         Plot a bar chart.
 
@@ -114,16 +110,15 @@ values = {values}
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a bar chart with the following x and y:
 x = {x}
 y = {y}
-""",
+"""
         )
 
-    def plot_histogram(self, df: pd.DataFrame, column: str) -> None:
+    def plot_histogram(self, column: str) -> None:
         """
         Plot a histogram.
 
@@ -135,9 +130,9 @@ y = {y}
             None
         """
 
-        self.run(df, f"Plot a histogram of the column {column}.")
+        self.query(f"Plot a histogram of the column {column}.")
 
-    def plot_line_chart(self, df: pd.DataFrame, x: list, y: list) -> None:
+    def plot_line_chart(self, x: list, y: list) -> None:
         """
         Plot a line chart.
 
@@ -150,16 +145,15 @@ y = {y}
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a line chart with the following x and y:
 x = {x}
 y = {y}
-""",
+"""
         )
 
-    def plot_scatter_chart(self, df: pd.DataFrame, x: list, y: list) -> None:
+    def plot_scatter_chart(self, x: list, y: list) -> None:
         """
         Plot a scatter chart.
 
@@ -172,16 +166,15 @@ y = {y}
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a scatter chart with the following x and y:
 x = {x}
 y = {y}
-""",
+"""
         )
 
-    def plot_correlation_heatmap(self, df: pd.DataFrame) -> None:
+    def plot_correlation_heatmap(self) -> None:
         """
         Plot a correlation heatmap.
 
@@ -192,11 +185,9 @@ y = {y}
             None
         """
 
-        self.run(df, "Plot a correlation heatmap.")
+        self.query("Plot a correlation heatmap.")
 
-    def plot_confusion_matrix(
-        self, df: pd.DataFrame, y_true: list, y_pred: list
-    ) -> None:
+    def plot_confusion_matrix(self, y_true: list, y_pred: list) -> None:
         """
         Plot a confusion matrix.
 
@@ -209,16 +200,15 @@ y = {y}
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a confusion matrix with the following y_true and y_pred:
 y_true = {y_true}
 y_pred = {y_pred}
-""",
+"""
         )
 
-    def plot_roc_curve(self, df: pd.DataFrame, y_true: list, y_pred: list) -> None:
+    def plot_roc_curve(self, y_true: list, y_pred: list) -> None:
         """
         Plot a ROC curve.
 
@@ -231,18 +221,16 @@ y_pred = {y_pred}
             None
         """
 
-        self.run(
-            df,
+        self.query(
             f"""
 Plot a ROC curve with the following y_true and y_pred:
 y_true = {y_true}
 y_pred = {y_pred}
-""",
+"""
         )
 
     def boxplot(
         self,
-        df: pd.DataFrame,
         col: Union[str, list[str]] = None,
         by: Union[str, list[str]] = None,
         style: str = None,
@@ -290,9 +278,9 @@ y_pred = {y_pred}
         if style is not None:
             prompt += f"\nStyle: '''{style}'''"
 
-        self.run(df, prompt)
+        self.query(prompt)
 
-    def rolling_mean(self, df: pd.DataFrame, column: str, window: int) -> pd.DataFrame:
+    def rolling_mean(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling mean.
 
@@ -305,15 +293,12 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling mean.
         """
 
-        return self.run(
-            df,
+        return self.query(
             f"Calculate the rolling mean of the column {column} with a window"
-            " of {window}.",
+            f" of {window}.",
         )
 
-    def rolling_median(
-        self, df: pd.DataFrame, column: str, window: int
-    ) -> pd.DataFrame:
+    def rolling_median(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling median.
 
@@ -326,13 +311,12 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling median.
         """
 
-        return self.run(
-            df,
+        return self.query(
             f"Calculate the rolling median of the column {column} with a window"
-            " of {window}.",
+            f" of {window}.",
         )
 
-    def rolling_std(self, df: pd.DataFrame, column: str, window: int) -> pd.DataFrame:
+    def rolling_std(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling standard deviation.
 
@@ -345,15 +329,12 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling standard deviation.
         """
 
-        return self.run(
-            df,
+        return self.query(
             f"Calculate the rolling standard deviation of the column {column} with a"
-            "window of {window}.",
+            f"window of {window}.",
         )
 
-    def segment_customers(
-        self, df: pd.DataFrame, features: list, n_clusters: int
-    ) -> pd.DataFrame:
+    def segment_customers(self, features: list, n_clusters: int) -> pd.DataFrame:
         """
         Segment customers.
 
@@ -366,11 +347,10 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the segmentation.
         """
 
-        return self.run(
-            df,
+        return self.query(
             f"""
 Segment customers with the following features and number of clusters:
 features = {features}
 n_clusters = {n_clusters}
-""",
+"""
         )
