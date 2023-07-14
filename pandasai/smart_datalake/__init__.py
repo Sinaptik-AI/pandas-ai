@@ -53,9 +53,9 @@ try:
     import polars as pl
 
     polars_imported = True
-    DataFrameType = Union[pd.DataFrame, pl.DataFrame]
+    DataFrameType = Union[pd.DataFrame, pl.DataFrame, str]
 except ImportError:
-    DataFrameType = pd.DataFrame
+    DataFrameType = Union[pd.DataFrame, str]
 
 
 class SmartDatalake:
@@ -85,13 +85,11 @@ class SmartDatalake:
             config (Config, optional): Config to be used. Defaults to None.
         """
 
+        from ..smart_dataframe import SmartDataframe
+
         smart_dfs = []
         for df in dfs:
-            if isinstance(df, pd.DataFrame) or (
-                polars_imported and isinstance(df, pl.DataFrame)
-            ):
-                from ..smart_dataframe import SmartDataframe
-
+            if not isinstance(df, SmartDataframe):
                 smart_dfs.append(SmartDataframe(df, config, logger))
             else:
                 smart_dfs.append(df)
