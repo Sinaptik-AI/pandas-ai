@@ -75,8 +75,6 @@ class PandasAI(Shortcuts):
         _llm (obj): LLMs option to be used for API access
         _verbose (bool, optional): To show the intermediate outputs e.g. python code
         generated and execution step on the prompt. Default to False
-        _is_conversational_answer (bool, optional): Whether to return answer in
-        conversational form. Default to False
         _enforce_privacy (bool, optional): Do not display the data on prompt in case of
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure.
@@ -171,7 +169,6 @@ class PandasAI(Shortcuts):
         self,
         data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
         prompt: str,
-        is_conversational_answer: bool = None,
         show_code: bool = False,
         anonymize_df: bool = True,
         use_error_correction_framework: bool = True,
@@ -182,8 +179,6 @@ class PandasAI(Shortcuts):
         Args:
             data_frame (Union[pd.DataFrame, List[pd.DataFrame]]): A pandas Dataframe
             prompt (str): A prompt to query about the Dataframe
-            is_conversational_answer (bool): Whether to return answer in conversational
-            form. Default to False
             show_code (bool): To show the intermediate python code generated on the
             prompt. Default to False
             anonymize_df (bool): Running the code with Sensitive Data. Default to True
@@ -195,7 +190,6 @@ class PandasAI(Shortcuts):
         """
 
         new_config = self._config.dict()
-        new_config["is_conversational_answer"] = is_conversational_answer
         new_config["show_code"] = show_code
         new_config["anonymize_df"] = anonymize_df
         new_config["use_error_correction_framework"] = use_error_correction_framework
@@ -212,7 +206,6 @@ class PandasAI(Shortcuts):
         self,
         data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
         prompt: str,
-        is_conversational_answer: bool = None,
         show_code: bool = False,
         anonymize_df: bool = True,
         use_error_correction_framework: bool = True,
@@ -223,7 +216,6 @@ class PandasAI(Shortcuts):
         Args:
             data_frame:
             prompt:
-            is_conversational_answer:
             show_code:
             anonymize_df:
             use_error_correction_framework:
@@ -235,7 +227,6 @@ class PandasAI(Shortcuts):
         return self.run(
             data_frame,
             prompt,
-            is_conversational_answer,
             show_code,
             anonymize_df,
             use_error_correction_framework,

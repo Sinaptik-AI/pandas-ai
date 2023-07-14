@@ -27,18 +27,10 @@ from ..helpers.df_config import Config
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
-from typing import Union, List
+from typing import List
 from ..middlewares.base import Middleware
 from ..middlewares.charts import ChartsMiddleware
-
-polars_imported = False
-try:
-    import polars as pl
-
-    polars_imported = True
-    DataFrameType = Union[pd.DataFrame, pl.DataFrame, str]
-except ImportError:
-    DataFrameType = Union[pd.DataFrame, str]
+from ..helpers.df_info import DataFrameType, df_type
 
 
 class SmartDataframe(Shortcuts):
@@ -113,10 +105,7 @@ class SmartDataframe(Shortcuts):
             raise ValueError("Invalid file format.")
 
     def _load_engine(self):
-        if polars_imported and isinstance(self._df, pl.DataFrame):
-            self.engine = "polars"
-        elif isinstance(self._df, pd.DataFrame):
-            self.engine = "pandas"
+        self.engine = df_type(self._df)
 
         if self.engine is None:
             raise ValueError(

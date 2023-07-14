@@ -26,10 +26,12 @@ class Logger:
 
     _logs: List[str]
     _logger: logging.Logger
+    _verbose: bool
 
     def __init__(self, save_logs: bool = True, verbose: bool = False):
         """Initialize the logger"""
         self._logs = []
+        self._verbose = verbose
 
         if save_logs:
             handlers = [logging.FileHandler("pandasai.log")]
@@ -56,3 +58,8 @@ class Logger:
     def logs(self) -> List[str]:
         """Return the logs"""
         return self._logs
+
+    @property
+    def verbose(self) -> bool:
+        """Return the verbose flag"""
+        return self._verbose

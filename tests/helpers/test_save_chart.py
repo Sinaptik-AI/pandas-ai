@@ -1,12 +1,18 @@
 """Unit tests for the save_chart module."""
 import ast
 import os.path
+import pytest
 
 from pandasai.helpers.save_chart import add_save_chart, compare_ast
+from pandasai.helpers.logger import Logger
 
 
 class TestSaveChart:
     """Unit tests for the save_chart module."""
+
+    @pytest.fixture
+    def logger(self):
+        return Logger()
 
     def test_compare_ast(self):
         node1 = ast.parse("plt.show()").body[0]
@@ -17,7 +23,7 @@ class TestSaveChart:
         node2 = ast.parse("print()").body[0]
         assert compare_ast(node1, node2, ignore_args=True)
 
-    def test_save_chart(self):
+    def test_save_chart(self, logger):
         chart_code = """
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -26,7 +32,7 @@ df.plot()
 plt.show()
 """
         line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code, "test_folder"))
+        tree = ast.parse(add_save_chart(chart_code, logger, "test_folder"))
         show_node = ast.parse("plt.show()").body[0]
         show_call_pos = [
             i
@@ -39,7 +45,7 @@ plt.show()
             tree.body[show_call_pos - 1], expected_node, ignore_args=True
         )
 
-    def test_save_multiple_charts(self):
+    def test_save_multiple_charts(self, logger):
         chart_code = """
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -50,7 +56,7 @@ df.plot('b')
 plt.show()
 """
         line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code, "test_folder"))
+        tree = ast.parse(add_save_chart(chart_code, logger, "test_folder"))
         show_node = ast.parse("plt.show()").body[0]
         show_call_pos = [
             i

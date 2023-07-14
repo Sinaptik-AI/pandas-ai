@@ -12,7 +12,6 @@ class Config(BaseModel):
     enable_cache: bool = True
     anonymize_dataframe: bool = True
     use_error_correction_framework: bool = True
-    conversational_answer: bool = False
     custom_prompts: dict = {}
     save_charts: bool = False
     save_charts_path: str = "exports/charts"
