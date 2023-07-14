@@ -155,7 +155,7 @@ class PandasAI(Shortcuts):
     _start_time: float = 0
     _enable_logging: bool = True
     _logger: logging.Logger = None
-    _logs: List[str] = []
+    _logs: List[dict[str, str]] = []
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -708,13 +708,20 @@ Code running:
         except Exception:
             return captured_output
 
-    def log(self, message: str):
-        """Log a message"""
-        self._logger.info(message)
-        self._logs.append(message)
+    def log(self, message: str, level: Optional[int] = logging.INFO):
+        """
+        Log the passed message with according log level.
+
+        Args:
+            message (str): a message string to be logged
+            level (Optional[int]): an integer, representing log level;
+                                   default to 20 (INFO)
+        """
+        self._logger.log(level=level, msg=message)
+        self._logs.append({"msg": message, "level": level})
 
     @property
-    def logs(self) -> List[str]:
+    def logs(self) -> List[dict[str, str]]:
         """Return the logs"""
         return self._logs
 
