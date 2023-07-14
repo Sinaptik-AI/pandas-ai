@@ -12,6 +12,7 @@ import re
 import string
 
 import pandas as pd
+import numpy as np
 
 
 def is_valid_email(email: str) -> bool:
@@ -142,7 +143,6 @@ def anonymize_dataframe_head(
     """
 
     data_frame = copy_head(data_frame)
-    dtypes = data_frame.dtypes
     for col in data_frame.columns:
         col_idx = data_frame.columns.get_loc(col)
         # check category type column and temporarily convert to object type
@@ -150,6 +150,8 @@ def anonymize_dataframe_head(
             if pd.api.types.is_categorical_dtype(data_frame[col]):
                 if data_frame[col].isna().any():
                     data_frame[col] = data_frame[col].astype(object)
+            else:
+                data_frame[col] = data_frame[col].astype(str)
         for row_idx, val in enumerate(data_frame[col]):
             cell_value = str(val)
 
@@ -164,7 +166,8 @@ def anonymize_dataframe_head(
             if is_valid_credit_card(cell_value):
                 data_frame.iloc[row_idx, col_idx] = generate_random_credit_card()
                 continue
-
+            if cell_value == "<NA>":
+                cell_value = np.nan
             # anonymize data
             random_row_index = random.choice(
                 [i for i in range(len(data_frame.index)) if i != row_idx]
@@ -175,5 +178,12 @@ def anonymize_dataframe_head(
                 pd.eval(cell_value) if cell_value in ["True", "False"] else cell_value
             )
     # restore the original data types
-    data_frame = data_frame.astype(dtypes)
+    for i in range(len(data_frame.columns)):
+        dt = data_frame.dtypes[i]
+        col = data_frame.columns[i]
+        if dt == "Int64":
+            data_frame[col] = data_frame[col].astype("float64")
+            data_frame[col] = data_frame[col].astype("Int64")
+        else:
+            data_frame[col] = data_frame[col].astype(dt)
     return data_frame
