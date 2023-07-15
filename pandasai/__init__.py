@@ -233,7 +233,7 @@ class PandasAI(Shortcuts):
         )
 
     @property
-    def logs(self) -> List[str]:
+    def logs(self) -> List[dict[str, str]]:
         """Return the logs"""
         return self._dl.logs
 

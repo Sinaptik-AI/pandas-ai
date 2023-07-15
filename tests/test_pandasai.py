@@ -1,5 +1,5 @@
 """Unit tests for the PandasAI class"""
-
+import logging
 import sys
 from datetime import date
 from typing import Optional
@@ -973,9 +973,23 @@ print('Hello', name)"""
     def test_saves_logs(self, llm):
         pandas_ai = PandasAI(llm)
         assert pandas_ai.logs == []
-        pandas_ai.log("a")
-        pandas_ai.log("b")
-        assert pandas_ai.logs == [
-            "a",
-            "b",
-        ]
+
+        debug_msg = "Some debug log"
+        info_msg = "Some info log"
+        warning_msg = "Some warning log"
+        error_msg = "Some error log"
+        critical_msg = "Some critical log"
+
+        pandas_ai.log(debug_msg, level=logging.DEBUG)
+        pandas_ai.log(info_msg)  # INFO should be default
+        pandas_ai.log(warning_msg, level=logging.WARNING)
+        pandas_ai.log(error_msg, level=logging.ERROR)
+        pandas_ai.log(critical_msg, level=logging.CRITICAL)
+        logs = pandas_ai.logs
+
+        assert all("msg" in log and "level" in log for log in logs)
+        assert {"msg": debug_msg, "level": logging.DEBUG} in logs
+        assert {"msg": info_msg, "level": logging.INFO} in logs
+        assert {"msg": warning_msg, "level": logging.WARNING} in logs
+        assert {"msg": error_msg, "level": logging.ERROR} in logs
+        assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
