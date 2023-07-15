@@ -151,6 +151,7 @@ def anonymize_dataframe_head(
                 if data_frame[col].isna().any():
                     data_frame[col] = data_frame[col].astype(object)
             else:
+                # converting all non-categorical columns to strings
                 data_frame[col] = data_frame[col].astype(str)
         for row_idx, val in enumerate(data_frame[col]):
             cell_value = str(val)
@@ -166,7 +167,10 @@ def anonymize_dataframe_head(
             if is_valid_credit_card(cell_value):
                 data_frame.iloc[row_idx, col_idx] = generate_random_credit_card()
                 continue
+
+            # "<NA>" is null value originaly which got converted to string
             if cell_value == "<NA>":
+                # Reinitialising cell_value to NULL
                 cell_value = np.nan
             # anonymize data
             random_row_index = random.choice(
@@ -178,12 +182,17 @@ def anonymize_dataframe_head(
                 pd.eval(cell_value) if cell_value in ["True", "False"] else cell_value
             )
     # restore the original data types
+    # Handling Int64 dtype explicitly
     for i in range(len(data_frame.columns)):
         dt = data_frame.dtypes[i]
         col = data_frame.columns[i]
         if dt == "Int64":
-            data_frame[col] = data_frame[col].astype("float64")
-            data_frame[col] = data_frame[col].astype("Int64")
+            data_frame[col] = data_frame[col].astype(
+                "float64"
+            )  # float64 can handle Null values (np.nan)
+            data_frame[col] = data_frame[col].astype(
+                "Int64"
+            )  # Converting back to original Int64
         else:
             data_frame[col] = data_frame[col].astype(dt)
     return data_frame
