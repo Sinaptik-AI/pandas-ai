@@ -70,18 +70,14 @@ Once you have an API key, you can use it to instantiate one of the HuggingFace m
 At the moment, PandasAI supports the following HuggingFace models:
 
 - Starcoder: `bigcode/starcoder`
-- OpenAssistant: `OpenAssistant/oasst-sft-1-pythia-12b`
 - Falcon: `tiiuae/falcon-7b-instruct`
 
 ```python
 from pandasai import PandasAI
 from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.falcon import Falcon
 
 llm = Starcoder(huggingface_api_key="my-huggingface-api-key")
-# or
-llm = OpenAssistant(huggingface_api_key="my-huggingface-api-key")
 # or
 llm = Falcon(huggingface_api_key="my-huggingface-api-key")
 
@@ -93,12 +89,9 @@ As an alternative, you can set the `HUGGINGFACE_API_KEY` environment variable an
 ```python
 from pandasai import PandasAI
 from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.falcon import Falcon
 
 llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
-# or
-llm = OpenAssistant() # no need to pass the API key, it will be read from the environment variable
 # or
 llm = Falcon() # no need to pass the API key, it will be read from the environment variable
 
