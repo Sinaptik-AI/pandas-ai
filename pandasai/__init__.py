@@ -39,6 +39,7 @@ import io
 import logging
 import re
 import sys
+import traceback
 import uuid
 import time
 from contextlib import redirect_stdout
@@ -673,6 +674,11 @@ Code running:
                     code = code_to_run
                     break
                 except Exception as e:
+                    self.log(
+                        f"Error executing code (count: {count})", level=logging.WARNING
+                    )
+                    self.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+
                     if not use_error_correction_framework:
                         raise e
 
