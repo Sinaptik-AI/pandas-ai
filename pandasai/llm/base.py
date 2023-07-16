@@ -22,6 +22,7 @@ from typing import Any, Dict, Optional
 import openai
 import requests
 
+from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -107,6 +108,13 @@ class LLM:
             str: Extracted code from the response
         """
         code = response
+        match = re.search(
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            code,
+            re.DOTALL,
+        )
+        if match:
+            code = match.group(1).strip()
         if len(code.split(separator)) > 1:
             code = code.split(separator)[1]
         code = self._polish_code(code)

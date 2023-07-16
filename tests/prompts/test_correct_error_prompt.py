@@ -39,5 +39,6 @@ It fails with the following error:
 error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 """  # noqa: E501
         )

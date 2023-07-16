@@ -25,6 +25,6 @@ This is the metadata of the dataframe:
 df.head().
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
-Using the provided dataframe, df, return the python code to get the answer to the following question:
+Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
 """  # noqa: E501
         )
