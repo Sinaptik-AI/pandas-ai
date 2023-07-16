@@ -173,14 +173,17 @@ def anonymize_dataframe_head(
                 # Reinitialising cell_value to NULL
                 cell_value = np.nan
             # anonymize data
-            random_row_index = random.choice(
-                [i for i in range(len(data_frame.index)) if i != row_idx]
-            )
-            random_value = data_frame.iloc[random_row_index, col_idx]
-            data_frame.iloc[row_idx, col_idx] = random_value
-            data_frame.iloc[random_row_index, col_idx] = (
-                pd.eval(cell_value) if cell_value in ["True", "False"] else cell_value
-            )
+            if len(data_frame.index) > 1:  # edge case , when only single row is present
+                random_row_index = random.choice(
+                    [i for i in range(len(data_frame.index)) if i != row_idx]
+                )
+                random_value = data_frame.iloc[random_row_index, col_idx]
+                data_frame.iloc[row_idx, col_idx] = random_value
+                data_frame.iloc[random_row_index, col_idx] = (
+                    pd.eval(cell_value)
+                    if cell_value in ["True", "False"]
+                    else cell_value
+                )
     # restore the original data types
     # Handling Int64 dtype explicitly
     for i in range(len(data_frame.columns)):
