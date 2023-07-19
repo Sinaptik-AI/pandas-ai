@@ -16,7 +16,7 @@ from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundErr
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
 from langchain.llms import OpenAI
-
+from pandasai.callbacks.base import StdoutCallBack
 
 class TestPandasAI:
     """Unit tests for the PandasAI class"""
@@ -125,6 +125,16 @@ class TestPandasAI:
         with patch("builtins.print") as mock_print:
             pandasai.run(df, "What number comes before 2?")
             mock_print.assert_called()
+
+    def test_callback(self, pandasai):
+        df = pd.DataFrame()
+        callback = StdoutCallBack()
+        pandasai.callback = callback
+
+        #mock on_code function
+        with patch.object(callback, "on_code") as mock_on_code:
+            pandasai.run(df, "Give me sum of all gdps?")
+            mock_on_code.assert_called()
 
     def test_run_without_verbose(self, pandasai, llm):
         df = pd.DataFrame()

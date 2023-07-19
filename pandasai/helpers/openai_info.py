@@ -24,7 +24,8 @@ MODEL_COST_PER_1K_TOKENS = {
 
 
 def get_openai_token_cost_for_model(
-        model_name: str, num_tokens: int,
+    model_name: str,
+    num_tokens: int,
 ) -> float:
     """
     Get the cost in USD for a given model and number of tokens.
@@ -66,10 +67,7 @@ class OpenAICallbackHandler:
             return None
         model_name = response.model
         if model_name in MODEL_COST_PER_1K_TOKENS:
-            total_cost = get_openai_token_cost_for_model(
-                model_name,
-                usage.total_tokens
-            )
+            total_cost = get_openai_token_cost_for_model(model_name, usage.total_tokens)
             self.total_cost += total_cost
 
         self.total_tokens += usage.total_tokens
