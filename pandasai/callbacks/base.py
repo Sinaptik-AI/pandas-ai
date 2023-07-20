@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from abc import abstractmethod
 from ..exceptions import (
     MethodNotImplementedError,
 )
@@ -10,17 +9,15 @@ class BaseCallback:
 
     @abstractmethod
     def on_code(self, response: str):
-
         raise MethodNotImplementedError("Call method has not been implemented")
 
-class StdoutCallBack(BaseCallback):
 
+class StdoutCallBack(BaseCallback):
     def on_code(self, response: str):
         print(response)
 
 
 class DefaultCallback(BaseCallback):
-
     def on_code(self, response: str = None):
         """Do nothing"""
         pass

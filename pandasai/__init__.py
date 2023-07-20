@@ -72,6 +72,7 @@ from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
 from .callbacks.base import BaseCallback, DefaultCallback
 
+
 def get_version():
     """
     Get the version from the package metadata
@@ -175,7 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback= DefaultCallback,
+        callback: BaseCallback = DefaultCallback,
     ):
         """
 
