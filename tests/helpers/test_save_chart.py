@@ -39,7 +39,7 @@ plt.show()
             tree.body[show_call_pos - 1], expected_node, ignore_args=True
         )
 
-        def test_save_chart_with_args(self):
+    def test_save_chart_with_args(self):
         chart_code = """
 import matplotlib.pyplot as plt
 import pandas as pd
