@@ -39,6 +39,28 @@ plt.show()
             tree.body[show_call_pos - 1], expected_node, ignore_args=True
         )
 
+        def test_save_chart_with_args(self):
+        chart_code = """
+import matplotlib.pyplot as plt
+import pandas as pd
+df = pd.DataFrame({'a': [1,2,3], 'b': [4,5,6]})
+df.plot()
+plt.show(block=False)
+"""
+        line_count = len(ast.parse(chart_code).body)
+        tree = ast.parse(add_save_chart(chart_code, "test_folder"))
+        show_node = ast.parse("plt.show()").body[0]
+        show_call_pos = [
+            i
+            for i, node in enumerate(tree.body)
+            if compare_ast(node, show_node, ignore_args=True)
+        ][0]
+        expected_node = ast.parse("plt.savefig()").body[0]
+        assert len(tree.body) == line_count + 1
+        assert compare_ast(
+            tree.body[show_call_pos - 1], expected_node, ignore_args=True
+        )
+
     def test_save_multiple_charts(self):
         chart_code = """
 import matplotlib.pyplot as plt
