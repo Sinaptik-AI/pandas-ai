@@ -70,6 +70,7 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
+from .callbacks.base import BaseCallback, DefaultCallback
 
 
 def get_version():
@@ -175,6 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+        callback: BaseCallback = DefaultCallback,
     ):
         """
 
@@ -247,6 +249,8 @@ class PandasAI(Shortcuts):
 
         if custom_whitelisted_dependencies is not None:
             self._custom_whitelisted_dependencies = custom_whitelisted_dependencies
+
+        self.callback = callback
 
     def _load_llm(self, llm):
         """
@@ -349,7 +353,7 @@ class PandasAI(Shortcuts):
                         multiple_dataframes_instruction(dataframes=heads),
                         prompt,
                     )
-
+                    self.callback.on_code(code)
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": heads,
@@ -373,7 +377,7 @@ class PandasAI(Shortcuts):
                         generate_code_instruction,
                         prompt,
                     )
-
+                    self.callback.on_code(code)
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": df_head,
@@ -612,8 +616,9 @@ class PandasAI(Shortcuts):
                 num_rows=self._original_instructions["num_rows"],
                 num_columns=self._original_instructions["num_columns"],
             )
-
-        return self._llm.generate_code(error_correcting_instruction, "")
+        code = self._llm.generate_code(error_correcting_instruction, "")
+        self.callback.on_code(code)
+        return code
 
     def run_code(
         self,

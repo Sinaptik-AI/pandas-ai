@@ -14,6 +14,7 @@ nav:
   - Cache: cache.md
   - Shortcuts: shortcuts.md
   - Middlewares: middlewares.md
+  - Callbacks: callbacks.md
   - Custom prompts: custom-prompts.md
   - Custom Optional Arguments: custom-optional-dependencies.md
   - Command Line Tool: pai_cli.md
