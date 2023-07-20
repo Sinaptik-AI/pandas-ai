@@ -81,10 +81,10 @@ def add_save_chart(
     tree = ast.parse(code)
 
     # count number of plt.show() calls
-    show_count = sum(
-        compare_ast(node, ast.parse("plt.show()").body[0], ignore_args=True)
-        for node in ast.walk(tree)
-    )
+    show_count = sum(1 for node in ast.walk(tree) if isinstance(node, ast.Call) and 
+            isinstance(node.func, ast.Attribute) and 
+            node.func.attr == 'show' and 
+            node.func.value.id == 'plt')
 
     # if there are no plt.show() calls, return the original code
     if show_count == 0:
