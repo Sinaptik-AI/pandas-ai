@@ -9,10 +9,10 @@ The cache is stored in a file called `cache.db` in the `/cache` directory of the
 
 ## Disabling the cache
 
-The cache can be disabled by setting the `cache` parameter to `False` when creating the `PandasAI` object:
+The cache can be disabled by setting the `enable_cache` parameter to `False` when creating the `PandasAI` object:
 
 ```python
-pandas_ai = PandasAI(llm, cache=False)
+pandas_ai = PandasAI(llm, enable_cache=False)
 ```
 
 By default, the cache is enabled.
