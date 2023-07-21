@@ -28,6 +28,6 @@ dl = SmartDatalake(
         "verbose": True,
     },
 )
-response = dl.query("Who gets paid the most?")
+response = dl.chat("Who gets paid the most?")
 print(response)
 # Output: Olivia

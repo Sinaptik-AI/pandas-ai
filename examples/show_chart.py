@@ -10,7 +10,7 @@ df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 df = SmartDataframe(df, config={"llm": llm, "verbose": True})
-response = df.query(
+response = df.chat(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )

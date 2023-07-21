@@ -21,7 +21,7 @@ df = SmartDataframe(
         "verbose": True,
     },
 )
-response = df.query(
+response = df.chat(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )

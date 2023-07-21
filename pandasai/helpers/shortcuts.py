@@ -5,12 +5,11 @@ from abc import ABC, abstractmethod
 
 class Shortcuts(ABC):
     @abstractmethod
-    def query(self, prompt: str) -> Union[str, pd.DataFrame]:
+    def chat(self, prompt: str) -> Union[str, pd.DataFrame]:
         """
         Run method from PandasAI class.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             prompt (str): The prompt to be executed.
 
         Returns:
@@ -30,7 +29,7 @@ class Shortcuts(ABC):
             pd.DataFrame: The cleaned DataFrame.
         """
 
-        return self.query(
+        return self.chat(
             """
 1. Copy the dataframe to a new variable named df_cleaned.
 2. Do data cleaning.
@@ -49,7 +48,7 @@ class Shortcuts(ABC):
             pd.DataFrame: The DataFrame with imputed missing values.
         """
 
-        return self.query(
+        return self.chat(
             """
 1. Copy the dataframe to a new variable named df_imputed.
 2. Do the imputation of missing values.
@@ -68,7 +67,7 @@ class Shortcuts(ABC):
             pd.DataFrame: The DataFrame with generated features.
         """
 
-        return self.query(
+        return self.chat(
             """
 1. Copy the dataframe to a new variable named df_features.
 2. Do feature generation.
@@ -89,7 +88,7 @@ class Shortcuts(ABC):
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a pie chart with the following labels and values:
 labels = {labels}
@@ -110,7 +109,7 @@ values = {values}
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a bar chart with the following x and y:
 x = {x}
@@ -130,7 +129,7 @@ y = {y}
             None
         """
 
-        self.query(f"Plot a histogram of the column {column}.")
+        self.chat(f"Plot a histogram of the column {column}.")
 
     def plot_line_chart(self, x: list, y: list) -> None:
         """
@@ -145,7 +144,7 @@ y = {y}
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a line chart with the following x and y:
 x = {x}
@@ -166,7 +165,7 @@ y = {y}
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a scatter chart with the following x and y:
 x = {x}
@@ -185,7 +184,7 @@ y = {y}
             None
         """
 
-        self.query("Plot a correlation heatmap.")
+        self.chat("Plot a correlation heatmap.")
 
     def plot_confusion_matrix(self, y_true: list, y_pred: list) -> None:
         """
@@ -200,7 +199,7 @@ y = {y}
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a confusion matrix with the following y_true and y_pred:
 y_true = {y_true}
@@ -221,7 +220,7 @@ y_pred = {y_pred}
             None
         """
 
-        self.query(
+        self.chat(
             f"""
 Plot a ROC curve with the following y_true and y_pred:
 y_true = {y_true}
@@ -278,7 +277,7 @@ y_pred = {y_pred}
         if style is not None:
             prompt += f"\nStyle: '''{style}'''"
 
-        self.query(prompt)
+        self.chat(prompt)
 
     def rolling_mean(self, column: str, window: int) -> pd.DataFrame:
         """
@@ -293,7 +292,7 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling mean.
         """
 
-        return self.query(
+        return self.chat(
             f"Calculate the rolling mean of the column {column} with a window"
             f" of {window}.",
         )
@@ -311,7 +310,7 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling median.
         """
 
-        return self.query(
+        return self.chat(
             f"Calculate the rolling median of the column {column} with a window"
             f" of {window}.",
         )
@@ -329,7 +328,7 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the rolling standard deviation.
         """
 
-        return self.query(
+        return self.chat(
             f"Calculate the rolling standard deviation of the column {column} with a"
             f"window of {window}.",
         )
@@ -347,7 +346,7 @@ y_pred = {y_pred}
             pd.DataFrame: The DataFrame containing the segmentation.
         """
 
-        return self.query(
+        return self.chat(
             f"""
 Segment customers with the following features and number of clusters:
 features = {features}

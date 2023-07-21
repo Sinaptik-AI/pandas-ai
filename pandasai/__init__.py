@@ -200,7 +200,7 @@ class PandasAI(Shortcuts):
             data_frame = [data_frame]
 
         self._dl = SmartDatalake(data_frame, config)
-        return self._dl.query(prompt)
+        return self._dl.chat(prompt)
 
     def __call__(
         self,

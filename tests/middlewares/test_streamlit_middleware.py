@@ -35,7 +35,7 @@ st.pyplot(plt.gcf())"""
             },
         )
 
-        dl.query(
+        dl.chat(
             "Plot the histogram of countries showing for each the gpd, using different"
             "colors for each bar",
         )

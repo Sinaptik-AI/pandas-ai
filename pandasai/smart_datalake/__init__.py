@@ -12,7 +12,7 @@ Example:
     llm = OpenAI()
     
     df = SmartDataframe(df, config={"llm": llm})
-    response = df.query("What is the average loan amount?")
+    response = df.chat("What is the average loan amount?")
     print(response)
     # The average loan amount is $15,000.
     ```
@@ -191,7 +191,7 @@ class SmartDatalake:
             result.append(df_dict)
         return result
 
-    def query(self, query: str):
+    def chat(self, query: str):
         """
         Run a query on the dataframe.
 

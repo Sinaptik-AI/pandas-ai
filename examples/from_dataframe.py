@@ -10,6 +10,6 @@ df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 df = SmartDataframe(df=pd.DataFrame(dataframe), config={"llm": llm})
-response = df.query("Calculate the sum of the gdp of north american countries")
+response = df.chat("Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056
