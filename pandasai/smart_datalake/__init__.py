@@ -26,7 +26,6 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 
 from ..helpers.logger import Logger
-from ..helpers.anonymizer import anonymize_dataframe_head
 from ..helpers.cache import Cache
 from ..helpers.df_config import Config
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
@@ -169,28 +168,6 @@ class SmartDatalake:
 
         return sys.stdout.isatty()
 
-    def _get_dfs_data_for_prompt(self):
-        rows_to_display = 0 if self._config.enforce_privacy else 5
-
-        result = []
-        for df in self._dfs:
-            df_head = df.head(rows_to_display)
-
-            if self._config.anonymize_dataframe:
-                df_head = anonymize_dataframe_head(df_head)
-
-            df_head_csv = df_head.to_csv(index=False)
-            num_rows = df.shape[0]
-            num_columns = df.shape[1]
-
-            df_dict = {
-                "df_head": df_head_csv,
-                "num_rows": num_rows,
-                "num_columns": num_columns,
-            }
-            result.append(df_dict)
-        return result
-
     def chat(self, query: str):
         """
         Run a query on the dataframe.
@@ -214,13 +191,11 @@ class SmartDatalake:
                 self._logger.log("Using cached response")
                 code = self._cache.get(query)
             else:
-                dfs = self._get_dfs_data_for_prompt()
-
                 generate_code_instruction = self._config.custom_prompts.get(
                     "generate_python_code", GeneratePythonCodePrompt
                 )(
                     prompt=query,
-                    dfs=dfs,
+                    dfs=self._dfs,
                     # TODO: find a better way to determine the engine
                     engine=self._dfs[0].engine,
                 )
@@ -231,7 +206,7 @@ class SmartDatalake:
 
                 self._original_instructions = {
                     "question": query,
-                    "dfs": dfs,
+                    "dfs": self._dfs,
                 }
 
                 if self._config.enable_cache and self._cache:

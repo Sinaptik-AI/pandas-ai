@@ -76,9 +76,9 @@ Using the provided DataFrames, please generate the specific Python code to be in
     def __init__(self, **kwargs):
         dataframes = ""
         for index, df in enumerate(kwargs["dfs"], start=1):
-            dataframes += f"""Dataframe dfs[{index-1}], with {df["num_rows"]} rows and {df["num_columns"]} columns.
+            dataframes += f"""Dataframe dfs[{index-1}], with {df.rows_count} rows and {df.columns_count} columns.
 This is the metadata of the dataframe dfs[{index-1}]:
-{df["df_head"]}
+{df.head_csv}.
 
 """  # noqa: E501
 

@@ -2,6 +2,8 @@
 
 from datetime import date
 
+import pandas as pd
+from pandasai.smart_dataframe import SmartDataframe
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 
@@ -11,16 +13,25 @@ class TestGeneratePythonCodePrompt:
     def test_str_with_args(self):
         """Test that the __str__ method is implemented"""
 
-        dfs = [{"df_head": "df.head()", "num_rows": 5, "num_columns": 10}]
+        dfs = [
+            SmartDataframe(
+                pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
+                config={"anonymize_dataframe": False},
+            )
+        ]
         assert (
             str(GeneratePythonCodePrompt(engine="pandas", dfs=dfs))
             == f"""
 Date: {date.today()}
 You are provided with the following pandas DataFrames with the following metadata:
 
-Dataframe dfs[0], with 5 rows and 10 columns.
+Dataframe dfs[0], with 3 rows and 2 columns.
 This is the metadata of the dataframe dfs[0]:
-df.head()
+a,b
+1,4
+2,5
+3,6
+.
 
 
 

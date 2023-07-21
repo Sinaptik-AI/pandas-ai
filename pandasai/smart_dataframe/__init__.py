@@ -23,6 +23,7 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
+from ..helpers.anonymizer import anonymize_dataframe_head
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
@@ -135,7 +136,7 @@ class SmartDataframe(Shortcuts):
         if config is None:
             self._config = Config()
         else:
-            if config["llm"]:
+            if "llm" in config:
                 self.load_llm(config["llm"])
 
             # TODO: fallback to default config from pandasai
@@ -198,6 +199,24 @@ class SmartDataframe(Shortcuts):
 
         self._dl = SmartDatalake([self], config=config, logger=self._logger)
         return self._dl.chat(query)
+
+    @property
+    def rows_count(self):
+        return self._df.shape[0]
+
+    @property
+    def columns_count(self):
+        return self._df.shape[1]
+
+    @property
+    def head_csv(self):
+        rows_to_display = 0 if self._config.enforce_privacy else 5
+
+        df_head = self._df.head(rows_to_display)
+        if self._config.anonymize_dataframe:
+            df_head = anonymize_dataframe_head(df_head)
+
+        return df_head.to_csv(index=False)
 
     @property
     def last_prompt(self):
