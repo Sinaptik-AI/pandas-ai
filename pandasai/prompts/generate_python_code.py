@@ -74,18 +74,27 @@ Using the provided DataFrames, please generate the specific Python code to be in
 """  # noqa: E501
 
     def __init__(self, **kwargs):
-        dataframes = ""
+        dataframes = []
         for index, df in enumerate(kwargs["dfs"], start=1):
-            dataframes += f"""Dataframe dfs[{index-1}], with {df.rows_count} rows and {df.columns_count} columns.
+            description = "Dataframe "
+            if df.name is not None:
+                description += f"{df.name} (dfs[{index-1}])"
+            else:
+                description += f"dfs[{index-1}]"
+            description += (
+                f", with {df.rows_count} rows and {df.columns_count} columns."
+            )
+            if df.description is not None:
+                description += f"\nDescription: {df.description}"
+            description += f"""
 This is the metadata of the dataframe dfs[{index-1}]:
-{df.head_csv}.
-
-"""  # noqa: E501
+{df.head_csv}"""  # noqa: E501
+            dataframes.append(description)
 
         super().__init__(
             **kwargs,
             today_date=date.today(),
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
-            dataframes=dataframes,
+            dataframes="\n\n".join(dataframes),
         )

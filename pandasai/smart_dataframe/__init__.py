@@ -36,7 +36,8 @@ from ..helpers.df_info import DataFrameType, df_type
 
 class SmartDataframe(Shortcuts):
     engine: str
-
+    _name: str
+    _description: str
     _df: pd.DataFrame
     _dl: SmartDatalake
     _config: Config
@@ -48,14 +49,21 @@ class SmartDataframe(Shortcuts):
     def __init__(
         self,
         df: DataFrameType,
+        name: str = None,
+        description: str = None,
         config: Config = None,
         logger: Logger = None,
     ):
         """
         Args:
             df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
+            name (str, optional): Name of the dataframe. Defaults to None.
+            description (str, optional): Description of the dataframe. Defaults to "".
             config (Config, optional): Config to be used. Defaults to None.
+            logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self._name = name
+        self._description = description
 
         self._load_df(df)
 
@@ -233,3 +241,11 @@ class SmartDataframe(Shortcuts):
     @property
     def original(self):
         return self._df
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def description(self):
+        return self._description
