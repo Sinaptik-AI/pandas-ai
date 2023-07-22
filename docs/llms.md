@@ -12,7 +12,7 @@ Once you have an API key, you can use it to instantiate an OpenAI object:
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 
-llm = OpenAI(openai_api_key="my-openai-api-key")
+llm = OpenAI(api_key="my-openai-api-key")
 pandas_ai = PandasAI(llm=llm)
 ```
 
@@ -77,9 +77,9 @@ from pandasai import PandasAI
 from pandasai.llm.starcoder import Starcoder
 from pandasai.llm.falcon import Falcon
 
-llm = Starcoder(huggingface_api_key="my-huggingface-api-key")
+llm = Starcoder(api_key="my-huggingface-api-key")
 # or
-llm = Falcon(huggingface_api_key="my-huggingface-api-key")
+llm = Falcon(api_key="my-huggingface-api-key")
 
 pandas_ai = PandasAI(llm=llm)
 ```
@@ -108,7 +108,7 @@ Once you have an API key, you can use it to instantiate a Google PaLM object:
 from pandasai import PandasAI
 from pandasai.llm.google_palm import GooglePalm
 
-llm = GooglePalm(google_cloud_api_key="my-google-cloud-api-key")
+llm = GooglePalm(api_key="my-google-cloud-api-key")
 pandas_ai = PandasAI(llm=llm)
 ```
 

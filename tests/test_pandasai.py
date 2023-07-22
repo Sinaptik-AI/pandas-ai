@@ -1,7 +1,6 @@
 """Unit tests for the PandasAI class"""
 import logging
 import sys
-from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
 from uuid import UUID
@@ -17,6 +16,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
 from langchain.llms import OpenAI
 from pandasai.callbacks.base import StdoutCallBack
+
 
 class TestPandasAI:
     """Unit tests for the PandasAI class"""
@@ -131,7 +131,7 @@ class TestPandasAI:
         callback = StdoutCallBack()
         pandasai.callback = callback
 
-        #mock on_code function
+        # mock on_code function
         with patch.object(callback, "on_code") as mock_on_code:
             pandasai.run(df, "Give me sum of all gdps?")
             mock_on_code.assert_called()
@@ -191,8 +191,7 @@ df
         pandasai._enforce_privacy = True
         pandasai._is_conversational_answer = True
 
-        expected_prompt = f"""
-Today is {date.today()}.
+        expected_prompt = """
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
 country
@@ -255,8 +254,7 @@ This is the result of `print(df.head(5))`:
         pandasai._enforce_privacy = False
         pandasai._is_conversational_answer = False
 
-        expected_prompt = f"""
-Today is {date.today()}.
+        expected_prompt = """
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
 country
@@ -569,8 +567,7 @@ my_custom_library.do_something()
         pandasai._retry_run_code(code, e=Exception("Test error"), multiple=False)
         assert (
             pandasai.last_prompt
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
 This is the metadata of the dataframe:
           country             gdp  happiness_index
