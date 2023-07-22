@@ -368,7 +368,6 @@ class PandasAI(Shortcuts):
                     generate_code_instruction = self._non_default_prompts.get(
                         "generate_python_code", GeneratePythonCodePrompt
                     )(
-                        prompt=prompt,
                         df_head=df_head,
                         num_rows=data_frame.shape[0],
                         num_columns=data_frame.shape[1],
