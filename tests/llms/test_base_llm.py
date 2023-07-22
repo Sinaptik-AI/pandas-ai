@@ -81,3 +81,12 @@ print('Hello World')
 """
 
         assert LLM()._extract_code(code) == "print('Hello World')"
+
+        code = """Sure, here is your code:
+<startCode>
+print('Hello World')
+</startCode>
+```
+"""
+
+        assert LLM()._extract_code(code) == "print('Hello World')"

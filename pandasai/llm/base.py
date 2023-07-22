@@ -109,7 +109,9 @@ class LLM:
         """
         code = response
         match = re.search(
-            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}"
+            rf"|{END_CODE_TAG.replace('<', '</')}"
+            rf"|{START_CODE_TAG.replace('<', '</')})",
             code,
             re.DOTALL,
         )
