@@ -1,6 +1,5 @@
 """Unit tests for the correct error prompt class"""
 
-from datetime import date
 
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 
@@ -23,8 +22,7 @@ class TestCorrectErrorPrompt:
                     error_returned="error",
                 )
             )
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 5 rows and 5 columns.
 This is the metadata of the dataframe:
 df.head().

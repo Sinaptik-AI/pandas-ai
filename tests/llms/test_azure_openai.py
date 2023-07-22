@@ -26,12 +26,15 @@ class TestAzureOpenAILLM:
             AzureOpenAI(api_token="test", api_base="test", api_version="test")
 
     def test_type_with_token(self):
-        assert AzureOpenAI(
-            api_token="test",
-            api_base="test",
-            api_version="test",
-            deployment_name="test"
-        ).type == "azure-openai"
+        assert (
+            AzureOpenAI(
+                api_token="test",
+                api_base="test",
+                api_version="test",
+                deployment_name="test",
+            ).type
+            == "azure-openai"
+        )
 
     def test_proxy(self):
         proxy = "http://proxy.mycompany.com:8080"
@@ -40,7 +43,7 @@ class TestAzureOpenAILLM:
             api_base="test",
             api_version="test",
             deployment_name="test",
-            openai_proxy=proxy
+            openai_proxy=proxy,
         )
         assert client.openai_proxy == proxy
         assert openai.proxy["http"] == proxy
@@ -79,7 +82,7 @@ class TestAzureOpenAILLM:
             api_token="test",
             api_base="test",
             api_version="test",
-            deployment_name="test"
+            deployment_name="test",
         )
         result = openai.completion("Some prompt.")
 
@@ -101,7 +104,7 @@ class TestAzureOpenAILLM:
             api_base="test",
             api_version="test",
             deployment_name="test",
-            is_chat_model=True
+            is_chat_model=True,
         )
         expected_response = {
             "choices": [

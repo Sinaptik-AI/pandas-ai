@@ -12,9 +12,9 @@ df = pd.DataFrame(dataframe)
 llm = OpenAI()
 
 user_defined_path = os.getcwd()
-pandas_ai = PandasAI(llm, save_charts=True,
-                     save_charts_path=user_defined_path,
-                     verbose=True)
+pandas_ai = PandasAI(
+    llm, save_charts=True, save_charts_path=user_defined_path, verbose=True
+)
 response = pandas_ai(
     df,
     "Plot the histogram of countries showing for each the gpd,"
