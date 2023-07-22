@@ -50,9 +50,9 @@ print('Hello World')
 
         code = """Sure, here is your code:
 
-```python
+<startCode>
 print('Hello World')
-```\
+<endCode>
 """
         assert LLM()._extract_code(code) == "print('Hello World')"
 
@@ -68,6 +68,24 @@ print('Hello World')
 
 ```py
 print('Hello World')
+```
+"""
+
+        assert LLM()._extract_code(code) == "print('Hello World')"
+
+        code = """Sure, here is your code:
+<startCode>
+print('Hello World')
+<endCode>
+```
+"""
+
+        assert LLM()._extract_code(code) == "print('Hello World')"
+
+        code = """Sure, here is your code:
+<startCode>
+print('Hello World')
+</startCode>
 ```
 """
 

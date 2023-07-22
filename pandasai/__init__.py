@@ -42,6 +42,7 @@ __version__ = importlib.metadata.version(__package__ or __name__)
 import pandas as pd
 from .helpers.shortcuts import Shortcuts
 from .smart_datalake import SmartDatalake
+from .callbacks.base import BaseCallback, DefaultCallback
 
 from .helpers.df_config import Config
 
@@ -123,6 +124,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=[],
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+        callback: BaseCallback = DefaultCallback,
     ):
         """
         __init__ method of the Class PandasAI

@@ -1,6 +1,5 @@
 """Unit tests for the generate python code prompt class"""
 
-from datetime import date
 
 import pandas as pd
 from pandasai.smart_dataframe import SmartDataframe
@@ -21,8 +20,7 @@ class TestGeneratePythonCodePrompt:
         ]
         assert (
             str(GeneratePythonCodePrompt(engine="pandas", dfs=dfs))
-            == f"""
-Date: {date.today()}
+            == """
 You are provided with the following pandas DataFrames with the following metadata:
 
 Dataframe dfs[0], with 3 rows and 2 columns.

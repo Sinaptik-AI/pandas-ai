@@ -22,6 +22,7 @@ from typing import Any, Dict, Optional
 import openai
 import requests
 
+from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -30,10 +31,6 @@ from ..exceptions import (
 from ..helpers.optional import import_dependency
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
-from ..constants import (
-    START_CODE_TAG,
-    END_CODE_TAG,
-)
 
 
 class LLM:
@@ -112,7 +109,10 @@ class LLM:
         """
         code = response
         match = re.search(
-            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}"
+            rf"|{END_CODE_TAG.replace('<', '</')}"
+            # fix to make it work with ERNIE bot (#389)
+            rf"|{START_CODE_TAG.replace('<', '</')})",
             code,
             re.DOTALL,
         )

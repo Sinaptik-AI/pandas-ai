@@ -204,6 +204,7 @@ class SmartDatalake:
                     query,
                 )
 
+                self._config.callback.on_code(code)
                 self._original_instructions = {
                     "question": query,
                     "dfs": self._dfs,
@@ -313,7 +314,9 @@ class SmartDatalake:
             num_columns=self._original_instructions["num_columns"],
         )
 
-        return self._llm.generate_code(error_correcting_instruction, "")
+        code = self._llm.generate_code(error_correcting_instruction, "")
+        self._config.callback.on_code(code)
+        return code
 
     @property
     def last_prompt(self):

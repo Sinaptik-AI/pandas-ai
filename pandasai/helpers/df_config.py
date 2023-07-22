@@ -3,6 +3,7 @@ from typing import Union, List
 from ..middlewares.base import Middleware
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
+from ..callbacks.base import BaseCallback, DefaultCallback
 
 
 class Config(BaseModel):
@@ -18,6 +19,7 @@ class Config(BaseModel):
     custom_whitelisted_dependencies: List[str] = []
     max_retries: int = 3
     middlewares: List[Middleware] = []
+    callback: BaseCallback = DefaultCallback
     llm: Union[LLM, LangchainLLM] = None
 
     class Config:

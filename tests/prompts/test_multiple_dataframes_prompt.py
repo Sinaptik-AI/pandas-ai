@@ -1,6 +1,5 @@
 """Unit tests for the multiple dataframes prompt class"""
 
-from datetime import date
 
 import pandas as pd
 
@@ -22,8 +21,7 @@ class TestMultipleDataframesPrompt:
 
         assert (
             str(MultipleDataframesPrompt(dataframes=[df1, df2]))
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with the following pandas dataframes:
 Dataframe df1, with 5 rows and 3 columns.
 This is the metadata of the dataframe df1:
@@ -42,6 +40,6 @@ This is the metadata of the dataframe df2:
 3  40  4  5
 4  50  5  6
 When asked about the data, your response should include a python code that describes the dataframes provided.
-Using the provided dataframes and no other dataframes, return the python code to get the answer to the following question:
+Using the provided dataframes and no other dataframes, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
 """  # noqa: E501
         )

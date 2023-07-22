@@ -1,7 +1,6 @@
 """Unit tests for the PandasAI class"""
 import logging
 import sys
-from datetime import date
 from typing import Optional
 from unittest.mock import Mock, patch
 from uuid import UUID
@@ -16,6 +15,7 @@ from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundErr
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
 from langchain.llms import OpenAI
+from pandasai.callbacks.base import StdoutCallBack
 
 
 class TestPandasAI:
@@ -136,6 +136,17 @@ class TestPandasAI:
             mock_print.assert_called()
 
     @pytest.mark.skip
+    def test_callback(self, pandasai):
+        df = pd.DataFrame()
+        callback = StdoutCallBack()
+        pandasai.callback = callback
+
+        # mock on_code function
+        with patch.object(callback, "on_code") as mock_on_code:
+            pandasai.run(df, "Give me sum of all gdps?")
+            mock_on_code.assert_called()
+
+    @pytest.mark.skip
     def test_run_without_verbose(self, pandasai, llm):
         df = pd.DataFrame()
         pandasai._verbose = False
@@ -198,8 +209,7 @@ df
         pandasai._enforce_privacy = True
         pandasai._is_conversational_answer = True
 
-        expected_prompt = f"""
-Date: {date.today()}
+        expected_prompt = """
 You are provided with a pandas DataFrame, 'df', with the following metadata:
 
 Number of Rows: 3
@@ -329,8 +339,7 @@ This is the result of `print(df.head(5))`:
         pandasai._enforce_privacy = False
         pandasai._is_conversational_answer = False
 
-        expected_prompt = f"""
-Date: {date.today()}
+        expected_prompt = """
 You are provided with a pandas DataFrame, 'df', with the following metadata:
 
 Number of Rows: 3
@@ -439,6 +448,26 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         assert (
             pandasai._llm._extract_code(code)
             == "result = {'happiness': 1, 'gdp': 0.43}"
+        )
+
+        code = """```python<startCode>
+result = {'happiness': 0.3, 'gdp': 5.5}<endCode>```"""
+        assert (
+            pandasai._llm._extract_code(code)
+            == "result = {'happiness': 0.3, 'gdp': 5.5}"
+        )
+
+        code = """<startCode>```python
+result = {'happiness': 0.49, 'gdp': 25.5}```<endCode>"""
+        assert (
+            pandasai._llm._extract_code(code)
+            == "result = {'happiness': 0.49, 'gdp': 25.5}"
+        )
+        code = """<startCode>```python
+result = {'happiness': 0.49, 'gdp': 25.5}```"""
+        assert (
+            pandasai._llm._extract_code(code)
+            == "result = {'happiness': 0.49, 'gdp': 25.5}"
         )
 
     @pytest.mark.skip
@@ -710,8 +739,7 @@ my_custom_library.do_something()
         pandasai._retry_run_code(code, e=Exception("Test error"), multiple=False)
         assert (
             pandasai.last_prompt
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
 This is the metadata of the dataframe:
           country             gdp  happiness_index
@@ -731,6 +759,7 @@ It fails with the following error:
 Test error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 
 
 Code:
@@ -770,6 +799,7 @@ It fails with the following error:
 Test error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 
 
 Code:

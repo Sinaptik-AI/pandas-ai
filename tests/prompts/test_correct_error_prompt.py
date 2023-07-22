@@ -1,6 +1,5 @@
 """Unit tests for the correct error prompt class"""
 
-from datetime import date
 
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 
@@ -23,8 +22,7 @@ class TestCorrectErrorPrompt:
                     error_returned="error",
                 )
             )
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 5 rows and 5 columns.
 This is the metadata of the dataframe:
 df.head().
@@ -39,5 +37,6 @@ It fails with the following error:
 error
 
 Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
 """  # noqa: E501
         )

@@ -12,7 +12,7 @@ Once you have an API key, you can use it to instantiate an OpenAI object:
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 
-llm = OpenAI(openai_api_key="my-openai-api-key")
+llm = OpenAI(api_key="my-openai-api-key")
 pandas_ai = PandasAI(llm=llm)
 ```
 
@@ -70,20 +70,16 @@ Once you have an API key, you can use it to instantiate one of the HuggingFace m
 At the moment, PandasAI supports the following HuggingFace models:
 
 - Starcoder: `bigcode/starcoder`
-- OpenAssistant: `OpenAssistant/oasst-sft-1-pythia-12b`
 - Falcon: `tiiuae/falcon-7b-instruct`
 
 ```python
 from pandasai import PandasAI
 from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.falcon import Falcon
 
-llm = Starcoder(huggingface_api_key="my-huggingface-api-key")
+llm = Starcoder(api_key="my-huggingface-api-key")
 # or
-llm = OpenAssistant(huggingface_api_key="my-huggingface-api-key")
-# or
-llm = Falcon(huggingface_api_key="my-huggingface-api-key")
+llm = Falcon(api_key="my-huggingface-api-key")
 
 pandas_ai = PandasAI(llm=llm)
 ```
@@ -93,12 +89,9 @@ As an alternative, you can set the `HUGGINGFACE_API_KEY` environment variable an
 ```python
 from pandasai import PandasAI
 from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.falcon import Falcon
 
 llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
-# or
-llm = OpenAssistant() # no need to pass the API key, it will be read from the environment variable
 # or
 llm = Falcon() # no need to pass the API key, it will be read from the environment variable
 
@@ -115,7 +108,7 @@ Once you have an API key, you can use it to instantiate a Google PaLM object:
 from pandasai import PandasAI
 from pandasai.llm.google_palm import GooglePalm
 
-llm = GooglePalm(google_cloud_api_key="my-google-cloud-api-key")
+llm = GooglePalm(api_key="my-google-cloud-api-key")
 pandas_ai = PandasAI(llm=llm)
 ```
 

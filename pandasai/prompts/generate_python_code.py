@@ -1,16 +1,16 @@
 """ Prompt to generate Python code
 ```
-Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
 This is the metadata of the dataframe:
 {df_head}.
 
 When asked about the data, your response should include a python code that describes the
-dataframe `df`. Using the provided dataframe, df, return the python code to get the answer to the following question:
+dataframe `df`. Using the provided dataframe, df, return the python code and make sure to prefix
+the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG}
+exactly to get the answer to the following question:
 ```
 """  # noqa: E501
 
-from datetime import date
 
 from .base import Prompt
 from ..constants import START_CODE_TAG, END_CODE_TAG
@@ -20,7 +20,6 @@ class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-Date: {today_date}
 You are provided with the following {engine} DataFrames with the following metadata:
 
 {dataframes}
@@ -93,7 +92,6 @@ This is the metadata of the dataframe dfs[{index-1}]:
 
         super().__init__(
             **kwargs,
-            today_date=date.today(),
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
             dataframes="\n\n".join(dataframes),
