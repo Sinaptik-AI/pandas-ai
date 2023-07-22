@@ -1,6 +1,5 @@
 """ Prompt to generate Python code for multiple dataframes """
 
-from datetime import date
 
 import pandas as pd
 
@@ -12,7 +11,6 @@ class MultipleDataframesPrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-Today is {today_date}.
 You are provided with the following pandas dataframes:"""
     instruction: str = """
 When asked about the data, your response should include a python code that describes the dataframes provided.
@@ -30,7 +28,6 @@ This is the metadata of the dataframe df{i}:
 
         self.text += self.instruction
         self.text = self.text.format(
-            today_date=date.today(),
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
         )

@@ -7,9 +7,9 @@ from pandasai.llm.google_palm import GoogleVertexai
 
 df = pd.read_csv("examples/data/Loan payments data.csv")
 
-llm = GoogleVertexai(project_id="generative-ai-training",
-                     location="us-central1",
-                     model="text-bison@001")
+llm = GoogleVertexai(
+    project_id="generative-ai-training", location="us-central1", model="text-bison@001"
+)
 pandas_ai = PandasAI(llm, verbose=True, conversational=True)
 response = pandas_ai.run(df, "How many loans are from men and have been paid off?")
 print(response)

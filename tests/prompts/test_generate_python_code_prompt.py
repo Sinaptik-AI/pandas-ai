@@ -1,6 +1,5 @@
 """Unit tests for the generate python code prompt class"""
 
-from datetime import date
 
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
@@ -18,8 +17,7 @@ class TestGeneratePythonCodePrompt:
                     num_columns=5,
                 )
             )
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 10 rows and 5 columns.
 This is the metadata of the dataframe:
 df.head().
