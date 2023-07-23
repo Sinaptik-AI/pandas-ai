@@ -4,20 +4,19 @@ from ..exceptions import (
 )
 
 
-class BaseCallback:
+class BaseCallBack:
     """Base class to implement new callbacks"""
 
     @abstractmethod
     def on_code(self, response: str):
-        raise MethodNotImplementedError("Call method has not been implemented")
+        """Run on code response"""
+        raise MethodNotImplementedError("Must have implemented this.")
 
 
-class StdoutCallBack(BaseCallback):
+class StdoutCallBack(BaseCallBack):
+    """Callback that prints to std out."""
+
     def on_code(self, response: str):
+        """Write the code response to std out"""
         print(response)
 
-
-class DefaultCallback(BaseCallback):
-    def on_code(self, response: str = None):
-        """Do nothing"""
-        pass

@@ -70,7 +70,7 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .callbacks.base import BaseCallback, DefaultCallback
+from .callbacks.base import BaseCallBack
 
 
 def get_version():
@@ -176,7 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback = DefaultCallback,
+        callback: Optional[BaseCallBack] = None,
     ):
         """
 
@@ -353,7 +353,7 @@ class PandasAI(Shortcuts):
                         multiple_dataframes_instruction(dataframes=heads),
                         prompt,
                     )
-                    self.callback.on_code(code)
+
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": heads,
@@ -377,13 +377,15 @@ class PandasAI(Shortcuts):
                         generate_code_instruction,
                         prompt,
                     )
-                    self.callback.on_code(code)
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": df_head,
                         "num_rows": data_frame.shape[0],
                         "num_columns": data_frame.shape[1],
                     }
+
+                if self.callback:
+                    self.callback.on_code(code)
 
                 self.last_code_generated = code
                 self.log(
@@ -617,7 +619,8 @@ class PandasAI(Shortcuts):
                 num_columns=self._original_instructions["num_columns"],
             )
         code = self._llm.generate_code(error_correcting_instruction, "")
-        self.callback.on_code(code)
+        if self.callback:
+            self.callback.on_code(code)
         return code
 
     def run_code(
