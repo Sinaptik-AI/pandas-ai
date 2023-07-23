@@ -4,7 +4,7 @@ from ..exceptions import (
 )
 
 
-class BaseCallBack:
+class BaseCallback:
     """Base class to implement new callbacks"""
 
     @abstractmethod
@@ -13,10 +13,9 @@ class BaseCallBack:
         raise MethodNotImplementedError("Must have implemented this.")
 
 
-class StdoutCallBack(BaseCallBack):
+class StdoutCallback(BaseCallback):
     """Callback that prints to std out."""
 
     def on_code(self, response: str):
         """Write the code response to std out"""
         print(response)
-

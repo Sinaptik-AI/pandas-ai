@@ -1,14 +1,12 @@
 """Callback Handler that writes to a file."""
 from typing import TextIO, cast
-from .base import BaseCallBack
+from .base import BaseCallback
 
 
-class FileCallBack(BaseCallBack):
+class FileCallback(BaseCallback):
     """Callback Handler that writes to a file."""
 
-    def __init__(
-        self, filename: str, mode: str = "w"
-    ) -> None:
+    def __init__(self, filename: str, mode: str = "w") -> None:
         """Initialize callback handler."""
         self.file = cast(TextIO, open(filename, mode))
 

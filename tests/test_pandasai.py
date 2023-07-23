@@ -15,7 +15,7 @@ from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundErr
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
 from langchain.llms import OpenAI
-from pandasai.callbacks.base import StdoutCallBack
+from pandasai.callbacks.base import StdoutCallback
 
 
 class TestPandasAI:
@@ -128,7 +128,7 @@ class TestPandasAI:
 
     def test_callback(self, pandasai):
         df = pd.DataFrame()
-        callback = StdoutCallBack()
+        callback = StdoutCallback()
         pandasai.callback = callback
 
         # mock on_code function

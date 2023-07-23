@@ -70,7 +70,7 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .callbacks.base import BaseCallBack
+from .callbacks.base import BaseCallback
 
 
 def get_version():
@@ -176,7 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: Optional[BaseCallBack] = None,
+        callback: Optional[BaseCallback] = None,
     ):
         """
 

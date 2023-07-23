@@ -1,8 +1,8 @@
-from .base import BaseCallBack, StdoutCallBack
-from .file import FileCallBack
+from .base import BaseCallback, StdoutCallback
+from .file import FileCallback
 
 __all__ = [
-    "BaseCallBack",
-    "FileCallBack",
-    "StdoutCallBack",
+    "BaseCallback",
+    "FileCallback",
+    "StdoutCallback",
 ]
