@@ -307,13 +307,13 @@ class PandasAI(Shortcuts):
             prompt = prompt(**default_values)
 
         if prompt:
-            # Override variable prompt variables with default values
-            # vars = self.get_variable_names_from_formatted_string("")
-
+            """Override all the variables with _ prefix with default variable values"""
             for var in prompt._args:
                 if var[0] == "_" and var[1:] in default_values:
                     prompt.override_var(var, default_values[var[1:]])
 
+
+            """Replace all variables with $ prefix with evaluated values"""
             prompt_text = prompt.text.split(" ")
             for i in range(len(prompt_text)):
                 word = prompt_text[i]
