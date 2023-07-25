@@ -664,8 +664,13 @@ print('Hello', name)"""
         pandasai.run.assert_called_once()
 
     def test_replace_generate_code_prompt(self, llm):
-        replacement_prompt = "{num_rows} | {num_columns} | {df_head} | ".format
+        class CustomPrompt(Prompt):
+            text: str = """{_num_rows} | $df.shape[1] | {_df_head} | {test}"""
 
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        replacement_prompt = CustomPrompt(test="test value")
         pai = PandasAI(
             llm,
             non_default_prompts={"generate_python_code": replacement_prompt},
@@ -673,33 +678,35 @@ print('Hello', name)"""
         )
         question = "Will this work?"
         df = pd.DataFrame()
-        pai(df, question, use_error_correction_framework=False)
-        expected_last_prompt = (
-            str(
-                replacement_prompt(
-                    num_rows=df.shape[0],
-                    num_columns=df.shape[1],
-                    df_head=df.head().to_csv(index=False),
-                )
-            )
-            + question
-            + "\n\nCode:\n"
+
+        _replacement_prompt = CustomPrompt(
+            _num_rows=df.shape[0],
+            _df_head=df.head().to_csv(index=False),
+            test="test value",
         )
+        pai(df, question, use_error_correction_framework=False)
+        expected_last_prompt = str(_replacement_prompt) + question + "\n\nCode:\n"
+        expected_last_prompt = expected_last_prompt.replace(
+            "$df.shape[1]", str(df.shape[1])
+        )
+
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
-        replacement_prompt = (
-            "{num_rows} | {num_columns} | {df_head} | "
-            "{question} | {code} | {error_returned} |".format
-        )
+        class ReplacementPrompt(Prompt):
+            text: str = (
+                """{_num_rows} | {_num_columns} | {_df_head} | {_question} | """
+                """{_code} | {_error_returned} | {test_value}"""
+            )
 
+        df = pd.DataFrame()
+        replacement_vals = {"test_value": "test value"}
+        replacement_prompt = ReplacementPrompt(**replacement_vals)
         pai = PandasAI(
             llm,
             non_default_prompts={"correct_error": replacement_prompt},
             enable_cache=False,
         )
-
-        df = pd.DataFrame()
 
         erroneous_code = "a"
         question = "Will this work?"
@@ -711,19 +718,20 @@ print('Hello', name)"""
         pai._original_instructions["df_head"] = df_head
         pai._original_instructions["num_rows"] = num_rows
         pai._original_instructions["num_columns"] = num_columns
+
+        _replacement_prompt = ReplacementPrompt(
+            _num_rows=num_rows,
+            _num_columns=num_columns,
+            _df_head=df_head,
+            _question=question,
+            _code=erroneous_code,
+            _error_returned="name 'a' is not defined",
+            test_value="test value",
+        )
         pai.run_code(erroneous_code, df, use_error_correction_framework=True)
 
         expected_last_prompt = (
-            str(
-                replacement_prompt(
-                    code=erroneous_code,
-                    error_returned="name 'a' is not defined",
-                    question=question,
-                    df_head=df_head,
-                    num_rows=num_rows,
-                    num_columns=num_columns,
-                )
-            )
+            str(_replacement_prompt)
             + ""  # "prompt" parameter passed as empty string
             + "\n\nCode:\n"
         )
@@ -763,32 +771,42 @@ print('Hello', name)"""
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_generate_response_prompt(self, llm):
-        replacement_prompt = "{question} | {answer} | ".format
+        class CustomGenerateResponsePrompt(Prompt):
+            text = "{_question} | {_answer}"
+
+        replacement_prompt = CustomGenerateResponsePrompt(test_value="test value")
 
         pai = PandasAI(
             llm,
             non_default_prompts={"generate_response": replacement_prompt},
             enable_cache=False,
         )
+
         question = "Will this work?"
         answer = "No it won't"
+
+        expected_vals = {
+            "_question": question,
+            "_answer": answer,
+            "test_value": "test value",
+        }
+
         pai.conversational_answer(question, answer)
         expected_last_prompt = (
-            str(replacement_prompt(question=question, answer=answer))
+            str(CustomGenerateResponsePrompt(**expected_vals))
             + ""  # "value" parameter passed as empty string
             + ""  # "suffix" parameter defaults to empty string
         )
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
-        replacement_prompt = (
-            "{df_head} | " "{question} | {code} | {error_returned} |".format
-        )
+        class ReplaceCorrectMultipleDataframesErrorPrompt(Prompt):
+            text = "{_df_head} | " "{_question} | {_code} | {_error_returned} |"
 
         pai = PandasAI(
             llm,
             non_default_prompts={
-                "correct_multiple_dataframes_error": replacement_prompt
+                "correct_multiple_dataframes_error": ReplaceCorrectMultipleDataframesErrorPrompt()  # noqa: E501
             },
             enable_cache=False,
         )
@@ -805,11 +823,11 @@ print('Hello', name)"""
 
         expected_last_prompt = (
             str(
-                replacement_prompt(
-                    code=erroneous_code,
-                    error_returned="name 'a' is not defined",
-                    question=question,
-                    df_head=heads,
+                ReplaceCorrectMultipleDataframesErrorPrompt(
+                    _code=erroneous_code,
+                    _error_returned="name 'a' is not defined",
+                    _question=question,
+                    _df_head=heads,
                 )
             )
             + ""  # "prompt" parameter passed as empty string
