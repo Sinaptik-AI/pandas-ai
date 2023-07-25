@@ -1,6 +1,6 @@
 """Unit tests for the PandasAI class"""
-
-from datetime import date
+import logging
+import sys
 from typing import Optional
 from unittest.mock import Mock, patch
 from uuid import UUID
@@ -10,11 +10,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from pandasai import PandasAI
+from pandasai import PandasAI, Prompt
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares.base import Middleware
 from langchain.llms import OpenAI
+from pandasai.callbacks.base import StdoutCallback
 
 
 class TestPandasAI:
@@ -125,6 +126,16 @@ class TestPandasAI:
             pandasai.run(df, "What number comes before 2?")
             mock_print.assert_called()
 
+    def test_callback(self, pandasai):
+        df = pd.DataFrame()
+        callback = StdoutCallback()
+        pandasai.callback = callback
+
+        # mock on_code function
+        with patch.object(callback, "on_code") as mock_on_code:
+            pandasai.run(df, "Give me sum of all gdps?")
+            mock_on_code.assert_called()
+
     def test_run_without_verbose(self, pandasai, llm):
         df = pd.DataFrame()
         pandasai._verbose = False
@@ -180,13 +191,11 @@ df
         pandasai._enforce_privacy = True
         pandasai._is_conversational_answer = True
 
-        expected_prompt = f"""
-Today is {date.today()}.
+        expected_prompt = """
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
-Empty DataFrame
-Columns: [country]
-Index: [].
+country
+.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
@@ -195,7 +204,10 @@ How many countries are in the dataframe?
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?")
-        assert pandasai._llm.last_prompt == expected_prompt
+        last_prompt = pandasai._llm.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
+        assert last_prompt == expected_prompt
 
     def test_run_with_anonymized_df(self, pandasai):
         df = pd.DataFrame(
@@ -242,14 +254,14 @@ This is the result of `print(df.head(5))`:
         pandasai._enforce_privacy = False
         pandasai._is_conversational_answer = False
 
-        expected_prompt = f"""
-Today is {date.today()}.
+        expected_prompt = """
 You are provided with a pandas dataframe (df) with 3 rows and 1 columns.
 This is the metadata of the dataframe:
-          country
-0   United States
-1  United Kingdom
-2          France.
+country
+United States
+United Kingdom
+France
+.
 
 When asked about the data, your response should include a python code that describes the dataframe `df`.
 Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly to get the answer to the following question:
@@ -258,7 +270,10 @@ How many countries are in the dataframe?
 Code:
 """  # noqa: E501
         pandasai.run(df, "How many countries are in the dataframe?", anonymize_df=False)
-        assert pandasai._llm.last_prompt == expected_prompt
+        last_prompt = pandasai._llm.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
+        assert last_prompt == expected_prompt
 
     def test_run_with_print_at_the_end(self, pandasai, llm):
         code = """
@@ -419,12 +434,12 @@ print(df)
 
     def test_last_prompt_id(self, pandasai):
         pandasai(pd.DataFrame(), "How many countries are in the dataframe?")
-        prompt_id = pandasai.last_prompt_id()
+        prompt_id = pandasai.last_prompt_id
         assert isinstance(UUID(prompt_id, version=4), UUID)
 
     def test_last_prompt_id_no_prompt(self, pandasai):
         with pytest.raises(ValueError):
-            pandasai.last_prompt_id()
+            pandasai.last_prompt_id
 
     def test_add_middlewares(self, pandasai, test_middleware):
         middleware = test_middleware()
@@ -552,8 +567,7 @@ my_custom_library.do_something()
         pandasai._retry_run_code(code, e=Exception("Test error"), multiple=False)
         assert (
             pandasai.last_prompt
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
 This is the metadata of the dataframe:
           country             gdp  happiness_index
@@ -648,3 +662,181 @@ print('Hello', name)"""
         pandasai.run = Mock(return_value="Hello world")
         pandasai.clean_data([pd.DataFrame(), pd.DataFrame()])
         pandasai.run.assert_called_once()
+
+    def test_replace_generate_code_prompt(self, llm):
+        replacement_prompt = "{num_rows} | {num_columns} | {df_head} | ".format
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_python_code": replacement_prompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        df = pd.DataFrame()
+        pai(df, question, use_error_correction_framework=False)
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    num_rows=df.shape[0],
+                    num_columns=df.shape[1],
+                    df_head=df.head().to_csv(index=False),
+                )
+            )
+            + question
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_correct_error_prompt(self, llm):
+        replacement_prompt = (
+            "{num_rows} | {num_columns} | {df_head} | "
+            "{question} | {code} | {error_returned} |".format
+        )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"correct_error": replacement_prompt},
+            enable_cache=False,
+        )
+
+        df = pd.DataFrame()
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        num_rows = df.shape[0]
+        num_columns = df.shape[1]
+        df_head = df.head()
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = df_head
+        pai._original_instructions["num_rows"] = num_rows
+        pai._original_instructions["num_columns"] = num_columns
+        pai.run_code(erroneous_code, df, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=df_head,
+                    num_rows=num_rows,
+                    num_columns=num_columns,
+                )
+            )
+            + ""  # "prompt" parameter passed as empty string
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_multiple_dataframes_prompt(self, llm):
+        class ReplacementPrompt(Prompt):
+            text = ""
+
+            def __init__(self, dataframes, **kwargs):
+                super().__init__(
+                    **kwargs,
+                )
+                for df in dataframes:
+                    self.text += f"\n{df}\n"
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"multiple_dataframes": ReplacementPrompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        pai(
+            dataframes,
+            question,
+            anonymize_df=False,
+            use_error_correction_framework=False,
+        )
+
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        expected_last_prompt = (
+            str(ReplacementPrompt(dataframes=heads)) + question + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_generate_response_prompt(self, llm):
+        replacement_prompt = "{question} | {answer} | ".format
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={"generate_response": replacement_prompt},
+            enable_cache=False,
+        )
+        question = "Will this work?"
+        answer = "No it won't"
+        pai.conversational_answer(question, answer)
+        expected_last_prompt = (
+            str(replacement_prompt(question=question, answer=answer))
+            + ""  # "value" parameter passed as empty string
+            + ""  # "suffix" parameter defaults to empty string
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
+        replacement_prompt = (
+            "{df_head} | " "{question} | {code} | {error_returned} |".format
+        )
+
+        pai = PandasAI(
+            llm,
+            non_default_prompts={
+                "correct_multiple_dataframes_error": replacement_prompt
+            },
+            enable_cache=False,
+        )
+
+        dataframes = [pd.DataFrame(), pd.DataFrame()]
+
+        erroneous_code = "a"
+        question = "Will this work?"
+        heads = [dataframe.head(5) for dataframe in dataframes]
+
+        pai._original_instructions["question"] = question
+        pai._original_instructions["df_head"] = heads
+        pai.run_code(erroneous_code, dataframes, use_error_correction_framework=True)
+
+        expected_last_prompt = (
+            str(
+                replacement_prompt(
+                    code=erroneous_code,
+                    error_returned="name 'a' is not defined",
+                    question=question,
+                    df_head=heads,
+                )
+            )
+            + ""  # "prompt" parameter passed as empty string
+            + "\n\nCode:\n"
+        )
+        assert llm.last_prompt == expected_last_prompt
+
+    def test_saves_logs(self, llm):
+        pandas_ai = PandasAI(llm)
+        assert pandas_ai.logs == []
+
+        debug_msg = "Some debug log"
+        info_msg = "Some info log"
+        warning_msg = "Some warning log"
+        error_msg = "Some error log"
+        critical_msg = "Some critical log"
+
+        pandas_ai.log(debug_msg, level=logging.DEBUG)
+        pandas_ai.log(info_msg)  # INFO should be default
+        pandas_ai.log(warning_msg, level=logging.WARNING)
+        pandas_ai.log(error_msg, level=logging.ERROR)
+        pandas_ai.log(critical_msg, level=logging.CRITICAL)
+        logs = pandas_ai.logs
+
+        assert all("msg" in log and "level" in log for log in logs)
+        assert {"msg": debug_msg, "level": logging.DEBUG} in logs
+        assert {"msg": info_msg, "level": logging.INFO} in logs
+        assert {"msg": warning_msg, "level": logging.WARNING} in logs
+        assert {"msg": error_msg, "level": logging.ERROR} in logs
+        assert {"msg": critical_msg, "level": logging.CRITICAL} in logs

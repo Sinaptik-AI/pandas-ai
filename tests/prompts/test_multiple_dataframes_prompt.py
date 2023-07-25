@@ -1,6 +1,5 @@
 """Unit tests for the multiple dataframes prompt class"""
 
-from datetime import date
 
 import pandas as pd
 
@@ -22,8 +21,7 @@ class TestMultipleDataframesPrompt:
 
         assert (
             str(MultipleDataframesPrompt(dataframes=[df1, df2]))
-            == f"""
-Today is {date.today()}.
+            == """
 You are provided with the following pandas dataframes:
 Dataframe df1, with 5 rows and 3 columns.
 This is the metadata of the dataframe df1:

@@ -33,16 +33,20 @@ Example:
 
     ```
 """
+
 import ast
 import io
 import logging
 import re
 import sys
+import traceback
 import uuid
 import time
 from contextlib import redirect_stdout
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Type
+import importlib.metadata
 
+__version__ = importlib.metadata.version(__package__ or __name__)
 import astor
 import pandas as pd
 from .constants import (
@@ -60,11 +64,25 @@ from .llm.base import LLM
 from .llm.langchain import LangchainLLM
 from .middlewares.base import Middleware
 from .middlewares.charts import ChartsMiddleware
+from .prompts.base import Prompt
 from .prompts.correct_error_prompt import CorrectErrorPrompt
 from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
+from .callbacks.base import BaseCallback
+
+
+def get_version():
+    """
+    Get the version from the package metadata
+    """
+    from importlib.metadata import version
+
+    return version("pandasai")
+
+
+__version__ = get_version()
 
 
 class PandasAI(Shortcuts):
@@ -90,11 +108,14 @@ class PandasAI(Shortcuts):
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure.
         Default to 3
-        _is_notebook (bool, optional): Whether to run code in notebook. Default to False
+        _in_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None
         _enable_cache (bool, optional): Whether to enable cache. Default to True
+        _logger (logging.Logger, optional): Logger object to log the messages. Default
+        to None
+        _logs (List[dict], optional): List of logs to be stored. Default to []
         _prompt_id (str, optional): Unique ID to differentiate calls. Default to None
         _middlewares (List[Middleware], optional): List of middlewares to run. Default
         to [ChartsMiddleware()]
@@ -120,7 +141,7 @@ class PandasAI(Shortcuts):
     _is_conversational_answer: bool = False
     _enforce_privacy: bool = False
     _max_retries: int = 3
-    _is_notebook: bool = False
+    _in_notebook: bool = False
     _original_instructions: dict = {
         "question": None,
         "df_head": None,
@@ -134,6 +155,9 @@ class PandasAI(Shortcuts):
     _additional_dependencies: List[dict] = []
     _custom_whitelisted_dependencies: List[str] = []
     _start_time: float = 0
+    _enable_logging: bool = True
+    _logger: logging.Logger = None
+    _logs: List[dict[str, str]] = []
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -146,9 +170,13 @@ class PandasAI(Shortcuts):
         verbose=False,
         enforce_privacy=False,
         save_charts=False,
+        save_charts_path=None,
         enable_cache=True,
         middlewares=None,
         custom_whitelisted_dependencies=None,
+        enable_logging=True,
+        non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+        callback: Optional[BaseCallback] = None,
     ):
         """
 
@@ -169,12 +197,19 @@ class PandasAI(Shortcuts):
             middlewares (list): List of middlewares to be used. Default to None
             custom_whitelisted_dependencies (list): List of custom dependencies to
             be used. Default to None
+            enable_logging (bool): Enable the logging. Default to True
+            non_default_prompts (dict): Mapping from keys to replacement prompt classes.
+            Used to override specific types of prompts. Defaults to None.
         """
 
         # configure the logging
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
-        handlers = [logging.FileHandler("pandasai.log")]
+        if enable_logging:
+            handlers = [logging.FileHandler("pandasai.log")]
+        else:
+            handlers = []
+
         if verbose:
             handlers.append(logging.StreamHandler(sys.stdout))
         logging.basicConfig(
@@ -194,7 +229,13 @@ class PandasAI(Shortcuts):
         self._verbose = verbose
         self._enforce_privacy = enforce_privacy
         self._save_charts = save_charts
+        self._save_charts_path = save_charts_path
         self._process_id = str(uuid.uuid4())
+        self._logs = []
+
+        self._non_default_prompts = (
+            {} if non_default_prompts is None else non_default_prompts
+        )
 
         self.notebook = Notebook()
         self._in_notebook = self.notebook.in_notebook()
@@ -208,6 +249,8 @@ class PandasAI(Shortcuts):
 
         if custom_whitelisted_dependencies is not None:
             self._custom_whitelisted_dependencies = custom_whitelisted_dependencies
+
+        self.callback = callback
 
     def _load_llm(self, llm):
         """
@@ -246,8 +289,10 @@ class PandasAI(Shortcuts):
             # if the user has set enforce_privacy to True
             return answer
 
-        instruction = GenerateResponsePrompt(question=question, answer=answer)
-        return self._llm.call(instruction, "")
+        generate_response_instruction = self._non_default_prompts.get(
+            "generate_response", GenerateResponsePrompt
+        )(question=question, answer=answer)
+        return self._llm.call(generate_response_instruction, "")
 
     def run(
         self,
@@ -278,6 +323,7 @@ class PandasAI(Shortcuts):
 
         self._start_time = time.time()
 
+        self.log(f"Question: {prompt}")
         self.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._prompt_id = str(uuid.uuid4())
@@ -300,8 +346,11 @@ class PandasAI(Shortcuts):
                         for dataframe in data_frame
                     ]
 
+                    multiple_dataframes_instruction = self._non_default_prompts.get(
+                        "multiple_dataframes", MultipleDataframesPrompt
+                    )
                     code = self._llm.generate_code(
-                        MultipleDataframesPrompt(dataframes=heads),
+                        multiple_dataframes_instruction(dataframes=heads),
                         prompt,
                     )
 
@@ -314,23 +363,28 @@ class PandasAI(Shortcuts):
                     df_head = data_frame.head(rows_to_display)
                     if anonymize_df:
                         df_head = anonymize_dataframe_head(df_head)
+                    df_head = df_head.to_csv(index=False)
 
+                    generate_code_instruction = self._non_default_prompts.get(
+                        "generate_python_code", GeneratePythonCodePrompt
+                    )(
+                        df_head=df_head,
+                        num_rows=data_frame.shape[0],
+                        num_columns=data_frame.shape[1],
+                    )
                     code = self._llm.generate_code(
-                        GeneratePythonCodePrompt(
-                            prompt=prompt,
-                            df_head=df_head,
-                            num_rows=data_frame.shape[0],
-                            num_columns=data_frame.shape[1],
-                        ),
+                        generate_code_instruction,
                         prompt,
                     )
-
                     self._original_instructions = {
                         "question": prompt,
                         "df_head": df_head,
                         "num_rows": data_frame.shape[0],
                         "num_columns": data_frame.shape[1],
                     }
+
+                if self.callback:
+                    self.callback.on_code(code)
 
                 self.last_code_generated = code
                 self.log(
@@ -506,7 +560,7 @@ class PandasAI(Shortcuts):
             new_body.append(node)
 
         new_tree = ast.Module(body=new_body)
-        return astor.to_source(new_tree).strip()
+        return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
 
     def _get_environment(self) -> dict:
         """
@@ -542,14 +596,20 @@ class PandasAI(Shortcuts):
         """
 
         if multiple:
-            error_correcting_instruction = CorrectMultipleDataframesErrorPrompt(
+            error_correcting_instruction = self._non_default_prompts.get(
+                "correct_multiple_dataframes_error",
+                CorrectMultipleDataframesErrorPrompt,
+            )(
                 code=code,
                 error_returned=e,
                 question=self._original_instructions["question"],
                 df_head=self._original_instructions["df_head"],
             )
+
         else:
-            error_correcting_instruction = CorrectErrorPrompt(
+            error_correcting_instruction = self._non_default_prompts.get(
+                "correct_error", CorrectErrorPrompt
+            )(
                 code=code,
                 error_returned=e,
                 question=self._original_instructions["question"],
@@ -557,8 +617,10 @@ class PandasAI(Shortcuts):
                 num_rows=self._original_instructions["num_rows"],
                 num_columns=self._original_instructions["num_columns"],
             )
-
-        return self._llm.generate_code(error_correcting_instruction, "")
+        code = self._llm.generate_code(error_correcting_instruction, "")
+        if self.callback:
+            self.callback.on_code(code)
+        return code
 
     def run_code(
         self,
@@ -585,7 +647,9 @@ class PandasAI(Shortcuts):
 
         # Add save chart code
         if self._save_charts:
-            code = add_save_chart(code, self._prompt_id, not self._verbose)
+            code = add_save_chart(
+                code, self._prompt_id, self._save_charts_path, not self._verbose
+            )
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
@@ -617,6 +681,11 @@ Code running:
                     code = code_to_run
                     break
                 except Exception as e:
+                    self.log(
+                        f"Error executing code (count: {count})", level=logging.WARNING
+                    )
+                    self.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+
                     if not use_error_correction_framework:
                         raise e
 
@@ -652,14 +721,28 @@ Code running:
         except Exception:
             return captured_output
 
-    def log(self, message: str):
-        """Log a message"""
-        self._logger.info(message)
+    def log(self, message: str, level: Optional[int] = logging.INFO):
+        """
+        Log the passed message with according log level.
+
+        Args:
+            message (str): a message string to be logged
+            level (Optional[int]): an integer, representing log level;
+                                   default to 20 (INFO)
+        """
+        self._logger.log(level=level, msg=message)
+        self._logs.append({"msg": message, "level": level})
+
+    @property
+    def logs(self) -> List[dict[str, str]]:
+        """Return the logs"""
+        return self._logs
 
     def process_id(self) -> str:
         """Return the id of this PandasAI object."""
         return self._process_id
 
+    @property
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
         if self._prompt_id is None:

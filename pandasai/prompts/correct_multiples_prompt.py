@@ -3,7 +3,6 @@
 import pandas as pd
 
 from pandasai.constants import END_CODE_TAG, START_CODE_TAG
-
 from .base import Prompt
 
 

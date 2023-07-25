@@ -1,6 +1,5 @@
 """ Prompt to generate Python code
 ```
-Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
 This is the metadata of the dataframe:
 {df_head}.
@@ -12,10 +11,8 @@ exactly to get the answer to the following question:
 ```
 """  # noqa: E501
 
-from datetime import date
 
 from pandasai.constants import END_CODE_TAG, START_CODE_TAG
-
 from .base import Prompt
 
 
@@ -23,7 +20,6 @@ class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-Today is {today_date}.
 You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
 This is the metadata of the dataframe:
 {df_head}.
@@ -34,8 +30,5 @@ Using the provided dataframe, df, return the python code and make sure to prefix
 
     def __init__(self, **kwargs):
         super().__init__(
-            **kwargs,
-            START_CODE_TAG=START_CODE_TAG,
-            END_CODE_TAG=END_CODE_TAG,
-            today_date=date.today()
+            **kwargs, START_CODE_TAG=START_CODE_TAG, END_CODE_TAG=END_CODE_TAG
         )
