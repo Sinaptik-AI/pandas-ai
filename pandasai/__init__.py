@@ -70,7 +70,7 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .callbacks.base import BaseCallback, DefaultCallback
+from .callbacks.base import BaseCallback
 
 
 def get_version():
@@ -176,7 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback = DefaultCallback,
+        callback: Optional[BaseCallback] = None,
     ):
         """
 
@@ -312,7 +312,6 @@ class PandasAI(Shortcuts):
                 if var[0] == "_" and var[1:] in default_values:
                     prompt.override_var(var, default_values[var[1:]])
 
-
             """Replace all variables with $ prefix with evaluated values"""
             prompt_text = prompt.text.split(" ")
             for i in range(len(prompt_text)):
@@ -393,7 +392,7 @@ class PandasAI(Shortcuts):
                         multiple_dataframes_instruction,
                         prompt,
                     )
-                    self.callback.on_code(code)
+
                     self._original_instructions = multiple_dataframes_instruction_values
 
                 else:
@@ -422,8 +421,10 @@ class PandasAI(Shortcuts):
                         generate_code_instruction,
                         prompt,
                     )
-                    self.callback.on_code(code)
                     self._original_instructions = generate_code_instruction_values
+
+                if self.callback:
+                    self.callback.on_code(code)
 
                 self.last_code_generated = code
                 self.log(
@@ -667,7 +668,8 @@ class PandasAI(Shortcuts):
             )
 
         code = self._llm.generate_code(error_correcting_instruction, "")
-        self.callback.on_code(code)
+        if self.callback:
+            self.callback.on_code(code)
         return code
 
     def run_code(
