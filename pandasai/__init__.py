@@ -299,8 +299,14 @@ class PandasAI(Shortcuts):
         return self._llm.call(generate_response_instruction, "")
 
     def _get_prompt(
-        self, key: str, default_prompt: Prompt, default_values: Dict = {}, df=None
-    ):
+        self,
+        key: str,
+        default_prompt: Type[Prompt],
+        default_values: Optional[dict] = None,
+    ) -> tuple[Prompt, dict]:
+        if default_values is None:
+            default_values = {}
+
         prompt = self._non_default_prompts.get(key)
 
         if prompt and isinstance(prompt, type):
