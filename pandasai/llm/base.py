@@ -14,6 +14,7 @@ Example:
     ```
 """
 
+import os
 import ast
 import re
 from abc import ABC, abstractmethod
@@ -279,6 +280,32 @@ class HuggingFaceLLM(LLM):
     @property
     def type(self) -> str:
         return "huggingface-llm"
+
+    def _setup(self, **kwargs):
+        """
+        Setup the HuggingFace LLM
+        Args:
+            **kwargs: ["api_token", "max_retries"]
+        """
+        self.api_token = (
+            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
+        )
+        if self.api_token is None:
+            raise APIKeyNotFoundError("HuggingFace Hub API key is required")
+
+        # Since the huggingface API only returns few tokens at a time, we need to
+        # call the API multiple times to get all the tokens. This is the maximum
+        # number of retries we will do.
+        if kwargs.get("max_retries"):
+            self._max_retries = kwargs.get("max_retries")
+
+    def __init__(self, **kwargs):
+        """
+        __init__ method of HuggingFaceLLM Class
+        Args:
+            **kwargs: ["api_token", "max_retries"]
+        """
+        self._setup(**kwargs)
 
     def query(self, payload):
         """

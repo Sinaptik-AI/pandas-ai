@@ -22,11 +22,12 @@ class TestBaseHfLLM:
         return MockPrompt()
 
     def test_type(self):
-        assert HuggingFaceLLM().type == "huggingface-llm"
+        assert HuggingFaceLLM(api_token="test_token").type == "huggingface-llm"
 
     def test_api_url(self):
         assert (
-            HuggingFaceLLM()._api_url == "https://api-inference.huggingface.co/models/"
+            HuggingFaceLLM(api_token="test_token")._api_url
+            == "https://api-inference.huggingface.co/models/"
         )
 
     def test_query(self, mocker, api_response):
@@ -35,8 +36,7 @@ class TestBaseHfLLM:
         mocker.patch("requests.post", return_value=response_mock)
 
         # Call the query method
-        llm = HuggingFaceLLM()
-        llm.api_token = "test_token"
+        llm = HuggingFaceLLM(api_token="test_token")
         payload = {"inputs": "Some input text"}
         result = llm.query(payload)
 
@@ -52,8 +52,7 @@ class TestBaseHfLLM:
         assert result == api_response[0]["generated_text"]
 
     def test_call(self, mocker, prompt):
-        huggingface = HuggingFaceLLM()
-        huggingface.api_token = "test_token"
+        huggingface = HuggingFaceLLM(api_token="test_token")
 
         mocker.patch.object(huggingface, "call", return_value="Generated text")
 
@@ -61,8 +60,7 @@ class TestBaseHfLLM:
         assert result == "Generated text"
 
     def test_call_removes_original_prompt(self, mocker):
-        huggingface = HuggingFaceLLM()
-        huggingface.api_token = "test_token"
+        huggingface = HuggingFaceLLM(api_token="test_token")
 
         class MockPrompt(Prompt):
             text: str = "instruction "
