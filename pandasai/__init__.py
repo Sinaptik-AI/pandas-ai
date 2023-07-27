@@ -70,7 +70,7 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .callbacks.base import BaseCallback, DefaultCallback
+from .callbacks.base import BaseCallback
 
 
 def get_version():
@@ -176,7 +176,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback = DefaultCallback,
+        callback: Optional[BaseCallback] = None,
     ):
         """
 
@@ -289,10 +289,41 @@ class PandasAI(Shortcuts):
             # if the user has set enforce_privacy to True
             return answer
 
-        generate_response_instruction = self._non_default_prompts.get(
-            "generate_response", GenerateResponsePrompt
-        )(question=question, answer=answer)
+        default_values = {"question": question, "answer": answer}
+        generate_response_instruction, _ = self._get_prompt(
+            "generate_response",
+            default_prompt=GenerateResponsePrompt,
+            default_values=default_values,
+        )
+
         return self._llm.call(generate_response_instruction, "")
+
+    def _get_prompt(
+        self, key: str, default_prompt: Prompt, default_values: Dict = {}, df=None
+    ):
+        prompt = self._non_default_prompts.get(key)
+
+        if prompt and isinstance(prompt, type):
+            prompt = prompt(**default_values)
+
+        if prompt:
+            """Override all the variables with _ prefix with default variable values"""
+            for var in prompt._args:
+                if var[0] == "_" and var[1:] in default_values:
+                    prompt.override_var(var, default_values[var[1:]])
+
+            """Replace all variables with $ prefix with evaluated values"""
+            prompt_text = prompt.text.split(" ")
+            for i in range(len(prompt_text)):
+                word = prompt_text[i]
+
+                if word.startswith("$"):
+                    prompt_text[i] = str(eval(word[1:]))
+            prompt.text = " ".join(prompt_text)
+
+            return prompt, prompt._args
+
+        return default_prompt(**default_values), default_values
 
     def run(
         self,
@@ -346,18 +377,23 @@ class PandasAI(Shortcuts):
                         for dataframe in data_frame
                     ]
 
-                    multiple_dataframes_instruction = self._non_default_prompts.get(
-                        "multiple_dataframes", MultipleDataframesPrompt
+                    multiple_dataframes_default_values = {"dataframes": heads}
+                    (
+                        multiple_dataframes_instruction,
+                        multiple_dataframes_instruction_values,
+                    ) = self._get_prompt(
+                        "multiple_dataframes",
+                        default_prompt=MultipleDataframesPrompt,
+                        default_values=multiple_dataframes_default_values,
+                        df=heads,
                     )
+
                     code = self._llm.generate_code(
-                        multiple_dataframes_instruction(dataframes=heads),
+                        multiple_dataframes_instruction,
                         prompt,
                     )
-                    self.callback.on_code(code)
-                    self._original_instructions = {
-                        "question": prompt,
-                        "df_head": heads,
-                    }
+
+                    self._original_instructions = multiple_dataframes_instruction_values
 
                 else:
                     df_head = data_frame.head(rows_to_display)
@@ -365,25 +401,30 @@ class PandasAI(Shortcuts):
                         df_head = anonymize_dataframe_head(df_head)
                     df_head = df_head.to_csv(index=False)
 
-                    generate_code_instruction = self._non_default_prompts.get(
-                        "generate_python_code", GeneratePythonCodePrompt
-                    )(
-                        prompt=prompt,
-                        df_head=df_head,
-                        num_rows=data_frame.shape[0],
-                        num_columns=data_frame.shape[1],
-                    )
-                    code = self._llm.generate_code(
-                        generate_code_instruction,
-                        prompt,
-                    )
-                    self.callback.on_code(code)
-                    self._original_instructions = {
-                        "question": prompt,
+                    generate_code_default_values = {
                         "df_head": df_head,
                         "num_rows": data_frame.shape[0],
                         "num_columns": data_frame.shape[1],
                     }
+
+                    (
+                        generate_code_instruction,
+                        generate_code_instruction_values,
+                    ) = self._get_prompt(
+                        "generate_python_code",
+                        GeneratePythonCodePrompt,
+                        default_values=generate_code_default_values,
+                        df=data_frame,
+                    )
+
+                    code = self._llm.generate_code(
+                        generate_code_instruction,
+                        prompt,
+                    )
+                    self._original_instructions = generate_code_instruction_values
+
+                if self.callback:
+                    self.callback.on_code(code)
 
                 self.last_code_generated = code
                 self.log(
@@ -595,29 +636,40 @@ class PandasAI(Shortcuts):
         """
 
         if multiple:
-            error_correcting_instruction = self._non_default_prompts.get(
+            correct_multiple_dataframes_error_default_values = {
+                "code": code,
+                "error_returned": e,
+                "question": self._original_instructions["question"],
+                "df_head": self._original_instructions["df_head"],
+            }
+
+            error_correcting_instruction, _ = self._get_prompt(
                 "correct_multiple_dataframes_error",
                 CorrectMultipleDataframesErrorPrompt,
-            )(
-                code=code,
-                error_returned=e,
-                question=self._original_instructions["question"],
-                df_head=self._original_instructions["df_head"],
+                default_values=correct_multiple_dataframes_error_default_values,
+                df=self._original_instructions["df_head"],
             )
 
         else:
-            error_correcting_instruction = self._non_default_prompts.get(
-                "correct_error", CorrectErrorPrompt
-            )(
-                code=code,
-                error_returned=e,
-                question=self._original_instructions["question"],
-                df_head=self._original_instructions["df_head"],
-                num_rows=self._original_instructions["num_rows"],
-                num_columns=self._original_instructions["num_columns"],
+            correct_error_default_values = {
+                "code": code,
+                "error_returned": e,
+                "question": self._original_instructions["question"],
+                "df_head": self._original_instructions["df_head"],
+                "num_rows": self._original_instructions["num_rows"],
+                "num_columns": self._original_instructions["num_columns"],
+            }
+
+            error_correcting_instruction, _ = self._get_prompt(
+                "correct_error",
+                CorrectErrorPrompt,
+                correct_error_default_values,
+                df=self._original_instructions["df_head"],
             )
+
         code = self._llm.generate_code(error_correcting_instruction, "")
-        self.callback.on_code(code)
+        if self.callback:
+            self.callback.on_code(code)
         return code
 
     def run_code(

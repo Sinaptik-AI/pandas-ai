@@ -26,10 +26,7 @@ class TestOpenAILLM:
 
     def test_proxy(self):
         proxy = "http://proxy.mycompany.com:8080"
-        client = OpenAI(
-            api_token="test",
-            openai_proxy=proxy
-        )
+        client = OpenAI(api_token="test", openai_proxy=proxy)
         assert client.openai_proxy == proxy
         assert openai.proxy["http"] == proxy
         assert openai.proxy["https"] == proxy
