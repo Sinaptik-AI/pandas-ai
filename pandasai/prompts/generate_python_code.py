@@ -12,8 +12,8 @@ exactly to get the answer to the following question:
 """  # noqa: E501
 
 
+from pandasai.constants import END_CODE_TAG, START_CODE_TAG
 from .base import Prompt
-from ..constants import START_CODE_TAG, END_CODE_TAG
 
 
 class GeneratePythonCodePrompt(Prompt):

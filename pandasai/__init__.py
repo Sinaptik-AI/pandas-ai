@@ -35,16 +35,16 @@ Example:
 """
 
 from typing import List, Optional, Union, Dict, Type
-from .prompts.base import Prompt
 import importlib.metadata
 
-__version__ = importlib.metadata.version(__package__ or __name__)
 import pandas as pd
 from .helpers.shortcuts import Shortcuts
 from .smart_datalake import SmartDatalake
-from .callbacks.base import BaseCallback, DefaultCallback
-
+from .callbacks.base import BaseCallback
 from .helpers.df_config import Config
+from .prompts.base import Prompt
+
+__version__ = importlib.metadata.version(__package__ or __name__)
 
 
 def get_version():
@@ -124,7 +124,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=[],
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback = DefaultCallback,
+        callback: Optional[BaseCallback] = None,
     ):
         """
         __init__ method of the Class PandasAI
@@ -165,6 +165,7 @@ class PandasAI(Shortcuts):
             enable_logging=enable_logging,
             non_default_prompts=non_default_prompts,
             llm=llm,
+            callback=callback,
         )
 
     def run(
