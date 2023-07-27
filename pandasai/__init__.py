@@ -303,6 +303,7 @@ class PandasAI(Shortcuts):
         key: str,
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
+        df=None,
     ) -> tuple[Prompt, dict]:
         if default_values is None:
             default_values = {}
