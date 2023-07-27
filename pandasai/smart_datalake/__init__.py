@@ -28,6 +28,7 @@ from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.df_config import Config
+from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any
@@ -168,6 +169,33 @@ class SmartDatalake:
 
         return sys.stdout.isatty()
 
+    def _get_prompt(
+        self, key: str, default_prompt: Prompt, default_values: dict = {}, df=None
+    ):
+        prompt = self._config.custom_prompts.get(key)
+
+        if prompt and isinstance(prompt, type):
+            prompt = prompt(**default_values)
+
+        if prompt:
+            """Override all the variables with _ prefix with default variable values"""
+            for var in prompt._args:
+                if var[0] == "_" and var[1:] in default_values:
+                    prompt.override_var(var, default_values[var[1:]])
+
+            """Replace all variables with $ prefix with evaluated values"""
+            prompt_text = prompt.text.split(" ")
+            for i in range(len(prompt_text)):
+                word = prompt_text[i]
+
+                if word.startswith("$"):
+                    prompt_text[i] = str(eval(word[1:]))
+            prompt.text = " ".join(prompt_text)
+
+            return prompt, prompt._args
+
+        return default_prompt(**default_values), default_values
+
     def chat(self, query: str):
         """
         Run a query on the dataframe.
@@ -191,20 +219,26 @@ class SmartDatalake:
                 self._logger.log("Using cached response")
                 code = self._cache.get(query)
             else:
-                generate_code_instruction = self._config.custom_prompts.get(
-                    "generate_python_code", GeneratePythonCodePrompt
-                )(
-                    prompt=query,
-                    dfs=self._dfs,
-                    # TODO: find a better way to determine the engine
-                    engine=self._dfs[0].engine,
+                default_values = {
+                    "prompt": query,
+                    "dfs": self._dfs,
+                    # TODO: find a better way to determine the engine,
+                    "engine": self._dfs[0].engine,
+                }
+                generate_response_instruction, _ = self._get_prompt(
+                    "generate_response",
+                    default_prompt=GeneratePythonCodePrompt,
+                    default_values=default_values,
                 )
+
                 code = self._llm.generate_code(
-                    generate_code_instruction,
+                    generate_response_instruction,
                     query,
                 )
 
-                self._config.callback.on_code(code)
+                if self._config.callback is not None:
+                    self._config.callback.on_code(code)
+
                 self._original_instructions = {
                     "question": query,
                     "dfs": self._dfs,
@@ -229,6 +263,7 @@ class SmartDatalake:
 
             count = 0
             code_to_run = code
+            results = []
             while count < self._config.max_retries:
                 try:
                     # Execute the code
@@ -245,8 +280,9 @@ class SmartDatalake:
 
                     code_to_run = self._retry_run_code(code, e)
 
-            self.last_result = results
-            self._logger.log(f"Answer: {results}")
+            if len(results) > 0:
+                self.last_result = results
+                self._logger.log(f"Answer: {results}")
         except Exception as exception:
             self.last_error = str(exception)
             print(exception)
@@ -302,20 +338,23 @@ class SmartDatalake:
 
         print_exc()
 
-        error_correcting_instruction = self._config.custom_prompts.get(
-            "correct_error", CorrectErrorPrompt
-        )(
-            code=code,
-            error_returned=e,
-            question=self._original_instructions["question"],
-            # TODO: make it so we pass all the heads and info
-            df_head=self._original_instructions["dfs"][0]["df_head"],
-            num_rows=self._original_instructions["num_rows"],
-            num_columns=self._original_instructions["num_columns"],
+        default_values = {
+            "code": code,
+            "error_returned": e,
+            "question": self._original_instructions["question"],
+            "df_head": self._original_instructions["dfs"][0].head_csv,
+            "num_rows": self._original_instructions["dfs"][0].rows_count,
+            "num_columns": self._original_instructions["dfs"][0].columns_count,
+        }
+        error_correcting_instruction = self._get_prompt(
+            "correct_error",
+            default_prompt=CorrectErrorPrompt,
+            default_values=default_values,
         )
 
         code = self._llm.generate_code(error_correcting_instruction, "")
-        self._config.callback.on_code(code)
+        if self._config.callback is not None:
+            self._config.callback.on_code(code)
         return code
 
     @property

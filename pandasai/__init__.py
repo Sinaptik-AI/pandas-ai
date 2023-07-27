@@ -35,16 +35,16 @@ Example:
 """
 
 from typing import List, Optional, Union, Dict, Type
-from .prompts.base import Prompt
 import importlib.metadata
 
-__version__ = importlib.metadata.version(__package__ or __name__)
 import pandas as pd
 from .helpers.shortcuts import Shortcuts
 from .smart_datalake import SmartDatalake
-from .callbacks.base import BaseCallback, DefaultCallback
-
+from .callbacks.base import BaseCallback
 from .helpers.df_config import Config
+from .prompts.base import Prompt
+
+__version__ = importlib.metadata.version(__package__ or __name__)
 
 
 def get_version():
@@ -124,7 +124,7 @@ class PandasAI(Shortcuts):
         custom_whitelisted_dependencies=[],
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: BaseCallback = DefaultCallback,
+        callback: Optional[BaseCallback] = None,
     ):
         """
         __init__ method of the Class PandasAI
@@ -165,7 +165,35 @@ class PandasAI(Shortcuts):
             enable_logging=enable_logging,
             non_default_prompts=non_default_prompts,
             llm=llm,
+            callback=callback,
         )
+
+    def _get_prompt(
+        self, key: str, default_prompt: Prompt, default_values: Dict = {}, df=None
+    ):
+        prompt = self._non_default_prompts.get(key)
+
+        if prompt and isinstance(prompt, type):
+            prompt = prompt(**default_values)
+
+        if prompt:
+            """Override all the variables with _ prefix with default variable values"""
+            for var in prompt._args:
+                if var[0] == "_" and var[1:] in default_values:
+                    prompt.override_var(var, default_values[var[1:]])
+
+            """Replace all variables with $ prefix with evaluated values"""
+            prompt_text = prompt.text.split(" ")
+            for i in range(len(prompt_text)):
+                word = prompt_text[i]
+
+                if word.startswith("$"):
+                    prompt_text[i] = str(eval(word[1:]))
+            prompt.text = " ".join(prompt_text)
+
+            return prompt, prompt._args
+
+        return default_prompt(**default_values), default_values
 
     def run(
         self,

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "0.7.1"
+version = "0.8.0"
 description = "Pandas AI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -29,6 +29,7 @@ ggplot = {version = "^0.11.5", optional = true}
 numpy = {version = "^1.17", optional = true}
 scipy = {version = "^1.9.0", optional = true}
 streamlit = {version = "^1.23.1", optional = true}
+beautifulsoup4 = { version = "^4.12.2", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
@@ -46,6 +47,7 @@ google-cloud-aiplatform = "^1.26.1"
 google = ["google-generativeai"]
 tests = ["numpy", "seaborn"]
 langchain = ["langchain"]
+bs4 = ["beautifulsoup4"]
 google-cloud = ["google-cloud-aiplatform"]
 polars = ["polars"]
 numpy = ["numpy"]

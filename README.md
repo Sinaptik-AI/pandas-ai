@@ -176,6 +176,10 @@ After installing the virtual environment, please remember to install `pre-commit
 pre-commit install
 ```
 
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=gventuri/pandas-ai)](https://github.com/gventuri/pandas-ai/graphs/contributors)
+
 ## 📜 License
 
 PandasAI is licensed under the MIT License. See the LICENSE file for more details.
