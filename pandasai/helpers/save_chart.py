@@ -2,51 +2,25 @@
 import ast
 import logging
 import os
-from itertools import zip_longest
 from os.path import dirname
-from typing import Union
 
 import astor
 
 
-def compare_ast(
-    node1: Union[ast.expr, list[ast.expr], ast.stmt, ast.AST],
-    node2: Union[ast.expr, list[ast.expr], ast.stmt, ast.AST],
-    ignore_args=False,
-) -> bool:
-    """
-    Compare two AST nodes for equality.
-    Source: https://stackoverflow.com/a/66733795/11080806
-
-    Args:
-        node1 (ast.AST): First AST node to compare.
-        node2 (ast.AST): Second AST node to compare.
-        ignore_args (bool, optional): Whether to ignore the arguments of the nodes.
-            Defaults to False.
-
-    Returns:
-        bool: True if the nodes are equal, False otherwise.
-
-    """
-    if type(node1) is not type(node2):
+def is_show_node(node: ast.Call) -> bool:
+    if not hasattr(node, "value"):
         return False
 
-    if isinstance(node1, ast.AST):
-        for k, node in vars(node1).items():
-            if k in {"lineno", "end_lineno", "col_offset", "end_col_offset", "ctx"}:
-                continue
-            if ignore_args and k == "args":
-                continue
-            if not compare_ast(node, getattr(node2, k), ignore_args):
-                return False
-        return True
-
-    if isinstance(node1, list) and isinstance(node2, list):
-        return all(
-            compare_ast(n1, n2, ignore_args) for n1, n2 in zip_longest(node1, node2)
+    value = node.value
+    return (
+        isinstance(value, ast.Call)
+        and value.func
+        and (
+            isinstance(value.func, ast.Attribute)
+            and value.func.attr == "show"
+            and value.func.value.id == "plt"
         )
-
-    return node1 == node2
+    )
 
 
 def add_save_chart(
@@ -81,10 +55,7 @@ def add_save_chart(
     tree = ast.parse(code)
 
     # count number of plt.show() calls
-    show_count = sum(
-        compare_ast(node, ast.parse("plt.show()").body[0], ignore_args=True)
-        for node in ast.walk(tree)
-    )
+    show_count = sum(1 for node in ast.walk(tree) if is_show_node(node))
 
     # if there are no plt.show() calls, return the original code
     if show_count == 0:
@@ -97,7 +68,7 @@ def add_save_chart(
     counter = ord("a")
     new_body = []
     for node in tree.body:
-        if compare_ast(node, ast.parse("plt.show()").body[0], ignore_args=True):
+        if is_show_node(node):
             filename = "chart"
             if show_count > 1:
                 filename += f"_{chr(counter)}"
