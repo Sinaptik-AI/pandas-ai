@@ -31,5 +31,8 @@ jobs:
         run: poetry run coverage report
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          file: .coverage
+          fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
