@@ -586,6 +586,24 @@ class PandasAI(Shortcuts):
             and re.match(r"df\d{0,2}$", node.targets[0].id)
         )
 
+    def _is_jailbreak(self, node: ast.stmt) -> bool:
+        """
+        Remove jailbreaks from the code to prevent malicious code execution.
+
+        Args:
+            node (object): ast.stmt
+
+        Returns (bool):
+        """
+
+        DANGEROUS_BUILTINS = ["__subclasses__", "__builtins__", "__import__"]
+
+        for child in ast.walk(node):
+            if isinstance(child, ast.Name) and child.id in DANGEROUS_BUILTINS:
+                return True
+
+        return False
+
     def _clean_code(self, code: str) -> str:
         """
         A method to clean the code to prevent malicious code execution
@@ -608,7 +626,7 @@ class PandasAI(Shortcuts):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
                 continue
-            if self._is_df_overwrite(node):
+            if self._is_df_overwrite(node) or self._is_jailbreak(node):
                 continue
             new_body.append(node)
 
