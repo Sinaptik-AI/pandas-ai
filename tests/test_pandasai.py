@@ -843,7 +843,7 @@ print('Hello', name)"""
     @pytest.mark.skip
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(Prompt):
-            text: str = """{_num_rows} | $df.shape[1] | {_df_head} | {test}"""
+            text: str = """{_num_rows} | $dfs[0].shape[1] | {_df_head} | {test}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -865,7 +865,7 @@ print('Hello', name)"""
         pai(df, question, use_error_correction_framework=False)
         expected_last_prompt = str(_replacement_prompt) + question + "\n\nCode:\n"
         expected_last_prompt = expected_last_prompt.replace(
-            "$df.shape[1]", str(df.shape[1])
+            "$dfs[0].shape[1]", str(df.shape[1])
         )
 
         assert llm.last_prompt == expected_last_prompt

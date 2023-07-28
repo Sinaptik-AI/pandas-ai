@@ -26,7 +26,7 @@ from pandasai.prompts.base import Prompt
 class MyCustomPrompt(Prompt):
     text = """This is your custom text for your prompt with custom {value}"""
 
-pandasai = PandasAI(llm=llm, 
+pandasai = PandasAI(llm=llm,
                     non_default_prompts={"generate_python_code":MyCustomPrompt(value="my custom value")})
 
 ```
@@ -41,14 +41,15 @@ You can directly access df object and call its methods from prompt text itself. 
 from pandasai.prompts.base import Prompt
 
 class MyCustomPrompt(Prompt):
-    text = """You are given a dataframe with number if rows equal to $df.shape[0] and number of columns equal to $df.shape[1]"""
+    text = """You are given a dataframe with number if rows equal to $dfs[0].shape[0] and number of columns equal to $dfs[0].shape[1]"""
 
-pandasai = PandasAI(llm=llm, 
+pandasai = PandasAI(llm=llm,
                     non_default_prompts={"generate_python_code":MyCustomPrompt(value="my custom value")})
 
 ```
 
 ### Default value override
+
 Each prompt type mentioned in first section has some default values which are passed in in case if custom prompt is not provided. For example, in case of generate_python_code prompt `num_columns`, `num_rows` and `df_head` values are passed in the default `GeneratePythonCodePrompt`. If you wish to use any of the default values passed to prompt in your custom prompt you can use variable name of that default value with underscore as prefix.
 
 ```
@@ -57,8 +58,8 @@ from pandasai.prompts.base import Prompt
 class MyCustomPrompt(Prompt):
     text = """You are given a dataframe with number of rows equal to {_num_rows} and number of columns equal to {_num_columns}"""
 
-pandasai = PandasAI(llm=llm, 
+pandasai = PandasAI(llm=llm,
                     non_default_prompts={"generate_python_code":MyCustomPrompt(value="my custom value")})
 
-    
+
 ```

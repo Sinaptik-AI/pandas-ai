@@ -169,9 +169,7 @@ class SmartDatalake:
 
         return sys.stdout.isatty()
 
-    def _get_prompt(
-        self, key: str, default_prompt: Prompt, default_values: dict = {}, df=None
-    ):
+    def _get_prompt(self, key: str, default_prompt: Prompt, default_values: dict = {}):
         prompt = self._config.custom_prompts.get(key)
 
         if prompt and isinstance(prompt, type):
@@ -183,13 +181,16 @@ class SmartDatalake:
                 if var[0] == "_" and var[1:] in default_values:
                     prompt.override_var(var, default_values[var[1:]])
 
+            """Declare the global variables to be used in the prompt with $ prefix"""
+            prompt_globals = {"dfs": self._dfs}
+
             """Replace all variables with $ prefix with evaluated values"""
             prompt_text = prompt.text.split(" ")
             for i in range(len(prompt_text)):
                 word = prompt_text[i]
 
                 if word.startswith("$"):
-                    prompt_text[i] = str(eval(word[1:]))
+                    prompt_text[i] = str(eval(word[1:], prompt_globals))
             prompt.text = " ".join(prompt_text)
 
             return prompt, prompt._args
