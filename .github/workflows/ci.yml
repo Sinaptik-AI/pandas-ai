@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macOS-latest ]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
@@ -25,5 +25,17 @@ jobs:
         run: poetry install --all-extras
       - name: Lint with ruff
         run: poetry run ruff pandasai examples
-      - name: Test with pytest
-        run: poetry run pytest
+      - name: Run tests with coverage
+        run: |
+          poetry run coverage run --source=pandasai -m pytest
+          poetry run coverage xml
+      - name: Report coverage
+        run: poetry run coverage report
+      - name: Upload coverage reports to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
