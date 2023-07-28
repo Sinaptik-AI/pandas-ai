@@ -26,17 +26,15 @@ jobs:
       - name: Lint with ruff
         run: poetry run ruff pandasai examples
       - name: Run tests with coverage
-        run: poetry run coverage run --source=pandasai -m pytest
-
+        run: |
+          poetry run coverage run --source=pandasai -m pytest
+          poetry run coverage xml
+      - name: Report coverage
+        run: poetry run coverage report
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: coverage.xml
-          flags: ${{ matrix.python-version }}
+          file: ./coverage.xml
           fail_ci_if_error: true
-          env:
-            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: Combine coverage files
-        run: |
-          poetry run coverage combine
-          poetry run coverage xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
