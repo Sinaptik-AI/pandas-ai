@@ -32,6 +32,7 @@ jobs:
       - name: Report coverage
         run: poetry run coverage report
       - name: Upload coverage reports to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
