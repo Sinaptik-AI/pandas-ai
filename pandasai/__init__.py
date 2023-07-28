@@ -308,6 +308,12 @@ class PandasAI(Shortcuts):
         if default_values is None:
             default_values = {}
 
+        # prompt builtins are available to all prompts preceded by $
+        # e.g. $df.head(), $df.shape, $df.columns, etc.
+        prompt_builtins = {
+            "df": df,
+        }
+
         prompt = self._non_default_prompts.get(key)
 
         if prompt and isinstance(prompt, type):
@@ -325,7 +331,7 @@ class PandasAI(Shortcuts):
                 word = prompt_text[i]
 
                 if word.startswith("$"):
-                    prompt_text[i] = str(eval(word[1:]))
+                    prompt_text[i] = str(eval(word[1:], prompt_builtins))
             prompt.text = " ".join(prompt_text)
 
             return prompt, prompt._args
@@ -392,7 +398,7 @@ class PandasAI(Shortcuts):
                         "multiple_dataframes",
                         default_prompt=MultipleDataframesPrompt,
                         default_values=multiple_dataframes_default_values,
-                        df=heads,
+                        df=data_frame,
                     )
 
                     code = self._llm.generate_code(
