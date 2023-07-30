@@ -23,6 +23,7 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
+from ..helpers.memory import Memory
 from ..helpers.anonymizer import anonymize_dataframe_head
 
 from ..helpers.shortcuts import Shortcuts
@@ -45,6 +46,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     _llm: LLM
     _cache: Cache
     _logger: Logger
+    _memory: Memory
     _middlewares: list = [ChartsMiddleware()]
 
     def __init__(
@@ -54,6 +56,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         description: str = None,
         config: Config = None,
         logger: Logger = None,
+        memory: Memory = None,
     ):
         """
         Args:
@@ -76,6 +79,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             self._logger = Logger(
                 save_logs=self._config.save_logs, verbose=self._config.verbose
             )
+
+        if memory:
+            self._memory = memory
+        else:
+            self._memory = Memory()
 
         if self._config.middlewares is not None:
             self.add_middlewares(*self._config.middlewares)
@@ -206,7 +214,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         config_dict["llm"] = self._llm
         config = Config(**config_dict).__dict__
 
-        self._dl = SmartDatalake([self], config=config, logger=self._logger)
+        self._dl = SmartDatalake(
+            [self], config=config, logger=self._logger, memory=self._memory
+        )
         return self._dl.chat(query)
 
     @property

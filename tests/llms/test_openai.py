@@ -106,18 +106,18 @@ class TestOpenAILLM:
     def test_call_with_unsupported_model(self, prompt):
         with pytest.raises(UnsupportedOpenAIModelError):
             llm = OpenAI(api_token="test", model="not a model")
-            llm.call(instruction=prompt, value="test")
+            llm.call(instruction=prompt)
 
     def test_call_supported_completion_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="text-davinci-003")
         mocker.patch.object(openai, "completion", return_value="response")
 
-        result = openai.call(instruction=prompt, value="value")
+        result = openai.call(instruction=prompt)
         assert result == "response"
 
     def test_call_supported_chat_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="gpt-4")
         mocker.patch.object(openai, "chat_completion", return_value="response")
 
-        result = openai.call(instruction=prompt, value="value")
+        result = openai.call(instruction=prompt)
         assert result == "response"

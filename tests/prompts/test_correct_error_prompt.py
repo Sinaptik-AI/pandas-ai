@@ -12,7 +12,7 @@ class TestCorrectErrorPrompt:
         assert (
             str(
                 CorrectErrorPrompt(
-                    question="What is the correct code?",
+                    conversation="What is the correct code?",
                     error_message="Error message",
                     code="df.head()",
                     answer="df.head(5)",

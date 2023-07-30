@@ -39,6 +39,5 @@ class TestLangchainLLM:
         langchain_wrapper = LangchainLLM(langchain_llm)
 
         assert (
-            langchain_wrapper.call(instruction=prompt, value="world", suffix="!")
-            == "Custom response"
+            langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
         )

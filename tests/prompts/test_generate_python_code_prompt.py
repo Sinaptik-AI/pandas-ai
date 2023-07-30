@@ -19,7 +19,11 @@ class TestGeneratePythonCodePrompt:
             )
         ]
         assert (
-            str(GeneratePythonCodePrompt(engine="pandas", dfs=dfs))
+            str(
+                GeneratePythonCodePrompt(
+                    engine="pandas", conversation="Question", dfs=dfs
+                )
+            )
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 
@@ -77,5 +81,6 @@ analysis = DataFrameAnalysis(dfs)
 result = analysis.run()
 
 Using the provided DataFrames, please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
+Question
 """  # noqa: E501
         )

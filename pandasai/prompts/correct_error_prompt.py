@@ -32,7 +32,7 @@ This is the metadata of the dataframe:
 {df_head}.
 
 The user asked the following question:
-{question}
+{conversation}
 
 You generated this python code:
 {code}

@@ -27,6 +27,7 @@ from ..llm.langchain import LangchainLLM
 
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
+from ..helpers.memory import Memory
 from ..helpers.df_config import Config
 from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
@@ -47,6 +48,7 @@ class SmartDatalake:
     _last_prompt_id: uuid
     _original_instructions: None
     _code_manager: CodeManager
+    _memory: Memory
 
     last_code_generated: str
     last_code_executed: str
@@ -57,6 +59,7 @@ class SmartDatalake:
         dfs: List[Union[DataFrameType, Any]],
         config: Config = None,
         logger: Logger = None,
+        memory: Memory = None,
     ):
         """
         Args:
@@ -70,7 +73,7 @@ class SmartDatalake:
         smart_dfs = []
         for df in dfs:
             if not isinstance(df, SmartDataframe):
-                smart_dfs.append(SmartDataframe(df, config, logger))
+                smart_dfs.append(SmartDataframe(df, config, logger, memory))
             else:
                 smart_dfs.append(df)
 
@@ -85,6 +88,11 @@ class SmartDatalake:
             self._logger = Logger(
                 save_logs=self._config.save_logs, verbose=self._config.verbose
             )
+
+        if memory:
+            self._memory = memory
+        else:
+            self._memory = Memory()
 
         self._code_manager = CodeManager(
             dfs=self._dfs,
@@ -195,7 +203,7 @@ class SmartDatalake:
 
             return prompt, prompt._args
 
-        return default_prompt(**default_values), default_values
+        return default_prompt(**default_values, dfs=self._dfs), default_values
 
     def chat(self, query: str):
         """
@@ -215,14 +223,19 @@ class SmartDatalake:
 
         self._assign_prompt_id()
 
+        self._memory.add(query, True)
+
         try:
-            if self._config.enable_cache and self._cache and self._cache.get(query):
+            if (
+                self._config.enable_cache
+                and self._cache
+                and self._cache.get(self._memory.get_conversation())
+            ):
                 self._logger.log("Using cached response")
-                code = self._cache.get(query)
+                code = self._cache.get(self._memory.get_conversation())
             else:
                 default_values = {
-                    "prompt": query,
-                    "dfs": self._dfs,
+                    "conversation": self._memory.get_conversation(),
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                 }
@@ -232,19 +245,16 @@ class SmartDatalake:
                     default_values=default_values,
                 )
 
-                code = self._llm.generate_code(
-                    generate_response_instruction,
-                    query,
-                )
+                code = self._llm.generate_code(generate_response_instruction)
 
                 if self._config.enable_cache and self._cache:
-                    self._cache.set(query, code)
+                    self._cache.set(self._memory.get_conversation(), code)
 
             if self._config.callback is not None:
                 self._config.callback.on_code(code)
 
             self._original_instructions = {
-                "question": query,
+                "conversation": self._memory.get_conversation(),
                 "dfs": self._dfs,
             }
 
@@ -297,14 +307,19 @@ class SmartDatalake:
 
         return self._format_results(results)
 
-    def _format_results(self, results: str) -> str:
+    def _format_results(self, results: str):
         if len(results) > 1:
             output = results[1]
 
             if output["type"] == "dataframe":
                 from ..smart_dataframe import SmartDataframe
 
-                return SmartDataframe(output["result"], config=self._config.__dict__)
+                return SmartDataframe(
+                    output["result"],
+                    config=self._config.__dict__,
+                    logger=self._logger,
+                    memory=self._memory,
+                )
             elif output["type"] == "plot" or output["type"] == "image":
                 import matplotlib.pyplot as plt
                 import matplotlib.image as mpimg
@@ -342,7 +357,8 @@ class SmartDatalake:
         default_values = {
             "code": code,
             "error_returned": e,
-            "question": self._original_instructions["question"],
+            "conversation": self._original_instructions["conversation"],
+            # TODO: find a better way to determine these values
             "df_head": self._original_instructions["dfs"][0].head_csv,
             "num_rows": self._original_instructions["dfs"][0].rows_count,
             "num_columns": self._original_instructions["dfs"][0].columns_count,
@@ -353,7 +369,7 @@ class SmartDatalake:
             default_values=default_values,
         )
 
-        code = self._llm.generate_code(error_correcting_instruction, "")
+        code = self._llm.generate_code(error_correcting_instruction)
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code

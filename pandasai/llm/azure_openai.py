@@ -102,7 +102,7 @@ class AzureOpenAI(BaseOpenAI):
         """
         return {**super()._default_params, "engine": self.engine}
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: str, suffix: str = "") -> str:
         """
         Call the Azure OpenAI LLM.
 
@@ -114,12 +114,12 @@ class AzureOpenAI(BaseOpenAI):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
+        self.last_prompt = str(instruction)
 
         if self.is_chat_model:
-            response = self.chat_completion(str(instruction) + str(value) + suffix)
+            response = self.chat_completion(str(instruction) + suffix)
         else:
-            response = self.completion(str(instruction) + str(value) + suffix)
+            response = self.completion(str(instruction) + suffix)
 
         return response
 

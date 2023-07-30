@@ -127,13 +127,12 @@ class LLM:
         return code
 
     @abstractmethod
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
             instruction (Prompt): Prompt
-            value (str): Value
             suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
@@ -141,14 +140,14 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: Prompt, prompt: str) -> str:
+    def generate_code(self, instruction: Prompt) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
         Returns:
             str: Code
         """
-        code = self.call(instruction, prompt, suffix="\n\nCode:\n")
+        code = self.call(instruction, suffix="\n\nCode:\n")
         return self._extract_code(code)
 
 
@@ -300,7 +299,7 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         A call method of HuggingFaceLLM class.
         Args:
@@ -313,7 +312,7 @@ class HuggingFaceLLM(LLM):
         """
 
         prompt = str(instruction)
-        payload = prompt + value + suffix
+        payload = prompt + suffix
 
         # sometimes the API doesn't return a valid response, so we retry passing the
         # output generated from the previous call as the input
@@ -324,7 +323,7 @@ class HuggingFaceLLM(LLM):
                 break
 
         # replace instruction + value from the inputs to avoid showing it in the output
-        output = response.replace(prompt + value + suffix, "")
+        output = response.replace(prompt + suffix, "")
         ans = ""
         for line in output.split("\n"):
             if line.find("utput:") != -1:
@@ -432,7 +431,7 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Call the Google LLM.
 
@@ -444,6 +443,6 @@ class BaseGoogle(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + value
-        prompt = str(instruction) + value + suffix
+        self.last_prompt = str(instruction)
+        prompt = str(instruction) + suffix
         return self._generate_text(prompt)

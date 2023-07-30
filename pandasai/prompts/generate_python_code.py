@@ -70,6 +70,7 @@ analysis = DataFrameAnalysis(dfs)
 result = analysis.run()
 
 Using the provided DataFrames, please generate the specific Python code to be inserted into the respective methods in order to answer the following question:
+{conversation}
 """  # noqa: E501
 
     def __init__(self, **kwargs):
