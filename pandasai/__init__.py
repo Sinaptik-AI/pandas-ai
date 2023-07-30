@@ -39,24 +39,13 @@ import importlib.metadata
 
 import pandas as pd
 from .helpers.shortcuts import Shortcuts
+from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .callbacks.base import BaseCallback
 from .helpers.df_config import Config
 from .prompts.base import Prompt
 
 __version__ = importlib.metadata.version(__package__ or __name__)
-
-
-def get_version():
-    """
-    Get the version from the package metadata
-    """
-    from importlib.metadata import version
-
-    return version("pandasai")
-
-
-__version__ = get_version()
 
 
 class PandasAI(Shortcuts):
@@ -249,3 +238,10 @@ class PandasAI(Shortcuts):
     def last_prompt(self) -> str:
         """Return the last prompt that was executed."""
         return self._dl.last_prompt
+
+
+__all__ = [
+    "PandasAI",
+    "SmartDataframe",
+    "SmartDatalake",
+]

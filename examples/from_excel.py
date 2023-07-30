@@ -1,7 +1,7 @@
 """Example of using PandasAI with am Excel file."""
 
-from pandasai.smart_dataframe import SmartDataframe
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 llm = OpenAI()
 

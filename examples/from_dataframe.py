@@ -3,8 +3,8 @@
 import pandas as pd
 from data.sample_dataframe import dataframe
 
-from pandasai.smart_dataframe import SmartDataframe
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 df = pd.DataFrame(dataframe)
 

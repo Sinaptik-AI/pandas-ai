@@ -2,7 +2,7 @@
 
 from pandasai import PandasAI
 from pandasai.helpers.from_google_sheets import from_google_sheets
-from pandasai.llm.openai import OpenAI
+from pandasai.llm import OpenAI
 
 # Betas & Bludgers Writing Competitions List (source: https://heystacks.com/?type=sheets&tags=data)
 dfs = from_google_sheets(

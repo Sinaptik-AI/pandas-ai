@@ -35,7 +35,7 @@ from ..helpers.df_info import DataFrameType, df_type
 
 
 class SmartDataframe(Shortcuts):
-    engine: str
+    _engine: str
     _name: str
     _description: str
     _df: pd.DataFrame
@@ -114,9 +114,9 @@ class SmartDataframe(Shortcuts):
             raise ValueError("Invalid file format.")
 
     def _load_engine(self):
-        self.engine = df_type(self._df)
+        self._engine = df_type(self._df)
 
-        if self.engine is None:
+        if self._engine is None:
             raise ValueError(
                 "Invalid input data. Must be a Pandas or Polars dataframe."
             )
@@ -245,6 +245,10 @@ class SmartDataframe(Shortcuts):
     @property
     def name(self):
         return self._name
+
+    @property
+    def engine(self):
+        return self._engine
 
     @property
     def description(self):

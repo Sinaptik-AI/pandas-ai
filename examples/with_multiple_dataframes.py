@@ -2,8 +2,8 @@
 
 import pandas as pd
 
-from pandasai.smart_datalake import SmartDatalake
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDatalake
+from pandasai.llm import OpenAI
 
 employees_df = pd.DataFrame(
     {

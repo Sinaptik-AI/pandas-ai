@@ -3,8 +3,8 @@
 import pandas as pd
 from data.sample_dataframe import dataframe
 
-from pandasai import PandasAI
-from pandasai.llm.azure_openai import AzureOpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import AzureOpenAI
 
 df = pd.DataFrame(dataframe)
 
@@ -22,7 +22,7 @@ llm = AzureOpenAI(
     # is_chat_model=True, # Comment in if you deployed a chat model
 )
 
-pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
+df = SmartDataframe(df, config={"llm": llm})
+response = df.chat("Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056

@@ -237,16 +237,16 @@ class SmartDatalake:
                     query,
                 )
 
-                if self._config.callback is not None:
-                    self._config.callback.on_code(code)
-
-                self._original_instructions = {
-                    "question": query,
-                    "dfs": self._dfs,
-                }
-
                 if self._config.enable_cache and self._cache:
                     self._cache.set(query, code)
+
+            if self._config.callback is not None:
+                self._config.callback.on_code(code)
+
+            self._original_instructions = {
+                "question": query,
+                "dfs": self._dfs,
+            }
 
             self.last_code_generated = code
             self._logger.log(
