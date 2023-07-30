@@ -32,9 +32,10 @@ from typing import List
 from ..middlewares.base import Middleware
 from ..middlewares.charts import ChartsMiddleware
 from ..helpers.df_info import DataFrameType, df_type
+from .abstract_df import DataframeAbstract
 
 
-class SmartDataframe(Shortcuts):
+class SmartDataframe(DataframeAbstract, Shortcuts):
     _engine: str
     _name: str
     _description: str
