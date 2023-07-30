@@ -767,46 +767,6 @@ Code:
         )
 
     @pytest.mark.skip
-    def test_retry_on_error_with_multiple_df(self, pandasai, sample_df):
-        code = 'print("Hello world")'
-
-        pandasai._original_instructions = {
-            "question": "Print hello world",
-            "df_head": [sample_df.head()],
-            "num_rows": 10,
-            "num_columns": 3,
-        }
-        pandasai._retry_run_code(code, e=Exception("Test error"), multiple=True)
-        assert (
-            pandasai.last_prompt
-            == """
-You are provided with the following pandas dataframes:
-Dataframe df1, with 5 rows and 3 columns.
-This is the metadata of the dataframe df1:
-          country             gdp  happiness_index
-0   United States  19294482071552             6.94
-1  United Kingdom   2891615567872             7.16
-2          France   2411255037952             6.66
-3         Germany   3435817336832             7.07
-4           Italy   1745433788416             6.38
-The user asked the following question:
-Print hello world
-
-You generated this python code:
-print("Hello world")
-
-It fails with the following error:
-Test error
-
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
-Make sure to prefix the requested python code with <startCode> exactly and suffix the code with <endCode> exactly.
-
-
-Code:
-"""  # noqa: E501
-        )
-
-    @pytest.mark.skip
     def test_catches_multiple_prints(self, pandasai):
         code = """
 print("Hello world")
@@ -832,12 +792,6 @@ print('Hello', name)"""
     def test_shortcut(self, pandasai):
         pandasai.run = Mock(return_value="Hello world")
         pandasai.clean_data(pd.DataFrame())
-        pandasai.run.assert_called_once()
-
-    @pytest.mark.skip
-    def test_shortcut_with_multiple_df(self, pandasai):
-        pandasai.run = Mock(return_value="Hello world")
-        pandasai.clean_data([pd.DataFrame(), pd.DataFrame()])
         pandasai.run.assert_called_once()
 
     @pytest.mark.skip
@@ -917,40 +871,6 @@ print('Hello', name)"""
         assert llm.last_prompt == expected_last_prompt
 
     @pytest.mark.skip
-    def test_replace_multiple_dataframes_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = ""
-
-            def __init__(self, dataframes, **kwargs):
-                super().__init__(
-                    **kwargs,
-                )
-                for df in dataframes:
-                    self.text += f"\n{df}\n"
-
-        pai = PandasAI(
-            llm,
-            non_default_prompts={"multiple_dataframes": ReplacementPrompt},
-            enable_cache=False,
-        )
-        question = "Will this work?"
-        dataframes = [pd.DataFrame(), pd.DataFrame()]
-
-        pai(
-            dataframes,
-            question,
-            anonymize_df=False,
-            use_error_correction_framework=False,
-        )
-
-        heads = [dataframe.head(5) for dataframe in dataframes]
-
-        expected_last_prompt = (
-            str(ReplacementPrompt(dataframes=heads)) + question + "\n\nCode:\n"
-        )
-        assert llm.last_prompt == expected_last_prompt
-
-    @pytest.mark.skip
     def test_replace_generate_response_prompt(self, llm):
         class CustomGenerateResponsePrompt(Prompt):
             text = "{_question} | {_answer}"
@@ -977,43 +897,6 @@ print('Hello', name)"""
             str(CustomGenerateResponsePrompt(**expected_vals))
             + ""  # "value" parameter passed as empty string
             + ""  # "suffix" parameter defaults to empty string
-        )
-        assert llm.last_prompt == expected_last_prompt
-
-    @pytest.mark.skip
-    def test_replace_correct_multiple_dataframes_error_prompt(self, llm):
-        class ReplaceCorrectMultipleDataframesErrorPrompt(Prompt):
-            text = "{_df_head} | " "{_question} | {_code} | {_error_returned} |"
-
-        pai = PandasAI(
-            llm,
-            non_default_prompts={
-                "correct_multiple_dataframes_error": ReplaceCorrectMultipleDataframesErrorPrompt()  # noqa: E501
-            },
-            enable_cache=False,
-        )
-
-        dataframes = [pd.DataFrame(), pd.DataFrame()]
-
-        erroneous_code = "a"
-        question = "Will this work?"
-        heads = [dataframe.head(5) for dataframe in dataframes]
-
-        pai._original_instructions["question"] = question
-        pai._original_instructions["df_head"] = heads
-        pai.run_code(erroneous_code, dataframes, use_error_correction_framework=True)
-
-        expected_last_prompt = (
-            str(
-                ReplaceCorrectMultipleDataframesErrorPrompt(
-                    _code=erroneous_code,
-                    _error_returned="name 'a' is not defined",
-                    _question=question,
-                    _df_head=heads,
-                )
-            )
-            + ""  # "prompt" parameter passed as empty string
-            + "\n\nCode:\n"
         )
         assert llm.last_prompt == expected_last_prompt
 

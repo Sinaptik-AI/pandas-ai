@@ -25,19 +25,3 @@ A prompt to generate Python Code on Error
 ::: pandasai.prompts.correct_error_prompt
 options:
 show_root_heading: true
-
-### Generate Python Code Multiple DataFrames
-
-A standard prompt is designed to be used when querying the LLMs to generate Python Code.
-
-::: pandasai.prompts.multiple_dataframes
-options:
-show_root_heading: true
-
-### Generate Python Code On Error Multiple DataFrames
-
-A prompt to generate Python Code on Error
-
-::: pandasai.prompts.correct_multiples_prompt
-options:
-show_root_heading: true
