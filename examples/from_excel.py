@@ -1,8 +1,8 @@
 """Example of using PandasAI with am Excel file."""
 
 from pandasai import PandasAI
-from pandasai.helpers.from_excel import from_excel
-from pandasai.llm.openai import OpenAI
+from pandasai.helpers import from_excel
+from pandasai.llm import OpenAI
 
 df = from_excel("examples/data/Loan payments data.xlsx")
 

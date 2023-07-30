@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.starcoder import Starcoder
+from pandasai.llm import Starcoder
 
 
 class TestStarcoderLLM:

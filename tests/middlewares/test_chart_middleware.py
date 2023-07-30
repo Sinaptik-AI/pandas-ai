@@ -1,6 +1,6 @@
 """Unit tests for the charts middleware class"""
 
-from pandasai.middlewares.charts import ChartsMiddleware
+from pandasai.middlewares import ChartsMiddleware
 from unittest.mock import Mock
 
 import pytest

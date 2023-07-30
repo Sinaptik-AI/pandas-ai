@@ -13,9 +13,9 @@ import pytest
 from pandasai import PandasAI, Prompt
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares.base import Middleware
+from pandasai.middlewares import Middleware
 from langchain.llms import OpenAI
-from pandasai.callbacks.base import StdoutCallback
+from pandasai.callbacks import StdoutCallback
 
 
 class TestPandasAI:

@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 
-from pandasai.helpers.from_excel import from_excel
+from pandasai.helpers import from_excel
 
 
 class TestFromExcel:

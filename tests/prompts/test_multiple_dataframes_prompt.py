@@ -3,7 +3,7 @@
 
 import pandas as pd
 
-from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+from pandasai.prompts import MultipleDataframesPrompt
 
 
 class TestMultipleDataframesPrompt:

@@ -3,7 +3,7 @@ import openai
 from openai.openai_object import OpenAIObject
 
 from pandasai import PandasAI
-from pandasai.helpers.openai_info import (
+from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
 )

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from pandasai.prompts.correct_multiples_prompt import (
+from pandasai.prompts import (
     CorrectMultipleDataframesErrorPrompt,
 )
 

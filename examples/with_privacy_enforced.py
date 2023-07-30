@@ -3,7 +3,7 @@
 import pandas as pd
 
 from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai.llm import OpenAI
 
 from .data.sample_dataframe import dataframe
 
