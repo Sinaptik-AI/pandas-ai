@@ -100,7 +100,19 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Args:
             df (DataFrameType): Pandas or Polars dataframe or path to a file
         """
-        self._df = self._import_from_file(df) if isinstance(df, str) else df
+        if isinstance(df, str):
+            self._df = self._import_from_file(df)
+        elif isinstance(df, (list, dict)):
+            # if the list can be converted to a dataframe, convert it
+            # otherwise, raise an error
+            try:
+                self._df = pd.DataFrame(df)
+            except ValueError:
+                raise ValueError(
+                    "Invalid input data. We cannot convert it to a dataframe."
+                )
+        else:
+            self._df = df
 
     def _import_from_file(self, file_path: str):
         """

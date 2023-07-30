@@ -101,9 +101,9 @@ Code running:
         environment: dict = self._get_environment()
 
         exec(code_to_run, environment)
-        result = environment.get("result", None)
+        analyze_data = environment.get("analyze_data", None)
 
-        return result
+        return analyze_data(self._dfs)
 
     def _get_environment(self) -> dict:
         """

@@ -274,11 +274,11 @@ class SmartDatalake:
 
             count = 0
             code_to_run = code
-            results = []
+            result = None
             while count < self._config.max_retries:
                 try:
                     # Execute the code
-                    results = self._code_manager.execute_code(
+                    result = self._code_manager.execute_code(
                         code=code_to_run,
                         prompt_id=self._last_prompt_id,
                     )
@@ -291,9 +291,9 @@ class SmartDatalake:
 
                     code_to_run = self._retry_run_code(code, e)
 
-            if len(results) > 0:
-                self.last_result = results
-                self._logger.log(f"Answer: {results}")
+            if result is None:
+                self.last_result = result
+                self._logger.log(f"Answer: {result}")
         except Exception as exception:
             self.last_error = str(exception)
             print(exception)
@@ -305,35 +305,47 @@ class SmartDatalake:
 
         self._logger.log(f"Executed in: {time.time() - self._start_time}s")
 
-        return self._format_results(results)
+        self._add_result_to_memory(result)
 
-    def _format_results(self, results: str):
-        if len(results) > 1:
-            output = results[1]
+        return self._format_results(result)
 
-            if output["type"] == "dataframe":
-                from ..smart_dataframe import SmartDataframe
+    def _add_result_to_memory(self, result: dict):
+        if result is None:
+            return
 
-                return SmartDataframe(
-                    output["result"],
-                    config=self._config.__dict__,
-                    logger=self._logger,
-                    memory=self._memory,
-                )
-            elif output["type"] == "plot" or output["type"] == "image":
-                import matplotlib.pyplot as plt
-                import matplotlib.image as mpimg
+        if result["type"] == "string":
+            self._memory.add(result["result"], False)
+        elif result["type"] == "dataframe":
+            self._memory.add("Here is the data you requested.", False)
+        elif result["type"] == "plot" or result["type"] == "image":
+            self._memory.add("Here is the plot you requested.", False)
 
-                # Load the image file
-                image = mpimg.imread(output["result"])
+    def _format_results(self, result: dict):
+        if result is None:
+            return
 
-                # Display the image
-                plt.imshow(image)
-                plt.axis("off")
-                plt.show(block=self._is_running_in_console())
-                plt.close("all")
-            else:
-                return output["result"]
+        if result["type"] == "dataframe":
+            from ..smart_dataframe import SmartDataframe
+
+            return SmartDataframe(
+                result["value"],
+                config=self._config.__dict__,
+                logger=self._logger,
+            )
+        elif result["type"] == "plot":
+            import matplotlib.pyplot as plt
+            import matplotlib.image as mpimg
+
+            # Load the image file
+            image = mpimg.imread(result["value"])
+
+            # Display the image
+            plt.imshow(image)
+            plt.axis("off")
+            plt.show(block=self._is_running_in_console())
+            plt.close("all")
+        else:
+            return result["value"]
 
     def _retry_run_code(self, code: str, e: Exception):
         """
