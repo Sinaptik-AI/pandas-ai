@@ -57,6 +57,7 @@ seaborn = ["seaborn"]
 plotly = ["plotly", "kaleido"]
 statsmodels = ["statsmodels"]
 openpyxl = ["openpyxl"]
+streamlit = ["streamlit"]
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.4.0"

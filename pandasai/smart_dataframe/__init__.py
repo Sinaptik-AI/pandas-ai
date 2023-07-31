@@ -22,7 +22,7 @@ import pandas as pd
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 from ..smart_datalake import SmartDatalake
-from ..helpers.df_config import Config
+from ..helpers.df_config import Config, load_config
 from ..helpers.memory import Memory
 from ..helpers.anonymizer import anonymize_dataframe_head
 
@@ -162,14 +162,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config): Config to be used
         """
 
-        if config is None:
-            self._config = Config()
-        else:
-            if "llm" in config:
-                self.load_llm(config["llm"])
+        self._config = load_config(config)
 
-            # TODO: fallback to default config from pandasai
-            self._config = Config(**config)
+        if self._config.llm:
+            self.load_llm(self._config.llm)
 
     def load_llm(self, llm: LLM):
         """

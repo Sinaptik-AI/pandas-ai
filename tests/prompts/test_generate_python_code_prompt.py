@@ -4,6 +4,7 @@
 import pandas as pd
 from pandasai.smart_dataframe import SmartDataframe
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.llm.fake import FakeLLM
 
 
 class TestGeneratePythonCodePrompt:
@@ -12,10 +13,11 @@ class TestGeneratePythonCodePrompt:
     def test_str_with_args(self):
         """Test that the __str__ method is implemented"""
 
+        llm = FakeLLM("plt.show()")
         dfs = [
             SmartDataframe(
                 pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
-                config={"anonymize_dataframe": False},
+                config={"llm": llm, "anonymize_dataframe": False},
             )
         ]
         assert (

@@ -28,7 +28,7 @@ from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.memory import Memory
-from ..helpers.df_config import Config
+from ..helpers.df_config import Config, load_config
 from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
@@ -111,11 +111,10 @@ class SmartDatalake:
             config (Config): Config to be used
         """
 
-        if config["llm"]:
-            self.load_llm(config["llm"])
+        self._config = load_config(config)
 
-        # TODO: fallback to default config from pandasai
-        self._config = Config(**config)
+        if self._config.llm:
+            self.load_llm(self._config.llm)
 
     def load_llm(self, llm: LLM):
         """

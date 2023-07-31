@@ -3925,9 +3925,10 @@ plotly = ["kaleido", "plotly"]
 polars = ["polars"]
 seaborn = ["seaborn"]
 statsmodels = ["statsmodels"]
+streamlit = ["streamlit"]
 tests = ["numpy", "seaborn"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "3858ea23883995e0ecbc035385658400ae9f3f7077e437a11a5899b4217282c8"
+content-hash = "ec818327bd1a40b047890d95d17cb7c2cde8b4787846cd3f3a316d32dd0cc792"
