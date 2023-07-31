@@ -48,6 +48,7 @@ import importlib.metadata
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 import astor
+import matplotlib
 import pandas as pd
 from .constants import (
     WHITELISTED_BUILTINS,
@@ -642,6 +643,7 @@ class PandasAI(Shortcuts):
 
         return {
             "pd": pd,
+            "plt": matplotlib.pyplot,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])
