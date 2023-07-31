@@ -25,10 +25,12 @@ from ..helpers.anonymizer import anonymize_dataframe_head
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
-from typing import List
+from typing import List, Union
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
+from ..callbacks.base import BaseCallback
+from ..llm import LLM, LangchainLLM
 
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
@@ -191,3 +193,53 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def description(self):
         return self._description
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def enforce_privacy(self, enforce_privacy: bool):
+        self._dl.enforce_privacy = enforce_privacy
+
+    @config.setter
+    def anonymize_dataframe(self, anonymize_dataframe: bool):
+        self._dl.anonymize_dataframe = anonymize_dataframe
+
+    @config.setter
+    def use_error_correction_framework(self, use_error_correction_framework: bool):
+        self._dl.use_error_correction_framework = use_error_correction_framework
+
+    @config.setter
+    def custom_prompts(self, custom_prompts: dict):
+        self._dl.custom_prompts = custom_prompts
+
+    @config.setter
+    def save_charts(self, save_charts: bool):
+        self._dl.save_charts = save_charts
+
+    @config.setter
+    def save_charts_path(self, save_charts_path: str):
+        self._dl.save_charts_path = save_charts_path
+
+    @config.setter
+    def custom_whitelisted_dependencies(
+        self, custom_whitelisted_dependencies: List[str]
+    ):
+        self._dl.custom_whitelisted_dependencies = custom_whitelisted_dependencies
+
+    @config.setter
+    def max_retries(self, max_retries: int):
+        self._dl.max_retries = max_retries
+
+    @config.setter
+    def middlewares(self, middlewares: List[Middleware]):
+        self._dl.middlewares = middlewares
+
+    @config.setter
+    def callback(self, callback: BaseCallback):
+        self._dl.callback = callback
+
+    @config.setter
+    def llm(self, llm: Union[LLM, LangchainLLM]):
+        self._dl.llm = llm

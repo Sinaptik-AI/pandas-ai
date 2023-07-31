@@ -79,7 +79,7 @@ class SmartDatalake:
 
         self._dfs = smart_dfs
 
-        self.load_config(config)
+        self._load_config(config)
 
         if logger:
             self._logger = logger
@@ -102,7 +102,7 @@ class SmartDatalake:
         if self._config.enable_cache:
             self._cache = Cache()
 
-    def load_config(self, config: Config):
+    def _load_config(self, config: Config):
         """
         Load a config to be used to run the queries.
 
@@ -113,9 +113,9 @@ class SmartDatalake:
         self._config = load_config(config)
 
         if self._config.llm:
-            self.load_llm(self._config.llm)
+            self._load_llm(self._config.llm)
 
-    def load_llm(self, llm: LLM):
+    def _load_llm(self, llm: LLM):
         """
         Load a LLM to be used to run the queries.
         Check if it is a PandasAI LLM or a Langchain LLM.
@@ -402,3 +402,53 @@ class SmartDatalake:
     @property
     def config(self):
         return self._config
+
+    @config.setter
+    def enforce_privacy(self, enforce_privacy: bool):
+        self._config.enforce_privacy = enforce_privacy
+
+    @config.setter
+    def enable_cache(self, enable_cache: bool):
+        self._config.enable_cache = enable_cache
+
+    @config.setter
+    def anonymize_dataframe(self, anonymize_dataframe: bool):
+        self._config.anonymize_dataframe = anonymize_dataframe
+
+    @config.setter
+    def use_error_correction_framework(self, use_error_correction_framework: bool):
+        self._config.use_error_correction_framework = use_error_correction_framework
+
+    @config.setter
+    def custom_prompts(self, custom_prompts: dict):
+        self._config.custom_prompts = custom_prompts
+
+    @config.setter
+    def save_charts(self, save_charts: bool):
+        self._config.save_charts = save_charts
+
+    @config.setter
+    def save_charts_path(self, save_charts_path: str):
+        self._config.save_charts_path = save_charts_path
+
+    @config.setter
+    def custom_whitelisted_dependencies(
+        self, custom_whitelisted_dependencies: List[str]
+    ):
+        self._config.custom_whitelisted_dependencies = custom_whitelisted_dependencies
+
+    @config.setter
+    def max_retries(self, max_retries: int):
+        self._config.max_retries = max_retries
+
+    @config.setter
+    def middlewares(self, middlewares: List[Middleware]):
+        self._config.middlewares = middlewares
+
+    @config.setter
+    def callback(self, callback: Any):
+        self._config.callback = callback
+
+    @config.setter
+    def llm(self, llm: LLM):
+        self._load_llm(llm)
