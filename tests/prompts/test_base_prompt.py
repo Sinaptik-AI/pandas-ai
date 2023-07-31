@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import MethodNotImplementedError
-from pandasai.prompts.base import Prompt
+from pandasai.prompts import Prompt
 
 
 class TestBasePrompt:

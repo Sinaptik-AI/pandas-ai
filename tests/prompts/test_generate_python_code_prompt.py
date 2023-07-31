@@ -1,7 +1,7 @@
 """Unit tests for the generate python code prompt class"""
 
 
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.prompts import GeneratePythonCodePrompt
 
 
 class TestGeneratePythonCodePrompt:

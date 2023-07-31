@@ -1,6 +1,6 @@
 """Unit tests for generate response prompt class"""
 
-from pandasai.prompts.generate_response import GenerateResponsePrompt
+from pandasai.prompts import GenerateResponsePrompt
 
 
 class TestCorrectErrorPrompt:

@@ -3,7 +3,7 @@
 import pandas as pd
 
 from pandasai import PandasAI
-from pandasai.llm.google_palm import GoogleVertexai
+from pandasai.llm import GoogleVertexai
 
 df = pd.read_csv("examples/data/Loan payments data.csv")
 

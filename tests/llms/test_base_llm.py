@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.base import LLM
+from pandasai.llm import LLM
 
 
 class TestBaseLLM:

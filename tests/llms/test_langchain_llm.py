@@ -3,8 +3,8 @@
 from langchain.llms import OpenAI
 import pytest
 
-from pandasai.llm.langchain import LangchainLLM
-from pandasai.prompts.base import Prompt
+from pandasai.llm import LangchainLLM
+from pandasai.prompts import Prompt
 from unittest.mock import Mock
 
 

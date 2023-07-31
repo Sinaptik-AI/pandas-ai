@@ -3,8 +3,8 @@ import openai
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from pandasai.llm.openai import OpenAI
-from pandasai.prompts.base import Prompt
+from pandasai.llm import OpenAI
+from pandasai.prompts import Prompt
 
 
 class TestOpenAILLM:

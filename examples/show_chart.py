@@ -4,7 +4,7 @@ import pandas as pd
 from data.sample_dataframe import dataframe
 
 from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai.llm import OpenAI
 
 df = pd.DataFrame(dataframe)
 

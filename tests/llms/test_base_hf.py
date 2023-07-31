@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from pandasai.llm.base import HuggingFaceLLM
-from pandasai.prompts.base import Prompt
+from pandasai.prompts import Prompt
 
 
 class TestBaseHfLLM:

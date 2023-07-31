@@ -4,7 +4,7 @@ import pandas as pd
 from data.sample_dataframe import dataframe
 
 from pandasai import PandasAI
-from pandasai.llm.azure_openai import AzureOpenAI
+from pandasai.llm import AzureOpenAI
 
 df = pd.DataFrame(dataframe)
 
