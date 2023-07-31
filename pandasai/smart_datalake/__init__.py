@@ -79,8 +79,7 @@ class SmartDatalake:
 
         self._dfs = smart_dfs
 
-        if config:
-            self.load_config(config)
+        self.load_config(config)
 
         if logger:
             self._logger = logger
@@ -399,3 +398,7 @@ class SmartDatalake:
     @property
     def logs(self):
         return self._logger.logs
+
+    @property
+    def config(self):
+        return self._config

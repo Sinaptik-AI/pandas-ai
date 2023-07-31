@@ -19,19 +19,14 @@ Example:
 """
 
 import pandas as pd
-from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
 from ..smart_datalake import SmartDatalake
-from ..helpers.df_config import Config, load_config
-from ..helpers.memory import Memory
+from ..helpers.df_config import Config
 from ..helpers.anonymizer import anonymize_dataframe_head
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
-from ..helpers.cache import Cache
 from typing import List
 from ..middlewares.base import Middleware
-from ..middlewares.charts import ChartsMiddleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
 
@@ -42,12 +37,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     _description: str
     _df: pd.DataFrame
     _dl: SmartDatalake
-    _config: Config
-    _llm: LLM
-    _cache: Cache
-    _logger: Logger
-    _memory: Memory
-    _middlewares: list = [ChartsMiddleware()]
 
     def __init__(
         self,
@@ -56,7 +45,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         description: str = None,
         config: Config = None,
         logger: Logger = None,
-        memory: Memory = None,
     ):
         """
         Args:
@@ -71,27 +59,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         self._load_df(df)
 
-        self.load_config(config)
-
-        if logger:
-            self._logger = logger
-        else:
-            self._logger = Logger(
-                save_logs=self._config.save_logs, verbose=self._config.verbose
-            )
-
-        if memory:
-            self._memory = memory
-        else:
-            self._memory = Memory()
-
-        if self._config.middlewares is not None:
-            self.add_middlewares(*self._config.middlewares)
-
-        if self._config.enable_cache:
-            self._cache = Cache()
-
         self._load_engine()
+
+        self._dl = SmartDatalake([self], config=config, logger=logger)
 
     def _load_df(self, df: DataFrameType):
         """
@@ -154,40 +124,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def __repr__(self):
         return repr(self._df)
 
-    def load_config(self, config: Config):
-        """
-        Load a config to be used to run the queries.
-
-        Args:
-            config (Config): Config to be used
-        """
-
-        self._config = load_config(config)
-
-        if self._config.llm:
-            self.load_llm(self._config.llm)
-
-    def load_llm(self, llm: LLM):
-        """
-        Load a LLM to be used to run the queries.
-        Check if it is a PandasAI LLM or a Langchain LLM.
-        If it is a Langchain LLM, wrap it in a PandasAI LLM.
-
-        Args:
-            llm (object): LLMs option to be used for API access
-
-        Raises:
-            BadImportError: If the LLM is a Langchain LLM but the langchain package
-            is not installed
-        """
-
-        try:
-            llm.is_pandasai_llm()
-        except AttributeError:
-            llm = LangchainLLM(llm)
-
-        self._llm = llm
-
     def add_middlewares(self, *middlewares: List[Middleware]):
         """
         Add middlewares to PandasAI instance.
@@ -196,16 +132,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             *middlewares: A list of middlewares
 
         """
-        self._middlewares.extend(middlewares)
-
-    # TODO: figure out a way to handle the cache more effectively
-    # i.e. multiple dataframes, etc... Should it be handled at the library level?
-    def clear_cache(self):
-        """
-        Clears the cache of the PandasAI instance.
-        """
-        if self._cache:
-            self._cache.clear()
+        self._dl.add_middlewares(*middlewares)
 
     def chat(self, query: str):
         """
@@ -217,14 +144,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Raises:
             ValueError: If the query is empty
         """
-        config_dict = self._config.__dict__
-        config_dict["middlewares"] = self._middlewares
-        config_dict["llm"] = self._llm
-        config = Config(**config_dict).__dict__
-
-        self._dl = SmartDatalake(
-            [self], config=config, logger=self._logger, memory=self._memory
-        )
         return self._dl.chat(query)
 
     @property
@@ -237,17 +156,17 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def head_csv(self):
-        rows_to_display = 0 if self._config.enforce_privacy else 5
+        rows_to_display = 0 if self._dl.config.enforce_privacy else 5
 
         df_head = self._df.head(rows_to_display)
-        if self._config.anonymize_dataframe:
+        if self._dl.config.anonymize_dataframe:
             df_head = anonymize_dataframe_head(df_head)
 
         return df_head.to_csv(index=False)
 
     @property
     def last_prompt(self):
-        return self._llm.last_prompt
+        return self._dl.last_prompt
 
     @property
     def last_code_generated(self):

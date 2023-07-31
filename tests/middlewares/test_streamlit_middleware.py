@@ -23,7 +23,6 @@ st.pyplot(plt.gcf())"""
 
     def test_streamlit_middleware_optional_dependency(self, mock_json_load):
         """Test the streamlit middleware installs the optional dependency"""
-
         mock_json_load.return_value = {}
 
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
