@@ -16,8 +16,8 @@ class TestGeneratePythonCodePrompt:
         llm = FakeLLM("plt.show()")
         dfs = [
             SmartDataframe(
-                pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
-                config={"llm": llm, "anonymize_dataframe": False},
+                pd.DataFrame({"a": [1], "b": [4]}),
+                config={"llm": llm},
             )
         ]
         assert (
@@ -29,12 +29,10 @@ class TestGeneratePythonCodePrompt:
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 
-Dataframe dfs[0], with 3 rows and 2 columns.
+Dataframe dfs[0], with 1 rows and 2 columns.
 This is the metadata of the dataframe dfs[0]:
 a,b
 1,4
-2,5
-3,6
 
 
 This is the initial python code to be updated:

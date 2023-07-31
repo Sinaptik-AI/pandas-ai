@@ -21,7 +21,7 @@ Example:
 import pandas as pd
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
-from ..helpers.anonymizer import anonymize_dataframe_head
+from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
@@ -39,6 +39,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     _description: str
     _df: pd.DataFrame
     _dl: SmartDatalake
+    _sample_head: pd.DataFrame
 
     def __init__(
         self,
@@ -160,9 +161,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def head_csv(self):
         rows_to_display = 0 if self._dl.config.enforce_privacy else 5
 
-        df_head = self._df.head(rows_to_display)
-        if self._dl.config.anonymize_dataframe:
-            df_head = anonymize_dataframe_head(df_head)
+        sample = DataSampler(self._df)
+        df_head = sample.sample(rows_to_display)
 
         return df_head.to_csv(index=False)
 
@@ -201,10 +201,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @config.setter
     def enforce_privacy(self, enforce_privacy: bool):
         self._dl.enforce_privacy = enforce_privacy
-
-    @config.setter
-    def anonymize_dataframe(self, anonymize_dataframe: bool):
-        self._dl.anonymize_dataframe = anonymize_dataframe
 
     @config.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):

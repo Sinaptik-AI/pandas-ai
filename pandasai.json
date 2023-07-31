@@ -3,7 +3,6 @@
   "verbose": false,
   "enforce_privacy": false,
   "enable_cache": true,
-  "anonymize_dataframe": true,
   "use_error_correction_framework": true,
   "custom_prompts": {},
   "save_charts": false,

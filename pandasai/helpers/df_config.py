@@ -12,7 +12,6 @@ class Config(BaseModel):
     verbose: bool = False
     enforce_privacy: bool = False
     enable_cache: bool = True
-    anonymize_dataframe: bool = True
     use_error_correction_framework: bool = True
     custom_prompts: dict = {}
     save_charts: bool = False

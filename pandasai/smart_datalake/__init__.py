@@ -420,10 +420,6 @@ class SmartDatalake:
         self._config.enable_cache = enable_cache
 
     @config.setter
-    def anonymize_dataframe(self, anonymize_dataframe: bool):
-        self._config.anonymize_dataframe = anonymize_dataframe
-
-    @config.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):
         self._config.use_error_correction_framework = use_error_correction_framework
 
