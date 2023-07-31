@@ -2,8 +2,8 @@
 
 
 import pandas as pd
-from pandasai.smart_dataframe import SmartDataframe
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai import SmartDataframe
+from pandasai.prompts import GeneratePythonCodePrompt
 from pandasai.llm.fake import FakeLLM
 
 

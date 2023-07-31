@@ -5,8 +5,8 @@ import pytest
 from google import generativeai
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.google_palm import GooglePalm
-from pandasai.prompts.base import Prompt
+from pandasai.llm import GooglePalm
+from pandasai.prompts import Prompt
 
 
 class MockedCompletion:

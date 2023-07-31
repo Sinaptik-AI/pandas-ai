@@ -1,7 +1,7 @@
 """Unit tests for the correct error prompt class"""
 
 
-from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
+from pandasai.prompts import CorrectErrorPrompt
 
 
 class TestCorrectErrorPrompt:

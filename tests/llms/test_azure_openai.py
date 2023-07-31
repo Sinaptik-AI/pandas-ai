@@ -3,7 +3,7 @@ import openai
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from pandasai.llm.azure_openai import AzureOpenAI
+from pandasai.llm import AzureOpenAI
 from openai.openai_object import OpenAIObject
 
 

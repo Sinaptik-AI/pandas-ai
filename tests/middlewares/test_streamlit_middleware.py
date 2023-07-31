@@ -4,7 +4,7 @@ import pandas as pd
 
 from pandasai.smart_datalake import SmartDatalake
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares.streamlit import StreamlitMiddleware
+from pandasai.middlewares import StreamlitMiddleware
 
 
 class TestStreamlitMiddleware:

@@ -13,9 +13,9 @@ import pytest
 from pandasai import PandasAI, Prompt
 from pandasai.exceptions import BadImportError, LLMNotFoundError, NoCodeFoundError
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares.base import Middleware
+from pandasai.middlewares import Middleware
 from langchain.llms import OpenAI
-from pandasai.callbacks.base import StdoutCallback
+from pandasai.callbacks import StdoutCallback
 
 
 class TestPandasAI:
@@ -479,6 +479,16 @@ print(set([1, 2, 3]))
         pandasai._llm._output = builtins_code
         assert pandasai.run_code(builtins_code, pd.DataFrame()) == {1, 2, 3}
         assert pandasai.last_code_executed == "print(set([1, 2, 3]))"
+
+    @pytest.mark.skip
+    def test_clean_code_removes_jailbreak_code(self, pandasai):
+        malicious_code = """
+__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
+print(df)
+"""
+        pandasai._llm._output = malicious_code
+        pandasai.run_code(malicious_code, pd.DataFrame())
+        assert pandasai.last_code_executed == "print(df)"
 
     @pytest.mark.skip
     def test_clean_code_remove_environment_defaults(self, pandasai):

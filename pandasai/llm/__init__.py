@@ -1,20 +1,19 @@
-""" Language Model Module (LLM) for pandasai. """
-
-from .base import LLM
-from .openai import OpenAI
+from .base import LLM, HuggingFaceLLM
 from .azure_openai import AzureOpenAI
+from .openai import OpenAI
 from .falcon import Falcon
-from .starcoder import Starcoder
 from .google_palm import GooglePalm, GoogleVertexai
 from .langchain import LangchainLLM
+from .starcoder import Starcoder
 
 __all__ = [
     "LLM",
-    "OpenAI",
+    "HuggingFaceLLM",
     "AzureOpenAI",
+    "OpenAI",
     "Falcon",
-    "Starcoder",
     "GooglePalm",
     "GoogleVertexai",
     "LangchainLLM",
+    "Starcoder",
 ]

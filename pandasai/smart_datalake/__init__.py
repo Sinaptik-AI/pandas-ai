@@ -32,7 +32,7 @@ from ..helpers.df_config import Config, load_config
 from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
-from typing import Union, List, Any
+from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
@@ -175,7 +175,15 @@ class SmartDatalake:
 
         return sys.stdout.isatty()
 
-    def _get_prompt(self, key: str, default_prompt: Prompt, default_values: dict = {}):
+    def _get_prompt(
+        self,
+        key: str,
+        default_prompt: Type[Prompt],
+        default_values: Optional[dict] = None,
+    ) -> tuple[Prompt, dict]:
+        if default_values is None:
+            default_values = {}
+
         prompt = self._config.custom_prompts.get(key)
 
         if prompt and isinstance(prompt, type):
