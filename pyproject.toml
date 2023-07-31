@@ -46,18 +46,17 @@ coverage = "^7.2.7"
 google-cloud-aiplatform = "^1.26.1"
 
 [tool.poetry.extras]
-google = ["google-generativeai"]
-tests = ["numpy", "seaborn"]
-langchain = ["langchain"]
-bs4 = ["beautifulsoup4"]
-google-cloud = ["google-cloud-aiplatform"]
+google-ai = ["google-generativeai", "google-cloud-aiplatform"]
+google-sheets = ["beautifulsoup4"]
+excel = ["openpyxl"]
 polars = ["polars"]
+langchain = ["langchain"]
 numpy = ["numpy"]
 ggplot = ["ggplot"]
 seaborn = ["seaborn"]
 plotly = ["plotly", "kaleido"]
 statsmodels = ["statsmodels"]
-openpyxl = ["openpyxl"]
+scikit-learn = ["scikit-learn"]
 streamlit = ["streamlit"]
 
 [tool.poetry.group.docs.dependencies]

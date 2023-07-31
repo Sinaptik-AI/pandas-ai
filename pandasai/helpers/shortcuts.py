@@ -1,11 +1,11 @@
+from ..helpers.df_info import DataFrameType
 from typing import Union
-import pandas as pd
 from abc import ABC, abstractmethod
 
 
 class Shortcuts(ABC):
     @abstractmethod
-    def chat(self, prompt: str) -> Union[str, pd.DataFrame]:
+    def chat(self, prompt: str) -> DataFrameType:
         """
         Run method from PandasAI class.
 
@@ -13,20 +13,19 @@ class Shortcuts(ABC):
             prompt (str): The prompt to be executed.
 
         Returns:
-            Union[str, pd.DataFrame]: The response from the LLM.
+            DataFrameType: The response from the LLM.
         """
 
         pass
 
-    def clean_data(self) -> pd.DataFrame:
+    def clean_data(self) -> DataFrameType:
         """
         Do data cleaning and return the dataframe.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
 
         Returns:
-            pd.DataFrame: The cleaned DataFrame.
+            DataFrameType: The cleaned DataFrame.
         """
 
         return self.chat(
@@ -37,15 +36,14 @@ class Shortcuts(ABC):
 """
         )
 
-    def impute_missing_values(self) -> pd.DataFrame:
+    def impute_missing_values(self) -> DataFrameType:
         """
         Do missing value imputation and return the dataframe.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
 
         Returns:
-            pd.DataFrame: The DataFrame with imputed missing values.
+            DataFrameType: The DataFrame with imputed missing values.
         """
 
         return self.chat(
@@ -56,15 +54,14 @@ class Shortcuts(ABC):
 """
         )
 
-    def generate_features(self) -> pd.DataFrame:
+    def generate_features(self) -> DataFrameType:
         """
         Do feature generation and return the dataframe.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
 
         Returns:
-            pd.DataFrame: The DataFrame with generated features.
+            DataFrameType: The DataFrame with generated features.
         """
 
         return self.chat(
@@ -80,7 +77,6 @@ class Shortcuts(ABC):
         Plot a pie chart.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             labels (list): The labels for the pie chart.
             values (list): The values for the pie chart.
 
@@ -101,7 +97,6 @@ values = {values}
         Plot a bar chart.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             x (list): The x values for the bar chart.
             y (list): The y values for the bar chart.
 
@@ -122,7 +117,6 @@ y = {y}
         Plot a histogram.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             column (str): The column to plot the histogram for.
 
         Returns:
@@ -136,7 +130,6 @@ y = {y}
         Plot a line chart.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             x (list): The x values for the line chart.
             y (list): The y values for the line chart.
 
@@ -157,7 +150,6 @@ y = {y}
         Plot a scatter chart.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             x (list): The x values for the scatter chart.
             y (list): The y values for the scatter chart.
 
@@ -178,7 +170,6 @@ y = {y}
         Plot a correlation heatmap.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
 
         Returns:
             None
@@ -191,7 +182,6 @@ y = {y}
         Plot a confusion matrix.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             y_true (list): The true values.
             y_pred (list): The predicted values.
 
@@ -212,7 +202,6 @@ y_pred = {y_pred}
         Plot a ROC curve.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             y_true (list): The true values.
             y_pred (list): The predicted values.
 
@@ -238,7 +227,6 @@ y_pred = {y_pred}
         Draw a box plot to show distributions with respect to categories.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             col (str | list[str] | None): The column(s) of interest
             for the box plot. Defaults to None.
             by (str | list[str] | None): The grouping variable(s)
@@ -279,17 +267,16 @@ y_pred = {y_pred}
 
         self.chat(prompt)
 
-    def rolling_mean(self, column: str, window: int) -> pd.DataFrame:
+    def rolling_mean(self, column: str, window: int) -> DataFrameType:
         """
         Calculate the rolling mean.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             column (str): The column to calculate the rolling mean for.
             window (int): The window size.
 
         Returns:
-            pd.DataFrame: The DataFrame containing the rolling mean.
+            DataFrameType: The DataFrame containing the rolling mean.
         """
 
         return self.chat(
@@ -297,17 +284,16 @@ y_pred = {y_pred}
             f" of {window}.",
         )
 
-    def rolling_median(self, column: str, window: int) -> pd.DataFrame:
+    def rolling_median(self, column: str, window: int) -> DataFrameType:
         """
         Calculate the rolling median.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             column (str): The column to calculate the rolling median for.
             window (int): The window size.
 
         Returns:
-            pd.DataFrame: The DataFrame containing the rolling median.
+            DataFrameType: The DataFrame containing the rolling median.
         """
 
         return self.chat(
@@ -315,17 +301,16 @@ y_pred = {y_pred}
             f" of {window}.",
         )
 
-    def rolling_std(self, column: str, window: int) -> pd.DataFrame:
+    def rolling_std(self, column: str, window: int) -> DataFrameType:
         """
         Calculate the rolling standard deviation.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             column (str): The column to calculate the rolling standard deviation for.
             window (int): The window size.
 
         Returns:
-            pd.DataFrame: The DataFrame containing the rolling standard deviation.
+            DataFrameType: The DataFrame containing the rolling standard deviation.
         """
 
         return self.chat(
@@ -333,17 +318,16 @@ y_pred = {y_pred}
             f"window of {window}.",
         )
 
-    def segment_customers(self, features: list, n_clusters: int) -> pd.DataFrame:
+    def segment_customers(self, features: list, n_clusters: int) -> DataFrameType:
         """
         Segment customers.
 
         Args:
-            df (pd.DataFrame): The DataFrame containing the data.
             features (list): The features to use for the segmentation.
             n_clusters (int): The number of clusters.
 
         Returns:
-            pd.DataFrame: The DataFrame containing the segmentation.
+            DataFrameType: The DataFrame containing the segmentation.
         """
 
         return self.chat(

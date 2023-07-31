@@ -43,6 +43,7 @@ from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .callbacks.base import BaseCallback
 from .helpers.df_config import Config
+from .helpers.cache import Cache
 from .prompts.base import Prompt
 
 __version__ = importlib.metadata.version(__package__ or __name__)
@@ -240,8 +241,10 @@ class PandasAI(Shortcuts):
         return self._dl.last_prompt
 
 
-__all__ = [
-    "PandasAI",
-    "SmartDataframe",
-    "SmartDatalake",
-]
+def clear_cache(filename: str = None):
+    """Clear the cache"""
+    cache = Cache(filename)
+    cache.clear()
+
+
+__all__ = ["PandasAI", "SmartDataframe", "SmartDatalake", "clear_cache"]

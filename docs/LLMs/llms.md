@@ -1,6 +1,19 @@
 # Large language models (LLMs)
 
-PandasAI supports several large language models (LLMs).
+PandasAI supports several large language models (LLMs). LLMs are used to generate code from natural language queries. The generated code is then executed to produce the result.
+
+You can either choose a LLM by instantiating one and passing it to the `SmartDataFrame` or `SmartDatalake` constructor, or you can specify one in the `pandasai.json` file.
+
+If the model expects one or more parameters, you can pass them to the constructor or specify them in the `pandasai.json` file, in the `llm_options` param, as it follows:
+
+```json
+{
+  "llm": "OpenAI",
+  "llm_options": {
+    "api_token": "API_TOKEN_GOES_HERE"
+  }
+}
+```
 
 ## OpenAI models
 
@@ -9,21 +22,21 @@ In order to use OpenAI models, you need to have an OpenAI API key. You can get o
 Once you have an API key, you can use it to instantiate an OpenAI object:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 llm = OpenAI(api_key="my-openai-api-key")
-pandas_ai = PandasAI(llm=llm)
+pandas_ai = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 As an alternative, you can set the `OPENAI_API_KEY` environment variable and instantiate the `OpenAI` object without passing the API key:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 llm = OpenAI() # no need to pass the API key, it will be read from the environment variable
-pandas_ai = PandasAI(llm=llm)
+pandas_ai = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `OpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.
@@ -33,24 +46,20 @@ If you are behind an explicit proxy, you can specify `openai_proxy` when instant
 You can count the number of tokens used by a prompt as follows:
 
 ```python
-"""Example of using PandasAI with a Pandas DataFrame"""
+"""Example of using PandasAI with a pandas dataframe"""
 
-import pandas as pd
-from data.sample_dataframe import dataframe
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 from pandasai.helpers.openai_info import get_openai_callback
-
-df = pd.DataFrame(dataframe)
+import pandas as pd
 
 llm = OpenAI()
 
 # conversational=False is supposed to display lower usage and cost
-pandas_ai = PandasAI(llm, enable_cache=False, conversational=True)
+df = SmartDataframe("data.csv", {"llm": llm, "conversational": False})
 
 with get_openai_callback() as cb:
-    response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
+    response = df.chat("Calculate the sum of the gdp of north american countries")
 
     print(response)
     print(cb)
@@ -73,29 +82,27 @@ At the moment, PandasAI supports the following HuggingFace models:
 - Falcon: `tiiuae/falcon-7b-instruct`
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.falcon import Falcon
+from pandasai import SmartDataframe
+from pandasai.llm import Starcoder, Falcon
 
 llm = Starcoder(api_key="my-huggingface-api-key")
 # or
 llm = Falcon(api_key="my-huggingface-api-key")
 
-pandas_ai = PandasAI(llm=llm)
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 As an alternative, you can set the `HUGGINGFACE_API_KEY` environment variable and instantiate the HuggingFace object without passing the API key:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.starcoder import Starcoder
-from pandasai.llm.falcon import Falcon
+from pandasai import SmartDataframe
+from pandasai.llm import Starcoder, Falcon
 
 llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
 # or
 llm = Falcon() # no need to pass the API key, it will be read from the environment variable
 
-pandas_ai = PandasAI(llm=llm)
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 ## Google PaLM
@@ -105,11 +112,11 @@ In order to use Google PaLM models, you need to have a Google Cloud API key. You
 Once you have an API key, you can use it to instantiate a Google PaLM object:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.google_palm import GooglePalm
+from pandasai import SmartDataframe
+from pandasai.llm import GooglePalm
 
 llm = GooglePalm(api_key="my-google-cloud-api-key")
-pandas_ai = PandasAI(llm=llm)
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 ## Google Vertexai
@@ -124,15 +131,13 @@ In order to use Google PaLM models through Vertexai api, you need to have
 Once you have basic setup, you can use it to instantiate a Google PaLM through vertex ai:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.google_palm import GoogleVertexai
+from pandasai import SmartDataframe
+from pandasai.llm import GoogleVertexai
 
 llm = GoogleVertexai(project_id="generative-ai-training",
                      location="us-central1",
                      model="text-bison@001")
-
-pandas_ai = PandasAI(llm=llm)
-
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 ## Azure OpenAI
@@ -142,8 +147,8 @@ In order to use Azure OpenAI models, you need to have an Azure OpenAI API key as
 To instantiate an Azure OpenAI object you also need to specify the name of your deployd model on Azure and the API version:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.azure_openai import AzureOpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import AzureOpenAI
 
 llm = AzureOpenAI(
     api_key="my-azure-openai-api-key",
@@ -151,19 +156,19 @@ llm = AzureOpenAI(
     api_version="2023-05-15",
     deployment_name="my-deployment-name"
 )
-pandas_ai = PandasAI(llm=llm)
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 As an alternative, you can set the `OPENAI_API_KEY`, `OPENAI_API_VERSION` and `OPENAI_API_BASE` environment variables and instantiate the Azure OpenAI object without passing them:
 
 ```python
-from pandasai import PandasAI
-from pandasai.llm.azure_openai import AzureOpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import AzureOpenAI
 
 llm = AzureOpenAI(
     deployment_name="my-deployment-name"
 ) # no need to pass the API key, endpoint and API version. They are read from the environment variable
-pandas_ai = PandasAI(llm=llm)
+df = SmartDataframe("data.csv", {"llm": llm})
 ```
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `AzureOpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.

@@ -145,15 +145,6 @@ class SmartDatalake:
         """
         self._code_manager.add_middlewares(*middlewares)
 
-    # TODO: figure out a way to handle the cache more effectively
-    # i.e. multiple dataframes, etc... Should it be handled at the library level?
-    def clear_cache(self):
-        """
-        Clears the cache of the PandasAI instance.
-        """
-        if self._cache:
-            self._cache.clear()
-
     def _start_timer(self):
         """Start the timer"""
 
