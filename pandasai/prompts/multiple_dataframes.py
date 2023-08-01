@@ -22,7 +22,6 @@ Using the provided dataframes and no other dataframes, return the python code an
             row, col = dataframe.shape
 
             self.text += f"""
-Dataframe df{i}, with {row} rows and {col} columns.
 This is the metadata of the dataframe df{i}:
 {dataframe}"""
 
