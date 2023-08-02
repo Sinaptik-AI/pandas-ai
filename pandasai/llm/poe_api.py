@@ -56,9 +56,11 @@ class POEAPI(LLM):
     def __init__(
         self,
         bot_name: str,
+        token : str,
         **kwargs,
     ) -> None:
         self.bot_name = bot_name
+        self.token = token
         """
         POEAPI client for using Pandas AI
         Args:
@@ -75,7 +77,7 @@ class POEAPI(LLM):
         try:
             from poe import Client
 
-            self.poe_api = Client(
+            self.poe_api = Client(token=self.token
                 
                
             )
