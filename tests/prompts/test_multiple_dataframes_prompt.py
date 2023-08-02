@@ -23,7 +23,6 @@ class TestMultipleDataframesPrompt:
             str(MultipleDataframesPrompt(dataframes=[df1, df2]))
             == """
 You are provided with the following pandas dataframes:
-Dataframe df1, with 5 rows and 3 columns.
 This is the metadata of the dataframe df1:
     A  B  C
 0  10  1  2
@@ -31,7 +30,6 @@ This is the metadata of the dataframe df1:
 2  30  3  4
 3  40  4  5
 4  50  5  6
-Dataframe df2, with 5 rows and 3 columns.
 This is the metadata of the dataframe df2:
     A  B  C
 0  10  1  2

@@ -384,7 +384,7 @@ class PandasAI(Shortcuts):
 
                 if multiple:
                     heads = [
-                        anonymize_dataframe_head(dataframe)
+                        anonymize_dataframe_head(dataframe.head(rows_to_display))
                         if anonymize_df
                         else dataframe.head(rows_to_display)
                         for dataframe in data_frame
