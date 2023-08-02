@@ -48,10 +48,10 @@ class POEAPI(LLM):
     repeat_last_n: Optional[int] = 64
     repeat_penalty: Optional[float] = 1.18
 
-    _model_repo_url = "https://POEAPI.io/models/models.json"
-    _supported_models = [
-        metadata["filename"] for metadata in requests.get(_model_repo_url).json()
-    ]
+    # _model_repo_url = "https://POEAPI.io/models/models.json"
+    # _supported_models = [
+    #     metadata["filename"] for metadata in requests.get(_model_repo_url).json()
+    # ]
 
     def __init__(
         self,
@@ -75,9 +75,9 @@ class POEAPI(LLM):
         # automatically create the default folder and download the model
 
         try:
-            from poe import Client
+            import poe
 
-            self.poe_api = Client(token=self.token
+            self.poe_api_bot = poe.Client(token=self.token
                 
                
             )
@@ -110,6 +110,6 @@ class POEAPI(LLM):
     def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
         prompt = str(instruction)
         prompt = prompt + value + suffix
-        for chunk in self.poe_api.send_message(self.bot_name ,prompt,):
+        for chunk in self.poe_api_bot.send_message(self.bot_name ,prompt,):
             pass
         return chunk['text']
