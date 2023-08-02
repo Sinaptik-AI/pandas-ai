@@ -142,8 +142,10 @@ Code running:
 
         DANGEROUS_BUILTINS = ["__subclasses__", "__builtins__", "__import__"]
 
-        for child in ast.walk(node):
-            if isinstance(child, ast.Name) and child.id in DANGEROUS_BUILTINS:
+        node_str = ast.dump(node)
+
+        for builtin in DANGEROUS_BUILTINS:
+            if builtin in node_str:
                 return True
 
         return False

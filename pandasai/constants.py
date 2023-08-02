@@ -52,7 +52,6 @@ WHITELISTED_BUILTINS = [
     "next",
     "object",
     "oct",
-    "open",
     "ord",
     "pow",
     "print",
