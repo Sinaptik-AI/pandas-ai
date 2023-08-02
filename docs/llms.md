@@ -4,7 +4,7 @@ PandasAI supports several large language models (LLMs).
 
 ## OpenAI models
 
-In order to use OpenAI models, you need to have an OpenAI API key. You can get one [here](https://platform.openai.com/).
+In order to use OpenAI models, you need to have an OpenAI API key. You can get one [here](https://platform.openai.com/account/api-keys).
 
 Once you have an API key, you can use it to instantiate an OpenAI object:
 
@@ -63,7 +63,7 @@ with get_openai_callback() as cb:
 
 ## HuggingFace models
 
-In order to use HuggingFace models, you need to have a HuggingFace API key. You can get one [here](https://huggingface.co/join).
+In order to use HuggingFace models, you need to have a HuggingFace API key. You can create a HuggingFace account [here](https://huggingface.co/join) and get an API key [here](https://hf.co/settings/tokens).
 
 Once you have an API key, you can use it to instantiate one of the HuggingFace models.
 
@@ -137,9 +137,9 @@ pandas_ai = PandasAI(llm=llm)
 
 ## Azure OpenAI
 
-In order to use Azure OpenAI models, you need to have an Azure OpenAI API key as well as an Azure OpenAI endpoint. You can get one [here](https://azure.microsoft.com/it-it/products/cognitive-services/openai-service).
+In order to use Azure OpenAI models, you need to have an Azure OpenAI API key as well as an Azure OpenAI endpoint. You can get one [here](https://azure.microsoft.com/products/cognitive-services/openai-service).
 
-To instantiate an Azure OpenAI object you also need to specify the name of your deployd model on Azure and the API version:
+To instantiate an Azure OpenAI object you also need to specify the name of your deployed model on Azure and the API version:
 
 ```python
 from pandasai import PandasAI
@@ -154,7 +154,7 @@ llm = AzureOpenAI(
 pandas_ai = PandasAI(llm=llm)
 ```
 
-As an alternative, you can set the `OPENAI_API_KEY`, `OPENAI_API_VERSION` and `OPENAI_API_BASE` environment variables and instantiate the Azure OpenAI object without passing them:
+As an alternative, you can set the `OPENAI_API_KEY`, `OPENAI_API_VERSION`, and `OPENAI_API_BASE` environment variables and instantiate the Azure OpenAI object without passing them:
 
 ```python
 from pandasai import PandasAI
