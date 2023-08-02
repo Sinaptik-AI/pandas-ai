@@ -152,6 +152,42 @@ pandas_ai.generate_features(df)
 pandas_ai.plot_histogram(df, column="gdp")
 ```
 
+### POE-API As LLM Reference
+
+```
+To use Pandas-ai without using OPENAI API use Poe-api
+
+Get Your TOKEN from poe.com by just creating account don't need to add any billing
+
+To get Token click Inspect -> Application -> Cookies -> p-b value
+BOTS REFERENCE : 
+
+"chinchilla": "ChatGPT",
+  "a2": "Claude-instant",
+  "capybara": "Assistant",
+  "a2_100k": "Claude-instant-100k",
+  "llama_2_7b_chat": "Llama-2-7b",
+  "llama_2_13b_chat": "Llama-2-13b",
+  "a2_2": "Claude-2-100k",
+  "llama_2_70b_chat": "Llama-2-70b",
+  "agouti": "ChatGPT-16k",
+  "beaver": "GPT-4",
+  "vizcacha": "GPT-4-32k",
+  "acouchy": "Google-PaLM"
+
+If you want to use ChatGPT use bot name as chinchilla
+
+Example usage
+
+from pandasai import PandasAI
+from pandasai.llm.poe_api import POEAPI
+
+llm = POEAPI(bot_name='chinchilla',token = '')
+pandas_ai = PandasAI(llm)
+
+```
+
+
 Learn more about the shortcuts [here](https://pandas-ai.readthedocs.io/en/latest/shortcuts/).
 
 ## 🔒 Privacy & Security
