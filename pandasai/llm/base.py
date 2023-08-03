@@ -148,7 +148,7 @@ class LLM:
         Returns:
             str: Code
         """
-        code = self.call(instruction, suffix="\n\nCode:\n")
+        code = self.call(instruction, suffix="")
         return self._extract_code(code)
 
 
@@ -338,7 +338,7 @@ class HuggingFaceLLM(LLM):
 
         """
 
-        prompt = str(instruction)
+        prompt = instruction.to_string()
         payload = prompt + suffix
 
         # sometimes the API doesn't return a valid response, so we retry passing the
@@ -470,6 +470,5 @@ class BaseGoogle(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction)
-        prompt = str(instruction) + suffix
-        return self._generate_text(prompt)
+        self.last_prompt = instruction.to_string() + suffix
+        return self._generate_text(self.last_prompt)

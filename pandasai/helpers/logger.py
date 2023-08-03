@@ -49,10 +49,19 @@ class Logger:
         )
         self._logger = logging.getLogger(__name__)
 
-    def log(self, message: str):
+    def log(self, message: str, level: int = logging.INFO):
         """Log a message"""
-        self._logger.info(message)
-        self._logs.append(message)
+
+        if level == logging.INFO:
+            self._logger.info(message)
+        elif level == logging.WARNING:
+            self._logger.warning(message)
+        elif level == logging.ERROR:
+            self._logger.error(message)
+        elif level == logging.CRITICAL:
+            self._logger.critical(message)
+
+        self._logs.append({"msg": message, "level": level})
 
     @property
     def logs(self) -> List[str]:

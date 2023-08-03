@@ -26,7 +26,11 @@ st.pyplot(plt.gcf())"""
         mock_json_load.return_value = {}
 
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        llm = FakeLLM("plt.show()")
+        llm = FakeLLM(
+            """import matplotlib.pyplot as plt
+def analyze_data(dfs):
+    return { 'type': 'text', 'value': "Hello World" }"""
+        )
         dl = SmartDatalake(
             [df],
             config={
@@ -40,6 +44,8 @@ st.pyplot(plt.gcf())"""
             "Plot the histogram of countries showing for each the gpd, using different"
             "colors for each bar",
         )
-        assert dl._code_manager._additional_dependencies == [
-            {"module": "streamlit", "name": "streamlit", "alias": "st"}
-        ]
+        assert {
+            "module": "streamlit",
+            "name": "streamlit",
+            "alias": "st",
+        } in dl._code_manager._additional_dependencies

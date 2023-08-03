@@ -1,10 +1,11 @@
 import json
-from pydantic import BaseModel
-from typing import Union, List, Optional
+from pydantic import BaseModel, validator
+from typing import List, Optional, Any
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from .. import llm, middlewares, callbacks
+from ..exceptions import LLMNotFoundError
 
 
 class Config(BaseModel):
@@ -20,10 +21,16 @@ class Config(BaseModel):
     max_retries: int = 3
     middlewares: List[Middleware] = []
     callback: Optional[BaseCallback] = None
-    llm: Union[LLM, LangchainLLM] = None
+    llm: Any = None
 
     class Config:
         arbitrary_types_allowed = True
+
+    @validator("llm")
+    def validate_llm(cls, llm):
+        if llm is None or not isinstance(llm, LLM or LangchainLLM):
+            raise LLMNotFoundError("LLM is required")
+        return llm
 
 
 def load_config(override_config: Config = None):

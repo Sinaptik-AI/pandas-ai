@@ -120,6 +120,9 @@ class Anonymizer:
             pd.DataFrame: Anonymized dataframe.
         """
 
+        if len(df) == 0:
+            return df
+
         # create a copy of the dataframe head
         df_head = df.head().copy()
 
@@ -132,7 +135,7 @@ class Anonymizer:
                 )
             elif Anonymizer._is_valid_phone_number(str(df_head[col].iloc[0])):
                 df_head[col] = df_head[col].apply(
-                    lambda x: Anonymizer._generate_random_phone_number(x)
+                    lambda x: Anonymizer._generate_random_phone_number(str(x))
                 )
             elif Anonymizer._is_valid_credit_card(str(df_head[col].iloc[0])):
                 df_head[col] = df_head[col].apply(

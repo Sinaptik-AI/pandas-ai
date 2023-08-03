@@ -1,6 +1,5 @@
 import ast
 import astor
-import re
 import pandas as pd
 from .save_chart import add_save_chart
 from .optional import import_dependency
@@ -150,6 +149,17 @@ Code running:
 
         return False
 
+    def _sanitize_analyze_data(self, analyze_data_node: ast.stmt) -> ast.stmt:
+        # Sanitize the code within analyze_data
+        sanitized_analyze_data = []
+        for node in analyze_data_node.body:
+            if self._is_df_overwrite(node) or self._is_jailbreak(node):
+                continue
+            sanitized_analyze_data.append(node)
+
+        analyze_data_node.body = sanitized_analyze_data
+        return analyze_data_node
+
     def _clean_code(self, code: str) -> str:
         """
         A method to clean the code to prevent malicious code execution
@@ -161,18 +171,21 @@ Code running:
 
         """
 
-        tree = ast.parse(code)
-
-        new_body = []
-
-        # clear recent optional dependencies
+        # Clear recent optional dependencies
         self._additional_dependencies = []
 
+        tree = ast.parse(code)
+
+        # Check for imports and the node where analyze_data is defined
+        new_body = []
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
                 continue
-            if self._is_df_overwrite(node) or self._is_jailbreak(node):
+            if isinstance(node, ast.FunctionDef) and node.name == "analyze_data":
+                analyze_data_node = node
+                sanitized_analyze_data = self._sanitize_analyze_data(analyze_data_node)
+                new_body.append(sanitized_analyze_data)
                 continue
             new_body.append(node)
 
@@ -193,7 +206,7 @@ Code running:
         return (
             isinstance(node, ast.Assign)
             and isinstance(node.targets[0], ast.Name)
-            and re.match(r"df\d{0,2}$", node.targets[0].id)
+            and node.targets[0].id == "dfs"
         )
 
     def _check_imports(self, node: Union[ast.Import, ast.ImportFrom]):
@@ -233,3 +246,7 @@ Code running:
 
         if library not in WHITELISTED_BUILTINS:
             raise BadImportError(library)
+
+    @property
+    def middlewares(self):
+        return self._middlewares

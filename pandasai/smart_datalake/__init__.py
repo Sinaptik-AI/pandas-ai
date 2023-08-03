@@ -46,7 +46,6 @@ class SmartDatalake:
     _logger: Logger
     _start_time: float
     _last_prompt_id: uuid
-    _original_instructions: None
     _code_manager: CodeManager
     _memory: Memory
 
@@ -73,7 +72,7 @@ class SmartDatalake:
         smart_dfs = []
         for df in dfs:
             if not isinstance(df, SmartDataframe):
-                smart_dfs.append(SmartDataframe(df, config, logger, memory))
+                smart_dfs.append(SmartDataframe(df, config=config, logger=logger))
             else:
                 smart_dfs.append(df)
 
@@ -250,11 +249,6 @@ class SmartDatalake:
             if self._config.callback is not None:
                 self._config.callback.on_code(code)
 
-            self._original_instructions = {
-                "conversation": self._memory.get_conversation(),
-                "dfs": self._dfs,
-            }
-
             self.last_code_generated = code
             self._logger.log(
                 f"""
@@ -281,7 +275,10 @@ class SmartDatalake:
                     )
                     break
                 except Exception as e:
-                    if not self._config.use_error_correction_framework:
+                    if (
+                        not self._config.use_error_correction_framework
+                        or count >= self._config.max_retries - 1
+                    ):
                         raise e
 
                     count += 1
@@ -293,7 +290,6 @@ class SmartDatalake:
                 self._logger.log(f"Answer: {result}")
         except Exception as exception:
             self.last_error = str(exception)
-            print(exception)
             return (
                 "Unfortunately, I was not able to answer your question, "
                 "because of the following error:\n"
@@ -325,7 +321,7 @@ class SmartDatalake:
             from ..smart_dataframe import SmartDataframe
 
             return SmartDataframe(
-                result["value"],
+                result["value"]._df,
                 config=self._config.__dict__,
                 logger=self._logger,
             )
@@ -366,13 +362,13 @@ class SmartDatalake:
         default_values = {
             "code": code,
             "error_returned": e,
-            "conversation": self._original_instructions["conversation"],
+            "conversation": self._memory.get_conversation(),
             # TODO: find a better way to determine these values
-            "df_head": self._original_instructions["dfs"][0].head_csv,
-            "num_rows": self._original_instructions["dfs"][0].rows_count,
-            "num_columns": self._original_instructions["dfs"][0].columns_count,
+            "df_head": self._dfs[0].head_csv,
+            "num_rows": self._dfs[0].rows_count,
+            "num_columns": self._dfs[0].columns_count,
         }
-        error_correcting_instruction = self._get_prompt(
+        error_correcting_instruction, _ = self._get_prompt(
             "correct_error",
             default_prompt=CorrectErrorPrompt,
             default_values=default_values,
@@ -401,6 +397,22 @@ class SmartDatalake:
     @property
     def config(self):
         return self._config
+
+    @property
+    def cache(self):
+        return self._cache
+
+    @property
+    def middlewares(self):
+        return self._code_manager.middlewares
+
+    @config.setter
+    def verbose(self, verbose: bool):
+        self._config.verbose = verbose
+
+    @config.setter
+    def callback(self, callback: Any):
+        self._config.callback = callback
 
     @config.setter
     def enforce_privacy(self, enforce_privacy: bool):
@@ -435,14 +447,6 @@ class SmartDatalake:
     @config.setter
     def max_retries(self, max_retries: int):
         self._config.max_retries = max_retries
-
-    @config.setter
-    def middlewares(self, middlewares: List[Middleware]):
-        self._config.middlewares = middlewares
-
-    @config.setter
-    def callback(self, callback: Any):
-        self._config.callback = callback
 
     @config.setter
     def llm(self, llm: LLM):

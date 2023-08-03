@@ -114,12 +114,12 @@ class AzureOpenAI(BaseOpenAI):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction)
+        self.last_prompt = instruction.to_string() + suffix
 
         if self.is_chat_model:
-            response = self.chat_completion(str(instruction) + suffix)
+            response = self.chat_completion(self.last_prompt)
         else:
-            response = self.completion(str(instruction) + suffix)
+            response = self.completion(self.last_prompt)
 
         return response
 

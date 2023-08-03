@@ -243,7 +243,7 @@ class PandasAI(Shortcuts):
 
 def clear_cache(filename: str = None):
     """Clear the cache"""
-    cache = Cache(filename)
+    cache = Cache(filename or "cache")
     cache.clear()
 
 

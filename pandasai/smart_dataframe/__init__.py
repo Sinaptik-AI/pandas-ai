@@ -39,7 +39,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     _description: str
     _df: pd.DataFrame
     _dl: SmartDatalake
-    _sample_head: pd.DataFrame
+    _sample_head: str = None
 
     def __init__(
         self,
@@ -115,8 +115,15 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 "Invalid input data. Must be a Pandas or Polars dataframe."
             )
 
-    def __getattr__(self, attr):
-        return getattr(self._df, attr)
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            return self.__dict__[name]
+        elif hasattr(self._df, name):
+            return getattr(self._df, name)
+        else:
+            raise AttributeError(
+                f"'{name}' is not a valid attribute for SmartDataframe"
+            )
 
     def __dir__(self):
         return dir(self._df)
@@ -124,8 +131,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def __getitem__(self, key):
         return self._df[key]
 
+    def __setitem__(self, key, value):
+        self._df[key] = value
+
     def __repr__(self):
-        return repr(self._df)
+        return self._df.__repr__()
 
     def add_middlewares(self, *middlewares: List[Middleware]):
         """
@@ -149,6 +159,28 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         return self._dl.chat(query)
 
+    def _get_head_csv(self):
+        """
+        Get the head of the dataframe as a CSV string.
+
+        Returns:
+            str: CSV string
+        """
+        if self._sample_head is not None:
+            return self._sample_head
+
+        rows_to_display = 0 if self._dl.config.enforce_privacy else 5
+
+        sample = DataSampler(self._df)
+        df_head = sample.sample(rows_to_display)
+
+        self._sample_head = df_head.to_csv(index=False)
+        return self._sample_head
+
+    @property
+    def datalake(self):
+        return self._dl
+
     @property
     def rows_count(self):
         return self._df.shape[0]
@@ -159,16 +191,15 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def head_csv(self):
-        rows_to_display = 0 if self._dl.config.enforce_privacy else 5
-
-        sample = DataSampler(self._df)
-        df_head = sample.sample(rows_to_display)
-
-        return df_head.to_csv(index=False)
+        return self._get_head_csv()
 
     @property
     def last_prompt(self):
         return self._dl.last_prompt
+
+    @property
+    def last_prompt_id(self) -> str:
+        return self._dl.last_prompt_id
 
     @property
     def last_code_generated(self):
@@ -177,6 +208,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def last_result(self):
         return self._dl.last_result
+
+    @property
+    def last_error(self):
+        return self._dl.last_error
 
     @property
     def original(self):
@@ -196,7 +231,27 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def config(self):
-        return self._config
+        return self._dl.config
+
+    @property
+    def cache(self):
+        return self._dl.cache
+
+    @property
+    def middlewares(self):
+        return self._dl.middlewares
+
+    @property
+    def logs(self):
+        return self._dl.logs
+
+    @config.setter
+    def verbose(self, verbose: bool):
+        self._dl.verbose = verbose
+
+    @config.setter
+    def callback(self, callback: BaseCallback):
+        self._dl.callback = callback
 
     @config.setter
     def enforce_privacy(self, enforce_privacy: bool):
@@ -227,14 +282,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @config.setter
     def max_retries(self, max_retries: int):
         self._dl.max_retries = max_retries
-
-    @config.setter
-    def middlewares(self, middlewares: List[Middleware]):
-        self._dl.middlewares = middlewares
-
-    @config.setter
-    def callback(self, callback: BaseCallback):
-        self._dl.callback = callback
 
     @config.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
