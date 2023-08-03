@@ -3,7 +3,7 @@ from pandasai.llm.poe_api import POEAPI
 
 
 class TestPOEAPI(unittest.TestCase):
-    """Unit tests for the base GPT4All LLM class"""
+    """Unit tests for the base POE LLM class"""
 
     def setUp(self):
         self.bot_name = "chinchilla"
