@@ -25,6 +25,7 @@ from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
+from ..helpers.from_google_sheets import from_google_sheets
 from typing import List, Union
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
@@ -104,6 +105,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             return pd.read_parquet(file_path)
         elif file_path.endswith(".xlsx"):
             return pd.read_excel(file_path)
+        elif file_path.startswith("https://docs.google.com/spreadsheets/"):
+            return from_google_sheets(file_path)[0]
         else:
             raise ValueError("Invalid file format.")
 

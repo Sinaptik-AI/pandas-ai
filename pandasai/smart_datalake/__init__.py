@@ -67,17 +67,6 @@ class SmartDatalake:
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
-        from ..smart_dataframe import SmartDataframe
-
-        smart_dfs = []
-        for df in dfs:
-            if not isinstance(df, SmartDataframe):
-                smart_dfs.append(SmartDataframe(df, config=config, logger=logger))
-            else:
-                smart_dfs.append(df)
-
-        self._dfs = smart_dfs
-
         self._load_config(config)
 
         if logger:
@@ -86,6 +75,8 @@ class SmartDatalake:
             self._logger = Logger(
                 save_logs=self._config.save_logs, verbose=self._config.verbose
             )
+
+        self._load_dfs(dfs)
 
         if memory:
             self._memory = memory
@@ -100,6 +91,26 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
+
+    def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
+        """
+        Load all the dataframes to be used in the smart datalake.
+
+        Args:
+            dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+        """
+
+        from ..smart_dataframe import SmartDataframe
+
+        smart_dfs = []
+        for df in dfs:
+            if not isinstance(df, SmartDataframe):
+                smart_dfs.append(
+                    SmartDataframe(df, config=self._config, logger=self._logger)
+                )
+            else:
+                smart_dfs.append(df)
+        self._dfs = smart_dfs
 
     def _load_config(self, config: Config):
         """
