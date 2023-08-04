@@ -765,27 +765,36 @@ class PandasAI(Shortcuts):
                        error correction framework.
         """
         if isinstance(exc, NameError):
-            try:
-                package = __import__(exc.name)
-                environment[exc.name] = package
+            name_to_be_imported = None
+            if hasattr(exc, "name"):
+                name_to_be_imported = exc.name
+            elif exc.args and isinstance(exc.args[0], str):
+                name_ptrn = r"'([0-9a-zA-Z_]+)'"
+                if search_name_res := re.search(name_ptrn, exc.args[0]):
+                    name_to_be_imported = search_name_res.group(1)
 
-                caught_error = self._execute_catching_errors(code, environment)
-                if caught_error is None:
-                    return code
+            if name_to_be_imported:
+                try:
+                    package = __import__(name_to_be_imported)
+                    environment[name_to_be_imported] = package
 
-            except ModuleNotFoundError:
-                self.log(
-                    f"Unable to fix `NameError`: package '{exc.name}' "
-                    f"could not be imported.",
-                    level=logging.DEBUG,
-                )
-            except Exception as new_exc:
-                exc = new_exc
-                self.log(
-                    f"Unable to fix `NameError`: an exception was raised: "
-                    f"{traceback.format_exc()}",
-                    level=logging.DEBUG,
-                )
+                    caught_error = self._execute_catching_errors(code, environment)
+                    if caught_error is None:
+                        return code
+
+                except ModuleNotFoundError:
+                    self.log(
+                        f"Unable to fix `NameError`: package '{name_to_be_imported}'"
+                        f" could not be imported.",
+                        level=logging.DEBUG,
+                    )
+                except Exception as new_exc:
+                    exc = new_exc
+                    self.log(
+                        f"Unable to fix `NameError`: an exception was raised: "
+                        f"{traceback.format_exc()}",
+                        level=logging.DEBUG,
+                    )
 
         if not use_error_correction_framework:
             raise exc
