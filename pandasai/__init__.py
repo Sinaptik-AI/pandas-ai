@@ -781,6 +781,11 @@ class PandasAI(Shortcuts):
                 )
             except Exception as new_exc:
                 exc = new_exc
+                self.log(
+                    f"Unable to fix `NameError`: an exception was raised: "
+                    f"{traceback.format_exc()}",
+                    level=logging.DEBUG,
+                )
 
         if not use_error_correction_framework:
             raise exc
