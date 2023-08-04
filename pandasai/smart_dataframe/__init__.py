@@ -18,6 +18,8 @@ Example:
     ```
 """
 
+import hashlib
+
 import pandas as pd
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
@@ -161,6 +163,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             ValueError: If the query is empty
         """
         return self._dl.chat(query)
+
+    def column_hash(self) -> str:
+        columns_str = "".join(self._df.columns)
+        hash_object = hashlib.sha256(columns_str.encode())
+        return hash_object.hexdigest()
 
     def _get_head_csv(self):
         """

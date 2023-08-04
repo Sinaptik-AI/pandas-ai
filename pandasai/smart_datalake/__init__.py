@@ -212,6 +212,15 @@ class SmartDatalake:
 
         return default_prompt(**default_values, dfs=self._dfs), default_values
 
+    def _get_cache_key(self) -> str:
+        cache_key = self._memory.get_conversation()
+
+        # make the cache key unique for each combination of dfs
+        for df in self._dfs:
+            cache_key += df.column_hash()
+
+        return cache_key
+
     def chat(self, query: str):
         """
         Run a query on the dataframe.
@@ -236,10 +245,10 @@ class SmartDatalake:
             if (
                 self._config.enable_cache
                 and self._cache
-                and self._cache.get(self._memory.get_conversation())
+                and self._cache.get(self._get_cache_key())
             ):
                 self._logger.log("Using cached response")
-                code = self._cache.get(self._memory.get_conversation())
+                code = self._cache.get(self._get_cache_key())
             else:
                 default_values = {
                     "conversation": self._memory.get_conversation(),
@@ -255,7 +264,7 @@ class SmartDatalake:
                 code = self._llm.generate_code(generate_response_instruction)
 
                 if self._config.enable_cache and self._cache:
-                    self._cache.set(self._memory.get_conversation(), code)
+                    self._cache.set(self._get_cache_key(), code)
 
             if self._config.callback is not None:
                 self._config.callback.on_code(code)
