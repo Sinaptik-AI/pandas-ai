@@ -663,7 +663,7 @@ class PandasAI(Shortcuts):
             code (str): A python code
             e (Exception): An exception
             multiple (bool): A boolean to indicate if the code is for multiple
-            dataframes
+                             dataframes
 
         Returns (str): A python code
         """
@@ -703,6 +703,101 @@ class PandasAI(Shortcuts):
         code = self._llm.generate_code(error_correcting_instruction, "")
         if self.callback:
             self.callback.on_code(code)
+        return code
+
+    def _execute_catching_errors(
+        self, code: str, environment: dict
+    ) -> Optional[Exception]:
+        """
+        Perform execution of the code directly.
+
+        Call `exec()` for the given `code`, catch any non-base exceptions.
+
+        Args:
+            code (str): Python code
+            environment (dict): Context for the `exec()`
+
+        Returns (Optional[Exception]): Any exception raised during execution.
+                                       `None` if executed without exceptions.
+        """
+        try:
+            exec(code, environment)
+        except Exception as exc:
+            self.log("Error of executing code", level=logging.WARNING)
+            self.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+
+            return exc
+
+    def handle_error(
+        self,
+        exc: Exception,
+        code: str,
+        environment: dict,
+        use_error_correction_framework: bool = True,
+        multiple: bool = False,
+    ) -> str:
+        """
+        Handle error occurred during first executing of code.
+
+        If `exc` is instance of `NameError`, try to import the name, extend
+        the context and then call `_execute_catching_errors()` again.
+        If OK, retunrs the code string; if failed, continuing handling.
+
+        If `use_error_correction_framework` is True, try to fix the error
+        via error correction framework withing `self._max_retries` number of
+        retries. If failed, raise an exception
+
+        Args:
+            exc (Exception): The caught exception.
+            code (str): Python code.
+            environment (dict): Context for the `exec()`
+            use_error_correction_framework (bool): If error correction
+                                                   framework should be used.
+                                                   Defaults to True.
+            multiple (bool): If the context has multiple dataframes.
+                             Defaults to False.
+
+        Raises:
+            Exception: Any exception which has been caught during
+                       the very first execution of the code.
+
+        Returns (str): Python code. Either an original or new, given by
+                       error correction framework.
+        """
+        if isinstance(exc, NameError):
+            try:
+                package = __import__(exc.name)
+                environment[exc.name] = package
+
+                caught_error = self._execute_catching_errors(code, environment)
+                if caught_error is None:
+                    return code
+
+            except ModuleNotFoundError:
+                self.log(
+                    f"Unable to fix `NameError`: package '{exc.name}' "
+                    f"could not be imported.",
+                    level=logging.DEBUG,
+                )
+            except Exception as new_exc:
+                exc = new_exc
+
+        if not use_error_correction_framework:
+            raise exc
+
+        for retry_num in range(self._max_retries):
+            code = self._retry_run_code(code, exc, multiple)
+            caught_error = self._execute_catching_errors(code, environment)
+
+            if caught_error is None:
+                break
+
+            self.log(
+                f"Failed to execute code with a correction framework "
+                f"[retry number: {retry_num + 1}]",
+                level=logging.WARNING,
+            )
+
         return code
 
     def run_code(
@@ -756,25 +851,15 @@ Code running:
 
         # Redirect standard output to a StringIO buffer
         with redirect_stdout(io.StringIO()) as output:
-            count = 0
-            while count < self._max_retries:
-                try:
-                    # Execute the code
-                    exec(code_to_run, environment)
-                    code = code_to_run
-                    break
-                except Exception as e:
-                    self.log(
-                        f"Error executing code (count: {count})", level=logging.WARNING
-                    )
-                    self.log(f"{traceback.format_exc()}", level=logging.DEBUG)
-
-                    if not use_error_correction_framework:
-                        raise e
-
-                    count += 1
-
-                    code_to_run = self._retry_run_code(code, e, multiple)
+            caught_error = self._execute_catching_errors(code_to_run, environment)
+            if caught_error:
+                code = self.handle_error(
+                    caught_error,
+                    code_to_run,
+                    environment,
+                    use_error_correction_framework=use_error_correction_framework,
+                    multiple=multiple,
+                )
 
         captured_output = output.getvalue().strip()
         if code.count("print(") > 1:

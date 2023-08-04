@@ -146,6 +146,43 @@ class TestPandasAI:
             pandasai.run(df, "What number comes before 2?")
             mock_print.assert_not_called()
 
+    def test_execute_catching_errors_correct(self, pandasai):
+        code = "print(1 + 1)"
+        environment = {}
+
+        with patch("builtins.exec") as mock_exec:
+            assert pandasai._execute_catching_errors(code, environment) is None
+            mock_exec.assert_called_once_with(code, environment)
+
+    def test_execute_catching_errors_raise_exc(self, pandasai):
+        code = "raise RuntimeError()"
+        environment = {}
+
+        with patch("builtins.exec") as mock_exec:
+            mock_exec.side_effect = RuntimeError("foobar")
+            exc = pandasai._execute_catching_errors(code, environment)
+            mock_exec.assert_called_once_with(code, environment)
+            assert isinstance(exc, RuntimeError)
+
+    def test_handle_error_retry_with_correction_framework(self, pandasai):
+        code = "raise RuntimeError()"
+        environment = {}
+
+        exc = pandasai._execute_catching_errors(code, environment)
+        assert FakeLLM._output == pandasai.handle_error(
+            exc, code, environment, use_error_correction_framework=True, multiple=False
+        )
+
+    def test_handle_error_name_error(self, pandasai):
+        code = "print(os)"
+        environment = {}
+
+        exc = pandasai._execute_catching_errors(code, environment)
+        assert code == pandasai.handle_error(
+            exc, code, environment, use_error_correction_framework=False, multiple=False
+        )
+        assert getattr(environment.get("os"), "__name__", None) == "os"
+
     def test_run_code(self, pandasai):
         df = pd.DataFrame({"a": [1, 2, 3]})
         code = """
