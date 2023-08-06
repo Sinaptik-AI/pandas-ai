@@ -6,6 +6,7 @@ from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from .. import llm, middlewares, callbacks
 from ..exceptions import LLMNotFoundError
+from .path import find_closest
 
 
 class Config(BaseModel):
@@ -40,7 +41,7 @@ def load_config(override_config: Config = None):
         override_config = {}
 
     try:
-        with open("pandasai.json", "r") as f:
+        with open(find_closest("pandasai.json"), "r") as f:
             config = json.load(f)
 
             if config.get("llm") and not override_config.get("llm"):
@@ -55,7 +56,6 @@ def load_config(override_config: Config = None):
 
             if config.get("callback") and not override_config.get("callback"):
                 config["callback"] = getattr(callbacks, config["callback"])()
-
     except Exception:
         pass
 
