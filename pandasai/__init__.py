@@ -41,10 +41,10 @@ import pandas as pd
 from .helpers.shortcuts import Shortcuts
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
+from .prompts.base import Prompt
 from .callbacks.base import BaseCallback
 from .helpers.df_config import Config
 from .helpers.cache import Cache
-from .prompts.base import Prompt
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 

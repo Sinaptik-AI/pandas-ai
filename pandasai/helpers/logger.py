@@ -19,6 +19,7 @@ Example:
 import sys
 from typing import List
 import logging
+from .path import find_closest
 
 
 class Logger:
@@ -34,7 +35,11 @@ class Logger:
         self._verbose = verbose
 
         if save_logs:
-            handlers = [logging.FileHandler("pandasai.log")]
+            try:
+                filaname = find_closest("pandasai.log")
+            except ValueError:
+                filaname = "pandasai.log"
+            handlers = [logging.FileHandler(filaname)]
         else:
             handlers = []
 

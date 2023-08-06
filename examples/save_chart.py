@@ -6,14 +6,17 @@ from data.sample_dataframe import dataframe
 
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
+from pandasai.helpers import path
 
 df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
 
-user_defined_path = os.getcwd()
+try:
+    user_defined_path = path.find_project_root()
+except ValueError:
+    user_defined_path = os.getcwd()
 df = SmartDataframe(
-    df,
     config={
         "llm": llm,
         "save_charts_path": user_defined_path,
