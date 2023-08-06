@@ -60,6 +60,7 @@ from .helpers.cache import Cache
 from .helpers.notebook import Notebook
 from .helpers.save_chart import add_save_chart
 from .helpers.shortcuts import Shortcuts
+from .helpers.path import find_closest
 from .llm.base import LLM
 from .llm.langchain import LangchainLLM
 from .middlewares.base import Middleware
@@ -206,7 +207,11 @@ class PandasAI(Shortcuts):
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
         if enable_logging:
-            handlers = [logging.FileHandler("pandasai.log")]
+            try:
+                filaname = find_closest("pandasai.log")
+            except ValueError:
+                filaname = "pandasai.log"
+            handlers = [logging.FileHandler(filaname)]
         else:
             handlers = []
 

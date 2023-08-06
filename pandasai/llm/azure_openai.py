@@ -15,7 +15,7 @@ import os
 from typing import Any, Dict, Optional
 
 import openai
-from dotenv import load_dotenv
+from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from .base import BaseOpenAI
