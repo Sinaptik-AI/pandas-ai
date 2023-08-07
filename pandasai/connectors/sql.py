@@ -2,6 +2,7 @@
 SQL connectors are used to connect to SQL databases in different dialects.
 """
 
+import os
 import pandas as pd
 from .base import BaseConnector
 from sqlalchemy import create_engine, sql
@@ -150,6 +151,18 @@ class MySQLConnector(SQLConnector):
         """
         config["dialect"] = "mysql"
         config["driver"] = "pymysql"
+
+        if "host" not in config and os.getenv("MYSQL_HOST"):
+            config["host"] = os.getenv("MYSQL_HOST")
+        if "port" not in config and os.getenv("MYSQL_PORT"):
+            config["port"] = os.getenv("MYSQL_PORT")
+        if "database" not in config and os.getenv("MYSQL_DATABASE"):
+            config["database"] = os.getenv("MYSQL_DATABASE")
+        if "username" not in config and os.getenv("MYSQL_USERNAME"):
+            config["username"] = os.getenv("MYSQL_USERNAME")
+        if "password" not in config and os.getenv("MYSQL_PASSWORD"):
+            config["password"] = os.getenv("MYSQL_PASSWORD")
+
         super().__init__(config)
 
 
@@ -167,4 +180,16 @@ class PostgreSQLConnector(SQLConnector):
         """
         config["dialect"] = "postgresql"
         config["driver"] = "psycopg2"
+
+        if "host" not in config and os.getenv("POSTGRESQL_HOST"):
+            config["host"] = os.getenv("POSTGRESQL_HOST")
+        if "port" not in config and os.getenv("POSTGRESQL_PORT"):
+            config["port"] = os.getenv("POSTGRESQL_PORT")
+        if "database" not in config and os.getenv("POSTGRESQL_DATABASE"):
+            config["database"] = os.getenv("POSTGRESQL_DATABASE")
+        if "username" not in config and os.getenv("POSTGRESQL_USERNAME"):
+            config["username"] = os.getenv("POSTGRESQL_USERNAME")
+        if "password" not in config and os.getenv("POSTGRESQL_PASSWORD"):
+            config["password"] = os.getenv("POSTGRESQL_PASSWORD")
+
         super().__init__(config)
