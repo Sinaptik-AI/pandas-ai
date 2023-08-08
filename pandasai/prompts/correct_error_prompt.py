@@ -27,9 +27,9 @@ class CorrectErrorPrompt(Prompt):
     """Prompt to Correct Python code on Error"""
 
     text: str = """
-You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-This is the metadata of the dataframe:
-{df_head}.
+You are provided with the following {engine} DataFrames with the following metadata:
+
+{dataframes}
 
 The user asked the following question:
 {conversation}
@@ -45,8 +45,26 @@ Make sure to prefix the requested python code with <startCode> exactly and suffi
 """  # noqa: E501
 
     def __init__(self, **kwargs):
+        dataframes = []
+        for index, df in enumerate(kwargs["dfs"], start=1):
+            description = "Dataframe "
+            if df.name is not None:
+                description += f"{df.name} (dfs[{index-1}])"
+            else:
+                description += f"dfs[{index-1}]"
+            description += (
+                f", with {df.rows_count} rows and {df.columns_count} columns."
+            )
+            if df.description is not None:
+                description += f"\nDescription: {df.description}"
+            description += f"""
+This is the metadata of the dataframe dfs[{index-1}]:
+{df.head_csv}"""  # noqa: E501
+            dataframes.append(description)
+
         super().__init__(
             **kwargs,
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
+            dataframes="\n\n".join(dataframes),
         )

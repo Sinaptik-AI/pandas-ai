@@ -129,13 +129,15 @@ class TestSmartDatalake:
         assert (
             smart_datalake.last_prompt
             == """
-You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
-This is the metadata of the dataframe:
+You are provided with the following pandas DataFrames with the following metadata:
+
+Dataframe dfs[0], with 10 rows and 3 columns.
+This is the metadata of the dataframe dfs[0]:
 country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16
 Spain,8446903488,6.38
-.
+
 
 The user asked the following question:
 
