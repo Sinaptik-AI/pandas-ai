@@ -52,6 +52,27 @@ class CodeManager:
         """
         self._middlewares.extend(middlewares)
 
+    def _required_dfs(self, code: str) -> List[str]:
+        """
+        List the index of the DataFrames that are needed to execute the code. The goal
+        is to avoid to run the connectors if the code does not need them.
+
+        Args:
+            code (str): Python code to execute
+
+        Returns:
+            List[int]: A list of the index of the DataFrames that are needed to execute
+            the code.
+        """
+
+        needed_dfs = []
+        for i, df in enumerate(self._dfs):
+            if f"dfs[{i}]" in code:
+                needed_dfs.append(df)
+            else:
+                needed_dfs.append(None)
+        return needed_dfs
+
     def execute_code(
         self,
         code: str,
@@ -97,7 +118,11 @@ Code running:
         ```"""
         )
 
+        # List the required dfs, so we can avoid to run the connectors
+        # if the code does not need them
+        dfs = self._required_dfs(code_to_run)
         environment: dict = self._get_environment()
+        environment["dfs"] = dfs
 
         exec(code_to_run, environment)
         analyze_data = environment.get("analyze_data", None)
@@ -111,13 +136,8 @@ Code running:
         Returns (dict): A dictionary of environment variables
         """
 
-        dfs = []
-        for df in self._dfs:
-            dfs.append(df.original)
-
         return {
             "pd": pd,
-            "dfs": dfs,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])

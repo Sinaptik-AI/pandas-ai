@@ -69,7 +69,7 @@ class TestCodeManager:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe._dl._code_manager
+        return smart_dataframe.lake._code_manager
 
     def test_run_code_for_calculations(self, code_manager: CodeManager):
         code = """def analyze_data(dfs):
@@ -174,7 +174,6 @@ def analyze_data(self, dfs: list):
             {"name": "numpy", "alias": "np", "module": "numpy"},
         ]
 
-        assert smart_dataframe.equals(code_manager._get_environment()["dfs"][0])
         assert "pd" in code_manager._get_environment()
         assert "plt" in code_manager._get_environment()
         assert "np" in code_manager._get_environment()

@@ -271,12 +271,11 @@ class SmartDatalake:
 
             self.last_code_generated = code
             self._logger.log(
-                f"""
-                    Code generated:
-                    ```
-                    {code}
-                    ```
-                """
+                f"""Code generated:
+```
+{code}
+```
+"""
             )
 
             # TODO: figure out what to do with this
@@ -413,6 +412,14 @@ class SmartDatalake:
     @property
     def logs(self):
         return self._logger.logs
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
 
     @property
     def config(self):

@@ -8,6 +8,8 @@ from .base import BaseConnector
 from sqlalchemy import create_engine, sql
 from pydantic import BaseModel
 from typing import Optional
+from functools import cached_property, cache
+import hashlib
 
 
 class SQLConfig(BaseModel):
@@ -33,6 +35,8 @@ class SQLConnector(BaseConnector):
 
     _engine = None
     _connection = None
+    _rows_count = None
+    _columns_count = None
 
     def __init__(self, config: SQLConfig):
         """
@@ -107,6 +111,7 @@ class SQLConnector(BaseConnector):
         # Return the query
         return sql.text(query)
 
+    @cache
     def head(self):
         """
         Return the head of the data source that the connector is connected to.
@@ -116,12 +121,19 @@ class SQLConnector(BaseConnector):
             DataFrame: The head of the data source.
         """
 
+        if self.logger:
+            self.logger.log(
+                f"Getting head of {self._config.table} "
+                f"using dialect {self._config.dialect}"
+            )
+
         # Run a SQL query to get all the columns names and 5 random rows
         query = self._build_query(limit=5)
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
 
+    @cache
     def execute(self):
         """
         Execute the SQL query and return the result.
@@ -130,11 +142,86 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
+        if self.logger:
+            self.logger.log(
+                f"Loading the table {self._config.table} "
+                f"using dialect {self._config.dialect}"
+            )
+
         # Run a SQL query to get all the results
         query = self._build_query()
 
         # Return the result of the query
         return pd.read_sql(query, self._connection)
+
+    @cached_property
+    def rows_count(self):
+        """
+        Return the number of rows in the SQL table.
+
+        Returns:
+            int: The number of rows in the SQL table.
+        """
+
+        if self._rows_count is not None:
+            return self._rows_count
+
+        if self.logger:
+            self.logger.log(
+                "Getting the number of rows in the table "
+                f"{self._config.table} using dialect "
+                f"{self._config.dialect}"
+            )
+
+        # Run a SQL query to get the number of rows
+        query = sql.text(f"SELECT COUNT(*) FROM {self._config.table}")
+
+        # Return the number of rows
+        self._rows_count = self._connection.execute(query).fetchone()[0]
+        return self._rows_count
+
+    @cached_property
+    def columns_count(self):
+        """
+        Return the number of columns in the SQL table.
+
+        Returns:
+            int: The number of columns in the SQL table.
+        """
+
+        if self._columns_count is not None:
+            return self._columns_count
+
+        if self.logger:
+            self.logger.log(
+                "Getting the number of columns in the table "
+                f"{self._config.table} using dialect "
+                f"{self._config.dialect}"
+            )
+
+        # Run a SQL query to get the number of columns
+        query = sql.text(
+            "SELECT COUNT(*) FROM information_schema.columns "
+            f"WHERE table_name = '{self._config.table}'"
+        )
+
+        # Return the number of columns
+        self._columns_count = self._connection.execute(query).fetchone()[0]
+        return self._columns_count
+
+    @cached_property
+    def column_hash(self):
+        """
+        Return the hash of the SQL table columns.
+
+        Returns:
+            str: The hash of the SQL table columns.
+        """
+
+        # Return the hash of the columns
+        columns_str = "".join(self.head().columns)
+        hash_object = hashlib.sha256(columns_str.encode())
+        return hash_object.hexdigest()
 
 
 class MySQLConnector(SQLConnector):

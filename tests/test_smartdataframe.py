@@ -229,7 +229,7 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
 
         replacement_prompt = CustomPrompt(test="test value")
         df = SmartDataframe(
-            pd.DataFrame(),
+            pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
             config={
                 "llm": llm,
                 "enable_cache": False,
@@ -260,7 +260,7 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
             },
         )
 
-        df._dl._retry_run_code("wrong code", Exception())
+        df.lake._retry_run_code("wrong code", Exception())
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 
@@ -273,13 +273,13 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
         error_msg = "Some error log"
         critical_msg = "Some critical log"
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
-        smart_dataframe._dl._logger.log(info_msg)  # INFO should be default
-        smart_dataframe._dl._logger.log(warning_msg, level=logging.WARNING)
-        smart_dataframe._dl._logger.log(error_msg, level=logging.ERROR)
-        smart_dataframe._dl._logger.log(critical_msg, level=logging.CRITICAL)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
+        smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
+        smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
+        smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
         logs = smart_dataframe.logs
 
         assert all("msg" in log and "level" in log for log in logs)
