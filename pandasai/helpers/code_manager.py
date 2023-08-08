@@ -68,7 +68,7 @@ class CodeManager:
         needed_dfs = []
         for i, df in enumerate(self._dfs):
             if f"dfs[{i}]" in code:
-                needed_dfs.append(df)
+                needed_dfs.append(df.dataframe)
             else:
                 needed_dfs.append(None)
         return needed_dfs
@@ -127,7 +127,12 @@ Code running:
         exec(code_to_run, environment)
         analyze_data = environment.get("analyze_data", None)
 
-        return analyze_data(self._dfs)
+        # Get the pd or pl dataframes
+        dfs = []
+        for df in self._dfs:
+            dfs.append(df.dataframe)
+
+        return analyze_data(dfs)
 
     def _get_environment(self) -> dict:
         """

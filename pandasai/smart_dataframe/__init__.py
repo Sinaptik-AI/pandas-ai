@@ -39,6 +39,12 @@ from ..connectors.base import BaseConnector
 
 
 class SmartDataframeCore:
+    """
+    A smart dataframe class is a wrapper around the pandas/polars dataframe that allows
+    you to query it using natural language. It uses the LLMs to generate Python code
+    from natural language and then executes it on the dataframe.
+    """
+
     _df = None
     _df_loaded: bool = True
     _connector: BaseConnector = None
@@ -58,7 +64,7 @@ class SmartDataframeCore:
 
         if isinstance(df, BaseConnector):
             self._df = None
-            self._connector = df
+            self.connector = df
             self._df_loaded = False
         else:
             self.dataframe = df
@@ -145,16 +151,10 @@ class SmartDataframeCore:
     def connector(self, connector: BaseConnector):
         self._connector = connector
 
-    def __getitem__(self, key):
-        return self.dataframe[key]
-
-    def __setitem__(self, key, value):
-        self.dataframe[key] = value
-
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
-    _name: str
-    _description: str
+    _table_name: str
+    _table_description: str
     _core: SmartDataframeCore
     _lake: SmartDatalake
 
@@ -174,10 +174,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
-        self._name = name
-        self._description = description
+        self._table_name = name
+        self._table_description = description
         self._core = SmartDataframeCore(df)
         self._lake = SmartDatalake([self], config, logger)
+
+        # If no name is provided, use the fallback name provided the connector
+        if self._table_name is None and self.connector:
+            self._table_name = self.connector.fallback_name
 
     def add_middlewares(self, *middlewares: List[Middleware]):
         """
@@ -407,12 +411,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self.lake.llm = llm
 
     @property
-    def name(self):
-        return self._name
+    def table_name(self):
+        return self._table_name
 
     @property
-    def description(self):
-        return self._description
+    def table_description(self):
+        return self._table_description
 
     def __getattr__(self, name):
         if name in self._core.__dir__():

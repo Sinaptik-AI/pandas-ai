@@ -81,3 +81,10 @@ class BaseConnector(ABC):
             logger (Logger): The logger for the connector.
         """
         self._logger = logger
+
+    @property
+    def fallback_name(self):
+        """
+        Return the name of the table that the connector is connected to.
+        """
+        raise NotImplementedError

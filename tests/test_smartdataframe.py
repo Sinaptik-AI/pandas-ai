@@ -82,10 +82,10 @@ class TestSmartDataframe:
         return CustomMiddleware
 
     def test_init(self, smart_dataframe):
-        assert smart_dataframe._name is None
-        assert smart_dataframe._description is None
-        assert smart_dataframe._engine is not None
-        assert smart_dataframe._df is not None
+        assert smart_dataframe._table_name is None
+        assert smart_dataframe._table_description is None
+        assert smart_dataframe.engine is not None
+        assert smart_dataframe.dataframe is not None
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):

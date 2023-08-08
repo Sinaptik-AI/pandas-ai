@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from typing import Optional
 from functools import cached_property, cache
 import hashlib
+from ..helpers.path import find_project_root
+import time
 
 
 class SQLConfig(BaseModel):
@@ -34,11 +36,12 @@ class SQLConnector(BaseConnector):
     """
 
     _engine = None
-    _connection = None
-    _rows_count = None
-    _columns_count = None
+    _connection: int = None
+    _rows_count: int = None
+    _columns_count: int = None
+    _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, config: SQLConfig):
+    def __init__(self, config: SQLConfig, cache_interval: int = 600):
         """
         Initialize the SQL connector with the given configuration.
 
@@ -62,6 +65,7 @@ class SQLConnector(BaseConnector):
                 f":{config.port}/{config.database}"
             )
         self._connection = self._engine.connect()
+        self._cache_interval = cache_interval
 
     def __del__(self):
         """
@@ -84,7 +88,7 @@ class SQLConnector(BaseConnector):
             f"table={self._config.table}>"
         )
 
-    def _build_query(self, limit: int = None):
+    def _build_query(self, limit: int = None, order: str = None):
         """
         Build the SQL query that will be executed.
 
@@ -105,6 +109,8 @@ class SQLConnector(BaseConnector):
                 conditions.append(f"{key} = '{value}'")
 
             query += " AND ".join(conditions)
+        if order:
+            query += f" ORDER BY {order}"
         if limit:
             query += f" LIMIT {limit}"
 
@@ -128,10 +134,64 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5)
+        query = self._build_query(limit=5, order="RAND()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
+
+    def _get_cache_path(self):
+        """
+        Return the path of the cache file.
+
+        Returns:
+            str: The path of the cache file.
+        """
+        try:
+            cache_dir = os.path.join((find_project_root()), "cache")
+        except ValueError:
+            cache_dir = os.path.join(os.getcwd(), "cache")
+
+        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+
+        filename = self.column_hash + ".csv"
+        path = os.path.join(cache_dir, filename)
+
+        return path
+
+    def _cached(self):
+        """
+        Return the cached data if it exists and is not older than the cache interval.
+
+        Returns:
+            DataFrame|bool: The cached data if it exists and is not older than
+            the cache interval, False otherwise.
+        """
+        filename = self._get_cache_path()
+        if not os.path.exists(filename):
+            return False
+
+        # If the file is older than 1 day, delete it
+        if os.path.getmtime(filename) < time.time() - self._cache_interval:
+            if self.logger:
+                self.logger.log(f"Deleting expired cached data from {filename}")
+            os.remove(filename)
+            return False
+
+        if self.logger:
+            self.logger.log(f"Loading cached data from {filename}")
+
+        return pd.read_csv(filename)
+
+    def _save_cache(self, df):
+        """
+        Save the given DataFrame to the cache.
+
+        Args:
+            df (DataFrame): The DataFrame to save to the cache.
+        """
+
+        filename = self._get_cache_path()
+        df.to_csv(filename, index=False)
 
     @cache
     def execute(self):
@@ -142,6 +202,10 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
+        cached = self._cached()
+        if cached is not False:
+            return cached
+
         if self.logger:
             self.logger.log(
                 f"Loading the table {self._config.table} "
@@ -151,8 +215,14 @@ class SQLConnector(BaseConnector):
         # Run a SQL query to get all the results
         query = self._build_query()
 
-        # Return the result of the query
-        return pd.read_sql(query, self._connection)
+        # Get the result of the query
+        result = pd.read_sql(query, self._connection)
+
+        # Save the result to the cache
+        self._save_cache(result)
+
+        # Return the result
+        return result
 
     @cached_property
     def rows_count(self):
@@ -222,6 +292,10 @@ class SQLConnector(BaseConnector):
         columns_str = "".join(self.head().columns)
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
+
+    @property
+    def fallback_name(self):
+        return self._config.table
 
 
 class MySQLConnector(SQLConnector):

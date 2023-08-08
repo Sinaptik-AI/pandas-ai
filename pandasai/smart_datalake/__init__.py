@@ -343,7 +343,7 @@ class SmartDatalake:
             from ..smart_dataframe import SmartDataframe
 
             return SmartDataframe(
-                result["value"]._df,
+                result["value"],
                 config=self._config.__dict__,
                 logger=self.logger,
             )
