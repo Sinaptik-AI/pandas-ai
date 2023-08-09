@@ -407,6 +407,18 @@ print(df)
         pandasai.run_code(malicious_code, pd.DataFrame())
         assert pandasai.last_code_executed == "print(df.iloc[0])\nprint(df)"
 
+    def test_remove_multiple_df_overwrites(self, pandasai):
+        malicious_code = """
+data = pd.DataFrame([1,2,3])        
+df = pd.DataFrame([1,2,3])
+print(df.iloc[0])
+df = pd.DataFrame([4,5,6])
+print(df)
+"""
+        pandasai._llm._output = malicious_code
+        pandasai.run_code(malicious_code, pd.DataFrame())
+        assert pandasai.last_code_executed == "print(df.iloc[0])\nprint(df)"
+
     def test_exception_handling(self, pandasai):
         pandasai.run_code = Mock(
             side_effect=NoCodeFoundError("No code found in the answer.")
