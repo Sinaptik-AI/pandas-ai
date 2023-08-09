@@ -266,6 +266,46 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 "Cannot determine columns_count. No dataframe or connector loaded."
             )
 
+    def _truncate_haed_columns(self, df: DataFrameType, max_size=25) -> DataFrameType:
+        """
+        Truncate the columns of the dataframe to a maximum of 20 characters.
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
+
+        if df_type(df) == "pandas":
+            df_trunc = df.copy()
+
+            for col in df.columns:
+                if df[col].dtype == "object":
+                    first_val = df[col].iloc[0]
+                    if isinstance(first_val, str) and len(first_val) > max_size:
+                        df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+        elif df_type(df) == "polars":
+            try:
+                import polars as pl
+
+                df_trunc = df.clone()
+
+                for col in df.columns:
+                    if df[col].dtype == pl.Utf8:
+                        first_val = df[col][0]
+                        if isinstance(first_val, str) and len(df_trunc[col]) > max_size:
+                            df_trunc[col] = (
+                                df_trunc[col].str.slice(0, max_size - 3) + "..."
+                            )
+            except ImportError:
+                raise ImportError(
+                    "Polars is not installed. "
+                    "Please install Polars to use this feature."
+                )
+
+        return df_trunc
+
     def _get_sample_head(self) -> DataFrameType:
         head = None
         rows_to_display = 0 if self.lake.config.enforce_privacy else 5
@@ -275,7 +315,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             head = self.dataframe.head(rows_to_display)
 
         sampler = DataSampler(head)
-        return sampler.sample(rows_to_display)
+        sampled_head = sampler.sample(rows_to_display)
+
+        return self._truncate_haed_columns(sampled_head)
 
     @cached_property
     def head_csv(self):
