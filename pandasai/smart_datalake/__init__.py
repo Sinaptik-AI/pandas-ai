@@ -42,7 +42,7 @@ class SmartDatalake:
     _dfs: List[DataFrameType]
     _config: Config
     _llm: LLM
-    _cache: Cache
+    _cache: Cache = None
     _logger: Logger
     _start_time: float
     _last_prompt_id: uuid
@@ -426,48 +426,107 @@ class SmartDatalake:
     def middlewares(self):
         return self._code_manager.middlewares
 
-    @config.setter
+    @property
+    def verbose(self):
+        return self._config.verbose
+
+    @verbose.setter
     def verbose(self, verbose: bool):
         self._config.verbose = verbose
+        self._logger.verbose = verbose
 
-    @config.setter
+    @property
+    def save_logs(self):
+        return self._config.save_logs
+
+    @save_logs.setter
+    def save_logs(self, save_logs: bool):
+        self._config.save_logs = save_logs
+        self._logger.save_logs = save_logs
+
+    @property
+    def callback(self):
+        return self._config.callback
+
+    @callback.setter
     def callback(self, callback: Any):
         self._config.callback = callback
 
-    @config.setter
+    @property
+    def enforce_privacy(self):
+        return self._config.enforce_privacy
+
+    @enforce_privacy.setter
     def enforce_privacy(self, enforce_privacy: bool):
         self._config.enforce_privacy = enforce_privacy
 
-    @config.setter
+    @property
+    def enable_cache(self):
+        return self._config.enable_cache
+
+    @enable_cache.setter
     def enable_cache(self, enable_cache: bool):
         self._config.enable_cache = enable_cache
+        if enable_cache:
+            if self.cache is None:
+                self._cache = Cache()
+        else:
+            self._cache = None
 
-    @config.setter
+    @property
+    def use_error_correction_framework(self):
+        return self._config.use_error_correction_framework
+
+    @use_error_correction_framework.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):
         self._config.use_error_correction_framework = use_error_correction_framework
 
-    @config.setter
+    @property
+    def custom_prompts(self):
+        return self._config.custom_prompts
+
+    @custom_prompts.setter
     def custom_prompts(self, custom_prompts: dict):
         self._config.custom_prompts = custom_prompts
 
-    @config.setter
+    @property
+    def save_charts(self):
+        return self._config.save_charts
+
+    @save_charts.setter
     def save_charts(self, save_charts: bool):
         self._config.save_charts = save_charts
 
-    @config.setter
+    @property
+    def save_charts_path(self):
+        return self._config.save_charts_path
+
+    @save_charts_path.setter
     def save_charts_path(self, save_charts_path: str):
         self._config.save_charts_path = save_charts_path
 
-    @config.setter
+    @property
+    def custom_whitelisted_dependencies(self):
+        return self._config.custom_whitelisted_dependencies
+
+    @custom_whitelisted_dependencies.setter
     def custom_whitelisted_dependencies(
         self, custom_whitelisted_dependencies: List[str]
     ):
         self._config.custom_whitelisted_dependencies = custom_whitelisted_dependencies
 
-    @config.setter
+    @property
+    def max_retries(self):
+        return self._config.max_retries
+
+    @max_retries.setter
     def max_retries(self, max_retries: int):
         self._config.max_retries = max_retries
 
-    @config.setter
+    @property
+    def llm(self):
+        return self._llm
+
+    @llm.setter
     def llm(self, llm: LLM):
         self._load_llm(llm)

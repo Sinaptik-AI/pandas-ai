@@ -255,44 +255,100 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def logs(self):
         return self._dl.logs
 
-    @config.setter
+    @property
+    def verbose(self):
+        return self._dl.verbose
+
+    @verbose.setter
     def verbose(self, verbose: bool):
         self._dl.verbose = verbose
 
-    @config.setter
+    @property
+    def save_logs(self):
+        return self._dl.save_logs
+
+    @save_logs.setter
+    def save_logs(self, save_logs: bool):
+        self._dl.save_logs = save_logs
+
+    @property
+    def callback(self):
+        return self._dl.callback
+
+    @callback.setter
     def callback(self, callback: BaseCallback):
         self._dl.callback = callback
 
-    @config.setter
+    @property
+    def enforce_privacy(self):
+        return self._dl.enforce_privacy
+
+    @enforce_privacy.setter
     def enforce_privacy(self, enforce_privacy: bool):
         self._dl.enforce_privacy = enforce_privacy
 
-    @config.setter
+    @property
+    def enable_cache(self):
+        return self._dl.enable_cache
+
+    @enable_cache.setter
+    def enable_cache(self, enable_cache: bool):
+        self._dl.enable_cache = enable_cache
+
+    @property
+    def use_error_correction_framework(self):
+        return self._dl.use_error_correction_framework
+
+    @use_error_correction_framework.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):
         self._dl.use_error_correction_framework = use_error_correction_framework
 
-    @config.setter
+    @property
+    def custom_prompts(self):
+        return self._dl.custom_prompts
+
+    @custom_prompts.setter
     def custom_prompts(self, custom_prompts: dict):
         self._dl.custom_prompts = custom_prompts
 
-    @config.setter
+    @property
+    def save_charts(self):
+        return self._dl.save_charts
+
+    @save_charts.setter
     def save_charts(self, save_charts: bool):
         self._dl.save_charts = save_charts
 
-    @config.setter
+    @property
+    def save_charts_path(self):
+        return self._dl.save_charts_path
+
+    @save_charts_path.setter
     def save_charts_path(self, save_charts_path: str):
         self._dl.save_charts_path = save_charts_path
 
-    @config.setter
+    @property
+    def custom_whitelisted_dependencies(self):
+        return self._dl.custom_whitelisted_dependencies
+
+    @custom_whitelisted_dependencies.setter
     def custom_whitelisted_dependencies(
         self, custom_whitelisted_dependencies: List[str]
     ):
         self._dl.custom_whitelisted_dependencies = custom_whitelisted_dependencies
 
-    @config.setter
+    @property
+    def max_retries(self):
+        return self._dl.max_retries
+
+    @max_retries.setter
     def max_retries(self, max_retries: int):
         self._dl.max_retries = max_retries
 
-    @config.setter
+    @property
+    def llm(self):
+        return self._dl.llm
+
+    @llm.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
         self._dl.llm = llm
