@@ -585,10 +585,12 @@ class PandasAI(Shortcuts):
 
         """
 
-        return (
-            isinstance(node, ast.Assign)
-            and isinstance(node.targets[0], ast.Name)
-            and re.match(r"df\d{0,2}$", node.targets[0].id)
+        if not isinstance(node, ast.Assign):
+            return False
+
+        return any(
+            isinstance(target, ast.Name) and re.match(r"(df\d{0,2}|data)$", target.id)
+            for target in node.targets
         )
 
     def _is_jailbreak(self, node: ast.stmt) -> bool:
