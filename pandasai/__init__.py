@@ -48,7 +48,6 @@ import importlib.metadata
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 import astor
-import matplotlib
 import pandas as pd
 from .constants import (
     WHITELISTED_BUILTINS,
@@ -643,7 +642,6 @@ class PandasAI(Shortcuts):
 
         return {
             "pd": pd,
-            "plt": matplotlib.pyplot,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])
@@ -773,7 +771,7 @@ class PandasAI(Shortcuts):
                 if search_name_res := re.search(name_ptrn, exc.args[0]):
                     name_to_be_imported = search_name_res.group(1)
 
-            if name_to_be_imported:
+            if name_to_be_imported and name_to_be_imported in WHITELISTED_LIBRARIES:
                 try:
                     package = __import__(name_to_be_imported)
                     environment[name_to_be_imported] = package
@@ -811,6 +809,13 @@ class PandasAI(Shortcuts):
                 f"[retry number: {retry_num + 1}]",
                 level=logging.WARNING,
             )
+        else:
+            self.log(
+                f"Unable to fix {exc.__class__.__name__} with error "
+                f"correction framework",
+                level=logging.ERROR,
+            )
+            raise exc
 
         return code
 

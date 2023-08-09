@@ -173,15 +173,45 @@ class TestPandasAI:
             exc, code, environment, use_error_correction_framework=True, multiple=False
         )
 
+    def test_handle_error_retry_with_correction_framework_failing(self, pandasai):
+        code = "raise RuntimeError()"
+        environment = {}
+
+        pandasai._llm._output = code
+        exc = pandasai._execute_catching_errors(code, environment)
+        with pytest.raises(RuntimeError):
+            pandasai.handle_error(
+                exc,
+                code,
+                environment,
+                use_error_correction_framework=True,
+                multiple=False,
+            )
+
     def test_handle_error_name_error(self, pandasai):
-        code = "print(os)"
+        code = 'print(json.dumps({"foo": "bar"}))'
         environment = {}
 
         exc = pandasai._execute_catching_errors(code, environment)
         assert code == pandasai.handle_error(
             exc, code, environment, use_error_correction_framework=False, multiple=False
         )
-        assert getattr(environment.get("os"), "__name__", None) == "os"
+        assert getattr(environment.get("json"), "__name__", None) == "json"
+
+    def test_handle_error_name_error_not_whitelisted_lib(self, pandasai):
+        code = "print(os)"
+        environment = {}
+
+        exc = pandasai._execute_catching_errors(code, environment)
+        with pytest.raises(NameError):
+            assert code == pandasai.handle_error(
+                exc,
+                code,
+                environment,
+                use_error_correction_framework=False,
+                multiple=False,
+            )
+        assert "os" not in environment
 
     def test_run_code(self, pandasai):
         df = pd.DataFrame({"a": [1, 2, 3]})
@@ -386,29 +416,30 @@ print(df.size)
         """Test that an installed whitelisted library is added to the environment."""
         safe_code = """
 import numpy as np
-np.array()
+np.array([1, 2, 3])[-1]
 """
         pandasai._llm._output = safe_code
-        assert pandasai.run_code(safe_code, pd.DataFrame()) == ""
-        assert pandasai.last_code_executed == "np.array()"
+        assert pandasai.run_code(safe_code, pd.DataFrame()) == 3
+        assert pandasai.last_code_executed == "np.array([1, 2, 3])[-1]"
 
     def test_clean_code_whitelist_import_from(self, pandasai):
         """Test that an import from statement is added to the environment."""
         optional_code = """
 from numpy import array
-array()
+array([1, 2, 3])[-1]
 """
         pandasai._llm._output = optional_code
-        assert pandasai.run_code(optional_code, pd.DataFrame()) == ""
+        assert pandasai.run_code(optional_code, pd.DataFrame()) == 3
+        assert pandasai.last_code_executed == "array([1, 2, 3])[-1]"
 
     def test_clean_code_whitelist_import_from_multiple(self, pandasai):
         """Test that multiple imports from a library are added to the environment."""
         optional_code = """
 from numpy import array, zeros
-array()
+array([1, 2, 3])[-1]
 """
         pandasai._llm._output = optional_code
-        assert pandasai.run_code(optional_code, pd.DataFrame()) == ""
+        assert pandasai.run_code(optional_code, pd.DataFrame()) == 3
 
     def test_clean_code_raise_bad_import_error(self, pandasai):
         malicious_code = """
