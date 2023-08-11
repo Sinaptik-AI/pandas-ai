@@ -30,7 +30,7 @@ class TestPandasAI:
         return PandasAI(llm, enable_cache=False)
 
     @pytest.fixture
-    def sample_df(self, llm):
+    def sample_df(self):
         return pd.DataFrame(
             {
                 "country": [
@@ -336,6 +336,15 @@ print(df)
         pandasai.run_code(malicious_code, pd.DataFrame())
         assert pandasai.last_code_executed == "print(df)"
 
+    def test_clean_code_removes_unsafe_code(self, pandasai):
+        pandas_code = """df.to_csv("examples/data/Loan payments data.csv")
+print("Hello world")
+"""
+
+        pandasai._llm._output = pandas_code
+        pandasai.run_code(pandas_code, pd.DataFrame())
+        assert pandasai.last_code_executed == "print('Hello world')"
+
     def test_clean_code_remove_environment_defaults(self, pandasai):
         pandas_code = """
 import pandas as pd
@@ -539,7 +548,6 @@ my_custom_library.do_something()
                 "help": help,
                 "hex": hex,
                 "id": id,
-                "input": input,
                 "int": int,
                 "isinstance": isinstance,
                 "issubclass": issubclass,
@@ -554,7 +562,6 @@ my_custom_library.do_something()
                 "next": next,
                 "object": object,
                 "oct": oct,
-                "open": open,
                 "ord": ord,
                 "pow": pow,
                 "print": print,

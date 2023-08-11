@@ -593,6 +593,42 @@ class PandasAI(Shortcuts):
             for target in node.targets
         )
 
+    def _is_unsafe(self, node: ast.stmt) -> bool:
+        """
+        Remove unsafe code from the code to prevent malicious code execution.
+
+        Args:
+            node (object): ast.stmt
+
+        Returns (bool):
+        """
+
+        code = astor.to_source(node)
+        if any(
+            method in code
+            for method in [
+                ".to_csv",
+                ".to_excel",
+                ".to_json",
+                ".to_sql",
+                ".to_feather",
+                ".to_hdf",
+                ".to_parquet",
+                ".to_pickle",
+                ".to_gbq",
+                ".to_stata",
+                ".to_records",
+                ".to_string",
+                ".to_latex",
+                ".to_html",
+                ".to_markdown",
+                ".to_clipboard",
+            ]
+        ):
+            return True
+
+        return False
+
     def _is_jailbreak(self, node: ast.stmt) -> bool:
         """
         Remove jailbreaks from the code to prevent malicious code execution.
@@ -633,7 +669,11 @@ class PandasAI(Shortcuts):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
                 continue
-            if self._is_df_overwrite(node) or self._is_jailbreak(node):
+            if (
+                self._is_df_overwrite(node)
+                or self._is_jailbreak(node)
+                or self._is_unsafe(node)
+            ):
                 continue
             new_body.append(node)
 
