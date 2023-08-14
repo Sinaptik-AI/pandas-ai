@@ -21,6 +21,7 @@ Example:
 import time
 import uuid
 import sys
+import logging
 
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
@@ -283,10 +284,10 @@ class SmartDatalake:
             # if show_code and self._in_notebook:
             #     self.notebook.create_new_cell(code)
 
-            count = 0
+            retry_count = 0
             code_to_run = code
             result = None
-            while count < self._config.max_retries:
+            while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
                     result = self._code_manager.execute_code(
@@ -297,11 +298,17 @@ class SmartDatalake:
                 except Exception as e:
                     if (
                         not self._config.use_error_correction_framework
-                        or count >= self._config.max_retries - 1
+                        or retry_count >= self._config.max_retries - 1
                     ):
                         raise e
 
-                    count += 1
+                    retry_count += 1
+
+                    self._logger.log(
+                        f"Failed to execute code with a correction framework "
+                        f"[retry number: {retry_count}]",
+                        level=logging.WARNING,
+                    )
 
                     code_to_run = self._retry_run_code(code, e)
 
