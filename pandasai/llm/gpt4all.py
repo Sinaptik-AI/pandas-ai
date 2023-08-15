@@ -175,10 +175,19 @@ class GPT4AllLLM(LLM):
         self.params = {**self.default_parameters, **kwargs}
 
     def _auto_download(self) -> None:
-        # import all the required dependencies
-        import requests
-        from tqdm import tqdm
+        """
+        Automatically download GPT4All binary file.
 
+        Download from gpt4all.io using the following URL:
+        `https://gpt4all.io/models/<self.model_name>`
+        where `model_name` is the name of binary file of the model.
+
+        The downloading starts if `self.allow_download` is `True` and
+        a binary file (supposed to contain content of the model)
+        was not found in `download_path`.
+
+        Raises:
+        """
         download_path = os.path.join(self.model_folder_path, self.model_name)
 
         if not os.path.exists(download_path):
