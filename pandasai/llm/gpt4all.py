@@ -16,6 +16,7 @@ from typing import Optional
 
 import requests
 from tqdm import tqdm
+
 try:
     from gpt4all import GPT4All
 except ImportError:
@@ -26,6 +27,7 @@ except ImportError:
 
 from pandasai.prompts.base import Prompt
 from .base import LLM
+from pandasai.exceptions import LLMNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +148,7 @@ class GPT4AllLLM(LLM):
         # automatically create the default folder and download the model
 
         if not os.path.exists(self.model_folder_path) and allow_download:
-            os.mkdir(self.model_folder_path)
+            os.makedirs(self.model_folder_path)
 
         self.allow_download = allow_download
         if allow_download:
@@ -231,7 +233,7 @@ class GPT4AllLLM(LLM):
                 raise LLMNotFoundError(
                     f"Unable to find the model {self.model_name} in"
                     f" {self.model_folder_path}"
-
+                )
 
     @property
     def type(self) -> str:
