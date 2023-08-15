@@ -207,9 +207,12 @@ class GPT4AllLLM(LLM):
                             if chunk:
                                 f.write(chunk)
 
-                except Exception as e:
-                    print(f"=> Download Failed. Error: {e}")
-                    return
+                except Exception as exc:
+                    logger.error("=> Download Failed.", exc_info=True)
+                    raise UnableToDownloadGPT4AllBin(
+                        gpt4all_bin_filename=self.model_name,
+                        time_spent=(int(time.time()) - start_downloading_ts),
+                    ) from exc
 
                 print(f"=> Model: {self.model_name} downloaded sucessfully 🥳")
 
