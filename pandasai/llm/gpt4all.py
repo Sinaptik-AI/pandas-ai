@@ -14,6 +14,16 @@ import sys
 import time
 from typing import Optional
 
+import requests
+from tqdm import tqdm
+try:
+    from gpt4all import GPT4All
+except ImportError:
+    raise ImportError(
+        "Unable to import gpt4all python package "
+        "Please install it with `pip install -U gpt4all`"
+    )
+
 from pandasai.prompts.base import Prompt
 from .base import LLM
 
