@@ -214,7 +214,12 @@ class GPT4AllLLM(LLM):
                         time_spent=(int(time.time()) - start_downloading_ts),
                     ) from exc
 
-                print(f"=> Model: {self.model_name} downloaded sucessfully 🥳")
+                logger.info(
+                    f"The model was successfully downloaded in "
+                    f"{(int(time.time()) - start_downloading_ts)} seconds."
+                )
+
+                print(f"=> Model: {self.model_name} downloaded successfully 🥳")
 
             else:
                 print(
