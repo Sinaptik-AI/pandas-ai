@@ -135,10 +135,9 @@ class GPT4AllLLM(LLM):
         )
         assert self.model_name in self._supported_models, _assert_msg
 
-        # automatically download inside that folder
-        _default_download_path = os.path.join(
-            os.path.expanduser("~"), ".local/share/nomic.ai/GPT4All/"
-        )
+        default_download_path = self._default_download_path_unix
+        if sys.platform.startswith("win"):
+            default_download_path = self._default_download_path_win
 
         self.model_folder_path = (
             _default_download_path if model_folder_path is None else model_folder_path
