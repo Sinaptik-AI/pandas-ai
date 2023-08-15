@@ -10,7 +10,8 @@ Example:
 """
 import logging
 import os
-import requests
+import sys
+import time
 from typing import Optional
 
 from pandasai.prompts.base import Prompt
