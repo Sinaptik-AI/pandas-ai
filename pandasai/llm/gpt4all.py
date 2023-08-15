@@ -151,7 +151,7 @@ class GPT4AllLLM(LLM):
         self.allow_download = allow_download
         if allow_download:
             self._auto_download()
-            print(f"Model {model_name} saved as: {self.model_folder_path}")
+            logger.info(f"Model {model_name} saved as: {self.model_folder_path}")
 
         n_threads = self.n_threads if n_threads is None else n_threads
         try:
