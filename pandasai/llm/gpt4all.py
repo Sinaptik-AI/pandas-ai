@@ -154,19 +154,11 @@ class GPT4AllLLM(LLM):
             logger.info(f"Model {model_name} saved as: {self.model_folder_path}")
 
         n_threads = self.n_threads if n_threads is None else n_threads
-        try:
-            from gpt4all import GPT4All
-
-            self.gpt4all_model = GPT4All(
-                model_name=self.model_name,
-                model_path=self.model_folder_path,
-                n_threads=n_threads,
-            )
-        except ImportError:
-            raise ImportError(
-                "Unable to import gpt4all python package "
-                "Please install it with `pip install -U gpt4all`"
-            )
+        self.gpt4all_model = GPT4All(
+            model_name=self.model_name,
+            model_path=self.model_folder_path,
+            n_threads=n_threads,
+        )
 
         self.default_parameters = {
             "max_tokens": self.max_tokens,
