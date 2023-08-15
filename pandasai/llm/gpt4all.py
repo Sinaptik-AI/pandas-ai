@@ -27,6 +27,37 @@ except ImportError:
 from pandasai.prompts.base import Prompt
 from .base import LLM
 
+logger = logging.getLogger(__name__)
+
+
+class UnableToDownloadGPT4AllBin(Exception):
+    """
+    Raised when unable to automatically download the GPT4All LLM.
+
+    Args:
+        Exception (Exception): UnableToDownloadGPT4AllBin
+    """
+
+    def __init__(self, gpt4all_bin_filename=None, time_spent=None):
+        """
+        Initialize `UnableToDownloadGPT4AllBin` instance.
+
+        Args:
+            gpt4all_bin_filename (Optional[str]): Name of the binary file of
+                the GPT4All model.
+            time_spent (Optional[int]): Time in seconds spent for
+                downloading process.
+        """
+
+        self.gpt4all_bin_filename = gpt4all_bin_filename
+        self.time_s_spent = time_spent
+
+        super().__init__(
+            f"Unable to download the model. "
+            f"Model filename: {gpt4all_bin_filename or 'Unknown'}; "
+            f"Time spent: {time_spent or 'Unknown'}"
+        )
+
 
 class GPT4AllLLM(LLM):
     """GPT4All LLMs API
