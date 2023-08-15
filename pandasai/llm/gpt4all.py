@@ -98,6 +98,10 @@ class GPT4AllLLM(LLM):
     repeat_penalty: Optional[float] = 1.18
 
     _model_repo_url = "https://gpt4all.io/models/models.json"
+    _default_download_path_unix = os.path.join(
+        os.path.expanduser("~"), ".local/share/nomic.ai/GPT4All/"
+    )
+    _default_download_path_win = os.path.join(os.path.expanduser("~"), ".gpt4all\\")
     _supported_models = [
         metadata["filename"] for metadata in requests.get(_model_repo_url).json()
     ]
