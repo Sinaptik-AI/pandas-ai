@@ -222,10 +222,16 @@ class GPT4AllLLM(LLM):
                 print(f"=> Model: {self.model_name} downloaded successfully 🥳")
 
             else:
-                print(
-                    f"{self.model_name} does not exists in {self.model_folder_path}",
-                    "Please either download the model by allow_download = True",
+                logger.error(
+                    f"'{self.model_name}' does not exists in "
+                    f"'{self.model_folder_path}'. Please either let the model "
+                    f"to be downloaded automatically (by passing "
+                    f"`allow_download=True`) or download the model manually.",
                 )
+                raise LLMNotFoundError(
+                    f"Unable to find the model {self.model_name} in"
+                    f" {self.model_folder_path}"
+
 
     @property
     def type(self) -> str:
