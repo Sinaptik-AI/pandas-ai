@@ -61,7 +61,7 @@ class UnableToDownloadGPT4AllBin(Exception):
 
 class GPT4AllLLM(LLM):
     """GPT4All LLMs API
-    Base LLM class is extended to support GPT4AllLLM. When this class will be
+    Base LLM class is extended to support GPT4All LLM. When this class will be
     initialized all the additional parameters like temp, top_p, top_k etc should
     be inside **kwargs while instantiating the class. That is to be done only if
     the user wants to override the existing configurations. Below example shows how
