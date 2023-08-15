@@ -8,6 +8,7 @@ Example:
 
     >>> from pandasai.llm.gpt4all import GPT4AllLLM
 """
+import logging
 import os
 import requests
 from typing import Optional
