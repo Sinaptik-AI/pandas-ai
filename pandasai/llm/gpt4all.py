@@ -194,10 +194,10 @@ class GPT4AllLLM(LLM):
             if self.allow_download:
                 # send a GET request to the URL to download the file.
                 # Stream it while downloading, since the file is large
+                url = f"https://gpt4all.io/models/{self.model_name}"
 
+                start_downloading_ts = time.time()
                 try:
-                    url = f"https://gpt4all.io/models/{self.model_name}"
-
                     response = requests.get(url, stream=True)
 
                     with open(download_path, "wb") as f:
