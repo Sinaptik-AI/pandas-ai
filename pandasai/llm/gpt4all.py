@@ -140,7 +140,7 @@ class GPT4AllLLM(LLM):
             default_download_path = self._default_download_path_win
 
         self.model_folder_path = (
-            _default_download_path if model_folder_path is None else model_folder_path
+            default_download_path if model_folder_path is None else model_folder_path
         )
 
         # automatically create the default folder and download the model
