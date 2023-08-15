@@ -148,6 +148,7 @@ class GPT4AllLLM(LLM):
         if not os.path.exists(self.model_folder_path) and allow_download:
             os.mkdir(self.model_folder_path)
 
+        self.allow_download = allow_download
         if allow_download:
             self._auto_download()
             print(f"Model {model_name} saved as: {self.model_folder_path}")
