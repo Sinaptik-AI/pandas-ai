@@ -5,6 +5,7 @@ from .env import load_dotenv
 from .notebook import Notebook
 from .anonymizer import Anonymizer
 from .data_sampler import DataSampler
+from .logger import Logger
 
 __all__ = [
     "get_openai_callback",
@@ -15,4 +16,5 @@ __all__ = [
     "Notebook",
     "Anonymizer",
     "DataSampler",
+    "Logger",
 ]

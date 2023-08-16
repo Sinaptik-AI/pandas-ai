@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 from pydantic import BaseModel, validator
 from typing import List, Optional, Any
 from ..middlewares.base import Middleware
@@ -13,6 +14,7 @@ class Config(BaseModel):
     save_logs: bool = True
     verbose: bool = False
     enforce_privacy: bool = False
+    sample_head: pd.DataFrame = None
     enable_cache: bool = True
     use_error_correction_framework: bool = True
     custom_prompts: dict = {}
