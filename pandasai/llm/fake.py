@@ -9,14 +9,15 @@ from .base import LLM
 class FakeLLM(LLM):
     """Fake LLM"""
 
-    _output: str = 'print("Hello world")'
+    _output: str = """def analyze_data(dfs):
+    return { 'type': 'text', 'value': "Hello World" }"""
 
     def __init__(self, output: Optional[str] = None):
         if output is not None:
             self._output = output
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
-        self.last_prompt = str(instruction) + str(value) + suffix
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
+        self.last_prompt = instruction.to_string() + suffix
         return self._output
 
     @property

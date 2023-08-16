@@ -38,10 +38,10 @@ import ast
 import io
 import logging
 import re
-import sys
-import traceback
 import uuid
 import time
+import subprocess
+import sys
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Dict, Type
 import importlib.metadata
@@ -70,7 +70,6 @@ from .prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorProm
 from .prompts.generate_python_code import GeneratePythonCodePrompt
 from .prompts.generate_response import GenerateResponsePrompt
 from .prompts.multiple_dataframes import MultipleDataframesPrompt
-from .callbacks.base import BaseCallback
 
 
 def get_version():
@@ -113,6 +112,7 @@ class PandasAI(Shortcuts):
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None
         _enable_cache (bool, optional): Whether to enable cache. Default to True
+        _auto_copy_code (bool, optional): Whether to copy the code. Default to False
         _logger (logging.Logger, optional): Logger object to log the messages. Default
         to None
         _logs (List[dict], optional): List of logs to be stored. Default to []
@@ -150,6 +150,7 @@ class PandasAI(Shortcuts):
     }
     _cache: Cache = None
     _enable_cache: bool = True
+    _auto_copy_code: bool = False
     _prompt_id: Optional[str] = None
     _middlewares: List[Middleware] = [ChartsMiddleware()]
     _additional_dependencies: List[dict] = []
@@ -157,7 +158,7 @@ class PandasAI(Shortcuts):
     _start_time: float = 0
     _enable_logging: bool = True
     _logger: logging.Logger = None
-    _logs: List[dict[str, str]] = []
+    _logs: List[str] = []
     last_code_generated: Optional[str] = None
     last_code_executed: Optional[str] = None
     code_output: Optional[str] = None
@@ -175,8 +176,8 @@ class PandasAI(Shortcuts):
         middlewares=None,
         custom_whitelisted_dependencies=None,
         enable_logging=True,
+        auto_copy_code=False,
         non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: Optional[BaseCallback] = None,
     ):
         """
 
@@ -231,6 +232,7 @@ class PandasAI(Shortcuts):
         self._save_charts = save_charts
         self._save_charts_path = save_charts_path
         self._process_id = str(uuid.uuid4())
+        self._auto_copy_code = auto_copy_code
         self._logs = []
 
         self._non_default_prompts = (
@@ -249,8 +251,6 @@ class PandasAI(Shortcuts):
 
         if custom_whitelisted_dependencies is not None:
             self._custom_whitelisted_dependencies = custom_whitelisted_dependencies
-
-        self.callback = callback
 
     def _load_llm(self, llm):
         """
@@ -289,41 +289,10 @@ class PandasAI(Shortcuts):
             # if the user has set enforce_privacy to True
             return answer
 
-        default_values = {"question": question, "answer": answer}
-        generate_response_instruction, _ = self._get_prompt(
-            "generate_response",
-            default_prompt=GenerateResponsePrompt,
-            default_values=default_values,
-        )
-
+        generate_response_instruction = self._non_default_prompts.get(
+            "generate_response", GenerateResponsePrompt
+        )(question=question, answer=answer)
         return self._llm.call(generate_response_instruction, "")
-
-    def _get_prompt(
-        self, key: str, default_prompt: Prompt, default_values: Dict = {}, df=None
-    ):
-        prompt = self._non_default_prompts.get(key)
-
-        if prompt and isinstance(prompt, type):
-            prompt = prompt(**default_values)
-
-        if prompt:
-            """Override all the variables with _ prefix with default variable values"""
-            for var in prompt._args:
-                if var[0] == "_" and var[1:] in default_values:
-                    prompt.override_var(var, default_values[var[1:]])
-
-            """Replace all variables with $ prefix with evaluated values"""
-            prompt_text = prompt.text.split(" ")
-            for i in range(len(prompt_text)):
-                word = prompt_text[i]
-
-                if word.startswith("$"):
-                    prompt_text[i] = str(eval(word[1:]))
-            prompt.text = " ".join(prompt_text)
-
-            return prompt, prompt._args
-
-        return default_prompt(**default_values), default_values
 
     def run(
         self,
@@ -377,23 +346,18 @@ class PandasAI(Shortcuts):
                         for dataframe in data_frame
                     ]
 
-                    multiple_dataframes_default_values = {"dataframes": heads}
-                    (
-                        multiple_dataframes_instruction,
-                        multiple_dataframes_instruction_values,
-                    ) = self._get_prompt(
-                        "multiple_dataframes",
-                        default_prompt=MultipleDataframesPrompt,
-                        default_values=multiple_dataframes_default_values,
-                        df=heads,
+                    multiple_dataframes_instruction = self._non_default_prompts.get(
+                        "multiple_dataframes", MultipleDataframesPrompt
                     )
-
                     code = self._llm.generate_code(
-                        multiple_dataframes_instruction,
+                        multiple_dataframes_instruction(dataframes=heads),
                         prompt,
                     )
 
-                    self._original_instructions = multiple_dataframes_instruction_values
+                    self._original_instructions = {
+                        "question": prompt,
+                        "df_head": heads,
+                    }
 
                 else:
                     df_head = data_frame.head(rows_to_display)
@@ -401,30 +365,25 @@ class PandasAI(Shortcuts):
                         df_head = anonymize_dataframe_head(df_head)
                     df_head = df_head.to_csv(index=False)
 
-                    generate_code_default_values = {
-                        "df_head": df_head,
-                        "num_rows": data_frame.shape[0],
-                        "num_columns": data_frame.shape[1],
-                    }
-
-                    (
-                        generate_code_instruction,
-                        generate_code_instruction_values,
-                    ) = self._get_prompt(
-                        "generate_python_code",
-                        GeneratePythonCodePrompt,
-                        default_values=generate_code_default_values,
-                        df=data_frame,
+                    generate_code_instruction = self._non_default_prompts.get(
+                        "generate_python_code", GeneratePythonCodePrompt
+                    )(
+                        prompt=prompt,
+                        df_head=df_head,
+                        num_rows=data_frame.shape[0],
+                        num_columns=data_frame.shape[1],
                     )
-
                     code = self._llm.generate_code(
                         generate_code_instruction,
                         prompt,
                     )
-                    self._original_instructions = generate_code_instruction_values
 
-                if self.callback:
-                    self.callback.on_code(code)
+                    self._original_instructions = {
+                        "question": prompt,
+                        "df_head": df_head,
+                        "num_rows": data_frame.shape[0],
+                        "num_columns": data_frame.shape[1],
+                    }
 
                 self.last_code_generated = code
                 self.log(
@@ -600,7 +559,7 @@ class PandasAI(Shortcuts):
             new_body.append(node)
 
         new_tree = ast.Module(body=new_body)
-        return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
+        return astor.to_source(new_tree).strip()
 
     def _get_environment(self) -> dict:
         """
@@ -636,41 +595,29 @@ class PandasAI(Shortcuts):
         """
 
         if multiple:
-            correct_multiple_dataframes_error_default_values = {
-                "code": code,
-                "error_returned": e,
-                "question": self._original_instructions["question"],
-                "df_head": self._original_instructions["df_head"],
-            }
-
-            error_correcting_instruction, _ = self._get_prompt(
+            error_correcting_instruction = self._non_default_prompts.get(
                 "correct_multiple_dataframes_error",
                 CorrectMultipleDataframesErrorPrompt,
-                default_values=correct_multiple_dataframes_error_default_values,
-                df=self._original_instructions["df_head"],
+            )(
+                code=code,
+                error_returned=e,
+                question=self._original_instructions["question"],
+                df_head=self._original_instructions["df_head"],
             )
 
         else:
-            correct_error_default_values = {
-                "code": code,
-                "error_returned": e,
-                "question": self._original_instructions["question"],
-                "df_head": self._original_instructions["df_head"],
-                "num_rows": self._original_instructions["num_rows"],
-                "num_columns": self._original_instructions["num_columns"],
-            }
-
-            error_correcting_instruction, _ = self._get_prompt(
-                "correct_error",
-                CorrectErrorPrompt,
-                correct_error_default_values,
-                df=self._original_instructions["df_head"],
+            error_correcting_instruction = self._non_default_prompts.get(
+                "correct_error", CorrectErrorPrompt
+            )(
+                code=code,
+                error_returned=e,
+                question=self._original_instructions["question"],
+                df_head=self._original_instructions["df_head"],
+                num_rows=self._original_instructions["num_rows"],
+                num_columns=self._original_instructions["num_columns"],
             )
 
-        code = self._llm.generate_code(error_correcting_instruction, "")
-        if self.callback:
-            self.callback.on_code(code)
-        return code
+        return self._llm.generate_code(error_correcting_instruction, "")
 
     def run_code(
         self,
@@ -703,6 +650,11 @@ class PandasAI(Shortcuts):
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code)
+
+        # Copy the code to clipboard
+        if self._auto_copy_code:
+            self.copy_to_clipboard(code_to_run)
+
         self.last_code_executed = code_to_run
         self.log(
             f"""
@@ -731,11 +683,6 @@ Code running:
                     code = code_to_run
                     break
                 except Exception as e:
-                    self.log(
-                        f"Error executing code (count: {count})", level=logging.WARNING
-                    )
-                    self.log(f"{traceback.format_exc()}", level=logging.DEBUG)
-
                     if not use_error_correction_framework:
                         raise e
 
@@ -771,20 +718,53 @@ Code running:
         except Exception:
             return captured_output
 
-    def log(self, message: str, level: Optional[int] = logging.INFO):
+    def log(self, message: str):
+        """Log a message"""
+        self._logger.info(message)
+        self._logs.append(message)
+
+    def copy_to_clipboard(self, text: str):
         """
-        Log the passed message with according log level.
+        Copy text to clipboard
 
         Args:
-            message (str): a message string to be logged
-            level (Optional[int]): an integer, representing log level;
-                                   default to 20 (INFO)
+            text (str): Text to copy to clipboard
         """
-        self._logger.log(level=level, msg=message)
-        self._logs.append({"msg": message, "level": level})
+        if sys.platform == "win32":
+            command = "echo " + text.strip() + "| clip"
+            subprocess.run(command, shell=True)
+        elif sys.platform == "darwin":
+            command = "echo " + text.strip() + "| pbcopy"
+            subprocess.run(command, shell=True)
+        elif sys.platform.startswith("linux"):
+            command = "echo " + text.strip() + "| xclip -selection clipboard"
+            subprocess.run(command, shell=True)
+        else:
+            raise Exception("Can't copy to clipboard, unsupported OS.")
+
+    def paste_from_clipboard(self) -> str:
+        """
+        Paste text from clipboard
+
+        Returns (str): Text from clipboard
+        """
+        if sys.platform == "win32":
+            command = 'powershell.exe -command "Get-Clipboard"'
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        elif sys.platform == "darwin":
+            command = "pbpaste"
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        elif sys.platform.startswith("linux"):
+            command = "xclip -selection clipboard -o"
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            return result.stdout.strip()
+        else:
+            raise Exception("Can't paste from clipboard, unsupported OS.")
 
     @property
-    def logs(self) -> List[dict[str, str]]:
+    def logs(self) -> List[str]:
         """Return the logs"""
         return self._logs
 

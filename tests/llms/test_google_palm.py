@@ -5,8 +5,8 @@ import pytest
 from google import generativeai
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.google_palm import GooglePalm
-from pandasai.prompts.base import Prompt
+from pandasai.llm import GooglePalm
+from pandasai.prompts import Prompt
 
 
 class MockedCompletion:
@@ -105,5 +105,5 @@ class TestGooglePalm:
             generativeai, "generate_text", return_value=expected_response
         )
 
-        result = llm.call(instruction=prompt, value="world", suffix="!")
+        result = llm.call(instruction=prompt, suffix="!")
         assert result == expected_text
