@@ -13,8 +13,8 @@ class LangchainLLM(LLM):
     def __init__(self, langchain_llm):
         self._langchain_llm = langchain_llm
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
-        prompt = str(instruction) + value + suffix
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
+        prompt = instruction.to_string() + suffix
         return self._langchain_llm.predict(prompt)
 
     @property

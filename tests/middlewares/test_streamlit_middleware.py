@@ -1,6 +1,8 @@
 """Unit tests for the streamlit middleware class"""
 
-from pandasai import PandasAI
+import pandas as pd
+
+from pandasai.smart_datalake import SmartDatalake
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import StreamlitMiddleware
 
@@ -19,19 +21,31 @@ st.pyplot(plt.gcf())"""
         )
         assert middleware.has_run
 
-    def test_streamlit_middleware_optional_dependency(self, monkeypatch):
+    def test_streamlit_middleware_optional_dependency(self, mock_json_load):
         """Test the streamlit middleware installs the optional dependency"""
+        mock_json_load.return_value = {}
 
-        llm = FakeLLM("plt.show()")
-        pandasai = PandasAI(llm, middlewares=[StreamlitMiddleware()])
+        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        llm = FakeLLM(
+            """import matplotlib.pyplot as plt
+def analyze_data(dfs):
+    return { 'type': 'text', 'value': "Hello World" }"""
+        )
+        dl = SmartDatalake(
+            [df],
+            config={
+                "llm": llm,
+                "middlewares": [StreamlitMiddleware()],
+                "enable_cache": False,
+            },
+        )
 
-        df = []
-
-        pandasai(
-            df,
+        dl.chat(
             "Plot the histogram of countries showing for each the gpd, using different"
             "colors for each bar",
         )
-        assert pandasai._additional_dependencies == [
-            {"module": "streamlit", "name": "streamlit", "alias": "st"}
-        ]
+        assert {
+            "module": "streamlit",
+            "name": "streamlit",
+            "alias": "st",
+        } in dl._code_manager._additional_dependencies
