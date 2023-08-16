@@ -31,7 +31,7 @@ You can build and view this documentation project locally - we recommend that yo
 and dependency management tool.
 ```console
 # Install required Python dependencies (MkDocs etc.)
-poetry insall --with docs
+poetry install --with docs
 # Run the mkdocs development server
 mkdocs serve
 ```

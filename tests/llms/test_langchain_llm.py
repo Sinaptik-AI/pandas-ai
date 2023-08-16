@@ -3,8 +3,8 @@
 from langchain.llms import OpenAI
 import pytest
 
-from pandasai.llm.langchain import LangchainLLM
-from pandasai.prompts.base import Prompt
+from pandasai.llm import LangchainLLM
+from pandasai.prompts import Prompt
 from unittest.mock import Mock
 
 
@@ -16,7 +16,7 @@ class TestLangchainLLM:
         class FakeOpenAI(OpenAI):
             openai_api_key = "fake_key"
 
-            def __call__(self, _prompt):
+            def __call__(self, _prompt, stop=None, callbacks=None, **kwargs):
                 return Mock(return_value="Custom response")()
 
         langchain_llm = FakeOpenAI()
@@ -39,6 +39,5 @@ class TestLangchainLLM:
         langchain_wrapper = LangchainLLM(langchain_llm)
 
         assert (
-            langchain_wrapper.call(instruction=prompt, value="world", suffix="!")
-            == "Custom response"
+            langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
         )

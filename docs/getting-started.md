@@ -1,27 +1,41 @@
 # Usage
 
-`pandasai` is developed on top of `pandas` api. The objective is to make dataframe conversation
-using Large Language Models (LLMs).
-
 ## Installation
 
-To use `pandasai`, first install it using pip through [PyPi](https://pypi.org/project/pandasai/) package distribution
-framework. It is actively developed so be vigilant for versions updates.
+To use `pandasai`, first install it
 
 ```console
+# Using poetry (recommended)
+poetry add pandasai
+
+# Using pip
 pip install pandasai
 ```
 
-> It is recommended to create a Virtual environment using your preffred choice of Environment Managers e.g conda,
-> Poetry etc
+> Before you install it, we recommended to create a Virtual environment using your preffred choice of Environment Managers e.g [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.
 
 ### Optional Installs
 
-`pandasai` optionally supports Google PaLM. To install `pandasai` with this extra dependency, run
+To keep the package size small, we have decided to make some dependencies that are not required by default. These dependencies are required for some features of `pandasai`. To install `pandasai` with these extra dependencies, run
 
 ```console
-pip install pandasai[google]
+pip install pandasai[extra-dependency-name]
 ```
+
+You can replace `extra-dependency-name` with any of the following:
+
+- `google-aip`: this extra dependency is required if you want to use Google PaLM as a language model.
+- `google-sheet`: this extra dependency is required if you want to use Google Sheets as a data source.
+- `excel`: this extra dependency is required if you want to use Excel files as a data source.
+- `polars`: this extra dependency is required if you want to use Polars dataframes as a data source.
+- `langchain`: this extra dependency is required if you want to support the LangChain LLMs.
+- `numpy`: this extra dependency is required if you want to support numpy.
+- `ggplot`: this extra dependency is required if you want to support ggplot for plotting.
+- `seaborn`: this extra dependency is required if you want to support seaborn for plotting.
+- `plotly`: this extra dependency is required if you want to support plotly for plotting.
+- `statsmodels`: this extra dependency is required if you want to support statsmodels.
+- `scikit-learn`: this extra dependency is required if you want to support scikit-learn.
+- `streamlit`: this extra dependency is required if you want to support the streamlit.
 
 ## Getting Started
 
@@ -29,7 +43,7 @@ Below is simple example to get started with `pandasai`.
 
 ```python
 import pandas as pd
-from pandasai import PandasAI
+from pandasai import SmartDataframe
 
 # Sample DataFrame
 df = pd.DataFrame({
@@ -39,14 +53,42 @@ df = pd.DataFrame({
 })
 
 # Instantiate a LLM
-from pandasai.llm.openai import OpenAI
+from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-pandas_ai = PandasAI(llm)
-pandas_ai(df, prompt='Which are the 5 happiest countries?')
+df = SmartDataframe(df, config={"llm": llm})
+df.chat('Which are the 5 happiest countries?')
+# Output: United Kingdom, Canada, Australia, United States, Germany
 ```
 
-## Generate openai API Token
+PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`. A `SmartDatalake` is a collection of `SmartDataframe`s. You can instantiate a `SmartDatalake` as follows:
+
+```python
+from pandasai import SmartDatalake
+import pandas as pd
+
+# Sample DataFrames
+df1 = pd.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
+    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+})
+df2 = "data/Loan payments data.csv"
+df3 = "data/Loan payments data.xlsx"
+
+dl = SmartDatalake([df1, df2, df3])
+```
+
+Then, you can use the `SmartDatalake` as follows, similar to how you would use a `SmartDataframe`:
+
+```python
+dl.chat('Which are the 5 happiest countries?')
+# Output: United Kingdom, Canada, Australia, United States, Germany
+```
+
+PandasAI will automatically figure out which dataframe or dataframes are relevant to the query and will use only those dataframes to answer the query.
+
+### How to generate OpenAI API Token
 
 Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to generate your API_TOKEN with
 [openai](https://platform.openai.com/overview).
@@ -58,147 +100,35 @@ Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to ge
 > The API access to openai is a paid service. You have to set up billing.
 > Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
 
+## Config
+
+When you instantiate a `SmartDataframe`, you can pass a `config` object as the second argument. This object can contain custom settings that will be used by `pandasai` when generating code.
+
+As an alternative, you can simply edit the `pandasai.json` file in the root of your project. This file will be automatically loaded by `pandasai` and these will be the default settings. You will still be able to override these settings by passing the settings that you want to override when instantiating a `SmartDataframe`.
+
+Settings:
+
+- `llm`: the LLM to use. You can pass an instance of an LLM or the name of an LLM. You can use one of the LLMs supported. You can find more information about LLMs [here](llms.md).
+- `llm_options`: the options to use for the LLM (for example the api token, etc). You can find more information about the settings [here](llms.md).
+- `save_logs`: whether to save the logs of the LLM. Defaults to `True`. You will find the logs in the `pandasai.log` file in the root of your project.
+- `verbose`: whether to print the logs in the console as PandasAI is executed. Defaults to `False`.
+- `enforce_privacy`: whether to enforce privacy. Defaults to `False`. If set to `True`, PandasAI will not send any data to the LLM, but only the metadata. By default, PandasAI will send 5 samples that are anonymized to improve the accuracy of the results.
+- `save_charts`: whether to save the charts generated by PandasAI. Defaults to `False`. You will find the charts in the root of your project or in the path specified by `save_charts_path`.
+- `save_charts_path`: the path where to save the charts. Defaults to `exports/charts/`. You can use this setting to override the default path.
+- `enable_cache`: whether to enable caching. Defaults to `True`. If set to `True`, PandasAI will cache the results of the LLM to improve the response time. If set to `False`, PandasAI will always call the LLM.
+- `use_error_correction_framework`: whether to use the error correction framework. Defaults to `True`. If set to `True`, PandasAI will try to correct the errors in the code generated by the LLM with further calls to the LLM. If set to `False`, PandasAI will not try to correct the errors in the code generated by the LLM.
+- `max_retries`: the maximum number of retries to use when using the error correction framework. Defaults to `3`. You can use this setting to override the default number of retries.
+- `custom_prompts`: the custom prompts to use. Defaults to `{}`. You can use this setting to override the default custom prompts. You can find more information about custom prompts [here](custom-prompts.md).
+- `custom_whitelisted_dependencies`: the custom whitelisted dependencies to use. Defaults to `{}`. You can use this setting to override the default custom whitelisted dependencies. You can find more information about custom whitelisted dependencies [here](custom-whitelisted-dependencies.md).
+- `middlewares`: the middlewares to use. Defaults to `[]`. You can use this setting to override the default middlewares. You can find more information about middlewares [here](middlewares.md).
+- `callback`: the callback to use. Defaults to `None`. You can use this setting to override the default callback. You can find more information about callbacks [here](callbacks.md).
+
 ## Demo in Google Colab
 
 Try out PandasAI in your browser:
 
 [![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1rKz7TudOeCeKGHekw7JFNL4sagN9hon-?usp=sharing)
 
-### Examples
+## Examples
 
-Other [examples](../examples) are included in the repository along with samples of data.
-
-#### Working with CSV
-
-Example of using PandasAI with a CSV file
-
-```python
-import pandas as pd
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
-
-df = pd.read_csv("data/Loan payments data.csv")
-
-llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True, conversational=True)
-response = pandas_ai(df, "How many loans are from men and have been paid off?")
-print(response)
-# Output: 247 loans have been paid off by men.
-```
-
-#### Working is Pandas Dataframe
-
-Example of using PandasAI with a Pandas DataFrame
-
-```python
-import pandas as pd
-from data.sample_dataframe import dataframe
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
-
-df = pd.DataFrame(dataframe)
-
-llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai(df, "Calculate the sum of the gdp of north american countries")
-print(response)
-# Output: 20901884461056
-
-```
-
-#### Plotting
-
-Example of using PandasAI to generate a chart from a Pandas DataFrame
-
-```python
-import pandas as pd
-from data.sample_dataframe import dataframe
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
-
-df = pd.DataFrame(dataframe)
-
-llm = OpenAI()
-pandas_ai = PandasAI(llm)
-response = pandas_ai(
-    df,
-    "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
-)
-print(response)
-# Output: check out images/histogram-chart.png
-```
-
-### Working with multiple dataframes
-
-Example of using PandasAI with multiple Pandas DataFrames
-
-```python
-import pandas as pd
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
-
-employees_data = {
-    'EmployeeID': [1, 2, 3, 4, 5],
-    'Name': ['John', 'Emma', 'Liam', 'Olivia', 'William'],
-    'Department': ['HR', 'Sales', 'IT', 'Marketing', 'Finance']
-}
-
-salaries_data = {
-    'EmployeeID': [1, 2, 3, 4, 5],
-    'Salary': [5000, 6000, 4500, 7000, 5500]
-}
-
-employees_df = pd.DataFrame(employees_data)
-salaries_df = pd.DataFrame(salaries_data)
-
-llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai(
-    [employees_df, salaries_df],
-    "Who gets paid the most?",
-)
-print(response)
-# Output: Olivia gets paid the most.
-```
-
-### Chain of commands
-
-You can chain commands by passing the output of one command to the next one. In the example, we first filter the original
-dataframe by gender and then by loans that have been paid off.
-
-```python
-import pandas as pd
-
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
-
-df = pd.read_csv("examples/data/Loan payments data.csv")
-
-llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True)
-
-# We filter by males only
-from_males_df = pandas_ai(df, "Filter the dataframe by males")
-paid_from_males_df = pandas_ai(from_males_df, "Filter the dataframe by loans that have been paid off")
-print(paid_from_males_df)
-# Output:
-# [247 rows x 11 columns]
-#          Loan_ID loan_status  Principal  terms effective_date    due_date     paid_off_time  past_due_days  age             education Gender
-# 0    xqd20166231     PAIDOFF       1000     30       9/8/2016   10/7/2016   9/14/2016 19:31            NaN   45  High School or Below   male
-# 3    xqd20160004     PAIDOFF       1000     15       9/8/2016   9/22/2016   9/22/2016 20:00            NaN   27               college   male
-# 5    xqd20160706     PAIDOFF        300      7       9/9/2016   9/15/2016    9/9/2016 13:45            NaN   35       Master or Above   male
-# 6    xqd20160007     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/7/2016 23:07            NaN   29               college   male
-# 7    xqd20160008     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/5/2016 20:33            NaN   36               college   male
-# ..           ...         ...        ...    ...            ...         ...               ...            ...  ...                   ...    ...
-# 294  xqd20160295     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 13:00            NaN   36              Bechalor   male
-# 296  xqd20160297     PAIDOFF        800     15      9/14/2016   9/28/2016    9/21/2016 4:42            NaN   27               college   male
-# 297  xqd20160298     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   29  High School or Below   male
-# 298  xqd20160299     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   40  High School or Below   male
-# 299  xqd20160300     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 11:00            NaN   28               college   male
-
-# [247 rows x 11 columns]
-```
+You can find some examples [here](examples.md).

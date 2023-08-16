@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.base import LLM
+from pandasai.llm import LLM
 
 
 class TestBaseLLM:
@@ -74,11 +74,18 @@ print('Hello World')
         assert LLM()._extract_code(code) == "print('Hello World')"
 
         code = """Sure, here is your code:
-
 <startCode>
 print('Hello World')
 <endCode>
+```
+"""
 
+        assert LLM()._extract_code(code) == "print('Hello World')"
+
+        code = """Sure, here is your code:
+<startCode>
+print('Hello World')
+</startCode>
 ```
 """
 

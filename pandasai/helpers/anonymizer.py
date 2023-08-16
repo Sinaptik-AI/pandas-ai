@@ -1,10 +1,6 @@
 """
-This module contains helper functions for anonymizing data and generating random data
- before sending it to the LLM (An External API).
-
-Only df.head() is sent to LLM API, hence the df.head() is processed
- to remove any personal or sensitive information.
-
+Helper class to anonymize a dataframe head by replacing the values of the columns
+that contain personal or sensitive information with random values.
 """
 
 import random
@@ -14,166 +10,136 @@ import string
 import pandas as pd
 
 
-def is_valid_email(email: str) -> bool:
-    """Check if the given email is valid based on regex pattern.
+class Anonymizer:
+    def _is_valid_email(email: str) -> bool:
+        """Check if the given email is valid based on regex pattern.
 
-    Args:
-        email (str): email address to be checked.
+        Args:
+            email (str): email address to be checked.
 
-    Returns (bool): True if the email is valid, otherwise False.
-    """
+        Returns (bool): True if the email is valid, otherwise False.
+        """
 
-    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return re.match(email_regex, email) is not None
+        email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        return re.match(email_regex, email) is not None
 
+    def _is_valid_phone_number(phone_number: str) -> bool:
+        """Check if the given phone number is valid based on regex pattern.
 
-def is_valid_phone_number(phone_number: str) -> bool:
-    """Check if the given phone number is valid based on regex pattern.
+        Args:
+            phone_number (str): phone number to be checked.
 
-    Args:
-        phone_number (str): phone number to be checked.
+        Returns (bool): True if the phone number is valid, otherwise False.
+        """
 
-    Returns (bool): True if the phone number is valid, otherwise False.
-    """
+        pattern = r"\b(?:\+?\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}\b"
+        return re.search(pattern, phone_number) is not None
 
-    pattern = r"\b(?:\+?\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}\b"
-    return re.search(pattern, phone_number) is not None
+    def _is_valid_credit_card(credit_card_number: str) -> bool:
+        """Check if the given credit card number is valid based on regex pattern.
 
+        Args:
+            credit_card_number (str): credit card number to be checked.
 
-def is_valid_credit_card(credit_card_number: str) -> bool:
-    """Check if the given credit card number is valid based on regex pattern.
+        Returns (str): True if the credit card number is valid, otherwise False.
+        """
 
-    Args:
-        credit_card_number (str): credit card number to be checked.
+        pattern = r"^\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}$"
+        return re.search(pattern, credit_card_number) is not None
 
-    Returns (str): True if the credit card number is valid, otherwise False.
-    """
+    def _generate_random_email() -> str:
+        """Generates a random email address using predefined domains.
 
-    pattern = r"^\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}$"
-    return re.search(pattern, credit_card_number) is not None
+        Returns (str): generated random email address.
+        """
 
+        domains = [
+            "gmail.com",
+            "yahoo.com",
+            "hotmail.com",
+            "outlook.com",
+            "icloud.com",
+            "aol.com",
+            "protonmail.com",
+            "zoho.com",
+        ]
+        name_length = random.randint(6, 12)
+        domain = random.choice(domains)
+        letters = string.ascii_lowercase + string.digits + "-_"
+        username = "".join(random.choice(letters) for i in range(name_length))
+        email = username + "@" + domain
+        return email
 
-def generate_random_email() -> str:
-    """Generates a random email address using predefined domains.
+    def _generate_random_phone_number(original_field: str) -> str:
+        """Generate a random phone number with country code if originally present.
 
-    Returns (str): generated random email address.
-    """
+        Args:
+            original_field (str): original phone number field.
 
-    domains = [
-        "gmail.com",
-        "yahoo.com",
-        "hotmail.com",
-        "outlook.com",
-        "icloud.com",
-        "aol.com",
-        "protonmail.com",
-        "zoho.com",
-    ]
-    name_length = random.randint(6, 12)
-    domain = random.choice(domains)
-    letters = string.ascii_lowercase + string.digits + "-_"
-    username = "".join(random.choice(letters) for i in range(name_length))
-    email = username + "@" + domain
-    return email
+        Returns (str): generated random phone number.
+        """
 
+        if original_field.startswith("+"):
+            # Extract country code if present
+            country_code = original_field.split()[0]
+        else:
+            country_code = ""
 
-def generate_random_phone_number(original_field: str) -> str:
-    """Generate a random phone number with country code if originally present.
+        number = "".join(random.choices("0123456789", k=10))
 
-    Args:
-        original_field (str): original phone number field.
+        if country_code:
+            phone_number = f"{country_code} {number}"
+        else:
+            phone_number = number
 
-    Returns (str): generated random phone number.
-    """
+        return phone_number
 
-    if original_field.startswith("+"):
-        # Extract country code if present
-        country_code = original_field.split()[0]
-    else:
-        country_code = ""
+    def _generate_random_credit_card() -> str:
+        """Generate a random credit card number.
 
-    number = "".join(random.choices("0123456789", k=10))
+        Returns (str): generated random credit card number.
+        """
 
-    if country_code:
-        phone_number = f"{country_code} {number}"
-    else:
-        phone_number = number
+        groups = []
+        for _i in range(4):
+            group = "".join(random.choices("0123456789", k=4))
+            groups.append(group)
+        separator = random.choice(["-", " "])
+        return separator.join(groups)
 
-    return phone_number
+    # static method to anonymize a dataframe head
+    def anonymize_dataframe_head(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Anonymize a dataframe head by replacing the values of the columns
+        that contain personal or sensitive information with random values.
 
+        Args:
+            df (pd.DataFrame): Dataframe to anonymize.
 
-def generate_random_credit_card() -> str:
-    """Generate a random credit card number.
+        Returns:
+            pd.DataFrame: Anonymized dataframe.
+        """
 
-    Returns (str): generated random credit card number.
-    """
+        if len(df) == 0:
+            return df
 
-    groups = []
-    for _i in range(4):
-        group = "".join(random.choices("0123456789", k=4))
-        groups.append(group)
-    separator = random.choice(["-", " "])
-    return separator.join(groups)
+        # create a copy of the dataframe head
+        df_head = df.head().copy()
 
-
-def copy_head(data_frame: pd.DataFrame) -> pd.DataFrame:
-    """Copy the head of a DataFrame.
-
-    Args:
-        data_frame (pd.DataFrame): The pd.DataFrame to copy the head from.
-
-    Returns (pd.DataFrame): copied head of the DataFrame.
-    """
-
-    return data_frame.head().copy()
-
-
-def anonymize_dataframe_head(
-    data_frame: pd.DataFrame, force_conversion: bool = True
-) -> pd.DataFrame:
-    """Anonymize the head of a given DataFrame by replacing sensitive data.
-
-    Args:
-
-        data_frame (pd.DataFrame):  The DataFrame to anonymize the head data.
-        force_conversion (bool): Convert it with instruction. Default is True.
-
-    Returns: Anonymized head of the DataFrame.
-    """
-
-    data_frame = copy_head(data_frame)
-    dtypes = data_frame.dtypes
-    for col in data_frame.columns:
-        col_idx = data_frame.columns.get_loc(col)
-        # check category type column and temporarily convert to object type
-        if force_conversion:
-            if pd.api.types.is_categorical_dtype(data_frame[col]):
-                if data_frame[col].isna().any():
-                    data_frame[col] = data_frame[col].astype(object)
-        for row_idx, val in enumerate(data_frame[col]):
-            cell_value = str(val)
-
-            if is_valid_email(cell_value):
-                data_frame.iloc[row_idx, col_idx] = generate_random_email()
-                continue
-            if is_valid_phone_number(cell_value):
-                data_frame.iloc[row_idx, col_idx] = generate_random_phone_number(
-                    cell_value
+        # for each column, check if it contains personal or sensitive information
+        # and if so, replace the values with random values
+        for col in df_head.columns:
+            if Anonymizer._is_valid_email(str(df_head[col].iloc[0])):
+                df_head[col] = df_head[col].apply(
+                    lambda x: Anonymizer._generate_random_email()
                 )
-                continue
-            if is_valid_credit_card(cell_value):
-                data_frame.iloc[row_idx, col_idx] = generate_random_credit_card()
-                continue
+            elif Anonymizer._is_valid_phone_number(str(df_head[col].iloc[0])):
+                df_head[col] = df_head[col].apply(
+                    lambda x: Anonymizer._generate_random_phone_number(str(x))
+                )
+            elif Anonymizer._is_valid_credit_card(str(df_head[col].iloc[0])):
+                df_head[col] = df_head[col].apply(
+                    lambda x: Anonymizer._generate_random_credit_card()
+                )
 
-            # anonymize data
-            random_row_index = random.choice(
-                [i for i in range(len(data_frame.index)) if i != row_idx]
-            )
-            random_value = data_frame.iloc[random_row_index, col_idx]
-            data_frame.iloc[row_idx, col_idx] = random_value
-            data_frame.iloc[random_row_index, col_idx] = (
-                pd.eval(cell_value) if cell_value in ["True", "False"] else cell_value
-            )
-    # restore the original data types
-    data_frame = data_frame.astype(dtypes)
-    return data_frame
+        return df_head

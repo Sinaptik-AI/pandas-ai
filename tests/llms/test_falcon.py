@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError
-from pandasai.llm.falcon import Falcon
+from pandasai.llm import Falcon
 
 
 class TestFalconLLM:
