@@ -1,0 +1,16 @@
+{
+  "save_logs": true,
+  "verbose": false,
+  "enforce_privacy": false,
+  "enable_cache": true,
+  "use_error_correction_framework": true,
+  "max_retries": 3,
+  "custom_prompts": {},
+  "save_charts": false,
+  "save_charts_path": "exports/charts",
+  "custom_whitelisted_dependencies": [],
+  "middlewares": [],
+  "callback": null,
+  "llm": "OpenAI",
+  "llm_options": null
+}

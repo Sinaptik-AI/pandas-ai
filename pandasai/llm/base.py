@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 import openai
+from litellm import completion
 import requests
 
 from ..constants import END_CODE_TAG, START_CODE_TAG
@@ -472,3 +473,39 @@ class BaseGoogle(LLM):
         self.last_prompt = str(instruction) + value
         prompt = str(instruction) + value + suffix
         return self._generate_text(prompt)
+
+class BaseliteLLM(BaseOpenAI):
+    """Base class to implement a new liteLLM 
+    LLM base class, this class is extended to be used with .
+
+    """
+    def chat_completion(self, value: str) -> str:
+        """
+        Query the chat completion API
+
+        Args:
+            value (str): Prompt
+
+        Returns:
+            str: LLM response
+        """
+        params = {
+            **self._default_params,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": value,
+                }
+            ],
+        }
+
+        if self.stop is not None:
+            params["stop"] = [self.stop]
+
+        response = completion(**params)
+
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
+            openai_handler(response)
+
+        return response["choices"][0]["message"]["content"]

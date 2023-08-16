@@ -64,3 +64,5 @@ watchdog==2.1.9
     # via mkdocs
 zipp==3.8.0
     # via importlib-metadata
+
+poe-api
