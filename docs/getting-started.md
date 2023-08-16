@@ -56,7 +56,7 @@ df = pd.DataFrame({
 from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe(df, {"llm": llm})
+df = SmartDataframe(df, config={"llm": llm})
 df.chat('Which are the 5 happiest countries?')
 # Output: United Kingdom, Canada, Australia, United States, Germany
 ```
