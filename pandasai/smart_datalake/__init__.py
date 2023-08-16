@@ -36,7 +36,7 @@ from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
-from ..helpers.df_info import DataFrameType
+from ..helpers.df_info import DataFrameType, polars_imported
 
 
 class SmartDatalake:
@@ -347,8 +347,15 @@ class SmartDatalake:
         if result["type"] == "dataframe":
             from ..smart_dataframe import SmartDataframe
 
+            df = result["value"]
+            if self.engine == "polars":
+                if polars_imported:
+                    import polars as pl
+
+                    df = pl.from_pandas(df)
+
             return SmartDataframe(
-                result["value"]._df,
+                df,
                 config=self._config.__dict__,
                 logger=self._logger,
             )
@@ -405,6 +412,10 @@ class SmartDatalake:
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code
+
+    @property
+    def engine(self):
+        return self._dfs[0].engine
 
     @property
     def last_prompt(self):

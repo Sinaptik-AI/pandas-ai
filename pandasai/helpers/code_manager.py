@@ -14,13 +14,12 @@ from ..middlewares.charts import ChartsMiddleware
 from typing import Union, List, Optional
 from ..helpers.logger import Logger
 from ..helpers.df_config import Config
-from ..helpers.df_info import DataFrameType
 import logging
 import traceback
 
 
 class CodeManager:
-    _dfs: List[DataFrameType]
+    _dfs: List
     _middlewares: List[Middleware] = [ChartsMiddleware()]
     _config: Config
     _logger: Logger = None
@@ -28,7 +27,7 @@ class CodeManager:
 
     def __init__(
         self,
-        dfs: List[DataFrameType],
+        dfs: List,
         config: Config,
         logger: Logger,
     ):
@@ -195,7 +194,17 @@ Code running:
 
         analyze_data = environment.get("analyze_data", None)
 
-        return analyze_data(self._dfs)
+        return analyze_data(self._get_original_dfs())
+
+    def _get_original_dfs(self):
+        dfs = []
+        for df in self._dfs:
+            if df.engine == "polars":
+                dfs.append(df.original.to_pandas())
+            else:
+                dfs.append(df.original)
+
+        return dfs
 
     def _get_environment(self) -> dict:
         """
@@ -204,9 +213,7 @@ Code running:
         Returns (dict): A dictionary of environment variables
         """
 
-        dfs = []
-        for df in self._dfs:
-            dfs.append(df.original)
+        dfs = self._get_original_dfs()
 
         return {
             "pd": pd,

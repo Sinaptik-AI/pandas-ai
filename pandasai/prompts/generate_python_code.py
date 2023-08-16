@@ -20,14 +20,14 @@ class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-You are provided with the following {engine} DataFrames with the following metadata:
+You are provided with the following pandas DataFrames with the following metadata:
 
 {dataframes}
 
 This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
-import pandas as pd
+{default_import}
 
 # Analyze the data
 # 1. Prepare: Preprocessing and cleaning data if necessary
@@ -36,7 +36,7 @@ import pandas as pd
 # 4. Output: return a dictionary of:
 # - type (possible values "text", "number", "dataframe", "plot")
 # - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-def analyze_data(self, dfs: list) -> dict
+def analyze_data(self, dfs: list[{engine_df_name}]) -> dict:
    # Code goes here
     
 
@@ -68,9 +68,14 @@ This is the metadata of the dataframe dfs[{index-1}]:
 {df.head_csv}"""  # noqa: E501
             dataframes.append(description)
 
+        default_import = "import pandas as pd"
+        engine_df_name = "pd.DataFrame"
+
         super().__init__(
             **kwargs,
             START_CODE_TAG=START_CODE_TAG,
             END_CODE_TAG=END_CODE_TAG,
             dataframes="\n\n".join(dataframes),
+            default_import=default_import,
+            engine_df_name=engine_df_name,
         )
