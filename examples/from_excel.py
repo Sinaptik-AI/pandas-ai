@@ -1,13 +1,11 @@
 """Example of using PandasAI with am Excel file."""
 
-from pandasai import PandasAI
-from pandasai.helpers import from_excel
+from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
-df = from_excel("examples/data/Loan payments data.xlsx")
-
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True)
-response = pandas_ai(df, "How many loans are from men and have been paid off?")
+
+df = SmartDataframe("examples/data/Loan payments data.xlsx", config={"llm": llm})
+response = df.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.

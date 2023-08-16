@@ -10,7 +10,7 @@ Example:
 """
 
 
-from dotenv import load_dotenv
+from ..helpers import load_dotenv
 from .base import HuggingFaceLLM
 
 load_dotenv()

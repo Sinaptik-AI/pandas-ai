@@ -43,7 +43,7 @@ For example, you can ask PandasAI to find all the rows in a DataFrame where the 
 
 ```python
 import pandas as pd
-from pandasai import PandasAI
+from pandasai import SmartDataframe
 
 # Sample DataFrame
 df = pd.DataFrame({
@@ -53,11 +53,11 @@ df = pd.DataFrame({
 })
 
 # Instantiate a LLM
-from pandasai.llm.openai import OpenAI
+from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-pandas_ai = PandasAI(llm)
-pandas_ai(df, prompt='Which are the 5 happiest countries?')
+df = SmartDataframe(df, config={"llm": llm})
+df.chat('Which are the 5 happiest countries?')
 ```
 
 The above code will return the following:
@@ -74,7 +74,7 @@ Name: country, dtype: object
 Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
 
 ```python
-pandas_ai(df, prompt='What is the sum of the GDPs of the 2 unhappiest countries?')
+df.chat('What is the sum of the GDPs of the 2 unhappiest countries?')
 ```
 
 The above code will return the following:
@@ -88,8 +88,7 @@ The above code will return the following:
 You can also ask PandasAI to draw a graph:
 
 ```python
-pandas_ai(
-    df,
+df.chat(
     "Plot the histogram of countries showing for each the gdp, using different colors for each bar",
 )
 ```
@@ -104,7 +103,8 @@ Additionally, you can also pass in multiple dataframes to PandasAI and ask quest
 
 ```python
 import pandas as pd
-from pandasai import PandasAI
+from pandasai import SmartDatalake
+from pandasai.llm import OpenAI
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -122,8 +122,8 @@ salaries_df = pd.DataFrame(salaries_data)
 
 
 llm = OpenAI()
-pandas_ai = PandasAI(llm)
-pandas_ai([employees_df, salaries_df], "Who gets paid the most?")
+dl = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
+dl.chat("Who gets paid the most?")
 ```
 
 The above code will return the following:
@@ -140,16 +140,16 @@ PandasAI also provides a number of shortcuts (beta) to make it easier to ask que
 
 ```python
 # Clean data
-pandas_ai.clean_data(df)
+df.clean_data()
 
 # Impute missing values
-pandas_ai.impute_missing_values(df)
+df.impute_missing_values()
 
 # Generate features
-pandas_ai.generate_features(df)
+df.generate_features()
 
 # Plot histogram
-pandas_ai.plot_histogram(df, column="gdp")
+df.plot_histogram(column="gdp")
 ```
 
 ### POE-API As LLM Reference

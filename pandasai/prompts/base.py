@@ -25,18 +25,21 @@ class Prompt:
         This will prevent any possible key errors if anyone tries to print 
         prompt before running .run method"""
         if self.text:
-            vars = [
+            vars_ = [
                 fn for _, fn, _, _ in Formatter().parse(self.text) if fn is not None
             ]
-            for var in vars:
+            for var in vars_:
                 if var[0] == "_" and var not in self._args:
                     self._args[var] = var
 
     def override_var(self, var, value):
         self._args[var] = value
 
-    def __str__(self):
+    def to_string(self):
         if self.text is None:
             raise MethodNotImplementedError
 
         return self.text.format(**self._args)
+
+    def __str__(self):
+        return self.to_string()

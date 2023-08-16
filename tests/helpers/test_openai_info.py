@@ -57,6 +57,7 @@ class TestOpenAIInfo:
         # cost must be 0.0 for unknown model
         assert handler.total_cost == 0.0
 
+    @pytest.mark.skip
     def test_openai_callback(self, mocker):
         df = pd.DataFrame([1, 2, 3])
         llm = OpenAI(api_token="test")

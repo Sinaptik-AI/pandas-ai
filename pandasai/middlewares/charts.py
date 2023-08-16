@@ -6,6 +6,7 @@ Middleware to handle the charts in PandasAI.
 
 from pandasai.middlewares.base import Middleware
 import sys
+import ast
 
 
 class ChartsMiddleware(Middleware):
@@ -29,10 +30,18 @@ class ChartsMiddleware(Middleware):
             str: Modified code
         """
 
-        if "plt.show()" in code:
-            if "plt.close('all')" not in code:
-                code = code.replace("plt.show()", "plt.show()\nplt.close('all')")
+        tree = ast.parse(code)
 
-            if not self._is_running_in_console():
-                code = code.replace("plt.show()", "plt.show(block=False)")
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+                call = node.value
+                if isinstance(call.func, ast.Attribute) and call.func.attr == "show":
+                    if "plt.close('all')" not in code:
+                        code = code.replace(
+                            "plt.show()", "plt.show()\nplt.close('all')"
+                        )
+
+                    if not self._is_running_in_console():
+                        code = code.replace("plt.show()", "plt.show(block=False)")
+                    break
         return code

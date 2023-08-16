@@ -66,12 +66,11 @@ class TestBaseHfLLM:
             text: str = "instruction "
 
         instruction = MockPrompt()
-        value = "value "
         suffix = "suffix "
 
         mocker.patch.object(
-            huggingface, "query", return_value="instruction value suffix generated text"
+            huggingface, "query", return_value="instruction suffix generated text"
         )
 
-        result = huggingface.call(instruction, value, suffix)
+        result = huggingface.call(instruction, suffix)
         assert result == "generated text"
