@@ -3,8 +3,9 @@ import openai
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from pandasai.llm.openai import OpenAI
-from pandasai.prompts.base import Prompt
+from pandasai.llm import OpenAI
+from pandasai.prompts import Prompt
+from openai.openai_object import OpenAIObject
 
 
 class TestOpenAILLM:
@@ -26,10 +27,7 @@ class TestOpenAILLM:
 
     def test_proxy(self):
         proxy = "http://proxy.mycompany.com:8080"
-        client = OpenAI(
-            api_token="test",
-            openai_proxy=proxy
-        )
+        client = OpenAI(api_token="test", openai_proxy=proxy)
         assert client.openai_proxy == proxy
         assert openai.proxy["http"] == proxy
         assert openai.proxy["https"] == proxy
@@ -57,7 +55,17 @@ class TestOpenAILLM:
     def test_completion(self, mocker):
         openai_mock = mocker.patch("openai.Completion.create")
         expected_text = "This is the generated text."
-        openai_mock.return_value = {"choices": [{"text": expected_text}]}
+        openai_mock.return_value = OpenAIObject.construct_from(
+            {
+                "choices": [{"text": expected_text}],
+                "usage": {
+                    "prompt_tokens": 2,
+                    "completion_tokens": 1,
+                    "total_tokens": 3,
+                },
+                "model": "gpt-35-turbo",
+            }
+        )
 
         openai = OpenAI(api_token="test")
         result = openai.completion("Some prompt.")
@@ -76,17 +84,19 @@ class TestOpenAILLM:
 
     def test_chat_completion(self, mocker):
         openai = OpenAI(api_token="test")
-        expected_response = {
-            "choices": [
-                {
-                    "text": "Hello, how can I help you today?",
-                    "index": 0,
-                    "logprobs": None,
-                    "finish_reason": "stop",
-                    "start_text": "",
-                }
-            ]
-        }
+        expected_response = OpenAIObject.construct_from(
+            {
+                "choices": [
+                    {
+                        "text": "Hello, how can I help you today?",
+                        "index": 0,
+                        "logprobs": None,
+                        "finish_reason": "stop",
+                        "start_text": "",
+                    }
+                ]
+            }
+        )
 
         mocker.patch.object(openai, "chat_completion", return_value=expected_response)
 
@@ -96,18 +106,18 @@ class TestOpenAILLM:
     def test_call_with_unsupported_model(self, prompt):
         with pytest.raises(UnsupportedOpenAIModelError):
             llm = OpenAI(api_token="test", model="not a model")
-            llm.call(instruction=prompt, value="test")
+            llm.call(instruction=prompt)
 
     def test_call_supported_completion_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="text-davinci-003")
         mocker.patch.object(openai, "completion", return_value="response")
 
-        result = openai.call(instruction=prompt, value="value")
+        result = openai.call(instruction=prompt)
         assert result == "response"
 
     def test_call_supported_chat_model(self, mocker, prompt):
         openai = OpenAI(api_token="test", model="gpt-4")
         mocker.patch.object(openai, "chat_completion", return_value="response")
 
-        result = openai.call(instruction=prompt, value="value")
+        result = openai.call(instruction=prompt)
         assert result == "response"

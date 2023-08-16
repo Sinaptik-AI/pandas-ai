@@ -15,7 +15,7 @@ import os
 from typing import Any, Dict, Optional
 
 import openai
-from dotenv import load_dotenv
+from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from .base import BaseOpenAI
@@ -102,7 +102,7 @@ class AzureOpenAI(BaseOpenAI):
         """
         return {**super()._default_params, "engine": self.engine}
 
-    def call(self, instruction: str, value: str, suffix: str = "") -> str:
+    def call(self, instruction: str, suffix: str = "") -> str:
         """
         Call the Azure OpenAI LLM.
 
@@ -114,12 +114,12 @@ class AzureOpenAI(BaseOpenAI):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
+        self.last_prompt = instruction.to_string() + suffix
 
         if self.is_chat_model:
-            response = self.chat_completion(str(instruction) + str(value) + suffix)
+            response = self.chat_completion(self.last_prompt)
         else:
-            response = self.completion(str(instruction) + str(value) + suffix)
+            response = self.completion(self.last_prompt)
 
         return response
 

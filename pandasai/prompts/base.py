@@ -3,6 +3,7 @@ In order to better handle the instructions, this prompt module is written.
 """
 
 from pandasai.exceptions import MethodNotImplementedError
+from string import Formatter
 
 
 class Prompt:
@@ -20,8 +21,25 @@ class Prompt:
         if kwargs:
             self._args = kwargs
 
-    def __str__(self):
+        """Set all the variables with underscore prefix with default value as DEFAULT
+        This will prevent any possible key errors if anyone tries to print 
+        prompt before running .run method"""
+        if self.text:
+            vars_ = [
+                fn for _, fn, _, _ in Formatter().parse(self.text) if fn is not None
+            ]
+            for var in vars_:
+                if var[0] == "_" and var not in self._args:
+                    self._args[var] = var
+
+    def override_var(self, var, value):
+        self._args[var] = value
+
+    def to_string(self):
         if self.text is None:
             raise MethodNotImplementedError
 
         return self.text.format(**self._args)
+
+    def __str__(self):
+        return self.to_string()
