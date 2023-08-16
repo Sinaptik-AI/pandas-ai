@@ -79,7 +79,7 @@ class OpenAI(BaseOpenAI):
             "model": self.model,
         }
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
@@ -94,12 +94,12 @@ class OpenAI(BaseOpenAI):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
+        self.last_prompt = instruction.to_string() + suffix
 
         if self.model in self._supported_completion_models:
-            response = self.completion(str(instruction) + str(value) + suffix)
+            response = self.completion(self.last_prompt)
         elif self.model in self._supported_chat_models:
-            response = self.chat_completion(str(instruction) + str(value) + suffix)
+            response = self.chat_completion(self.last_prompt)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
 

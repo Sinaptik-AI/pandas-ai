@@ -35,8 +35,11 @@ class Prompt:
     def override_var(self, var, value):
         self._args[var] = value
 
-    def __str__(self):
+    def to_string(self):
         if self.text is None:
             raise MethodNotImplementedError
 
         return self.text.format(**self._args)
+
+    def __str__(self):
+        return self.to_string()
