@@ -1,13 +1,5 @@
-""" Langchain LLMs
-
-This module is meant to be a wrapper around Langchain LLMs to enable the
-support of multiple LLMs and make PandasAI interoperable with LangChain.
-"""
-
 from pandasai.prompts.base import Prompt
 from .base import LLM
-
-from langchain.llms.base import LLM as LangchainBaseLLM
 
 
 class LangchainLLM(LLM):
@@ -16,14 +8,14 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
-    _langchain_llm: LangchainBaseLLM = None
+    _langchain_llm = None
 
-    def __init__(self, langchain_llm: LangchainBaseLLM):
+    def __init__(self, langchain_llm):
         self._langchain_llm = langchain_llm
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
-        prompt = str(instruction) + value + suffix
-        return self._langchain_llm(prompt)
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
+        prompt = instruction.to_string() + suffix
+        return self._langchain_llm.predict(prompt)
 
     @property
     def type(self) -> str:

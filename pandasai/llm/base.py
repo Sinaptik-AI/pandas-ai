@@ -14,6 +14,7 @@ Example:
     ```
 """
 
+import os
 import ast
 import re
 from abc import ABC, abstractmethod
@@ -28,7 +29,8 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..helpers._optional import import_dependency
+from ..helpers.optional import import_dependency
+from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
 
 
@@ -108,7 +110,10 @@ class LLM:
         """
         code = response
         match = re.search(
-            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}|{END_CODE_TAG.replace('<', '</')})",
+            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}"
+            rf"|{END_CODE_TAG.replace('<', '</')}"
+            # fix to make it work with ERNIE bot (#389)
+            rf"|{START_CODE_TAG.replace('<', '</')})",
             code,
             re.DOTALL,
         )
@@ -123,13 +128,12 @@ class LLM:
         return code
 
     @abstractmethod
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
             instruction (Prompt): Prompt
-            value (str): Value
             suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
@@ -137,14 +141,15 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: Prompt, prompt: str) -> str:
+    def generate_code(self, instruction: Prompt) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
         Returns:
             str: Code
         """
-        return self._extract_code(self.call(instruction, prompt, suffix="\n\nCode:\n"))
+        code = self.call(instruction, suffix="")
+        return self._extract_code(code)
 
 
 class BaseOpenAI(LLM, ABC):
@@ -155,11 +160,13 @@ class BaseOpenAI(LLM, ABC):
 
     api_token: str
     temperature: float = 0
-    max_tokens: int = 512
+    max_tokens: int = 1000
     top_p: float = 1
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
     stop: Optional[str] = None
+    # support explicit proxy for OpenAI
+    openai_proxy: Optional[str] = None
 
     def _set_params(self, **kwargs):
         """
@@ -221,6 +228,10 @@ class BaseOpenAI(LLM, ABC):
 
         response = openai.Completion.create(**params)
 
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
+            openai_handler(response)
+
         return response["choices"][0]["text"]
 
     def chat_completion(self, value: str) -> str:
@@ -248,6 +259,10 @@ class BaseOpenAI(LLM, ABC):
 
         response = openai.ChatCompletion.create(**params)
 
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
+            openai_handler(response)
+
         return response["choices"][0]["message"]["content"]
 
 
@@ -267,6 +282,32 @@ class HuggingFaceLLM(LLM):
     def type(self) -> str:
         return "huggingface-llm"
 
+    def _setup(self, **kwargs):
+        """
+        Setup the HuggingFace LLM
+        Args:
+            **kwargs: ["api_token", "max_retries"]
+        """
+        self.api_token = (
+            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
+        )
+        if self.api_token is None:
+            raise APIKeyNotFoundError("HuggingFace Hub API key is required")
+
+        # Since the huggingface API only returns few tokens at a time, we need to
+        # call the API multiple times to get all the tokens. This is the maximum
+        # number of retries we will do.
+        if kwargs.get("max_retries"):
+            self._max_retries = kwargs.get("max_retries")
+
+    def __init__(self, **kwargs):
+        """
+        __init__ method of HuggingFaceLLM Class
+        Args:
+            **kwargs: ["api_token", "max_retries"]
+        """
+        self._setup(**kwargs)
+
     def query(self, payload):
         """
         Query the HF API
@@ -285,7 +326,7 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         A call method of HuggingFaceLLM class.
         Args:
@@ -297,8 +338,8 @@ class HuggingFaceLLM(LLM):
 
         """
 
-        prompt = str(instruction)
-        payload = prompt + value + suffix
+        prompt = instruction.to_string()
+        payload = prompt + suffix
 
         # sometimes the API doesn't return a valid response, so we retry passing the
         # output generated from the previous call as the input
@@ -309,7 +350,18 @@ class HuggingFaceLLM(LLM):
                 break
 
         # replace instruction + value from the inputs to avoid showing it in the output
-        output = response.replace(prompt + value + suffix, "")
+        output = response.replace(prompt + suffix, "")
+        ans = ""
+        for line in output.split("\n"):
+            if line.find("utput:") != -1:
+                break
+            if ans == "":
+                ans = ans + line
+            else:
+                ans = ans + "\n" + line
+        if len(ans.split("'''")) > 0:
+            ans = ans.split("'''")[0]
+        output = ans
         return output
 
 
@@ -321,9 +373,9 @@ class BaseGoogle(LLM):
 
     genai: Any
     temperature: Optional[float] = 0
-    top_p: Optional[float] = None
-    top_k: Optional[float] = None
-    max_output_tokens: Optional[int] = None
+    top_p: Optional[float] = 0.8
+    top_k: Optional[float] = 0.3
+    max_output_tokens: Optional[int] = 1000
 
     def _configure(self, api_key: str):
         """
@@ -343,6 +395,22 @@ class BaseGoogle(LLM):
 
         genai.configure(api_key=api_key)
         self.genai = genai
+
+    def _configurevertexai(self, project_id: str, location: str):
+        """
+        Configure Google VertexAi
+        Args:
+            project_id: GCP Project
+            location: Location of Project
+
+        Returns: Vertexai Object
+
+        """
+
+        err_msg = "Install google-cloud-aiplatform for Google Vertexai"
+        vertexai = import_dependency("vertexai", extra=err_msg)
+        vertexai.init(project=project_id, location=location)
+        self.vertexai = vertexai
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
@@ -390,7 +458,7 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Call the Google LLM.
 
@@ -402,6 +470,5 @@ class BaseGoogle(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
-        prompt = str(instruction) + str(value) + suffix
-        return self._generate_text(prompt)
+        self.last_prompt = instruction.to_string() + suffix
+        return self._generate_text(self.last_prompt)

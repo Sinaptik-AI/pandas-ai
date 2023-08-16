@@ -2,18 +2,15 @@
 
 import pandas as pd
 
-from pandasai import PandasAI
-from pandasai.llm.openai import OpenAI
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 from .data.sample_dataframe import dataframe
 
-df = pd.DataFrame(dataframe)
-
 llm = OpenAI()
-pandas_ai = PandasAI(llm, verbose=True, enforce_privacy=True)
-response = pandas_ai(
-    df,
-    "Calculate the sum of the gdp of north american countries",
+df = SmartDataframe(
+    df=pd.DataFrame(dataframe), config={"llm": llm, "enforce_privacy": True}
 )
+response = df.chat("Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056

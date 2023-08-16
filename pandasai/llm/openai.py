@@ -12,7 +12,7 @@ import os
 from typing import Any, Dict, Optional
 
 import openai
-from dotenv import load_dotenv
+from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from ..prompts.base import Prompt
@@ -24,7 +24,7 @@ load_dotenv()
 class OpenAI(BaseOpenAI):
     """OpenAI LLM using BaseOpenAI Class.
 
-    An API call to OpenAi API is sent and response is recorded and returned.
+    An API call to OpenAI API is sent and response is recorded and returned.
     The default chat model is **gpt-3.5-turbo** while **text-davinci-003** is only
     supported completion model.
     The list of supported Chat models includes ["gpt-4", "gpt-4-0314", "gpt-4-32k",
@@ -54,7 +54,7 @@ class OpenAI(BaseOpenAI):
         """
         __init__ method of OpenAI Class
         Args:
-            api_token (str): API Token fro OpenAI platform.
+            api_token (str): API Token for OpenAI platform.
             **kwargs: Extended Parameters inferred from BaseOpenAI class
 
         Returns: Response generated from OpenAI API
@@ -64,6 +64,10 @@ class OpenAI(BaseOpenAI):
         if self.api_token is None:
             raise APIKeyNotFoundError("OpenAI API key is required")
         openai.api_key = self.api_token
+
+        self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
+        if self.openai_proxy:
+            openai.proxy = {"http": self.openai_proxy, "https": self.openai_proxy}
 
         self._set_params(**kwargs)
 
@@ -75,7 +79,7 @@ class OpenAI(BaseOpenAI):
             "model": self.model,
         }
 
-    def call(self, instruction: Prompt, value: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
@@ -90,12 +94,12 @@ class OpenAI(BaseOpenAI):
         Returns:
             str: Response
         """
-        self.last_prompt = str(instruction) + str(value)
+        self.last_prompt = instruction.to_string() + suffix
 
         if self.model in self._supported_completion_models:
-            response = self.completion(str(instruction) + str(value) + suffix)
+            response = self.completion(self.last_prompt)
         elif self.model in self._supported_chat_models:
-            response = self.chat_completion(str(instruction) + str(value) + suffix)
+            response = self.chat_completion(self.last_prompt)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
 

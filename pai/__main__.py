@@ -39,7 +39,6 @@ import pandas as pd
 
 from pandasai import PandasAI
 from pandasai.llm.google_palm import GooglePalm
-from pandasai.llm.open_assistant import OpenAssistant
 from pandasai.llm.openai import OpenAI
 from pandasai.llm.starcoder import Starcoder
 from pandasai.llm.falcon import Falcon
@@ -109,9 +108,6 @@ def main(dataset: str, token: str, model: str, prompt: str) -> None:
 
     if model == "openai":
         llm = OpenAI(api_token=token)
-
-    elif model == "open-assistant":
-        llm = OpenAssistant(api_token=token)
 
     elif model == "starcoder":
         llm = Starcoder(api_token=token)
