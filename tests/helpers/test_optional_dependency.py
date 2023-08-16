@@ -8,7 +8,7 @@ import types
 
 import pytest
 
-from pandasai.helpers._optional import VERSIONS, import_dependency
+from pandasai.helpers.optional import VERSIONS, import_dependency
 
 
 def test_import_optional():

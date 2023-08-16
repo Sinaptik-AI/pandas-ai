@@ -12,11 +12,8 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Cache: cache.md
-  - Shortcuts: shortcuts.md
   - Middlewares: middlewares.md
-  - Callbacks: callbacks.md
-  - Custom prompts: custom-prompts.md
-  - Custom Optional Arguments: custom-optional-dependencies.md
+  - Custom Optional Arguments: custom_optional_arguments.md
   - Command Line Tool: pai_cli.md
   - LLMs:
       - llms.md
@@ -33,7 +30,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "0.8.1"
+  version: "0.6.0"
 plugins:
   - search
   - mkdocstrings:

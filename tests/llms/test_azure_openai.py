@@ -4,6 +4,7 @@ import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from pandasai.llm import AzureOpenAI
+from openai.openai_object import OpenAIObject
 
 
 class TestAzureOpenAILLM:
@@ -76,7 +77,17 @@ class TestAzureOpenAILLM:
     def test_completion(self, mocker):
         openai_mock = mocker.patch("openai.Completion.create")
         expected_text = "This is the generated text."
-        openai_mock.return_value = {"choices": [{"text": expected_text}]}
+        openai_mock.return_value = OpenAIObject.construct_from(
+            {
+                "choices": [{"text": expected_text}],
+                "usage": {
+                    "prompt_tokens": 2,
+                    "completion_tokens": 1,
+                    "total_tokens": 3,
+                },
+                "model": "gpt-35-turbo",
+            }
+        )
 
         openai = AzureOpenAI(
             api_token="test",
@@ -106,17 +117,19 @@ class TestAzureOpenAILLM:
             deployment_name="test",
             is_chat_model=True,
         )
-        expected_response = {
-            "choices": [
-                {
-                    "text": "Hello, how can I help you today?",
-                    "index": 0,
-                    "logprobs": None,
-                    "finish_reason": "stop",
-                    "start_text": "",
-                }
-            ]
-        }
+        expected_response = OpenAIObject.construct_from(
+            {
+                "choices": [
+                    {
+                        "text": "Hello, how can I help you today?",
+                        "index": 0,
+                        "logprobs": None,
+                        "finish_reason": "stop",
+                        "start_text": "",
+                    }
+                ]
+            }
+        )
 
         mocker.patch.object(openai, "chat_completion", return_value=expected_response)
 
