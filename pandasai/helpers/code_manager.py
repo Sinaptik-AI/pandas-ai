@@ -1,3 +1,4 @@
+import re
 import ast
 import astor
 import pandas as pd
@@ -10,14 +11,15 @@ from ..constants import (
     WHITELISTED_LIBRARIES,
 )
 from ..middlewares.charts import ChartsMiddleware
-from typing import Union, List
+from typing import Union, List, Optional
 from ..helpers.logger import Logger
 from ..helpers.df_config import Config
-from ..helpers.df_info import DataFrameType
+import logging
+import traceback
 
 
 class CodeManager:
-    _dfs: List[DataFrameType]
+    _dfs: List
     _middlewares: List[Middleware] = [ChartsMiddleware()]
     _config: Config
     _logger: Logger = None
@@ -25,7 +27,7 @@ class CodeManager:
 
     def __init__(
         self,
-        dfs: List[DataFrameType],
+        dfs: List,
         config: Config,
         logger: Logger,
     ):
@@ -51,6 +53,88 @@ class CodeManager:
 
         """
         self._middlewares.extend(middlewares)
+
+    def _execute_catching_errors(
+        self, code: str, environment: dict
+    ) -> Optional[Exception]:
+        """
+        Perform execution of the code directly.
+        Call `exec()` for the given `code`, catch any non-base exceptions.
+        Args:
+            code (str): Python code
+            environment (dict): Context for the `exec()`
+        Returns (Optional[Exception]): Any exception raised during execution.
+                                       `None` if executed without exceptions.
+        """
+        try:
+            # Check in the code that analyze_data function is called.
+            # If not, add it.
+            if " = analyze_data(" not in code:
+                code += "\n\nresult = analyze_data(dfs)"
+
+            exec(code, environment)
+        except Exception as exc:
+            self._logger.log("Error of executing code", level=logging.WARNING)
+            self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+
+            return exc
+
+    def _handle_error(
+        self,
+        exc: Exception,
+        code: str,
+        environment: dict,
+        use_error_correction_framework: bool = True,
+    ):
+        """
+        Handle error occurred during first executing of code.
+        If `exc` is instance of `NameError`, try to import the name, extend
+        the context and then call `_execute_catching_errors()` again.
+        If OK, returns the code string; if failed, continuing handling.
+        Args:
+            exc (Exception): The caught exception.
+            code (str): Python code.
+            environment (dict): Context for the `exec()`
+        Raises:
+            Exception: Any exception which has been caught during
+                       the very first execution of the code.
+        Returns (str): Python code. Either an original or new, given by
+                       error correction framework.
+        """
+        if isinstance(exc, NameError):
+            name_to_be_imported = None
+            if hasattr(exc, "name"):
+                name_to_be_imported = exc.name
+            elif exc.args and isinstance(exc.args[0], str):
+                name_ptrn = r"'([0-9a-zA-Z_]+)'"
+                if search_name_res := re.search(name_ptrn, exc.args[0]):
+                    name_to_be_imported = search_name_res.group(1)
+
+            if name_to_be_imported and name_to_be_imported in WHITELISTED_LIBRARIES:
+                try:
+                    package = import_dependency(name_to_be_imported)
+                    environment[name_to_be_imported] = package
+
+                    caught_error = self._execute_catching_errors(code, environment)
+                    if caught_error is None:
+                        return code
+
+                except ModuleNotFoundError:
+                    self._logger.log(
+                        f"Unable to fix `NameError`: package '{name_to_be_imported}'"
+                        f" could not be imported.",
+                        level=logging.DEBUG,
+                    )
+                except Exception as new_exc:
+                    exc = new_exc
+                    self._logger.log(
+                        f"Unable to fix `NameError`: an exception was raised: "
+                        f"{traceback.format_exc()}",
+                        level=logging.DEBUG,
+                    )
+
+            if not use_error_correction_framework:
+                raise exc
 
     def execute_code(
         self,
@@ -99,10 +183,28 @@ Code running:
 
         environment: dict = self._get_environment()
 
-        exec(code_to_run, environment)
+        caught_error = self._execute_catching_errors(code_to_run, environment)
+        if caught_error is not None:
+            self._handle_error(
+                caught_error,
+                code_to_run,
+                environment,
+                use_error_correction_framework=self._config.use_error_correction_framework,
+            )
+
         analyze_data = environment.get("analyze_data", None)
 
-        return analyze_data(self._dfs)
+        return analyze_data(self._get_original_dfs())
+
+    def _get_original_dfs(self):
+        dfs = []
+        for df in self._dfs:
+            if df.engine == "polars":
+                dfs.append(df.original.to_pandas())
+            else:
+                dfs.append(df.original)
+
+        return dfs
 
     def _get_environment(self) -> dict:
         """
@@ -111,9 +213,7 @@ Code running:
         Returns (dict): A dictionary of environment variables
         """
 
-        dfs = []
-        for df in self._dfs:
-            dfs.append(df.original)
+        dfs = self._get_original_dfs()
 
         return {
             "pd": pd,
@@ -149,11 +249,51 @@ Code running:
 
         return False
 
+    def _is_unsafe(self, node: ast.stmt) -> bool:
+        """
+        Remove unsafe code from the code to prevent malicious code execution.
+
+        Args:
+            node (object): ast.stmt
+
+        Returns (bool):
+        """
+
+        code = astor.to_source(node)
+        if any(
+            method in code
+            for method in [
+                ".to_csv",
+                ".to_excel",
+                ".to_json",
+                ".to_sql",
+                ".to_feather",
+                ".to_hdf",
+                ".to_parquet",
+                ".to_pickle",
+                ".to_gbq",
+                ".to_stata",
+                ".to_records",
+                ".to_string",
+                ".to_latex",
+                ".to_html",
+                ".to_markdown",
+                ".to_clipboard",
+            ]
+        ):
+            return True
+
+        return False
+
     def _sanitize_analyze_data(self, analyze_data_node: ast.stmt) -> ast.stmt:
         # Sanitize the code within analyze_data
         sanitized_analyze_data = []
         for node in analyze_data_node.body:
-            if self._is_df_overwrite(node) or self._is_jailbreak(node):
+            if (
+                self._is_df_overwrite(node)
+                or self._is_jailbreak(node)
+                or self._is_unsafe(node)
+            ):
                 continue
             sanitized_analyze_data.append(node)
 

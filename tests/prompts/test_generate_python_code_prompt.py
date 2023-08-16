@@ -47,7 +47,7 @@ import pandas as pd
 # 4. Output: return a dictionary of:
 # - type (possible values "text", "number", "dataframe", "plot")
 # - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-def analyze_data(self, dfs: list) -> dict
+def analyze_data(self, dfs: list[pd.DataFrame]) -> dict:
    # Code goes here
     
 

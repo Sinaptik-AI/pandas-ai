@@ -1,6 +1,6 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -69,7 +69,7 @@ class TestCodeManager:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe._dl._code_manager
+        return smart_dataframe.lake._code_manager
 
     def test_run_code_for_calculations(self, code_manager: CodeManager):
         code = """def analyze_data(dfs):
@@ -174,7 +174,6 @@ def analyze_data(self, dfs: list):
             {"name": "numpy", "alias": "np", "module": "numpy"},
         ]
 
-        assert smart_dataframe.equals(code_manager._get_environment()["dfs"][0])
         assert "pd" in code_manager._get_environment()
         assert "plt" in code_manager._get_environment()
         assert "np" in code_manager._get_environment()
@@ -206,7 +205,6 @@ def analyze_data(self, dfs: list):
             "help": help,
             "hex": hex,
             "id": id,
-            "input": input,
             "int": int,
             "isinstance": isinstance,
             "issubclass": issubclass,
@@ -244,3 +242,50 @@ def analyze_data(self, dfs: list):
             "__build_class__": __build_class__,
             "__name__": "__main__",
         }
+
+    def test_execute_catching_errors_correct(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    return {'type': 'number', 'value': 1 + 1}"""
+        environment = {"dfs": []}
+
+        with patch("builtins.exec") as mock_exec:
+            assert code_manager._execute_catching_errors(code, environment) is None
+            mock_exec.assert_called_once_with(
+                code + "\n\nresult = analyze_data(dfs)", environment
+            )
+
+    def test_execute_catching_errors_raise_exc(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    raise RuntimeError()"""
+        environment = {"dfs": []}
+
+        with patch("builtins.exec") as mock_exec:
+            mock_exec.side_effect = RuntimeError("foobar")
+            exc = code_manager._execute_catching_errors(code, environment)
+            mock_exec.assert_called_once_with(
+                code + "\n\nresult = analyze_data(dfs)", environment
+            )
+            assert isinstance(exc, RuntimeError)
+
+    def test_handle_error_name_error(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    print(json.dumps({"foo": "bar"}))"""
+        environment = {"dfs": []}
+
+        exc = code_manager._execute_catching_errors(code, environment)
+        code_manager._handle_error(exc, code, environment)
+        assert getattr(environment.get("json"), "__name__", None) == "json"
+
+    def test_handle_error_name_error_not_whitelisted_lib(
+        self, code_manager: CodeManager
+    ):
+        code = """def analyze_data(dfs):
+    print(os)"""
+        environment = {"dfs": []}
+
+        exc = code_manager._execute_catching_errors(code, environment)
+        with pytest.raises(NameError):
+            code_manager._handle_error(
+                exc, code, environment, use_error_correction_framework=False
+            )
+        assert "os" not in environment

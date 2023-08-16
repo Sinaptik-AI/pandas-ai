@@ -21,6 +21,7 @@ Example:
 import time
 import uuid
 import sys
+import logging
 
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
@@ -35,7 +36,7 @@ from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
-from ..helpers.df_info import DataFrameType
+from ..helpers.df_info import DataFrameType, polars_imported
 
 
 class SmartDatalake:
@@ -283,10 +284,10 @@ class SmartDatalake:
             # if show_code and self._in_notebook:
             #     self.notebook.create_new_cell(code)
 
-            count = 0
+            retry_count = 0
             code_to_run = code
             result = None
-            while count < self._config.max_retries:
+            while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
                     result = self._code_manager.execute_code(
@@ -297,11 +298,17 @@ class SmartDatalake:
                 except Exception as e:
                     if (
                         not self._config.use_error_correction_framework
-                        or count >= self._config.max_retries - 1
+                        or retry_count >= self._config.max_retries - 1
                     ):
                         raise e
 
-                    count += 1
+                    retry_count += 1
+
+                    self._logger.log(
+                        f"Failed to execute code with a correction framework "
+                        f"[retry number: {retry_count}]",
+                        level=logging.WARNING,
+                    )
 
                     code_to_run = self._retry_run_code(code, e)
 
@@ -340,8 +347,15 @@ class SmartDatalake:
         if result["type"] == "dataframe":
             from ..smart_dataframe import SmartDataframe
 
+            df = result["value"]
+            if self.engine == "polars":
+                if polars_imported:
+                    import polars as pl
+
+                    df = pl.from_pandas(df)
+
             return SmartDataframe(
-                result["value"]._df,
+                df,
                 config=self._config.__dict__,
                 logger=self._logger,
             )
@@ -398,6 +412,10 @@ class SmartDatalake:
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code
+
+    @property
+    def engine(self):
+        return self._dfs[0].engine
 
     @property
     def last_prompt(self):

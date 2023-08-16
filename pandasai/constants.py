@@ -37,7 +37,6 @@ WHITELISTED_BUILTINS = [
     "help",
     "hex",
     "id",
-    "input",
     "int",
     "isinstance",
     "issubclass",
