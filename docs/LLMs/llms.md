@@ -25,7 +25,7 @@ Once you have an API key, you can use it to instantiate an OpenAI object:
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
-llm = OpenAI(api_key="my-openai-api-key")
+llm = OpenAI(api_token="my-openai-api-key")
 pandas_ai = SmartDataframe("data.csv", config={"llm": llm})
 ```
 
@@ -85,9 +85,9 @@ At the moment, PandasAI supports the following HuggingFace models:
 from pandasai import SmartDataframe
 from pandasai.llm import Starcoder, Falcon
 
-llm = Starcoder(api_key="my-huggingface-api-key")
+llm = Starcoder(api_token="my-huggingface-api-key")
 # or
-llm = Falcon(api_key="my-huggingface-api-key")
+llm = Falcon(api_token="my-huggingface-api-key")
 
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
@@ -151,7 +151,7 @@ from pandasai import SmartDataframe
 from pandasai.llm import AzureOpenAI
 
 llm = AzureOpenAI(
-    api_key="my-azure-openai-api-key",
+    api_token="my-azure-openai-api-key",
     api_base="my-azure-openai-api-endpoint",
     api_version="2023-05-15",
     deployment_name="my-deployment-name"
