@@ -123,6 +123,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def __getattr__(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
+        elif name in dir(SmartDataframe):
+            return object.__getattribute__(self, name)
         elif hasattr(self._df, name):
             return getattr(self._df, name)
         else:

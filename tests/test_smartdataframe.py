@@ -207,6 +207,16 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
         with pytest.raises(AttributeError):
             smart_dataframe.last_prompt_id
 
+    def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
+        llm._output = (
+            "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+        )
+        smart_dataframe.chat("What number comes before 2?")
+        assert (
+            smart_dataframe.last_code_generated
+            == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+        )
+
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
         middleware = custom_middleware()
         smart_dataframe.add_middlewares(middleware)

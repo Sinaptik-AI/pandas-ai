@@ -50,9 +50,8 @@ class SmartDatalake:
     _code_manager: CodeManager
     _memory: Memory
 
-    last_code_generated: str
-    last_code_executed: str
-    last_result: list
+    _last_code_generated: str
+    _last_result: list
 
     def __init__(
         self,
@@ -548,3 +547,23 @@ class SmartDatalake:
     @llm.setter
     def llm(self, llm: LLM):
         self._load_llm(llm)
+
+    @property
+    def last_code_generated(self):
+        return self._last_code_generated
+
+    @last_code_generated.setter
+    def last_code_generated(self, last_code_generated: str):
+        self._code_manager._last_code_generated = last_code_generated
+
+    @property
+    def last_code_executed(self):
+        return self._code_manager.last_code_executed
+
+    @property
+    def last_result(self):
+        return self.last_result
+
+    @last_result.setter
+    def last_result(self, last_result: str):
+        self.last_result = last_result
