@@ -9,7 +9,13 @@ from pandasai.llm import OpenAI
 df = pd.DataFrame(dataframe)
 
 llm = OpenAI()
-df = SmartDataframe(df=pd.DataFrame(dataframe), config={"llm": llm})
+df = SmartDataframe(
+    df=pd.DataFrame(dataframe),
+    name="Countries",
+    description="A dataframe with countries with their GDPs and happiness scores",
+    config={"llm": llm},
+)
 response = df.chat("Calculate the sum of the gdp of north american countries")
 print(response)
+print(df.last_prompt)
 # Output: 20901884461056

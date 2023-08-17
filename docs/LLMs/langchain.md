@@ -5,23 +5,17 @@ PandasAI has also built-in support for [LangChain](https://langchain.com/) model
 In order to use LangChain models, you need to install the `langchain` package:
 
 ```bash
-pip install langchain
-```
-
-Or you can install PandasAI with the `langchain` extra:
-
-```bash
 pip install pandasai[langchain]
 ```
 
 Once you have installed the `langchain` package, you can use it to instantiate a LangChain object:
 
 ```python
-from pandasai import PandasAI
+from pandasai import SmartDataframe
 from langchain.llms import OpenAI
 
 langchain_llm = OpenAI(openai_api_key="my-openai-api-key")
-pandasai = PandasAI(llm=langchain_llm)
+df = SmartDataframe("data.csv", {"llm": langchain_llm})
 ```
 
 PandasAI will automatically detect that you are using a LangChain llm and will convert it to a PandasAI llm.

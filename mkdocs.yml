@@ -1,26 +1,28 @@
-site_name: Pandas-ai
+site_name: PandasAI
 site_url: https://pandasai.readthedocs.io/en/latest/
 repo_url: https://github.com/gventuri/pandas-ai
-site_description: Pandasai Documentation with Markdown
-site_author: pandasai contributors
+site_description: PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational
+site_author: Gabriele Venturi
 
 theme:
   name: readthedocs
   highlightjs: true
 
 nav:
-  - Home: index.md
+  - Introduction: index.md
   - Getting Started: getting-started.md
-  - Cache: cache.md
-  - Shortcuts: shortcuts.md
-  - Middlewares: middlewares.md
-  - Callbacks: callbacks.md
-  - Custom prompts: custom-prompts.md
-  - Custom Optional Arguments: custom-optional-dependencies.md
-  - Command Line Tool: pai_cli.md
+  - Examples: examples.md
   - LLMs:
-      - llms.md
-      - LLMs/langchain-llms.md
+      - LLMs/llms.md
+      - LLMs/langchain.md
+  - Advanced usage:
+      - shortcuts.md
+      - cache.md
+      - middlewares.md
+      - callbacks.md
+      - custom-prompts.md
+      - custom-optional-dependencies.md
+  - Command Line Tool: pai_cli.md
   - API:
       - API/pandasai.md
       - API/prompts.md
@@ -33,7 +35,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "0.8.4"
+  version: "1.0.2"
 plugins:
   - search
   - mkdocstrings:
