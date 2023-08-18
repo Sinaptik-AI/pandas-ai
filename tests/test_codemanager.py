@@ -153,7 +153,7 @@ print(os.listdir())
     def test_custom_whitelisted_dependencies(self, code_manager: CodeManager, llm):
         code = """
 import my_custom_library
-def analyze_data(self, dfs: list):
+def analyze_data(dfs: list):
     my_custom_library.do_something()
 """
         llm._output = code
@@ -164,7 +164,7 @@ def analyze_data(self, dfs: list):
         code_manager._config.custom_whitelisted_dependencies = ["my_custom_library"]
         assert (
             code_manager._clean_code(code)
-            == """def analyze_data(self, dfs: list):
+            == """def analyze_data(dfs: list):
     my_custom_library.do_something()"""
         )
 
