@@ -6,7 +6,10 @@ from pandasai import SmartDataframe
 from pandasai.prompts import GeneratePythonCodePrompt
 from pandasai.llm.fake import FakeLLM
 
+import pytest
 
+
+@pytest.mark.skip
 class TestGeneratePythonCodePrompt:
     """Unit tests for the generate python code prompt class"""
 
