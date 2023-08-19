@@ -51,7 +51,7 @@ class SmartDatalake:
     _memory: Memory
 
     _last_code_generated: str
-    _last_result: list
+    _last_result: str
 
     def __init__(
         self,
@@ -91,8 +91,6 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
-
-        self._last_result = []
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
@@ -314,7 +312,7 @@ class SmartDatalake:
                     code_to_run = self._retry_run_code(code, e)
 
             if result is not None:
-                self._last_result.append(result)
+                self.last_result = result
                 self._logger.log(f"Answer: {result}")
         except Exception as exception:
             self.last_error = str(exception)
@@ -568,4 +566,4 @@ class SmartDatalake:
 
     @last_result.setter
     def last_result(self, last_result: str):
-        self._last_result.append(last_result)
+        self._last_result = last_result
