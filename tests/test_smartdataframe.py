@@ -5,6 +5,7 @@ from unittest.mock import patch, Mock
 from uuid import UUID
 
 import pandas as pd
+import polars as pl
 import pytest
 
 from pandasai import SmartDataframe
@@ -400,8 +401,7 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
-        # Simulating a Polars dataframe here
-        polars_df = None
+        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
         smart_dataframe._load_df(polars_df)
 
@@ -446,9 +446,10 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
 
         assert isinstance(df, pd.DataFrame)
 
+        expected_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+        assert df.equals(expected_df)
+
     @pytest.mark.parametrize("file_path", ["sample.txt", "sample.docx", "sample.pdf"])
     def test_invalid_file_format(self, smart_dataframe, file_path):
         with pytest.raises(ValueError):
-            smart_dataframe._import_from_file(file_path)
-            # or make a for loop to check of the provided format from valid list?
             smart_dataframe._import_from_file(file_path)
