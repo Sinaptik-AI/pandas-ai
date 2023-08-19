@@ -5,6 +5,7 @@ from unittest.mock import patch, Mock
 from uuid import UUID
 
 import pandas as pd
+import polars as pl
 import pytest
 
 from pandasai import SmartDataframe
@@ -373,3 +374,82 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
+
+    def test_load_dataframe_from_list(self, smart_dataframe):
+        input_data = [
+            {"column1": 1, "column2": 4},
+            {"column1": 2, "column2": 5},
+            {"column1": 3, "column2": 6},
+        ]
+
+        smart_dataframe._load_df(input_data)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_dict(self, smart_dataframe):
+        input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
+
+        smart_dataframe._load_df(input_data)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
+        pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+
+        smart_dataframe._load_df(pandas_df)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
+        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+
+        smart_dataframe._load_df(polars_df)
+
+        assert smart_dataframe._df is polars_df
+
+    def test_import_csv_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_csv",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.csv"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+    def test_import_parquet_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_parquet",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.parquet"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+    def test_import_excel_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_excel",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.xlsx"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+        expected_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+        assert df.equals(expected_df)
+
+    @pytest.mark.parametrize("file_path", ["sample.txt", "sample.docx", "sample.pdf"])
+    def test_invalid_file_format(self, smart_dataframe, file_path):
+        with pytest.raises(ValueError):
+            smart_dataframe._import_from_file(file_path)
