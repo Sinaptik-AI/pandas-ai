@@ -374,18 +374,6 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
 
-    def test_import_from_file(self, smart_dataframe):
-        # Mocking the _import_from_file method
-        smart_dataframe._import_from_file = lambda x: pd.DataFrame(
-            {"column1": [1, 2, 3], "column2": [4, 5, 6]}
-        )
-
-        df = "sample_file.csv"  # A string indicating a file path
-
-        result_df = smart_dataframe._import_from_file(df)
-
-        assert isinstance(result_df, pd.DataFrame)
-
     def test_load_dataframe_from_list(self, smart_dataframe):
         input_data = [
             {"column1": 1, "column2": 4},
