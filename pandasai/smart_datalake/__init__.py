@@ -92,6 +92,8 @@ class SmartDatalake:
         if self._config.enable_cache:
             self._cache = Cache()
 
+        self._last_result = []
+
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
         Load all the dataframes to be used in the smart datalake.
@@ -311,8 +313,8 @@ class SmartDatalake:
 
                     code_to_run = self._retry_run_code(code, e)
 
-            if result is None:
-                self.last_result = result
+            if result is not None:
+                self._last_result.append(result)
                 self._logger.log(f"Answer: {result}")
         except Exception as exception:
             self.last_error = str(exception)
@@ -562,8 +564,8 @@ class SmartDatalake:
 
     @property
     def last_result(self):
-        return self.last_result
+        return self._last_result
 
     @last_result.setter
     def last_result(self, last_result: str):
-        self.last_result = last_result
+        self._last_result.append(last_result)
