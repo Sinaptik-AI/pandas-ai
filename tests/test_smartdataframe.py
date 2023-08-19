@@ -446,10 +446,9 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
 
         assert isinstance(df, pd.DataFrame)
 
-    def test_invalid_file_format(self, smart_dataframe):
+    @pytest.mark.parametrize("file_path", ["sample.txt", "sample.docx", "sample.pdf"])
+    def test_invalid_file_format(self, smart_dataframe, file_path):
         with pytest.raises(ValueError):
-            file_path = (
-                "sample.txt"  # Note: should make a list of other not valid formats
-            )
+            smart_dataframe._import_from_file(file_path)
             # or make a for loop to check of the provided format from valid list?
             smart_dataframe._import_from_file(file_path)
