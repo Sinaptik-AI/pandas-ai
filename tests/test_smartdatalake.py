@@ -1,11 +1,12 @@
 """Unit tests for the SmartDatalake class"""
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
 
 from pandasai import SmartDataframe, SmartDatalake
+from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 
@@ -94,6 +95,23 @@ class TestSmartDatalake:
 
         smart_datalake._load_llm(langchain_llm)
         assert smart_datalake._llm._langchain_llm == langchain_llm
+
+    @patch.object(
+        CodeManager,
+        "execute_code",
+        return_value={
+            "type": "string",
+            "value": "There are 10 countries in the dataframe.",
+        },
+    )
+    def test_last_result_is_saved(self, _mocked_method, smart_datalake: SmartDatalake):
+        assert smart_datalake.last_result is None
+
+        smart_datalake.chat("How many countries are in the dataframe?")
+        assert smart_datalake.last_result == {
+            "type": "string",
+            "value": "There are 10 countries in the dataframe.",
+        }
 
     def test_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
         middleware = custom_middleware()

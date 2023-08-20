@@ -51,7 +51,7 @@ class SmartDatalake:
     _memory: Memory
 
     _last_code_generated: str
-    _last_result: list
+    _last_result: str = None
 
     def __init__(
         self,
@@ -311,7 +311,7 @@ class SmartDatalake:
 
                     code_to_run = self._retry_run_code(code, e)
 
-            if result is None:
+            if result is not None:
                 self.last_result = result
                 self._logger.log(f"Answer: {result}")
         except Exception as exception:
@@ -333,7 +333,7 @@ class SmartDatalake:
             return
 
         if result["type"] == "string":
-            self._memory.add(result["result"], False)
+            self._memory.add(result["value"], False)
         elif result["type"] == "dataframe":
             self._memory.add("Here is the data you requested.", False)
         elif result["type"] == "plot" or result["type"] == "image":
@@ -562,8 +562,8 @@ class SmartDatalake:
 
     @property
     def last_result(self):
-        return self.last_result
+        return self._last_result
 
     @last_result.setter
     def last_result(self, last_result: str):
-        self.last_result = last_result
+        self._last_result = last_result
