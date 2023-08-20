@@ -52,6 +52,7 @@ class SmartDatalake:
 
     _last_code_generated: str
     _last_result: str = None
+    _last_error: str = None
 
     def __init__(
         self,
@@ -567,3 +568,11 @@ class SmartDatalake:
     @last_result.setter
     def last_result(self, last_result: str):
         self._last_result = last_result
+
+    @property
+    def last_error(self):
+        return self._last_error
+
+    @last_error.setter
+    def last_error(self, last_error: str):
+        self._last_error = last_error
