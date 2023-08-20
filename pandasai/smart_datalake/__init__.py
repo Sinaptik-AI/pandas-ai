@@ -51,7 +51,7 @@ class SmartDatalake:
     _memory: Memory
 
     _last_code_generated: str
-    _last_result: str
+    _last_result: str = None
 
     def __init__(
         self,
@@ -333,7 +333,7 @@ class SmartDatalake:
             return
 
         if result["type"] == "string":
-            self._memory.add(result["result"], False)
+            self._memory.add(result["value"], False)
         elif result["type"] == "dataframe":
             self._memory.add("Here is the data you requested.", False)
         elif result["type"] == "plot" or result["type"] == "image":
