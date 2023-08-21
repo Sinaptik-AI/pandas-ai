@@ -22,6 +22,7 @@ import time
 import uuid
 import sys
 import logging
+import os
 
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
@@ -37,6 +38,7 @@ from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, polars_imported
+from ..helpers.path import find_project_root
 
 
 class SmartDatalake:
@@ -51,7 +53,8 @@ class SmartDatalake:
     _memory: Memory
 
     _last_code_generated: str
-    _last_result: list
+    _last_result: str = None
+    _last_error: str = None
 
     def __init__(
         self,
@@ -66,6 +69,8 @@ class SmartDatalake:
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+
+        self.initialize()
 
         self._load_config(config)
 
@@ -91,6 +96,23 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
+
+    def initialize(self):
+        """Initialize the SmartDatalake"""
+
+        # Create exports/charts folder if it doesn't exist
+        try:
+            charts_dir = os.path.join((find_project_root()), "exports", "charts")
+        except ValueError:
+            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+        os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+
+        # Create /cache folder if it doesn't exist
+        try:
+            cache_dir = os.path.join((find_project_root()), "cache")
+        except ValueError:
+            cache_dir = os.path.join(os.getcwd(), "cache")
+        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
@@ -311,7 +333,7 @@ class SmartDatalake:
 
                     code_to_run = self._retry_run_code(code, e)
 
-            if result is None:
+            if result is not None:
                 self.last_result = result
                 self._logger.log(f"Answer: {result}")
         except Exception as exception:
@@ -333,10 +355,10 @@ class SmartDatalake:
             return
 
         if result["type"] == "string":
-            self._memory.add(result["result"], False)
+            self._memory.add(result["value"], False)
         elif result["type"] == "dataframe":
             self._memory.add("Here is the data you requested.", False)
-        elif result["type"] == "plot" or result["type"] == "image":
+        elif result["type"] == "plot":
             self._memory.add("Here is the plot you requested.", False)
 
     def _format_results(self, result: dict):
@@ -562,8 +584,16 @@ class SmartDatalake:
 
     @property
     def last_result(self):
-        return self.last_result
+        return self._last_result
 
     @last_result.setter
     def last_result(self, last_result: str):
-        self.last_result = last_result
+        self._last_result = last_result
+
+    @property
+    def last_error(self):
+        return self._last_error
+
+    @last_error.setter
+    def last_error(self, last_error: str):
+        self._last_error = last_error
