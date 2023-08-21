@@ -22,6 +22,7 @@ import time
 import uuid
 import sys
 import logging
+import os
 
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
@@ -68,6 +69,8 @@ class SmartDatalake:
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
+        self.initialize()
+
         self._load_config(config)
 
         if logger:
@@ -92,6 +95,17 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
+
+    def initialize(self):
+        """Initialize the SmartDatalake"""
+
+        # Create exports/charts folder if it doesn't exist
+        charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+        os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+
+        # Create /cache folder if it doesn't exist
+        cache_dir = os.path.join(os.getcwd(), "cache")
+        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
@@ -337,7 +351,7 @@ class SmartDatalake:
             self._memory.add(result["value"], False)
         elif result["type"] == "dataframe":
             self._memory.add("Here is the data you requested.", False)
-        elif result["type"] == "plot" or result["type"] == "image":
+        elif result["type"] == "plot":
             self._memory.add("Here is the plot you requested.", False)
 
     def _format_results(self, result: dict):
