@@ -38,6 +38,7 @@ from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, polars_imported
+from ..helpers.path import find_project_root
 
 
 class SmartDatalake:
@@ -100,11 +101,17 @@ class SmartDatalake:
         """Initialize the SmartDatalake"""
 
         # Create exports/charts folder if it doesn't exist
-        charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+        try:
+            charts_dir = os.path.join((find_project_root()), "exports", "charts")
+        except ValueError:
+            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
         os.makedirs(charts_dir, mode=0o777, exist_ok=True)
 
         # Create /cache folder if it doesn't exist
-        cache_dir = os.path.join(os.getcwd(), "cache")
+        try:
+            cache_dir = os.path.join((find_project_root()), "cache")
+        except ValueError:
+            cache_dir = os.path.join(os.getcwd(), "cache")
         os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
