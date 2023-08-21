@@ -61,6 +61,10 @@ df.chat('Which are the 5 happiest countries?')
 # Output: United Kingdom, Canada, Australia, United States, Germany
 ```
 
+If you want to get to know more about the `SmartDataframe` class, check out this video:
+
+[![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to SmartDataframe")
+
 PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`. A `SmartDatalake` is a collection of `SmartDataframe`s. You can instantiate a `SmartDatalake` as follows:
 
 ```python
