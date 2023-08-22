@@ -290,3 +290,25 @@ def analyze_data(dfs: list):
                 exc, code, environment, use_error_correction_framework=False
             )
         assert "os" not in environment
+
+    def test_extract_filters(self, code_manager: CodeManager):
+        code = """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0]
+    filtered_df = df[(df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'male')]
+    num_loans = len(filtered_df)
+    result = {'type': 'number', 'value': num_loans}
+    return result
+
+result = analyze_data(dfs)
+"""
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, list)
+
+        assert filters[0][0] == "df[loan_status]"
+        assert filters[0][1] == "Eq"
+        assert filters[0][2] == "PAIDOFF"
+
+        assert filters[1][0] == "df[Gender]"
+        assert filters[1][1] == "Eq"
+        assert filters[1][2] == "male"

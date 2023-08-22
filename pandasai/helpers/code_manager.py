@@ -389,6 +389,39 @@ Code running:
         if library not in WHITELISTED_BUILTINS:
             raise BadImportError(library)
 
+    def _tokenize_operand(self, operand_node):
+        if isinstance(operand_node, ast.Subscript):
+            slice_ = operand_node.slice.value
+            yield from self._tokenize_operand(operand_node.value)
+            yield slice_
+
+        if isinstance(operand_node, ast.Name):
+            yield operand_node.id
+
+        if isinstance(operand_node, ast.Constant):
+            yield operand_node.value
+
+    def _extract_comparisons(self, node):
+        comparisons = []
+        if isinstance(node, ast.Compare):
+            name, *slices = self._tokenize_operand(node.left)
+            left_str = name if not slices else f"{name}[{']['.join(slices)}]"
+
+            for op, right in zip(node.ops, node.comparators):
+                op_str = type(op).__name__
+                name, *slices = self._tokenize_operand(right)
+                right_str = name if not slices else f"{name}[{']['.join(slices)}]"
+
+                comparisons.append((left_str, op_str, right_str))
+        for child_node in ast.iter_child_nodes(node):
+            comparisons.extend(self._extract_comparisons(child_node))
+        return comparisons
+
+    def _extract_filters(self, code: str):
+        parsed = ast.parse(code)
+        filters = self._extract_comparisons(parsed)
+        return filters
+
     @property
     def middlewares(self):
         return self._middlewares
