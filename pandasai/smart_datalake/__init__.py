@@ -576,7 +576,7 @@ class SmartDatalake:
 
     @last_code_generated.setter
     def last_code_generated(self, last_code_generated: str):
-        self._code_manager._last_code_generated = last_code_generated
+        self._last_code_generated = last_code_generated
 
     @property
     def last_code_executed(self):

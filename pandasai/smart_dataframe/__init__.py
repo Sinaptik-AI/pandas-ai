@@ -215,6 +215,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def last_code_generated(self):
+        return self._dl.last_code_generated
+
+    @property
+    def last_code_executed(self):
         return self._dl.last_code_executed
 
     @property
