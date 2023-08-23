@@ -92,6 +92,8 @@ dl.chat('Which are the 5 happiest countries?')
 
 PandasAI will automatically figure out which dataframe or dataframes are relevant to the query and will use only those dataframes to answer the query.
 
+[![Intro to SmartDatalake](https://cdn.loom.com/sessions/thumbnails/a2006ac27b0545189cb5b9b2e011bc72-00001.jpg)](https://www.loom.com/share/a2006ac27b0545189cb5b9b2e011bc72 "Intro to SmartDatalake")
+
 ### How to generate OpenAI API Token
 
 Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to generate your API_TOKEN with
