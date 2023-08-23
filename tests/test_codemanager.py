@@ -291,7 +291,7 @@ def analyze_data(dfs: list):
             )
         assert "os" not in environment
 
-    def test_extract_filters(self, code_manager: CodeManager):
+    def test_extract_filters_col_index(self, code_manager: CodeManager):
         code = """
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     df = dfs[0]
@@ -303,12 +303,40 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
 result = analyze_data(dfs)
 """
         filters = code_manager._extract_filters(code)
-        assert isinstance(filters, list)
+        assert isinstance(filters, dict)
+        assert "df0" in filters
+        assert isinstance(filters["df0"], list)
+        assert len(filters["df0"]) == 2
 
-        assert filters[0][0] == "df[loan_status]"
-        assert filters[0][1] == "Eq"
-        assert filters[0][2] == "PAIDOFF"
+        assert filters["df0"][0] == ["loan_status", "==", "PAIDOFF"]
+        assert filters["df0"][1] == ["Gender", "==", "male"]
 
-        assert filters[1][0] == "df[Gender]"
-        assert filters[1][1] == "Eq"
-        assert filters[1][2] == "male"
+    def test_extract_filters_col_index_multiple_df(self, code_manager: CodeManager):
+        code = """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0]
+    filtered_paid_df = df[(df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'male')]
+    num_loans_paid_off = len(filtered_paid_df)
+
+    df = dfs[1]
+    filtered_pend_df = df[(df['loan_status'] == 'PENDING') & (df['Gender'] == 'male')]
+    num_loans_pending = len(filtered_pend_df)
+
+    result = {'type': 'number', 'value': num_loans_paid_off + num_loans_pending}
+    return result
+
+result = analyze_data(dfs)
+"""
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "df0" in filters
+        assert "df1" in filters
+        assert isinstance(filters["df0"], list)
+        assert len(filters["df0"]) == 2
+        assert len(filters["df1"]) == 2
+
+        assert filters["df0"][0] == ["loan_status", "==", "PENDING"]
+        assert filters["df0"][1] == ["Gender", "==", "male"]
+
+        assert filters["df1"][0] == ["loan_status", "==", "PAIDOFF"]
+        assert filters["df1"][1] == ["Gender", "==", "male"]
