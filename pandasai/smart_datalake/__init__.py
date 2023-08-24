@@ -374,9 +374,7 @@ class SmartDatalake:
                     import polars as pl
 
                     df = pl.from_pandas(df)
-            if isinstance(df, pd.Series):
-                df = df.to_frame()
-                
+
             return SmartDataframe(
                 df,
                 config=self._config.__dict__,

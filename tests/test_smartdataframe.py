@@ -453,3 +453,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
     def test_invalid_file_format(self, smart_dataframe, file_path):
         with pytest.raises(ValueError):
             smart_dataframe._import_from_file(file_path)
+
+    def test_import_pandas_series(self, smart_dataframe):
+        pandas_series = pd.Series([1, 2, 3])
+
+        smart_dataframe._load_df(pandas_series)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert smart_dataframe._df.equals(pd.DataFrame({0: [1, 2, 3]}))
