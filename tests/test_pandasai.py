@@ -18,6 +18,7 @@ class TestPandasAI:
     def pai(self, llm):
         return PandasAI(
             llm=llm,
+            enable_cache=False,
         )
 
     def test_init(self, pai, llm):
@@ -25,7 +26,7 @@ class TestPandasAI:
         assert pai._config.callback is None
         assert pai._config.custom_prompts == {}
         assert pai._config.custom_whitelisted_dependencies == []
-        assert pai._config.enable_cache is True
+        assert pai._config.enable_cache is False
         assert pai._config.use_error_correction_framework is True
         assert pai._config.enforce_privacy is False
         assert pai._config.save_logs is True
