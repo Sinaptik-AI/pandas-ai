@@ -21,12 +21,14 @@ Example:
 import hashlib
 
 import pandas as pd
+
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
 from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
+from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
 from typing import List, Union
 from ..middlewares.base import Middleware
@@ -38,6 +40,7 @@ from ..llm import LLM, LangchainLLM
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
     _engine: str
+    _original_import: any
     _name: str
     _description: str
     _df: pd.DataFrame
@@ -60,6 +63,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self._original_import = df
         self._name = name
         self._description = description
 
@@ -173,6 +177,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
+    def save(self):
+        """
+        Saves the dataframe configuration to be used for later
+        """
+
+        config_manager = DfConfigManager(self)
+        config_manager.save()
+
     def _get_head_csv(self):
         """
         Get the head of the dataframe as a CSV string.
@@ -234,6 +246,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def original(self):
         return self._df
+
+    @property
+    def original_import(self):
+        return self._original_import
 
     @property
     def name(self):
