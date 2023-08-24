@@ -43,4 +43,4 @@ def create_directory(path):
         try:
              os.makedirs(path)
         except OSError as e:
-            print(f"Error creating directory: {e}")
+            raise OSError(f"Error creating directory: {e}")
