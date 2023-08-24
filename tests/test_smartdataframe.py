@@ -1,5 +1,6 @@
 """Unit tests for the SmartDatalake class"""
 import json
+import os
 import sys
 from typing import Optional
 from unittest.mock import patch, Mock
@@ -21,8 +22,19 @@ import logging
 
 
 class TestSmartDataframe:
-
     """Unit tests for the SmartDatalake class"""
+
+    def tearDown(self):
+        for filename in ["df_test.csv", "df_test_polars.csv", "df_duplicate.csv"]:
+            if os.path.exists("cache/" + filename):
+                os.remove("cache/" + filename)
+
+        # Remove saved_dfs from pandasai.json
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            data["saved_dfs"] = []
+        with open("pandasai.json", "w") as json_file:
+            json.dump(data, json_file, indent=2)
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
@@ -463,64 +475,76 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         assert isinstance(smart_dataframe._df, pd.DataFrame)
         assert smart_dataframe._df.equals(pd.DataFrame({0: [1, 2, 3]}))
 
-    def test_save_pandas_dataframe(self,  llm):
+    def test_save_pandas_dataframe(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
 
-        with open("pandasai.json", 'r') as json_file:
-            backup_pandasai = json.load(json_file)
-        
         # Create an instance of SmartDataframe
-        df_object = SmartDataframe(pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]}),
-                                    name='df_test', description='Test description', config={"llm": llm, "enable_cache": False})
+        pandas_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        df_object = SmartDataframe(
+            pandas_df,
+            name="df_test",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
 
         # Call the save function
         df_object.save()
 
         # Verify that the data was saved correctly
-        with open("pandasai.json", 'r') as json_file:
+        with open("pandasai.json", "r") as json_file:
             data = json.load(json_file)
-            assert data['saved_dfs'][0]['name'] == 'df_test'
-        
-        with open("pandasai.json", 'w') as json_file:
-            json.dump(backup_pandasai,json_file, indent=4)
-    
-    def test_save_polars_dataframe(self, llm):
+            assert data["saved_dfs"][0]["name"] == "df_test"
 
-        with open("pandasai.json", 'r') as json_file:
-            backup_pandasai = json.load(json_file)
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_polars_dataframe(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
 
         # Create an instance of SmartDataframe
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
-
-        df_object = SmartDataframe(polars_df,
-                                    name='df_test_polar', description='Test description', config={"llm": llm, "enable_cache": False})
+        df_object = SmartDataframe(
+            polars_df,
+            name="df_test_polars",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
 
         # Call the save function
         df_object.save()
 
         # Verify that the data was saved correctly
-        with open("pandasai.json", 'r') as json_file:
+        with open("pandasai.json", "r") as json_file:
             data = json.load(json_file)
-            assert data['saved_dfs'][0]['name'] == 'df_test_polar'
-        
+            assert data["saved_dfs"][0]["name"] == "df_test_polars"
+
         # recover file for next test case
-        with open("pandasai.json", 'w') as json_file:
-            json.dump(backup_pandasai,json_file, indent=4)
-        
-    def test_save_pandas_dataframe_duplicate_name(self,llm):
-        with open("pandasai.json", 'r') as json_file:
-            backup_pandasai = json.load(json_file)
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_pandas_dataframe_duplicate_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
 
         # Create a sample DataFrame
-        df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-        
-        # Create instances of YourDataFrameClass
-        df_object1 = SmartDataframe(df, 
-                                    name='df_duplicate', description='Description 1', 
-                                    config={"llm": llm, "enable_cache": False})
-        df_object2 = SmartDataframe(df, name='df_duplicate', description='Description 2', 
-                                    config={"llm": llm, "enable_cache": False})
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
-        
+        # Create instances of YourDataFrameClass
+        df_object1 = SmartDataframe(
+            df,
+            name="df_duplicate",
+            description="Description 1",
+            config={"llm": llm, "enable_cache": False},
+        )
+        df_object2 = SmartDataframe(
+            df,
+            name="df_duplicate",
+            description="Description 2",
+            config={"llm": llm, "enable_cache": False},
+        )
+
         # Call the save function for the first instance
         df_object1.save()
 
@@ -529,23 +553,37 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             df_object2.save()
 
         # Recover file for next test case
-        with open("pandasai.json", 'w') as json_file:
-            json.dump(backup_pandasai,json_file, indent=4)
-    
-    def test_save_pandas_no_name(self, llm):
-        with open("pandasai.json", 'r') as json_file:
-            backup_pandasai = json.load(json_file)
-        # Create a sample DataFrame
-        df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-        
-        # Create an instance of YourDataFrameClass without a name
-        df_object = SmartDataframe(df, name=None, description='No Name', config={"llm": llm, "enable_cache": False})
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
 
-    
-        # Attempt to save the instance and check for ValueError
-        with pytest.raises(ValueError, match="No Name provided for dataframe"):
+    def test_save_pandas_no_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="No Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Mock the hashlib.sha256() method
+        with patch("hashlib.sha256") as mock_sha256:
+            # Set the return value of the hexdigest() method
+            mock_sha256.return_value.hexdigest.return_value = "mocked_hash"
+
+            # Call the save() method
             df_object.save()
 
+            # Check that hashlib.sha256() was called with the correct argument
+            mock_sha256.assert_called_with(df_object.head_csv.encode())
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "mocked_hash"
+
         # Recover file for next test case
-        with open("pandasai.json", 'w') as json_file:
-            json.dump(backup_pandasai,json_file, indent=4)
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)

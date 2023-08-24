@@ -19,18 +19,16 @@ Example:
 """
 
 import hashlib
-import json
-import os
 
 import pandas as pd
 
-from pandasai.helpers.path import create_directory, find_closest, find_project_root
 from ..smart_datalake import SmartDatalake
 from ..helpers.df_config import Config
 from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
+from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
 from typing import List, Union
 from ..middlewares.base import Middleware
@@ -42,6 +40,7 @@ from ..llm import LLM, LangchainLLM
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
     _engine: str
+    _original_import: any
     _name: str
     _description: str
     _df: pd.DataFrame
@@ -64,6 +63,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self._original_import = df
         self._name = name
         self._description = description
 
@@ -177,6 +177,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
+    def save(self):
+        """
+        Saves the dataframe configuration to be used for later
+        """
+
+        config_manager = DfConfigManager(self)
+        config_manager.save()
+
     def _get_head_csv(self):
         """
         Get the head of the dataframe as a CSV string.
@@ -238,6 +246,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def original(self):
         return self._df
+
+    @property
+    def original_import(self):
+        return self._original_import
 
     @property
     def name(self):
@@ -364,65 +376,3 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @llm.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
         self._dl.llm = llm
-
-    def __create_csv_save_path(self):
-        directory_path = os.path.join(find_project_root(), "cache")
-        create_directory(directory_path)
-        csv_file_path = os.path.join(directory_path, f"{self.name}.csv")
-        return csv_file_path
-
-    def save(self):
-        """
-        Saves the dataframe object to used for later
-        """
-        file_path = find_closest("pandasai.json")
-        saved_df_keys = "saved_dfs"
-
-        # open pandas json file
-        with open(file_path, "r") as json_file:
-            pandas_json = json.load(json_file)
-            if saved_df_keys not in pandas_json:
-                pandas_json[saved_df_keys] = []
-
-            # Check for duplicates
-            for df_info in pandas_json[saved_df_keys]:
-                if df_info["name"] == self.name:
-                    raise ValueError(f"Duplicate dataframe found: {self.name}")
-
-            # throw error if name is null
-            if not self.name:
-                raise ValueError("No Name provided for dataframe")
-
-            import_path = None
-
-            # save df if pandas or polar
-            dataframe_type = df_type(self._df)
-            if dataframe_type == "pandas":
-                csv_file_path = self.__create_csv_save_path()
-                self._df.to_csv(csv_file_path, index=False)
-                import_path = csv_file_path
-
-            elif dataframe_type == "polars":
-                csv_file_path = self.__create_csv_save_path()
-                with open(csv_file_path, "w") as f:
-                    self._df.write_csv(f, has_header=False)
-                import_path = csv_file_path
-
-            elif isinstance(self._df, str):
-                import_path = self._df
-
-            else:
-                raise ValueError("Unknown dataframe type")
-
-            pandas_json[saved_df_keys].append(
-                {
-                    "name": self.name,
-                    "description": self.description,
-                    "sample": self.head_csv,
-                    "import_path": import_path,
-                }
-            )
-
-        # save the output in pandasai.json
-        with open(file_path, "w") as json_file:
-            json.dump(pandas_json, json_file, indent=4)
