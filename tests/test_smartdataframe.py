@@ -1,4 +1,5 @@
 """Unit tests for the SmartDatalake class"""
+import json
 import sys
 from typing import Optional
 from unittest.mock import patch, Mock
@@ -461,3 +462,97 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
         assert smart_dataframe._df.equals(pd.DataFrame({0: [1, 2, 3]}))
+
+    def test_save_pandas_dataframe(self,  llm):
+
+        with open("pandasai.json", 'r') as json_file:
+            backup_pandasai = json.load(json_file)
+        
+        # Create an instance of SmartDataframe
+        df_object = SmartDataframe(pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]}),
+                                    name='df_test', description='Test description', config={"llm": llm, "enable_cache": False})
+
+        # Call the save function
+        df_object.save()
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", 'r') as json_file:
+            data = json.load(json_file)
+            assert data['saved_dfs'][0]['name'] == 'df_test'
+        
+        with open("pandasai.json", 'w') as json_file:
+            json.dump(backup_pandasai,json_file, indent=4)
+    
+    def test_save_polars_dataframe(self, llm):
+
+        with open("pandasai.json", 'r') as json_file:
+            backup_pandasai = json.load(json_file)
+
+        # Create an instance of SmartDataframe
+        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+
+        df_object = SmartDataframe(polars_df,
+                                    name='df_test_polar', description='Test description', config={"llm": llm, "enable_cache": False})
+
+        # Call the save function
+        df_object.save()
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", 'r') as json_file:
+            data = json.load(json_file)
+            assert data['saved_dfs'][0]['name'] == 'df_test_polar'
+        
+        # recover file for next test case
+        with open("pandasai.json", 'w') as json_file:
+            json.dump(backup_pandasai,json_file, indent=4)
+        
+
+    def test_save_pandas_dataframe_duplicate_name(self,llm):
+        with open("pandasai.json", 'r') as json_file:
+            backup_pandasai = json.load(json_file)
+
+        # Create a sample DataFrame
+        df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        
+        # Create instances of YourDataFrameClass
+        df_object1 = SmartDataframe(df, 
+                                    name='df_duplicate', description='Description 1', 
+                                    config={"llm": llm, "enable_cache": False})
+        df_object2 = SmartDataframe(df, name='df_duplicate', description='Description 2', 
+                                    config={"llm": llm, "enable_cache": False})
+
+        # Call the save function for both instances
+        try:
+            df_object1.save()
+            df_object2.save() 
+            assert True == False 
+        
+        except ValueError as e:
+            assert True == True
+        finally:
+             # recover file for next test case
+            with open("pandasai.json", 'w') as json_file:
+                json.dump(backup_pandasai,json_file, indent=4)
+     
+
+    def test_save_pandas_no_name(self, llm):
+        with open("pandasai.json", 'r') as json_file:
+            backup_pandasai = json.load(json_file)
+        # Create a sample DataFrame
+        df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(df, name=None, description='No Name', config={"llm": llm, "enable_cache": False})
+
+    
+         # Call the save function for both instances
+        try:
+            df_object.save()
+            assert True == False 
+        
+        except ValueError as e:
+            assert True == True
+        finally:
+             # recover file for next test case
+            with open("pandasai.json", 'w') as json_file:
+                json.dump(backup_pandasai,json_file, indent=4)
