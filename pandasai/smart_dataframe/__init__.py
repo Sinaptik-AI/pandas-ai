@@ -78,6 +78,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         if isinstance(df, str):
             self._df = self._import_from_file(df)
+        elif isinstance(df, pd.Series):
+            self._df = df.to_frame()
         elif isinstance(df, (list, dict)):
             # if the list can be converted to a dataframe, convert it
             # otherwise, raise an error
@@ -215,6 +217,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def last_code_generated(self):
+        return self._dl.last_code_generated
+
+    @property
+    def last_code_executed(self):
         return self._dl.last_code_executed
 
     @property
