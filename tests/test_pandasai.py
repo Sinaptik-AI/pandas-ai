@@ -49,6 +49,22 @@ class TestPandasAI:
     def test_run(self, _mocked_method, pai, df):
         assert pai.run(df, "Question") == "Answer"
 
-    @patch.object(SmartDatalake, "chat", return_value="Answer")
-    def test_call(self, _mocked_method, pai, df):
-        assert pai(df, "Question") == "Answer"
+    @patch.object(SmartDatalake, "chat", side_effect=Exception("Unexpected error"))
+    def test_run_with_exception(self, _mocked_method, pai, df):
+        with pytest.raises(Exception) as e_info:
+            pai.run(df, "Question")
+        assert str(e_info.value) == "Unexpected error"
+
+    @patch.object(SmartDatalake, "chat", side_effect=Exception("Unexpected error"))
+    def test_call_with_exception(self, _mocked_method, pai, df):
+        with pytest.raises(Exception) as e_info:
+            pai(df, "Question")
+        assert str(e_info.value) == "Unexpected error"
+
+    def test_run_with_invalid_arguments(self, pai):
+        with pytest.raises(ValueError) as e_info:
+            pai.run(None, "Question")
+        assert (
+            str(e_info.value)
+            == "Invalid input data. Must be a Pandas or Polars dataframe."
+        )
