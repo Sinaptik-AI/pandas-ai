@@ -365,6 +365,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def llm(self, llm: Union[LLM, LangchainLLM]):
         self._dl.llm = llm
 
+    def __create_csv_save_path(self):
+        directory_path = os.path.join(find_project_root(), 'cache')
+        create_directory(directory_path)
+        csv_file_path = os.path.join(directory_path, f"{self.name}.csv")
+        return csv_file_path
+
     def save(self):
         '''
             Saves the dataframe object to used for later
@@ -390,11 +396,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             import_path = None
 
             # save df if pandas or polar
-            if df_type(self._df) == "pandas" or df_type(self._df) == "polars":
-                directory_path = os.path.join(find_project_root(), 'cache')
-                create_directory(directory_path)
-                csv_file_path = os.path.join(directory_path, f"{self.name}.csv")
-                self._df.to_csv(csv_file_path)
+            dataframe_type = df_type(self._df)
+            if dataframe_type == "pandas":
+                csv_file_path = self.__create_csv_save_path()
+                self._df.to_csv(csv_file_path, index=False)
+                import_path = csv_file_path
+
+            elif  dataframe_type == "polars":
+                csv_file_path = self.__create_csv_save_path()
+                with open(csv_file_path, mode="ab") as f:
+                    self._df.write_csv(f, has_header=False)
                 import_path = csv_file_path
 
             elif isinstance(self._df , str):
