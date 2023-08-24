@@ -167,3 +167,6 @@ class DataframeAbstract:
 
     def filter(self, expr):
         raise NotImplementedError
+
+    def save(self):
+        raise NotImplementedError
