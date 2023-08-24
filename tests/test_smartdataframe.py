@@ -506,7 +506,6 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         with open("pandasai.json", 'w') as json_file:
             json.dump(backup_pandasai,json_file, indent=4)
         
-
     def test_save_pandas_dataframe_duplicate_name(self,llm):
         with open("pandasai.json", 'r') as json_file:
             backup_pandasai = json.load(json_file)
@@ -521,20 +520,18 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         df_object2 = SmartDataframe(df, name='df_duplicate', description='Description 2', 
                                     config={"llm": llm, "enable_cache": False})
 
-        # Call the save function for both instances
-        try:
-            df_object1.save()
-            df_object2.save() 
-            assert True == False 
         
-        except ValueError as e:
-            assert True == True
-        finally:
-             # recover file for next test case
-            with open("pandasai.json", 'w') as json_file:
-                json.dump(backup_pandasai,json_file, indent=4)
-     
+        # Call the save function for the first instance
+        df_object1.save()
 
+        # Attempt to save the second instance and check for ValueError
+        with pytest.raises(ValueError, match="Duplicate dataframe found: df_duplicate"):
+            df_object2.save()
+
+        # Recover file for next test case
+        with open("pandasai.json", 'w') as json_file:
+            json.dump(backup_pandasai,json_file, indent=4)
+    
     def test_save_pandas_no_name(self, llm):
         with open("pandasai.json", 'r') as json_file:
             backup_pandasai = json.load(json_file)
@@ -545,14 +542,10 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         df_object = SmartDataframe(df, name=None, description='No Name', config={"llm": llm, "enable_cache": False})
 
     
-         # Call the save function for both instances
-        try:
+        # Attempt to save the instance and check for ValueError
+        with pytest.raises(ValueError, match="No Name provided for dataframe"):
             df_object.save()
-            assert True == False 
-        
-        except ValueError as e:
-            assert True == True
-        finally:
-             # recover file for next test case
-            with open("pandasai.json", 'w') as json_file:
-                json.dump(backup_pandasai,json_file, indent=4)
+
+        # Recover file for next test case
+        with open("pandasai.json", 'w') as json_file:
+            json.dump(backup_pandasai,json_file, indent=4)

@@ -383,15 +383,15 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             pandas_json = json.load(json_file)
             if saved_df_keys not in pandas_json:
                 pandas_json[saved_df_keys] = []
-
+            
             # Check for duplicates
             for df_info in pandas_json[saved_df_keys]:
                 if df_info['name'] == self.name:
-                    raise ValueError(f'Duplicate item found: {self.name}')
+                    raise ValueError(f'Duplicate dataframe found: {self.name}')
             
             # throw error if name is null
             if not self.name:
-                raise ValueError(f'No Name provided')
+                raise ValueError(f'No Name provided for dataframe')
 
             import_path = None
 
@@ -425,5 +425,3 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         # save the output in pandasai.json
         with open(file_path, 'w') as json_file:
             json.dump(pandas_json,json_file, indent=4)
-
-        
