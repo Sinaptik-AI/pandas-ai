@@ -1,7 +1,11 @@
 import re
 import ast
+from collections import defaultdict
+
 import astor
 import pandas as pd
+
+from .node_visitors import AssignmentVisitor
 from .save_chart import add_save_chart
 from .optional import import_dependency
 from ..exceptions import BadImportError
@@ -24,6 +28,18 @@ class CodeManager:
     _config: Config
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
+    _ast_comparatos_map: dict = {
+        ast.Eq: "==",
+        ast.NotEq: "!=",
+        ast.Lt: "<",
+        ast.LtE: "<=",
+        ast.Gt: ">",
+        ast.GtE: ">=",
+        ast.Is: "is",
+        ast.IsNot: "is not",
+        ast.In: "in",
+        ast.NotIn: "not in",
+    }
 
     _last_code_executed: str = None
 
@@ -401,25 +417,49 @@ Code running:
         if isinstance(operand_node, ast.Constant):
             yield operand_node.value
 
-    def _extract_comparisons(self, node):
-        comparisons = []
-        if isinstance(node, ast.Compare):
-            name, *slices = self._tokenize_operand(node.left)
-            left_str = name if not slices else f"{name}[{']['.join(slices)}]"
+    def _get_nearest_assignment(self, current_lineno, assignments, target_name):
+        nearest_assignment = None
+        assignments.sort(key=lambda node: node.lineno)
+        for assignment in assignments:
+            if assignment.lineno > current_lineno:
+                return nearest_assignment
+            try:
+                is_subscript = isinstance(assignment.value, ast.Subscript)
+                dfs_on_the_right = assignment.value.value.id == "dfs"
+                assign_to_target = assignment.targets[0].id == target_name
+                if is_subscript and dfs_on_the_right and assign_to_target:
+                    nearest_assignment = f"dfs[{assignment.value.slice.value}]"
+            except AttributeError:
+                continue
 
-            for op, right in zip(node.ops, node.comparators):
-                op_str = type(op).__name__
-                name, *slices = self._tokenize_operand(right)
-                right_str = name if not slices else f"{name}[{']['.join(slices)}]"
+    def _extract_comparisons(self, tree):
+        comparisons = defaultdict(list)
+        current_df = "dfs0"
 
-                comparisons.append((left_str, op_str, right_str))
-        for child_node in ast.iter_child_nodes(node):
-            comparisons.extend(self._extract_comparisons(child_node))
+        visitor = AssignmentVisitor()
+        visitor.visit(tree)
+        assignments = visitor.assignment_nodes
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Compare):
+                name, *slices = self._tokenize_operand(node.left)
+                current_df = (
+                    self._get_nearest_assignment(node.lineno, assignments, name)
+                    or current_df
+                )
+                left_str = name if not slices else slices[-1]
+
+                for op, right in zip(node.ops, node.comparators):
+                    op_str = self._ast_comparatos_map.get(type(op), "Unknown")
+                    name, *slices = self._tokenize_operand(right)
+                    right_str = name if not slices else slices[-1]
+
+                    comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
     def _extract_filters(self, code: str):
-        parsed = ast.parse(code)
-        filters = self._extract_comparisons(parsed)
+        parsed_tree = ast.parse(code)
+        filters = self._extract_comparisons(parsed_tree)
         return filters
 
     @property
