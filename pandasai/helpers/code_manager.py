@@ -5,7 +5,7 @@ from collections import defaultdict
 import astor
 import pandas as pd
 
-from .node_visitors import AssignmentVisitor
+from .node_visitors import AssignmentVisitor, CallVisitor
 from .save_chart import add_save_chart
 from .optional import import_dependency
 from ..exceptions import BadImportError
@@ -405,6 +405,18 @@ Code running:
         if library not in WHITELISTED_BUILTINS:
             raise BadImportError(library)
 
+    def _get_nearest_func_call(self, current_lineno, calls, func_name):
+        calls = sorted(calls, key=lambda node: node.lineno)
+        nearest_call = None
+        for call_node in calls:
+            if call_node.lineno > current_lineno:
+                return nearest_call
+            try:
+                if call_node.func.attr == func_name:
+                    nearest_call = call_node
+            except AttributeError:
+                continue
+
     def _tokenize_operand(self, operand_node):
         if isinstance(operand_node, ast.Subscript):
             slice_ = operand_node.slice.value
@@ -417,9 +429,11 @@ Code running:
         if isinstance(operand_node, ast.Constant):
             yield operand_node.value
 
-    def _get_nearest_assignment(self, current_lineno, assignments, target_name):
+    def _get_df_id_by_nearest_assignment(
+        self, current_lineno, assignments, target_name
+    ):
         nearest_assignment = None
-        assignments.sort(key=lambda node: node.lineno)
+        assignments = sorted(assignments, key=lambda node: node.lineno)
         for assignment in assignments:
             if assignment.lineno > current_lineno:
                 return nearest_assignment
@@ -440,21 +454,51 @@ Code running:
         visitor.visit(tree)
         assignments = visitor.assignment_nodes
 
+        call_visitor = CallVisitor()
+        call_visitor.visit(tree)
+        calls = call_visitor.call_nodes
+
         for node in ast.walk(tree):
             if isinstance(node, ast.Compare):
-                name, *slices = self._tokenize_operand(node.left)
-                current_df = (
-                    self._get_nearest_assignment(node.lineno, assignments, name)
-                    or current_df
-                )
-                left_str = name if not slices else slices[-1]
+                is_call_on_left = isinstance(node.left, ast.Call)
+                is_polars = False
+                is_calling_col = False
+                try:
+                    is_polars = node.left.func.value.id in ("pl", "polars")
+                    is_calling_col = node.left.func.attr == "col"
+                except AttributeError:
+                    pass
 
-                for op, right in zip(node.ops, node.comparators):
-                    op_str = self._ast_comparatos_map.get(type(op), "Unknown")
-                    name, *slices = self._tokenize_operand(right)
-                    right_str = name if not slices else slices[-1]
+                if is_call_on_left and is_polars and is_calling_col:
+                    df_name = self._get_nearest_func_call(
+                        node.lineno, calls, "filter"
+                    ).func.value.id
+                    current_df = self._get_df_id_by_nearest_assignment(
+                        node.lineno, assignments, df_name
+                    )
+                    left_str = node.left.args[0].value
 
-                    comparisons[current_df].append((left_str, op_str, right_str))
+                    for op, right in zip(node.ops, node.comparators):
+                        op_str = self._ast_comparatos_map.get(type(op), "Unknown")
+                        right_str = right.value
+
+                        comparisons[current_df].append((left_str, op_str, right_str))
+                elif isinstance(node.left, ast.Subscript):
+                    name, *slices = self._tokenize_operand(node.left)
+                    current_df = (
+                        self._get_df_id_by_nearest_assignment(
+                            node.lineno, assignments, name
+                        )
+                        or current_df
+                    )
+                    left_str = name if not slices else slices[-1]
+
+                    for op, right in zip(node.ops, node.comparators):
+                        op_str = self._ast_comparatos_map.get(type(op), "Unknown")
+                        name, *slices = self._tokenize_operand(right)
+                        right_str = name if not slices else slices[-1]
+
+                        comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
     def _extract_filters(self, code: str):
