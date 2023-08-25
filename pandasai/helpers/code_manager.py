@@ -15,7 +15,7 @@ from ..constants import (
     WHITELISTED_LIBRARIES,
 )
 from ..middlewares.charts import ChartsMiddleware
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Generator
 from ..helpers.logger import Logger
 from ..helpers.df_config import Config
 import logging
@@ -405,7 +405,25 @@ Code running:
         if library not in WHITELISTED_BUILTINS:
             raise BadImportError(library)
 
-    def _get_nearest_func_call(self, current_lineno, calls, func_name):
+    @staticmethod
+    def _get_nearest_func_call(
+        current_lineno: int, calls: list[ast.Call], func_name: str
+    ) -> ast.Call:
+        """
+        Utility function to get the nearest previous call node.
+
+        Sort call nodes list (copy of the list) by line number.
+        Iterate over the call nodes list. If the call node's function name
+        equals to `func_name`, set `nearest_call` to the node object.
+
+        Args:
+            current_lineno (int): Number of the current processed line.
+            calls (list[ast.Assign]): List of call nodes.
+            func_name (str): Name of the target function.
+
+        Returns:
+            ast.Call: The node of the nearest previous call `<func_name>()`.
+        """
         calls = sorted(calls, key=lambda node: node.lineno)
         nearest_call = None
         for call_node in calls:
@@ -417,10 +435,30 @@ Code running:
             except AttributeError:
                 continue
 
-    def _tokenize_operand(self, operand_node):
+    @staticmethod
+    def _tokenize_operand(operand_node: ast.expr) -> Generator[str, None, None]:
+        """
+        Utility generator function to get subscript slice contants.
+
+        Args:
+            operand_node (ast.expr):
+                The node to be tokenized.
+        Yields:
+            str: Token string.
+
+        Examples:
+            >>> code = '''
+            ... foo = [1, [2, 3], [[4, 5], [6, 7]]]
+            ... print(foo[2][1][0])
+            ... '''
+            >>> tree = ast.parse(code)
+            >>> res = CodeManager._tokenize_operand(tree.body[1].value.args[0])
+            >>> print(list(res))
+            ['foo', 2, 1, 0]
+        """
         if isinstance(operand_node, ast.Subscript):
             slice_ = operand_node.slice.value
-            yield from self._tokenize_operand(operand_node.value)
+            yield from CodeManager._tokenize_operand(operand_node.value)
             yield slice_
 
         if isinstance(operand_node, ast.Name):
@@ -429,9 +467,27 @@ Code running:
         if isinstance(operand_node, ast.Constant):
             yield operand_node.value
 
+    @staticmethod
     def _get_df_id_by_nearest_assignment(
-        self, current_lineno, assignments, target_name
+        current_lineno: int, assignments: list[ast.Assign], target_name: str
     ):
+        """
+        Utility function to get df label by finding the nearest assigment.
+
+        Sort assignment nodes list (copy of the list) by line number.
+        Iterate over the assignment nodes list. If the assignment node's value
+        looks like `dfs[<index>]` and target label equals to `target_name`,
+        set `nearest_assignment` to "dfs[<index>]".
+
+        Args:
+            current_lineno (int): Number of the current processed line.
+            assignments (list[ast.Assign]): List of assignment nodes.
+            target_name (str): Name of the target variable. The assignment
+                node is supposed to assign to this name.
+
+        Returns:
+            str: The string representing df label, looks like "dfs[<index>]".
+        """
         nearest_assignment = None
         assignments = sorted(assignments, key=lambda node: node.lineno)
         for assignment in assignments:
@@ -446,7 +502,30 @@ Code running:
             except AttributeError:
                 continue
 
-    def _extract_comparisons(self, tree):
+    def _extract_comparisons(self, tree: ast.Module) -> dict[str, list]:
+        """
+        Process nodes from passed tree to extract filters.
+
+        Collects all assignments in the tree.
+        Collects all function calls in the tree.
+        Walk over the tree and handle each comparison node.
+        For each comparison node, defined what `df` is this node related to.
+        Parse constants values from the comparison node.
+        Add to the result dict.
+
+        Args:
+            tree (str): A snippet of code to be parsed.
+
+        Returns:
+            dict: The `defaultdict(list)` instance containing all filters
+                parsed from the passed instructions tree. The dictionary has
+                the following structure:
+                {
+                    "<df_number>": [
+                        ("<left_operand>", "<operator>", "<right_operand>")
+                    ]
+                }
+        """
         comparisons = defaultdict(list)
         current_df = "dfs0"
 
@@ -501,7 +580,27 @@ Code running:
                         comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
-    def _extract_filters(self, code: str):
+    def _extract_filters(self, code: str) -> dict[str, list]:
+        """
+        Extract filters to be applied to the dataframe from passed code.
+
+        Args:
+            code (str): A snippet of code to be parsed.
+
+        Returns:
+            dict: The dictionary containing all filters parsed from
+                the passed code. The dictionary has the following structure:
+                {
+                    "<df_number>": [
+                        ("<left_operand>", "<operator>", "<right_operand>")
+                    ]
+                }
+
+        Raises:
+            SyntaxError: If the code is unable to be parsed by `ast.parse()`.
+            Exception: If any exception is raised during working with nodes
+                of the code tree.
+        """
         try:
             parsed_tree = ast.parse(code)
         except SyntaxError:
@@ -515,7 +614,7 @@ Code running:
             filters = self._extract_comparisons(parsed_tree)
         except Exception:
             self._logger.log(
-                f"Unable to extract filters for passed code", level=logging.ERROR
+                "Unable to extract filters for passed code", level=logging.ERROR
             )
             self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
             raise
