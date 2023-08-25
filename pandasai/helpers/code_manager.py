@@ -502,8 +502,24 @@ Code running:
         return comparisons
 
     def _extract_filters(self, code: str):
-        parsed_tree = ast.parse(code)
-        filters = self._extract_comparisons(parsed_tree)
+        try:
+            parsed_tree = ast.parse(code)
+        except SyntaxError:
+            self._logger.log(
+                "Invalid code passed for extracting filters", level=logging.ERROR
+            )
+            self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+            raise
+
+        try:
+            filters = self._extract_comparisons(parsed_tree)
+        except Exception:
+            self._logger.log(
+                f"Unable to extract filters for passed code", level=logging.ERROR
+            )
+            self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+            raise
+
         return filters
 
     @property
