@@ -154,6 +154,27 @@ class CodeManager:
             if not use_error_correction_framework:
                 raise exc
 
+    def _required_dfs(self, code: str) -> List[str]:
+        """
+        List the index of the DataFrames that are needed to execute the code. The goal
+        is to avoid to run the connectors if the code does not need them.
+
+        Args:
+            code (str): Python code to execute
+
+        Returns:
+            List[int]: A list of the index of the DataFrames that are needed to execute
+            the code.
+        """
+
+        needed_dfs = []
+        for i, df in enumerate(self._dfs):
+            if f"dfs[{i}]" in code:
+                needed_dfs.append(df.dataframe)
+            else:
+                needed_dfs.append(None)
+        return needed_dfs
+
     def execute_code(
         self,
         code: str,
@@ -199,7 +220,11 @@ Code running:
         ```"""
         )
 
+        # List the required dfs, so we can avoid to run the connectors
+        # if the code does not need them
+        dfs = self._required_dfs(code_to_run)
         environment: dict = self._get_environment()
+        environment["dfs"] = dfs
 
         caught_error = self._execute_catching_errors(code_to_run, environment)
         if caught_error is not None:
@@ -218,9 +243,9 @@ Code running:
         dfs = []
         for df in self._dfs:
             if df.engine == "polars":
-                dfs.append(df.original.to_pandas())
+                dfs.append(df.dataframe.to_pandas())
             else:
-                dfs.append(df.original)
+                dfs.append(df.dataframe)
 
         return dfs
 
@@ -231,11 +256,8 @@ Code running:
         Returns (dict): A dictionary of environment variables
         """
 
-        dfs = self._get_original_dfs()
-
         return {
             "pd": pd,
-            "dfs": dfs,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])

@@ -84,10 +84,10 @@ class TestSmartDataframe:
         return CustomMiddleware
 
     def test_init(self, smart_dataframe):
-        assert smart_dataframe._name is None
-        assert smart_dataframe._description is None
-        assert smart_dataframe._engine is not None
-        assert smart_dataframe._df is not None
+        assert smart_dataframe._table_name is None
+        assert smart_dataframe._table_description is None
+        assert smart_dataframe.engine is not None
+        assert smart_dataframe.dataframe is not None
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
@@ -231,7 +231,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         replacement_prompt = CustomPrompt(test="test value")
         df = SmartDataframe(
-            pd.DataFrame(),
+            pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
             config={
                 "llm": llm,
                 "enable_cache": False,
@@ -262,7 +262,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             },
         )
 
-        df._dl._retry_run_code("wrong code", Exception())
+        df.lake._retry_run_code("wrong code", Exception())
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 
@@ -275,13 +275,13 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         error_msg = "Some error log"
         critical_msg = "Some critical log"
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
-        smart_dataframe._dl._logger.log(info_msg)  # INFO should be default
-        smart_dataframe._dl._logger.log(warning_msg, level=logging.WARNING)
-        smart_dataframe._dl._logger.log(error_msg, level=logging.ERROR)
-        smart_dataframe._dl._logger.log(critical_msg, level=logging.CRITICAL)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
+        smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
+        smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
+        smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
         logs = smart_dataframe.logs
 
         assert all("msg" in log and "level" in log for log in logs)
@@ -292,20 +292,20 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.config.verbose is False
+        assert smart_dataframe.verbose is False
 
         smart_dataframe.verbose = True
         assert smart_dataframe.verbose is True
-        assert smart_dataframe._dl._logger.verbose is True
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 1
+        assert smart_dataframe.lake._logger.verbose is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
-            smart_dataframe._dl._logger._logger.handlers[0], logging.StreamHandler
+            smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
         )
 
         smart_dataframe.verbose = False
         assert smart_dataframe.verbose is False
-        assert smart_dataframe._dl._logger.verbose is False
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 0
+        assert smart_dataframe.lake._logger.verbose is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
     def test_updates_save_logs_config_with_setters(
         self, smart_dataframe: SmartDataframe
@@ -314,15 +314,15 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         smart_dataframe.save_logs = False
         assert smart_dataframe.save_logs is False
-        assert smart_dataframe._dl._logger.save_logs is False
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 0
+        assert smart_dataframe.lake._logger.save_logs is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
         smart_dataframe.save_logs = True
         assert smart_dataframe.save_logs is True
-        assert smart_dataframe._dl._logger.save_logs is True
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 1
+        assert smart_dataframe.lake._logger.save_logs is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
-            smart_dataframe._dl._logger._logger.handlers[0], logging.FileHandler
+            smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
         )
 
     def test_updates_enable_cache_config_with_setters(
@@ -332,14 +332,14 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         smart_dataframe.enable_cache = True
         assert smart_dataframe.enable_cache is True
-        assert smart_dataframe._dl.enable_cache is True
-        assert smart_dataframe._dl.cache is not None
-        assert isinstance(smart_dataframe._dl._cache, Cache)
+        assert smart_dataframe.lake.enable_cache is True
+        assert smart_dataframe.lake.cache is not None
+        assert isinstance(smart_dataframe.lake._cache, Cache)
 
         smart_dataframe.enable_cache = False
         assert smart_dataframe.enable_cache is False
-        assert smart_dataframe._dl.enable_cache is False
-        assert smart_dataframe._dl.cache is None
+        assert smart_dataframe.lake.enable_cache is False
+        assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.callback is None
@@ -382,28 +382,28 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             {"column1": 3, "column2": 6},
         ]
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_dataframe(input_data)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_dict(self, smart_dataframe):
         input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_dataframe(input_data)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
         pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(pandas_df)
+        smart_dataframe._load_dataframe(pandas_df)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(polars_df)
+        smart_dataframe._load_dataframe(polars_df)
 
         assert smart_dataframe._df is polars_df
 

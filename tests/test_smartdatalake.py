@@ -71,7 +71,7 @@ class TestSmartDatalake:
 
     @pytest.fixture
     def smart_datalake(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.datalake
+        return smart_dataframe.lake
 
     @pytest.fixture
     def custom_middleware(self):
@@ -117,8 +117,8 @@ class TestSmartDatalake:
 
     def test_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
         middleware = custom_middleware()
-        smart_dataframe._dl._code_manager._middlewares = [middleware]
-        assert smart_dataframe._dl.middlewares == [middleware]
+        smart_dataframe.lake._code_manager._middlewares = [middleware]
+        assert smart_dataframe.lake.middlewares == [middleware]
         assert (
             smart_dataframe.chat("How many countries are in the dataframe?")
             == "Overwritten by middleware"
@@ -131,11 +131,14 @@ class TestSmartDatalake:
         code = """def analyze_data(df):
     return { "type": "text", "value": "Hello World" }"""
 
-        smart_dataframe._get_head_csv = Mock(
-            return_value="""country,gdp,happiness_index
-China,0654881226,6.66
-Japan,9009692259,7.16
-Spain,8446903488,6.38"""
+        smart_dataframe._get_sample_head = Mock(
+            return_value=pd.DataFrame(
+                {
+                    "country": ["China", "Japan", "Spain"],
+                    "gdp": [654881226, 9009692259, 8446903488],
+                    "happiness_index": [6.66, 7.16, 6.38],
+                }
+            )
         )
 
         smart_datalake._retry_run_code(
@@ -146,12 +149,15 @@ Spain,8446903488,6.38"""
         assert (
             smart_datalake.last_prompt
             == """
-You are provided with a pandas dataframe (df) with 10 rows and 3 columns.
-This is the metadata of the dataframe:
+You are provided with the following pandas DataFrames with the following metadata:
+
+Dataframe dfs[0], with 10 rows and 3 columns.
+This is the metadata of the dataframe dfs[0]:
 country,gdp,happiness_index
-China,0654881226,6.66
+China,654881226,6.66
 Japan,9009692259,7.16
-Spain,8446903488,6.38.
+Spain,8446903488,6.38
+
 
 The user asked the following question:
 
