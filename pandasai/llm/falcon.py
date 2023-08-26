@@ -28,7 +28,7 @@ class Falcon(HuggingFaceLLM):
     _api_url: str = (
         "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
     )
-    _max_retries: int = 5
+    _max_retries: int = 30
 
     @property
     def type(self) -> str:

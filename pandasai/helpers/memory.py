@@ -21,7 +21,7 @@ class Memory:
     def last(self) -> dict:
         return self._messages[-1]
 
-    def get_conversation(self, limit: int = 3) -> str:
+    def get_conversation(self, limit: int = 1) -> str:
         return "\n".join(
             [
                 f"{'User' if message['is_user'] else 'Bot'}: {message['message']}"

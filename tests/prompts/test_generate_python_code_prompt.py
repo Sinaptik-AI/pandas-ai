@@ -43,12 +43,13 @@ import pandas as pd
 # Analyze the data
 # 1. Prepare: Preprocessing and cleaning data if necessary
 # 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-# 3. Analyze: Conducting the actual analysis (if generating a plot, create a figure and axes using plt.subplots() and save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+# 3. Analyze: Conducting the actual analysis (if the user asks to create a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
 # 4. Output: return a dictionary of:
 # - type (possible values "text", "number", "dataframe", "plot")
 # - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-def analyze_data(self, dfs: list) -> dict
-   # Code goes here
+# Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+   # Code goes here (do not add comments)
     
 
 # Declare a result variable

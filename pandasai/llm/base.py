@@ -23,7 +23,6 @@ from typing import Any, Dict, Optional
 import openai
 import requests
 
-from ..constants import END_CODE_TAG, START_CODE_TAG
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -109,16 +108,6 @@ class LLM:
             str: Extracted code from the response
         """
         code = response
-        match = re.search(
-            rf"{START_CODE_TAG}(.*)({END_CODE_TAG}"
-            rf"|{END_CODE_TAG.replace('<', '</')}"
-            # fix to make it work with ERNIE bot (#389)
-            rf"|{START_CODE_TAG.replace('<', '</')})",
-            code,
-            re.DOTALL,
-        )
-        if match:
-            code = match.group(1).strip()
         if len(code.split(separator)) > 1:
             code = code.split(separator)[1]
         code = self._polish_code(code)
@@ -346,23 +335,16 @@ class HuggingFaceLLM(LLM):
         for _i in range(self._max_retries):
             response = self.query({"inputs": payload})
             payload = response
-            if response.count("<endCode>") >= 2:
+
+            match = re.search(
+                "(```python)(.*)(```)",
+                response.replace(prompt + suffix, ""),
+                re.DOTALL | re.MULTILINE,
+            )
+            if match:
                 break
 
-        # replace instruction + value from the inputs to avoid showing it in the output
-        output = response.replace(prompt + suffix, "")
-        ans = ""
-        for line in output.split("\n"):
-            if line.find("utput:") != -1:
-                break
-            if ans == "":
-                ans = ans + line
-            else:
-                ans = ans + "\n" + line
-        if len(ans.split("'''")) > 0:
-            ans = ans.split("'''")[0]
-        output = ans
-        return output
+        return response.replace(prompt + suffix, "")
 
 
 class BaseGoogle(LLM):

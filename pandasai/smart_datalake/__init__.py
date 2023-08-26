@@ -22,6 +22,7 @@ import time
 import uuid
 import sys
 import logging
+import os
 
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
@@ -36,23 +37,24 @@ from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
-from ..helpers.df_info import DataFrameType
+from ..helpers.df_info import DataFrameType, polars_imported
+from ..helpers.path import find_project_root
 
 
 class SmartDatalake:
     _dfs: List[DataFrameType]
     _config: Config
     _llm: LLM
-    _cache: Cache
+    _cache: Cache = None
     _logger: Logger
     _start_time: float
     _last_prompt_id: uuid
     _code_manager: CodeManager
     _memory: Memory
 
-    last_code_generated: str
-    last_code_executed: str
-    last_result: list
+    _last_code_generated: str
+    _last_result: str = None
+    _last_error: str = None
 
     def __init__(
         self,
@@ -67,6 +69,8 @@ class SmartDatalake:
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+
+        self.initialize()
 
         self._load_config(config)
 
@@ -92,6 +96,23 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
+
+    def initialize(self):
+        """Initialize the SmartDatalake"""
+
+        # Create exports/charts folder if it doesn't exist
+        try:
+            charts_dir = os.path.join((find_project_root()), "exports", "charts")
+        except ValueError:
+            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+        os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+
+        # Create /cache folder if it doesn't exist
+        try:
+            cache_dir = os.path.join((find_project_root()), "cache")
+        except ValueError:
+            cache_dir = os.path.join(os.getcwd(), "cache")
+        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
@@ -285,10 +306,10 @@ class SmartDatalake:
             # if show_code and self._in_notebook:
             #     self.notebook.create_new_cell(code)
 
-            count = 0
+            retry_count = 0
             code_to_run = code
             result = None
-            while count < self._config.max_retries:
+            while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
                     result = self._code_manager.execute_code(
@@ -299,15 +320,21 @@ class SmartDatalake:
                 except Exception as e:
                     if (
                         not self._config.use_error_correction_framework
-                        or count >= self._config.max_retries - 1
+                        or retry_count >= self._config.max_retries - 1
                     ):
                         raise e
 
-                    count += 1
+                    retry_count += 1
+
+                    self._logger.log(
+                        f"Failed to execute code with a correction framework "
+                        f"[retry number: {retry_count}]",
+                        level=logging.WARNING,
+                    )
 
                     code_to_run = self._retry_run_code(code, e)
 
-            if result is None:
+            if result is not None:
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
         except Exception as exception:
@@ -329,10 +356,10 @@ class SmartDatalake:
             return
 
         if result["type"] == "string":
-            self._memory.add(result["result"], False)
+            self._memory.add(result["value"], False)
         elif result["type"] == "dataframe":
             self._memory.add("Here is the data you requested.", False)
-        elif result["type"] == "plot" or result["type"] == "image":
+        elif result["type"] == "plot":
             self._memory.add("Here is the plot you requested.", False)
 
     def _format_results(self, result: dict):
@@ -342,8 +369,15 @@ class SmartDatalake:
         if result["type"] == "dataframe":
             from ..smart_dataframe import SmartDataframe
 
+            df = result["value"]
+            if self.engine == "polars":
+                if polars_imported:
+                    import polars as pl
+
+                    df = pl.from_pandas(df)
+
             return SmartDataframe(
-                result["value"],
+                df,
                 config=self._config.__dict__,
                 logger=self.logger,
             )
@@ -399,6 +433,10 @@ class SmartDatalake:
         return code
 
     @property
+    def engine(self):
+        return self._dfs[0].engine
+
+    @property
     def last_prompt(self):
         return self._llm.last_prompt
 
@@ -433,48 +471,135 @@ class SmartDatalake:
     def middlewares(self):
         return self._code_manager.middlewares
 
-    @config.setter
-    def verbose(self, verbose: bool):
-        self.config.verbose = verbose
+    @property
+    def verbose(self):
+        return self._config.verbose
 
-    @config.setter
+    @verbose.setter
+    def verbose(self, verbose: bool):
+        self._config.verbose = verbose
+        self._logger.verbose = verbose
+
+    @property
+    def save_logs(self):
+        return self._config.save_logs
+
+    @save_logs.setter
+    def save_logs(self, save_logs: bool):
+        self._config.save_logs = save_logs
+        self._logger.save_logs = save_logs
+
+    @property
+    def callback(self):
+        return self._config.callback
+
+    @callback.setter
     def callback(self, callback: Any):
         self.config.callback = callback
 
-    @config.setter
+    @property
+    def enforce_privacy(self):
+        return self._config.enforce_privacy
+
+    @enforce_privacy.setter
     def enforce_privacy(self, enforce_privacy: bool):
         self._config.enforce_privacy = enforce_privacy
 
-    @config.setter
+    @property
+    def enable_cache(self):
+        return self._config.enable_cache
+
+    @enable_cache.setter
     def enable_cache(self, enable_cache: bool):
         self._config.enable_cache = enable_cache
+        if enable_cache:
+            if self.cache is None:
+                self._cache = Cache()
+        else:
+            self._cache = None
 
-    @config.setter
+    @property
+    def use_error_correction_framework(self):
+        return self._config.use_error_correction_framework
+
+    @use_error_correction_framework.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):
         self._config.use_error_correction_framework = use_error_correction_framework
 
-    @config.setter
+    @property
+    def custom_prompts(self):
+        return self._config.custom_prompts
+
+    @custom_prompts.setter
     def custom_prompts(self, custom_prompts: dict):
         self._config.custom_prompts = custom_prompts
 
-    @config.setter
+    @property
+    def save_charts(self):
+        return self._config.save_charts
+
+    @save_charts.setter
     def save_charts(self, save_charts: bool):
         self._config.save_charts = save_charts
 
-    @config.setter
+    @property
+    def save_charts_path(self):
+        return self._config.save_charts_path
+
+    @save_charts_path.setter
     def save_charts_path(self, save_charts_path: str):
         self._config.save_charts_path = save_charts_path
 
-    @config.setter
+    @property
+    def custom_whitelisted_dependencies(self):
+        return self._config.custom_whitelisted_dependencies
+
+    @custom_whitelisted_dependencies.setter
     def custom_whitelisted_dependencies(
         self, custom_whitelisted_dependencies: List[str]
     ):
         self._config.custom_whitelisted_dependencies = custom_whitelisted_dependencies
 
-    @config.setter
+    @property
+    def max_retries(self):
+        return self._config.max_retries
+
+    @max_retries.setter
     def max_retries(self, max_retries: int):
         self._config.max_retries = max_retries
 
-    @config.setter
+    @property
+    def llm(self):
+        return self._llm
+
+    @llm.setter
     def llm(self, llm: LLM):
         self._load_llm(llm)
+
+    @property
+    def last_code_generated(self):
+        return self._last_code_generated
+
+    @last_code_generated.setter
+    def last_code_generated(self, last_code_generated: str):
+        self._code_manager._last_code_generated = last_code_generated
+
+    @property
+    def last_code_executed(self):
+        return self._code_manager.last_code_executed
+
+    @property
+    def last_result(self):
+        return self._last_result
+
+    @last_result.setter
+    def last_result(self, last_result: str):
+        self._last_result = last_result
+
+    @property
+    def last_error(self):
+        return self._last_error
+
+    @last_error.setter
+    def last_error(self, last_error: str):
+        self._last_error = last_error

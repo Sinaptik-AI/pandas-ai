@@ -12,7 +12,7 @@ from pandasai.exceptions import MethodNotImplementedError
 class Middleware(ABC):
     """Base Middleware class"""
 
-    _has_run: str = False
+    _has_run: bool = False
 
     @abstractmethod
     def run(self, code: str) -> str:

@@ -20,12 +20,20 @@ import sys
 from typing import List
 import logging
 from .path import find_closest
+from pydantic import BaseModel
+
+
+class Log(BaseModel):
+    """Log class"""
+
+    msg: str
+    level: int
 
 
 class Logger:
     """Logger class"""
 
-    _logs: List[str]
+    _logs: List[Log]
     _logger: logging.Logger
     _verbose: bool
 
@@ -77,3 +85,33 @@ class Logger:
     def verbose(self) -> bool:
         """Return the verbose flag"""
         return self._verbose
+
+    @verbose.setter
+    def verbose(self, verbose: bool):
+        """Set the verbose flag"""
+        self._verbose = verbose
+        self._logger.handlers = []
+        if verbose:
+            self._logger.addHandler(logging.StreamHandler(sys.stdout))
+        else:
+            # remove the StreamHandler if it exists
+            for handler in self._logger.handlers:
+                if isinstance(handler, logging.StreamHandler):
+                    self._logger.removeHandler(handler)
+
+    @property
+    def save_logs(self) -> bool:
+        """Return the save_logs flag"""
+        return len(self._logger.handlers) > 0
+
+    @save_logs.setter
+    def save_logs(self, save_logs: bool):
+        """Set the save_logs flag"""
+        if save_logs and not self.save_logs:
+            filaname = find_closest("pandasai.log")
+            self._logger.addHandler(logging.FileHandler(filaname))
+        elif not save_logs and self.save_logs:
+            # remove the FileHandler if it exists
+            for handler in self._logger.handlers:
+                if isinstance(handler, logging.FileHandler):
+                    self._logger.removeHandler(handler)

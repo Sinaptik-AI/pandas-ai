@@ -18,6 +18,7 @@ import openai
 from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
+from ..prompts.base import Prompt
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -25,7 +26,7 @@ load_dotenv()
 
 class AzureOpenAI(BaseOpenAI):
     """OpenAI LLM via Microsoft Azure
-    This class in using BaseOpenAI class to include Azure OpenAI Features.
+    This class uses `BaseOpenAI` class to support Azure OpenAI features.
     """
 
     api_base: str
@@ -102,7 +103,7 @@ class AzureOpenAI(BaseOpenAI):
         """
         return {**super()._default_params, "engine": self.engine}
 
-    def call(self, instruction: str, suffix: str = "") -> str:
+    def call(self, instruction: Prompt, suffix: str = "") -> str:
         """
         Call the Azure OpenAI LLM.
 

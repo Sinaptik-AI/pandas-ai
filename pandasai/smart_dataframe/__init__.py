@@ -379,6 +379,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self.lake.verbose = verbose
 
     @property
+    def save_logs(self):
+        return self.lake.save_logs
+
+    @save_logs.setter
+    def save_logs(self, save_logs: bool):
+        self.lake.save_logs = save_logs
+
+    @property
     def callback(self):
         return self.lake.callback
 
@@ -393,6 +401,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @enforce_privacy.setter
     def enforce_privacy(self, enforce_privacy: bool):
         self.lake.enforce_privacy = enforce_privacy
+
+    @property
+    def enable_cache(self):
+        return self.lake.enable_cache
+
+    @enable_cache.setter
+    def enable_cache(self, enable_cache: bool):
+        self.lake.enable_cache = enable_cache
 
     @property
     def use_error_correction_framework(self):

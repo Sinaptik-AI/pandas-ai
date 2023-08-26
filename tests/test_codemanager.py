@@ -1,6 +1,6 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -153,7 +153,7 @@ print(os.listdir())
     def test_custom_whitelisted_dependencies(self, code_manager: CodeManager, llm):
         code = """
 import my_custom_library
-def analyze_data(self, dfs: list):
+def analyze_data(dfs: list):
     my_custom_library.do_something()
 """
         llm._output = code
@@ -164,7 +164,7 @@ def analyze_data(self, dfs: list):
         code_manager._config.custom_whitelisted_dependencies = ["my_custom_library"]
         assert (
             code_manager._clean_code(code)
-            == """def analyze_data(self, dfs: list):
+            == """def analyze_data(dfs: list):
     my_custom_library.do_something()"""
         )
 
@@ -205,7 +205,6 @@ def analyze_data(self, dfs: list):
             "help": help,
             "hex": hex,
             "id": id,
-            "input": input,
             "int": int,
             "isinstance": isinstance,
             "issubclass": issubclass,
@@ -243,3 +242,224 @@ def analyze_data(self, dfs: list):
             "__build_class__": __build_class__,
             "__name__": "__main__",
         }
+
+    def test_execute_catching_errors_correct(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    return {'type': 'number', 'value': 1 + 1}"""
+        environment = {"dfs": []}
+
+        with patch("builtins.exec") as mock_exec:
+            assert code_manager._execute_catching_errors(code, environment) is None
+            mock_exec.assert_called_once_with(
+                code + "\n\nresult = analyze_data(dfs)", environment
+            )
+
+    def test_execute_catching_errors_raise_exc(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    raise RuntimeError()"""
+        environment = {"dfs": []}
+
+        with patch("builtins.exec") as mock_exec:
+            mock_exec.side_effect = RuntimeError("foobar")
+            exc = code_manager._execute_catching_errors(code, environment)
+            mock_exec.assert_called_once_with(
+                code + "\n\nresult = analyze_data(dfs)", environment
+            )
+            assert isinstance(exc, RuntimeError)
+
+    def test_handle_error_name_error(self, code_manager: CodeManager):
+        code = """def analyze_data(dfs):
+    print(json.dumps({"foo": "bar"}))"""
+        environment = {"dfs": []}
+
+        exc = code_manager._execute_catching_errors(code, environment)
+        code_manager._handle_error(exc, code, environment)
+        assert getattr(environment.get("json"), "__name__", None) == "json"
+
+    def test_handle_error_name_error_not_whitelisted_lib(
+        self, code_manager: CodeManager
+    ):
+        code = """def analyze_data(dfs):
+    print(os)"""
+        environment = {"dfs": []}
+
+        exc = code_manager._execute_catching_errors(code, environment)
+        with pytest.raises(NameError):
+            code_manager._handle_error(
+                exc, code, environment, use_error_correction_framework=False
+            )
+        assert "os" not in environment
+
+    @pytest.mark.parametrize("df_name", ["df", "foobar"])
+    def test_extract_filters_polars(self, df_name, code_manager: CodeManager):
+        code = f"""
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    {df_name} = dfs[0]
+    filtered_df = {df_name}.filter(
+        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
+    )
+    count = filtered_df.shape[0]
+    result = {{'type': 'number', 'value': count}}
+    return result
+
+    result = analyze_data(dfs)
+    """
+        # @TODO: this test case and the one from above looks almost
+        #        identical, the only difference is code fixture;
+        #        consider using `@pytest.mark.parametrize`
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+
+    def test_extract_filters_polars_multiple_df(self, code_manager: CodeManager):
+        code = """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0]
+    filtered_paid_df_male = df.filter(
+        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
+    )
+    num_loans_paid_off_male = len(filtered_paid_df)
+
+    df = dfs[1]
+    filtered_pend_df_male = df.filter(
+        (pl.col('loan_status') == 'PENDING') & (pl.col('Gender') == 'male')
+    )
+    num_loans_pending_male = len(filtered_pend_df)
+
+    df = dfs[2]
+    filtered_paid_df_female = df.filter(
+        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'female')
+    )
+    num_loans_paid_off_female = len(filtered_pend_df)
+
+    value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
+    result = {
+        'type': 'number',
+        'value': value
+    }
+    return result
+
+result = analyze_data(dfs)
+"""
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert "dfs[1]" in filters
+        assert "dfs[2]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+        assert len(filters["dfs[1]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+
+        assert filters["dfs[1]"][0] == ("loan_status", "==", "PENDING")
+        assert filters["dfs[1]"][1] == ("Gender", "==", "male")
+
+        assert filters["dfs[2]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[2]"][1] == ("Gender", "==", "female")
+
+    @pytest.mark.parametrize("df_name", ["df", "foobar"])
+    def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
+        code = f"""
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    {df_name} = dfs[0]
+    filtered_df = (
+        {df_name}[
+            ({df_name}['loan_status'] == 'PAIDOFF') & ({df_name}['Gender'] == 'male')
+        ]
+    )
+    num_loans = len(filtered_df)
+    result = {{'type': 'number', 'value': num_loans}}
+    return result
+
+result = analyze_data(dfs)
+"""
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+
+    def test_extract_filters_col_index_non_default_name(
+        self, code_manager: CodeManager
+    ):
+        code = """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    foobar = dfs[0]
+    filtered_df = foobar[(
+        foobar['loan_status'] == 'PAIDOFF'
+    ) & (df['Gender'] == 'male')]
+    num_loans = len(filtered_df)
+    result = {'type': 'number', 'value': num_loans}
+    return result
+
+result = analyze_data(dfs)
+"""
+        # @TODO: this test case and the one from above looks almost
+        #        identical, the only difference is code fixture;
+        #        consider using `@pytest.mark.parametrize`
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+
+    def test_extract_filters_col_index_multiple_df(self, code_manager: CodeManager):
+        code = """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0]
+    filtered_paid_df_male = df[(
+        df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'male'
+    )]
+    num_loans_paid_off_male = len(filtered_paid_df)
+
+    df = dfs[1]
+    filtered_pend_df_male = df[(
+        df['loan_status'] == 'PENDING') & (df['Gender'] == 'male'
+    )]
+    num_loans_pending_male = len(filtered_pend_df)
+
+    df = dfs[2]
+    filtered_paid_df_female = df[(
+        df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'female'
+    )]
+    num_loans_paid_off_female = len(filtered_pend_df)
+
+    value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
+    result = {
+        'type': 'number',
+        'value': value
+    }
+    return result
+
+result = analyze_data(dfs)
+"""
+        filters = code_manager._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert "dfs[1]" in filters
+        assert "dfs[2]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+        assert len(filters["dfs[1]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+
+        assert filters["dfs[1]"][0] == ("loan_status", "==", "PENDING")
+        assert filters["dfs[1]"][1] == ("Gender", "==", "male")
+
+        assert filters["dfs[2]"][0] == ("loan_status", "==", "PAIDOFF")
+        assert filters["dfs[2]"][1] == ("Gender", "==", "female")

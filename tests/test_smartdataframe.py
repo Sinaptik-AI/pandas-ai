@@ -5,6 +5,7 @@ from unittest.mock import patch, Mock
 from uuid import UUID
 
 import pandas as pd
+import polars as pl
 import pytest
 
 from pandasai import SmartDataframe
@@ -13,6 +14,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import Prompt
+from pandasai.helpers.cache import Cache
 
 import logging
 
@@ -150,12 +152,13 @@ import pandas as pd
 # Analyze the data
 # 1. Prepare: Preprocessing and cleaning data if necessary
 # 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-# 3. Analyze: Conducting the actual analysis (if generating a plot, create a figure and axes using plt.subplots() and save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+# 3. Analyze: Conducting the actual analysis (if the user asks to create a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
 # 4. Output: return a dictionary of:
 # - type (possible values "text", "number", "dataframe", "plot")
 # - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-def analyze_data(self, dfs: list) -> dict
-   # Code goes here
+# Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+   # Code goes here (do not add comments)
     
 
 # Declare a result variable
@@ -186,17 +189,6 @@ print(result)```"""
 result = {'happiness': 1, 'gdp': 0.43}```"""
         assert llm._extract_code(code) == "result = {'happiness': 1, 'gdp': 0.43}"
 
-        code = """```python<startCode>
-result = {'happiness': 0.3, 'gdp': 5.5}<endCode>```"""
-        assert llm._extract_code(code) == "result = {'happiness': 0.3, 'gdp': 5.5}"
-
-        code = """<startCode>```python
-result = {'happiness': 0.49, 'gdp': 25.5}```<endCode>"""
-        assert llm._extract_code(code) == "result = {'happiness': 0.49, 'gdp': 25.5}"
-        code = """<startCode>```python
-result = {'happiness': 0.49, 'gdp': 25.5}```"""
-        assert llm._extract_code(code) == "result = {'happiness': 0.49, 'gdp': 25.5}"
-
     def test_last_prompt_id(self, smart_dataframe: SmartDataframe):
         smart_dataframe.chat("How many countries are in the dataframe?")
         prompt_id = smart_dataframe.last_prompt_id
@@ -205,6 +197,16 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
     def test_last_prompt_id_no_prompt(self, smart_dataframe: SmartDataframe):
         with pytest.raises(AttributeError):
             smart_dataframe.last_prompt_id
+
+    def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
+        llm._output = (
+            "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+        )
+        smart_dataframe.chat("What number comes before 2?")
+        assert (
+            smart_dataframe.last_code_generated
+            == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+        )
 
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
         middleware = custom_middleware()
@@ -288,3 +290,166 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
         assert {"msg": warning_msg, "level": logging.WARNING} in logs
         assert {"msg": error_msg, "level": logging.ERROR} in logs
         assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
+
+    def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.verbose is False
+
+        smart_dataframe.verbose = True
+        assert smart_dataframe.verbose is True
+        assert smart_dataframe.lake._logger.verbose is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
+        assert isinstance(
+            smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
+        )
+
+        smart_dataframe.verbose = False
+        assert smart_dataframe.verbose is False
+        assert smart_dataframe.lake._logger.verbose is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
+
+    def test_updates_save_logs_config_with_setters(
+        self, smart_dataframe: SmartDataframe
+    ):
+        assert smart_dataframe.save_logs is True
+
+        smart_dataframe.save_logs = False
+        assert smart_dataframe.save_logs is False
+        assert smart_dataframe.lake._logger.save_logs is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
+
+        smart_dataframe.save_logs = True
+        assert smart_dataframe.save_logs is True
+        assert smart_dataframe.lake._logger.save_logs is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
+        assert isinstance(
+            smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
+        )
+
+    def test_updates_enable_cache_config_with_setters(
+        self, smart_dataframe: SmartDataframe
+    ):
+        assert smart_dataframe.enable_cache is False
+
+        smart_dataframe.enable_cache = True
+        assert smart_dataframe.enable_cache is True
+        assert smart_dataframe.lake.enable_cache is True
+        assert smart_dataframe.lake.cache is not None
+        assert isinstance(smart_dataframe.lake._cache, Cache)
+
+        smart_dataframe.enable_cache = False
+        assert smart_dataframe.enable_cache is False
+        assert smart_dataframe.lake.enable_cache is False
+        assert smart_dataframe.lake.cache is None
+
+    def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.callback is None
+        assert smart_dataframe.enforce_privacy is False
+        assert smart_dataframe.use_error_correction_framework is True
+        assert smart_dataframe.custom_prompts == {}
+        assert smart_dataframe.save_charts is False
+        assert smart_dataframe.save_charts_path == "exports/charts"
+        assert smart_dataframe.custom_whitelisted_dependencies == []
+        assert smart_dataframe.max_retries == 3
+
+        smart_dataframe.callback = lambda x: x
+        assert smart_dataframe.callback is not None
+
+        smart_dataframe.enforce_privacy = True
+        assert smart_dataframe.enforce_privacy is True
+
+        smart_dataframe.use_error_correction_framework = False
+        assert smart_dataframe.use_error_correction_framework is False
+
+        smart_dataframe.custom_prompts = {"generate_response": Prompt()}
+        assert smart_dataframe.custom_prompts != {}
+
+        smart_dataframe.save_charts = True
+        assert smart_dataframe.save_charts is True
+
+        smart_dataframe.save_charts_path = "some/path"
+        assert smart_dataframe.save_charts_path == "some/path"
+
+        smart_dataframe.custom_whitelisted_dependencies = ["some_dependency"]
+        assert smart_dataframe.custom_whitelisted_dependencies == ["some_dependency"]
+
+        smart_dataframe.max_retries = 5
+        assert smart_dataframe.max_retries == 5
+
+    def test_load_dataframe_from_list(self, smart_dataframe):
+        input_data = [
+            {"column1": 1, "column2": 4},
+            {"column1": 2, "column2": 5},
+            {"column1": 3, "column2": 6},
+        ]
+
+        smart_dataframe._load_dataframe(input_data)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_dict(self, smart_dataframe):
+        input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
+
+        smart_dataframe._load_dataframe(input_data)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
+        pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+
+        smart_dataframe._load_dataframe(pandas_df)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
+        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+
+        smart_dataframe._load_dataframe(polars_df)
+
+        assert smart_dataframe._df is polars_df
+
+    def test_import_csv_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_csv",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.csv"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+    def test_import_parquet_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_parquet",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.parquet"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+    def test_import_excel_file(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_excel",
+            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
+        )
+
+        file_path = "sample.xlsx"
+
+        df = smart_dataframe._import_from_file(file_path)
+
+        assert isinstance(df, pd.DataFrame)
+
+        expected_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+        assert df.equals(expected_df)
+
+    @pytest.mark.parametrize("file_path", ["sample.txt", "sample.docx", "sample.pdf"])
+    def test_invalid_file_format(self, smart_dataframe, file_path):
+        with pytest.raises(ValueError):
+            smart_dataframe._import_from_file(file_path)
