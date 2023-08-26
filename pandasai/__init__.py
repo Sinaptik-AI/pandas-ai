@@ -68,7 +68,6 @@ class PandasAI(Shortcuts):
         generated and execution step on the prompt. Default to False
         _enforce_privacy (bool, optional): Do not display the data on prompt in case of
         Sensitive data. Default to False
-        _sample_head (pd.DataFrame, optional): Sample data used for generating code.
         _max_retries (int, optional): max no. of tries to generate code on failure.
         Default to 3
         _in_notebook (bool, optional): Whether to run code in notebook. Default to False
@@ -108,7 +107,6 @@ class PandasAI(Shortcuts):
         conversational=False,
         verbose=False,
         enforce_privacy=False,
-        sample_head=None,
         save_charts=False,
         save_charts_path="",
         enable_cache=True,
@@ -129,7 +127,6 @@ class PandasAI(Shortcuts):
             generated and execution step on the prompt.  Default to False
             enforce_privacy (bool): Execute the codes with Privacy Mode ON.
             Default to False
-            sample_head (pd.DataFrame): Sample dataframe to be used for the prompt.
             save_charts (bool): Save the charts generated in the notebook.
             Default to False
             enable_cache (bool): Enable the cache to store the results.
@@ -150,7 +147,6 @@ class PandasAI(Shortcuts):
             conversational=conversational,
             verbose=verbose,
             enforce_privacy=enforce_privacy,
-            sample_head=sample_head,
             save_charts=save_charts,
             save_charts_path=save_charts_path,
             enable_cache=enable_cache,

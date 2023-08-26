@@ -70,8 +70,16 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def sample_head(self, sample_df):
+        return sample_df.head(5).sample(frac=1, axis=1).reset_index(drop=True)
+
+    @pytest.fixture
+    def smart_dataframe(self, llm, sample_df, sample_head):
+        return SmartDataframe(
+            sample_df,
+            config={"llm": llm, "enable_cache": False},
+            sample_head=sample_head,
+        )
 
     @pytest.fixture
     def custom_middleware(self):
@@ -373,3 +381,13 @@ result = {'happiness': 0.49, 'gdp': 25.5}```"""
 
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
+
+    def test_sample_head_getter(self, sample_head, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.sample_head.equals(sample_head)
+
+    def test_sample_head_setter(self, sample_head, smart_dataframe: SmartDataframe):
+        new_sample_head = (
+            sample_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
+        )
+        smart_dataframe.sample_head = new_sample_head
+        assert new_sample_head.equals(smart_dataframe.sample_head)
