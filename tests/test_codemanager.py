@@ -291,41 +291,20 @@ def analyze_data(dfs: list):
             )
         assert "os" not in environment
 
-    def test_extract_filters_polars(self, code_manager: CodeManager):
-        code = """
+    @pytest.mark.parametrize("df_name", ["df", "foobar"])
+    def test_extract_filters_polars(self, df_name, code_manager: CodeManager):
+        code = f"""
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    df = dfs[0]
-    filtered_df = df.filter(
+    {df_name} = dfs[0]
+    filtered_df = {df_name}.filter(
         (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
     )
     count = filtered_df.shape[0]
-    result = {'type': 'number', 'value': count}
+    result = {{'type': 'number', 'value': count}}
     return result
 
-result = analyze_data(dfs)
-"""
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
-
-    def test_extract_filters_polars_non_default_name(self, code_manager: CodeManager):
-        code = """
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    foobar = dfs[0]
-    filtered_df = foobar.filter(
-        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-    )
-    count = filtered_df.shape[0]
-    result = {'type': 'number', 'value': count}
-    return result
-
-result = analyze_data(dfs)
-"""
+    result = analyze_data(dfs)
+    """
         # @TODO: this test case and the one from above looks almost
         #        identical, the only difference is code fixture;
         #        consider using `@pytest.mark.parametrize`
@@ -386,13 +365,18 @@ result = analyze_data(dfs)
         assert filters["dfs[2]"][0] == ("loan_status", "==", "PAIDOFF")
         assert filters["dfs[2]"][1] == ("Gender", "==", "female")
 
-    def test_extract_filters_col_index(self, code_manager: CodeManager):
-        code = """
+    @pytest.mark.parametrize("df_name", ["df", "foobar"])
+    def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
+        code = f"""
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    df = dfs[0]
-    filtered_df = df[(df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'male')]
+    {df_name} = dfs[0]
+    filtered_df = (
+        {df_name}[
+            ({df_name}['loan_status'] == 'PAIDOFF') & ({df_name}['Gender'] == 'male')
+        ]
+    )
     num_loans = len(filtered_df)
-    result = {'type': 'number', 'value': num_loans}
+    result = {{'type': 'number', 'value': num_loans}}
     return result
 
 result = analyze_data(dfs)
