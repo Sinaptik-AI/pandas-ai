@@ -26,7 +26,7 @@ class Starcoder(HuggingFaceLLM):
 
     api_token: str
     _api_url: str = "https://api-inference.huggingface.co/models/bigcode/starcoder"
-    _max_retries: int = 5
+    _max_retries: int = 30
 
     @property
     def type(self) -> str:

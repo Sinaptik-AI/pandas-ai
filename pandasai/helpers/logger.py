@@ -20,12 +20,20 @@ import sys
 from typing import List
 import logging
 from .path import find_closest
+from pydantic import BaseModel
+
+
+class Log(BaseModel):
+    """Log class"""
+
+    msg: str
+    level: int
 
 
 class Logger:
     """Logger class"""
 
-    _logs: List[str]
+    _logs: List[Log]
     _logger: logging.Logger
     _verbose: bool
 

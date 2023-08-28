@@ -56,10 +56,14 @@ df = pd.DataFrame({
 from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe(df, {"llm": llm})
+df = SmartDataframe(df, config={"llm": llm})
 df.chat('Which are the 5 happiest countries?')
 # Output: United Kingdom, Canada, Australia, United States, Germany
 ```
+
+If you want to get to know more about the `SmartDataframe` class, check out this video:
+
+[![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to SmartDataframe")
 
 PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`. A `SmartDatalake` is a collection of `SmartDataframe`s. You can instantiate a `SmartDatalake` as follows:
 
@@ -87,6 +91,8 @@ dl.chat('Which are the 5 happiest countries?')
 ```
 
 PandasAI will automatically figure out which dataframe or dataframes are relevant to the query and will use only those dataframes to answer the query.
+
+[![Intro to SmartDatalake](https://cdn.loom.com/sessions/thumbnails/a2006ac27b0545189cb5b9b2e011bc72-00001.jpg)](https://www.loom.com/share/a2006ac27b0545189cb5b9b2e011bc72 "Intro to SmartDatalake")
 
 ### How to generate OpenAI API Token
 
@@ -127,7 +133,7 @@ Settings:
 
 Try out PandasAI in your browser:
 
-[![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1rKz7TudOeCeKGHekw7JFNL4sagN9hon-?usp=sharing)
+[![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
 ## Examples
 

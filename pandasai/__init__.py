@@ -38,7 +38,6 @@ from typing import List, Optional, Union, Dict, Type
 import importlib.metadata
 
 import pandas as pd
-from .helpers.shortcuts import Shortcuts
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .prompts.base import Prompt
@@ -49,7 +48,7 @@ from .helpers.cache import Cache
 __version__ = importlib.metadata.version(__package__ or __name__)
 
 
-class PandasAI(Shortcuts):
+class PandasAI:
     """
     PandasAI is a wrapper around a LLM to make dataframes conversational.
 
@@ -98,7 +97,7 @@ class PandasAI(Shortcuts):
 
     """
 
-    _dl: SmartDatalake
+    _dl: SmartDatalake = None
     _config: Config
 
     def __init__(
@@ -228,16 +227,22 @@ class PandasAI(Shortcuts):
     @property
     def logs(self) -> List[dict[str, str]]:
         """Return the logs"""
+        if self._dl is None:
+            return []
         return self._dl.logs
 
     @property
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
+        if self._dl is None:
+            return None
         return self._dl.last_prompt_id
 
     @property
     def last_prompt(self) -> str:
         """Return the last prompt that was executed."""
+        if self._dl is None:
+            return None
         return self._dl.last_prompt
 
 

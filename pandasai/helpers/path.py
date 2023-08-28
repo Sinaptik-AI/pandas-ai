@@ -35,3 +35,12 @@ def find_project_root(filename=None):
 
 def find_closest(filename):
     return os.path.join(find_project_root(filename), filename)
+
+def create_directory(path):
+ 
+    if not os.path.exists(path):
+        # Create the directory
+        try:
+             os.makedirs(path)
+        except OSError as e:
+            raise OSError(f"Error creating directory: {e}")

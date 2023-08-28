@@ -17,3 +17,4 @@ class FileCallback(BaseCallback):
     def on_code(self, response: str):
         """Write the code response to file"""
         self.file.write(response)
+        self.file.flush()
