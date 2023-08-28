@@ -53,11 +53,11 @@ class OpenAI(BaseOpenAI):
     ):
         """
         __init__ method of OpenAI Class
+
         Args:
             api_token (str): API Token for OpenAI platform.
             **kwargs: Extended Parameters inferred from BaseOpenAI class
 
-        Returns: Response generated from OpenAI API
         """
 
         self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
@@ -84,9 +84,8 @@ class OpenAI(BaseOpenAI):
         Call the OpenAI LLM.
 
         Args:
-            instruction (Prompt): Instruction to pass
-            value (str): Value to pass
-            suffix (str): Suffix to pass
+            instruction (Prompt): A prompt object with instruction for LLM.
+            suffix (str): Suffix to pass.
 
         Raises:
             UnsupportedOpenAIModelError: Unsupported model

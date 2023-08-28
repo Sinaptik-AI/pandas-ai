@@ -9,10 +9,10 @@ def get_google_sheet(src) -> list:
     Returns a 2D array of the contents of the Google Sheet at the given URL
 
     Args:
-        src (str): The URL of the Google Sheet
+        src (str): The URL of the Google Sheet.
 
     Returns:
-        grid (list): A 2D array of the contents of the Google Sheet
+        list: A 2D array representing content of the Google Sheet.
     """
 
     # The size of the Google sheet that can be read is limited
@@ -39,7 +39,7 @@ def sheet_to_df(sheet) -> list:
         sheet (list): A 2D array of the contents of the Google Sheet
 
     Returns:
-        dfs (list): A list of dataframes from the Google Sheet
+        list: A list of dataframes from the Google Sheet.
     """
 
     # A dataframe starts when a header is found
@@ -110,12 +110,12 @@ def sheet_to_df(sheet) -> list:
 
 def from_google_sheets(url) -> list:
     """
-    Returns the dataframes that are in a google sheet
+    Returns the dataframes that are in a Google sheet.
 
     Args:
         url (str): The URL of the Google Sheet
     Returns:
-        dfs (list): A list of dataframes from the Google Sheet
+        list: A list of dataframes from the Google Sheet.
     """
 
     sheet = get_google_sheet(url)

@@ -62,11 +62,14 @@ class CodeManager:
         """
         Perform execution of the code directly.
         Call `exec()` for the given `code`, catch any non-base exceptions.
+
         Args:
-            code (str): Python code
-            environment (dict): Context for the `exec()`
-        Returns (Optional[Exception]): Any exception raised during execution.
-                                       `None` if executed without exceptions.
+            code (str): Python code.
+            environment (dict): Context for the `exec()`.
+
+        Returns:
+            (Optional[Exception]): Any exception raised during execution.
+                `None` if executed without exceptions.
         """
         try:
             # Check in the code that analyze_data function is called.
@@ -99,9 +102,10 @@ class CodeManager:
             environment (dict): Context for the `exec()`
         Raises:
             Exception: Any exception which has been caught during
-                       the very first execution of the code.
-        Returns (str): Python code. Either an original or new, given by
-                       error correction framework.
+                the very first execution of the code.
+        Returns:
+            str: Python code. Either original or new one, given by
+                error correction framework.
         """
         if isinstance(exc, NameError):
             name_to_be_imported = None
@@ -149,14 +153,14 @@ class CodeManager:
         result.
 
         Args:
-            code (str): Python code to execute
-            data_frame (pd.DataFrame): Full Pandas DataFrame
+            code (str): Python code to execute.
+            data_frame (pd.DataFrame): Full Pandas DataFrame.
             use_error_correction_framework (bool): Turn on Error Correction mechanism.
-            Default to True
+                Default to True.
 
         Returns:
-            result: The result of the code execution. The type of the result depends
-            on the generated code.
+            str: The result of the code execution. The type of the result depends
+                on the generated code.
 
         """
 
@@ -237,7 +241,7 @@ Code running:
         """
         Remove jailbreaks from the code to prevent malicious code execution.
         Args:
-            node (object): ast.stmt
+            node (ast.stmt): A code node to be checked.
         Returns (bool):
         """
 
@@ -256,7 +260,7 @@ Code running:
         Remove unsafe code from the code to prevent malicious code execution.
 
         Args:
-            node (object): ast.stmt
+            node (ast.stmt): A code node to be checked.
 
         Returns (bool):
         """
@@ -304,12 +308,13 @@ Code running:
 
     def _clean_code(self, code: str) -> str:
         """
-        A method to clean the code to prevent malicious code execution
+        A method to clean the code to prevent malicious code execution.
 
         Args:
-            code(str): A python code
+            code(str): A python code.
 
-        Returns (str): Returns a Clean Code String
+        Returns:
+            str: A clean code string.
 
         """
 
@@ -339,7 +344,7 @@ Code running:
         Remove df declarations from the code to prevent malicious code execution.
 
         Args:
-            node (object): ast.stmt
+            node (ast.stmt): A code node to be checked.
 
         Returns (bool):
 
