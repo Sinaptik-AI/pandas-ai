@@ -19,6 +19,7 @@ Example:
 """
 
 import hashlib
+from io import StringIO
 
 import pandas as pd
 
@@ -53,6 +54,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         name: str = None,
         description: str = None,
         config: Config = None,
+        sample_head: pd.DataFrame = None,
         logger: Logger = None,
     ):
         """
@@ -68,10 +70,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._description = description
 
         self._load_df(df)
-
         self._load_engine()
 
         self._dl = SmartDatalake([self], config=config, logger=logger)
+
+        if sample_head is not None:
+            self._sample_head = sample_head.to_csv(index=False)
 
     def _load_df(self, df: DataFrameType):
         """
@@ -376,3 +380,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @llm.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
         self._dl.llm = llm
+
+    @property
+    def sample_head(self):
+        data = StringIO(self._sample_head)
+        return pd.read_csv(data)
+
+    @sample_head.setter
+    def sample_head(self, sample_head: pd.DataFrame):
+        self._sample_head = sample_head.to_csv(index=False)
