@@ -7,8 +7,8 @@ from ..prompts.base import Prompt
 load_dotenv()
 
 
-class LLaMa2TextGen(LLM):
-    """LLaMa-2 Text Generation Inference LLM"""
+class HuggingFaceTextGen(LLM):
+    """HuggingFace Text Generation Inference LLM"""
 
     max_new_tokens: int = 1024
     top_k: Optional[int] = None
@@ -23,7 +23,6 @@ class LLaMa2TextGen(LLM):
     inference_server_url: str = ""
     streaming: Optional[bool] = False
     timeout: int = 120
-    use_chat_model: Optional[bool] = False
     client: Any
 
     def __init__(self, inference_server_url: str, **kwargs):
@@ -63,9 +62,6 @@ class LLaMa2TextGen(LLM):
 
     def call(self, instruction: Prompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
-        if self.use_chat_model:
-            # format prompt for LLaMa-2 Chat
-            prompt = f"[INST] <<SYS>>\n{prompt}\n<</SYS>>\n\n"
 
         params = self._default_params
         if self.streaming:
@@ -86,4 +82,4 @@ class LLaMa2TextGen(LLM):
 
     @property
     def type(self) -> str:
-        return "llama2-text-generation"
+        return "huggingface-text-generation"
