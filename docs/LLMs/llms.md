@@ -176,7 +176,7 @@ If you are behind an explicit proxy, you can specify `openai_proxy` when instant
 
 ## HuggingFace via Text Generation 
 
-In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM) at some inference server url. 
+In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read [text-generation docs](https://huggingface.co/docs/text-generation-inference/index) for more on how to setup an inference server. 
 
 The `inference_server_url` is the only required parameter to instantiate an `HuggingFaceTextGen` model:
 
