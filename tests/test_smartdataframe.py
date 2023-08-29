@@ -223,8 +223,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(Prompt):
-            text: str = """{_num_rows} | $dfs[0].shape[1] | {_df_head} | {test}
-{_conversation}"""
+            text: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -235,17 +234,13 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             config={
                 "llm": llm,
                 "enable_cache": False,
-                "custom_prompts": {"generate_response": replacement_prompt},
+                "custom_prompts": {"generate_python_code": replacement_prompt},
             },
         )
         question = "Will this work?"
         df.chat(question)
 
         expected_last_prompt = replacement_prompt.to_string()
-        expected_last_prompt = expected_last_prompt.replace(
-            "$dfs[0].shape[1]", str(df.shape[1])
-        )
-
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
@@ -360,7 +355,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         smart_dataframe.use_error_correction_framework = False
         assert smart_dataframe.use_error_correction_framework is False
 
-        smart_dataframe.custom_prompts = {"generate_response": Prompt()}
+        smart_dataframe.custom_prompts = {"generate_python_code": Prompt()}
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True
