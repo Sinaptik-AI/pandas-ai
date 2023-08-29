@@ -75,3 +75,4 @@ class TestHuggingFaceTextGen:
         )
 
         assert result == expected_text
+        assert tgi_mock.call_count == 1
