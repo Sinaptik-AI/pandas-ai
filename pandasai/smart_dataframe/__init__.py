@@ -24,7 +24,7 @@ from io import StringIO
 import pandas as pd
 
 from ..smart_datalake import SmartDatalake
-from ..helpers.df_config import Config
+from ..schemas.df_config import Config
 from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
@@ -70,6 +70,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._description = description
 
         self._load_df(df)
+
         self._load_engine()
 
         self._dl = SmartDatalake([self], config=config, logger=logger)
@@ -85,6 +86,25 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (DataFrameType): Pandas or Polars dataframe or path to a file
         """
         if isinstance(df, str):
+            if not (
+                df.endswith(".csv")
+                or df.endswith(".parquet")
+                or df.endswith(".xlsx")
+                or df.startswith("https://docs.google.com/spreadsheets/")
+            ):
+                df_config = self._load_from_config(df)
+                if df_config:
+                    if self._name is None:
+                        self._name = df_config["name"]
+                    if self._description is None:
+                        self._description = df_config["description"]
+                    df = df_config["import_path"]
+                else:
+                    raise ValueError(
+                        "Could not find a saved dataframe configuration "
+                        "with the given name."
+                    )
+
             self._df = self._import_from_file(df)
         elif isinstance(df, pd.Series):
             self._df = df.to_frame()
@@ -188,6 +208,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         config_manager = DfConfigManager(self)
         config_manager.save()
+
+    def _load_from_config(self, name: str):
+        """
+        Loads a saved dataframe configuration
+        """
+
+        config_manager = DfConfigManager(self)
+        return config_manager.load(name)
 
     def _get_head_csv(self):
         """

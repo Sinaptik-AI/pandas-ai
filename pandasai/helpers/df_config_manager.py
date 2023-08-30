@@ -14,15 +14,15 @@ class DfConfigManager:
     Class to manage the configuration of the dataframe
     """
 
-    _df = None
+    _sdf = None
 
-    def __init__(self, df):
+    def __init__(self, sdf):
         """
         Args:
-            df (DataFrameType): Pandas or Polars dataframe
+            sdf (SmartDataFrame): SmartDataFrame object
         """
 
-        self._df = df
+        self._sdf = sdf
 
     def _create_csv_save_path(self):
         """
@@ -67,11 +67,11 @@ class DfConfigManager:
         dataframe_type = df_type(self.original_import)
         if dataframe_type == "pandas":
             csv_file_path = self._create_csv_save_path()
-            self._df.original.to_csv(csv_file_path)
+            self._sdf.original.to_csv(csv_file_path)
         elif dataframe_type == "polars":
             csv_file_path = self._create_csv_save_path()
             with open(csv_file_path, "w") as f:
-                self._df.original.write_csv(f)
+                self._sdf.original.write_csv(f)
         else:
             raise ValueError("Unknown dataframe type")
 
@@ -110,13 +110,24 @@ class DfConfigManager:
         with open(file_path, "w") as json_file:
             json.dump(pandas_json, json_file, indent=2)
 
+    def load(self, name) -> dict:
+        file_path = find_closest("pandasai.json")
+
+        with open(file_path, "r") as json_file:
+            pandas_json = json.load(json_file)
+            self.saved_dfs = pandas_json["saved_dfs"]
+            for df_info in self.saved_dfs:
+                if df_info["name"] == name:
+                    return df_info
+        return {}
+
     @property
     def head_csv(self):
-        return self._df.head_csv
+        return self._sdf.head_csv
 
     @property
     def name(self):
-        name = self._df.name
+        name = self._sdf.name
         if name is None:
             # Generate random hash
             hash_object = hashlib.sha256(self.head_csv.encode())
@@ -125,8 +136,8 @@ class DfConfigManager:
 
     @property
     def description(self):
-        return self._df.description
+        return self._sdf.description
 
     @property
     def original_import(self):
-        return self._df.original_import
+        return self._sdf.original_import

@@ -84,6 +84,17 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
+    def sample_saved_dfs(self):
+        return [
+            {
+                "name": "photo",
+                "description": "Dataframe containing photo metadata",
+                "sample": "filename,format,size\n1.jpg,JPEG,1240KB\n2.png,PNG,320KB",
+                "import_path": "path/to/photo_data.csv",
+            }
+        ]
+
+    @pytest.fixture
     def sample_head(self, sample_df):
         return sample_df.head(5).sample(frac=1, axis=1).reset_index(drop=True)
 
@@ -425,6 +436,29 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         smart_dataframe._load_df(pandas_df)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, mocker):
+        expected_df = pd.DataFrame(
+            {
+                "filename": ["photo1.jpg", "photo2.jpg"],
+                "format": ["JPEG", "PNG"],
+                "size": ["1240KB", "320KB"],
+            }
+        )
+        mocker.patch.object(pd, "read_csv", return_value=expected_df)
+
+        mocker.patch.object(
+            json,
+            "load",
+            return_value={"saved_dfs": sample_saved_dfs},
+        )
+
+        saved_df_name = "photo"
+        smart_dataframe = SmartDataframe(saved_df_name)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert smart_dataframe._name == saved_df_name
+        assert smart_dataframe.original.equals(expected_df)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
