@@ -30,7 +30,8 @@ from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.memory import Memory
-from ..helpers.df_config import Config, load_config
+from ..schemas.df_config import Config
+from ..config import load_config
 from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
