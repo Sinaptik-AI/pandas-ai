@@ -11,7 +11,25 @@ class LangchainLLM(LLM):
     _langchain_llm = None
 
     def __init__(self, langchain_llm):
-        self._langchain_llm = langchain_llm
+        try:
+            from langchain.llms.base import BaseLLM
+
+            print("*" * 100)
+            print(langchain_llm)
+            print("*" * 100)
+
+            if not isinstance(langchain_llm, BaseLLM):
+                raise TypeError(
+                    "LangchainLLM must be initialized with a Langchain LLM."
+                )
+
+            self._langchain_llm = langchain_llm
+        except ImportError:
+            raise ImportError(
+                "Langchain is not installed. Please install it using "
+                "`pip install pandasai[langchain]` or `poetry install "
+                "pandasai[langchain]`."
+            )
 
     def call(self, instruction: Prompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix

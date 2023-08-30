@@ -1,5 +1,5 @@
-from pydantic import BaseModel, validator
-from typing import List, Optional, Any
+from pydantic import BaseModel, root_validator
+from typing import List, Optional, Union
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
@@ -19,13 +19,14 @@ class Config(BaseModel):
     max_retries: int = 3
     middlewares: List[Middleware] = []
     callback: Optional[BaseCallback] = None
-    llm: Any = None
+    llm: Union[LLM, LangchainLLM]
 
     class Config:
         arbitrary_types_allowed = True
 
-    @validator("llm")
-    def validate_llm(cls, llm):
-        if llm is None or not isinstance(llm, LLM or LangchainLLM):
+    @root_validator(pre=True)
+    def validate_llm_presence(cls, values):
+        llm = values.get("llm")
+        if llm is None or not isinstance(llm, (LLM, LangchainLLM)):
             raise LLMNotFoundError("LLM is required")
-        return llm
+        return values

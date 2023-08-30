@@ -12,7 +12,7 @@ from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 
-from langchain import OpenAI
+from langchain.llms import OpenAI
 
 
 class TestSmartDatalake:
@@ -89,14 +89,11 @@ class TestSmartDatalake:
         smart_datalake._load_llm(llm)
         assert smart_datalake._llm == llm
 
-    def test_load_llm_with_langchain_llm(self, smart_datalake: SmartDatalake, llm):
+    def test_load_llm_with_langchain_llm(self):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        smart_datalake._llm = None
-        assert smart_datalake._llm is None
-
-        smart_datalake._load_llm(langchain_llm)
-        assert smart_datalake._llm._langchain_llm == langchain_llm
+        smart_datalake = SmartDatalake([], config={"llm": langchain_llm})
+        assert smart_datalake.llm._langchain_llm == langchain_llm
 
     @patch.object(
         CodeManager,

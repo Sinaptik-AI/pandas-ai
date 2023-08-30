@@ -2,6 +2,7 @@ import json
 from . import llm, middlewares, callbacks
 from .helpers.path import find_closest
 from .schemas.df_config import Config
+from .llm import LangchainLLM
 
 
 def load_config(override_config: Config = None):
@@ -31,6 +32,12 @@ def load_config(override_config: Config = None):
 
     if override_config:
         config.update(override_config)
+
+    if "llm" in config:
+        try:
+            config["llm"].is_pandasai_llm()
+        except AttributeError:
+            config["llm"] = LangchainLLM(config["llm"])
 
     config = Config(**config)
 
