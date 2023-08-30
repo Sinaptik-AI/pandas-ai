@@ -546,6 +546,30 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         with open("pandasai.json", "w") as json_file:
             json_file.write(backup_pandasai)
 
+    def test_save_pandas_dataframe_with_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create an instance of SmartDataframe
+        pandas_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        df_object = SmartDataframe(
+            pandas_df,
+            name="df_test",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
+
+        # Call the save function
+        df_object.save("custom_name")
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "custom_name"
+
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
     def test_save_polars_dataframe(self, llm):
         with open("pandasai.json", "r") as json_file:
             backup_pandasai = json_file.read()

@@ -77,7 +77,7 @@ class DfConfigManager:
 
         return csv_file_path
 
-    def save(self):
+    def save(self, name=None):
         """
         Saves the dataframe object to used for later
         """
@@ -99,7 +99,7 @@ class DfConfigManager:
 
             pandas_json[saved_df_keys].append(
                 {
-                    "name": self.name,
+                    "name": name if name is not None else self.name,
                     "description": self.description,
                     "sample": self.head_csv,
                     "import_path": import_path,

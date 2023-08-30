@@ -201,13 +201,13 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
-    def save(self):
+    def save(self, name: str = None):
         """
         Saves the dataframe configuration to be used for later
         """
 
         config_manager = DfConfigManager(self)
-        config_manager.save()
+        config_manager.save(name)
 
     def _load_from_config(self, name: str):
         """
