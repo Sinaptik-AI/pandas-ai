@@ -55,32 +55,28 @@ def import_dependency(
     message will be raised. If a dependency is present, but too old,
     we raise.
 
-    Parameters
-    ----------
-    name : str
-        The module name.
-    extra : str
-        Additional text to include in the ImportError message.
-    errors : str {'raise', 'warn', 'ignore'}
-        What to do when a dependency is not found or its version is too old.
+    Args:
+        name (str): The module name.
+        extra (str): An additional text to include in the ImportError message.
+        errors (str): Representing an action to do when a dependency
+            is not found or its version is too old.
+            Possible values: "raise", "warn", "ignore":
+                * raise : Raise an ImportError
+                * warn : Only applicable when a module's version is too old.
+                  Warns that the version is too old and returns None
+                * ignore: If the module is not installed, return None, otherwise,
+                  return the module, even if the version is too old.
+                  It's expected that users validate the version locally when
+                  using ``errors="ignore"`` (see. ``io/html.py``)
+        min_version (str): Specify a minimum version that is different from
+            the global pandas minimum version required. Defaults to None.
 
-        * raise : Raise an ImportError
-        * warn : Only applicable when a module's version is to old.
-          Warns that the version is too old and returns None
-        * ignore: If the module is not installed, return None, otherwise,
-          return the module, even if the version is too old.
-          It's expected that users validate the version locally when
-          using ``errors="ignore"`` (see. ``io/html.py``)
-    min_version : str, default None
-        Specify a minimum version that is different from the global pandas
-        minimum version required.
-    Returns
-    -------
-    maybe_module : Optional[ModuleType]
-        The imported module, when found and the version is correct.
-        None is returned when the package is not found and `errors`
-        is False, or when the package's version is too old and `errors`
-        is ``'warn'``.
+    Returns:
+         Optional[module]:
+            The imported module, when found and the version is correct.
+            None is returned when the package is not found and `errors`
+            is False, or when the package's version is too old and `errors`
+            is `'warn'`.
     """
 
     assert errors in {"warn", "raise", "ignore"}

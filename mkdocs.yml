@@ -35,7 +35,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "1.0.9"
+  version: "1.0.11"
 plugins:
   - search
   - mkdocstrings:

@@ -76,8 +76,10 @@ class DataSampler:
             n = 0
 
         # if there are still rows to sample, sample them randomly
-        if n > 0:
+        if n > 0 and len(col_values) > 0:
             col_sample.extend(random.choices(list(col_values), k=n))
+        else:
+            col_sample.extend([np.nan] * n)
 
         # shuffle the column sample before returning it
         random.shuffle(col_sample)

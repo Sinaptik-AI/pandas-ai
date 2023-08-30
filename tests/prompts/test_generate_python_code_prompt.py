@@ -20,12 +20,11 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
+        prompt = GeneratePythonCodePrompt()
+        prompt.set_var("dfs", dfs)
+        prompt.set_var("conversation", "Question")
         assert (
-            str(
-                GeneratePythonCodePrompt(
-                    engine="pandas", conversation="Question", dfs=dfs
-                )
-            )
+            prompt.to_string()
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 
