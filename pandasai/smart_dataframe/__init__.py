@@ -22,7 +22,7 @@ import hashlib
 
 import pandas as pd
 from ..smart_datalake import SmartDatalake
-from ..helpers.df_config import Config
+from ..helpers.df_config import Config, load_config
 from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
@@ -63,13 +63,13 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._name = name
         self._description = description
 
-        self._load_df(df)
+        self._load_df(df, config)
 
         self._load_engine()
 
         self._dl = SmartDatalake([self], config=config, logger=logger)
 
-    def _load_df(self, df: DataFrameType):
+    def _load_df(self, df: DataFrameType, config: Config):
         """
         Load a dataframe into the smart dataframe
 
@@ -77,7 +77,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (DataFrameType): Pandas or Polars dataframe or path to a file
         """
         if isinstance(df, str):
-            self._df = self._import_from_file(df)
+            self._load_df_from_file(df, config)
         elif isinstance(df, pd.Series):
             self._df = df.to_frame()
         elif isinstance(df, (list, dict)):
@@ -91,6 +91,24 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 )
         else:
             self._df = df
+
+    def _load_df_from_file(self, df, config):
+        # if the input string can be matched a saved_df in pandasai.json
+        # import the file via its path
+        # otherwise, the input string should be a file path
+        has_matched_df = False
+        matched_df = None
+        if config is not None:
+            config = load_config(config)
+            matched_df = config.find_matched_df(df)
+            if bool(matched_df):
+                has_matched_df = True
+        if has_matched_df:
+            self._name = matched_df["name"]
+            self._description = matched_df["description"]
+            self._df = self._import_from_file(matched_df["import_path"])
+        else:
+            self._df = self._import_from_file(df)
 
     def _import_from_file(self, file_path: str):
         """

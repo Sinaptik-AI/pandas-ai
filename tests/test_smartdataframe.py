@@ -71,8 +71,22 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def sample_saved_dfs(self):
+        return [
+            {
+                "name": "photo",
+                "description": "Dataframe containing photo metadata",
+                "sample": "filename,format,size\n1.jpg,JPEG,1240KB\n2.png,PNG,320KB",
+                "import_path": "path/to/photo_data.csv",
+            }
+        ]
+
+    @pytest.fixture
+    def smart_dataframe(self, llm, sample_df, sample_saved_dfs):
+        return SmartDataframe(
+            sample_df,
+            config={"llm": llm, "enable_cache": False, "saved_dfs": sample_saved_dfs},
+        )
 
     @pytest.fixture
     def custom_middleware(self):
@@ -377,28 +391,56 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             {"column1": 3, "column2": 6},
         ]
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_df(input_data, None)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_dict(self, smart_dataframe):
         input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_df(input_data, None)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
     def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
         pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(pandas_df)
+        smart_dataframe._load_df(pandas_df, None)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+    def test_load_dataframe_from_saved_dfs(self, smart_dataframe, mocker):
+        mocker.patch.object(
+            pd,
+            "read_csv",
+            return_value=pd.DataFrame(
+                {
+                    "filename": ["photo1.jpg", "photo2.jpg"],
+                    "format": ["JPEG", "PNG"],
+                    "size": ["1240KB", "320KB"],
+                }
+            ),
+        )
+
+        saved_df_name = "photo"
+        smart_dataframe._load_df(saved_df_name, smart_dataframe.config)
+
+        assert isinstance(smart_dataframe._df, pd.DataFrame)
+
+        expected_df = pd.DataFrame(
+            {
+                "filename": ["photo1.jpg", "photo2.jpg"],
+                "format": ["JPEG", "PNG"],
+                "size": ["1240KB", "320KB"],
+            }
+        )
+        assert smart_dataframe._name == saved_df_name
+        assert smart_dataframe._df.equals(expected_df)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(polars_df)
+        smart_dataframe._load_df(polars_df, None)
 
         assert smart_dataframe._df is polars_df
 
@@ -452,7 +494,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
     def test_import_pandas_series(self, smart_dataframe):
         pandas_series = pd.Series([1, 2, 3])
 
-        smart_dataframe._load_df(pandas_series)
+        smart_dataframe._load_df(pandas_series, None)
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
         assert smart_dataframe._df.equals(pd.DataFrame({0: [1, 2, 3]}))

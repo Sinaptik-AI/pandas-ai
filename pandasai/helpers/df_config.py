@@ -23,6 +23,7 @@ class Config(BaseModel):
     middlewares: List[Middleware] = []
     callback: Optional[BaseCallback] = None
     llm: Any = None
+    saved_dfs: List[dict] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -32,6 +33,12 @@ class Config(BaseModel):
         if llm is None or not isinstance(llm, LLM or LangchainLLM):
             raise LLMNotFoundError("LLM is required")
         return llm
+
+    def find_matched_df(self, name) -> dict:
+        for i in range(len(self.saved_dfs)):
+            if name == self.saved_dfs[i]["name"]:
+                return self.saved_dfs[i]
+        return {}
 
 
 def load_config(override_config: Config = None):
