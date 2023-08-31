@@ -173,10 +173,11 @@ df = SmartDataframe("data.csv", config={"llm": llm})
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `AzureOpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.
 
+## HuggingFace via Text Generation
 
-## HuggingFace via Text Generation 
+In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read [text-generation docs](https://huggingface.co/docs/text-generation-inference/index) for more on how to setup an inference server.
 
-In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read [text-generation docs](https://huggingface.co/docs/text-generation-inference/index) for more on how to setup an inference server. 
+This can be used, for example, to use models like LLaMa2, CodeLLaMa, etc. You can find more information about text-generation [here](https://huggingface.co/docs/text-generation-inference/index).
 
 The `inference_server_url` is the only required parameter to instantiate an `HuggingFaceTextGen` model:
 

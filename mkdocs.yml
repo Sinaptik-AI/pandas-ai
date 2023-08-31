@@ -17,6 +17,8 @@ nav:
       - LLMs/langchain.md
   - Advanced usage:
       - shortcuts.md
+      - custom-head.md
+      - save-dataframes.md
       - cache.md
       - middlewares.md
       - callbacks.md
