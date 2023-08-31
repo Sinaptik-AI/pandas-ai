@@ -48,9 +48,8 @@ class DfConfigManager:
         """
 
         # Check for duplicates
-        for df_info in saved_dfs:
-            if df_info["name"] == self.name:
-                raise ValueError(f"Duplicate dataframe found: {self.name}")
+        if any(df_info["name"] == self.name for df_info in saved_dfs):
+            raise ValueError(f"Duplicate dataframe found: {self.name}")
 
     def _get_import_path(self):
         """
