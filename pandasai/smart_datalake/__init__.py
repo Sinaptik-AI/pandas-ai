@@ -25,7 +25,6 @@ import logging
 import os
 
 from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
 
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
@@ -161,12 +160,6 @@ class SmartDatalake:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-
-        try:
-            llm.is_pandasai_llm()
-        except AttributeError:
-            llm = LangchainLLM(llm)
-
         self._llm = llm
 
     def add_middlewares(self, *middlewares: List[Middleware]):

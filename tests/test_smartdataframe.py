@@ -122,8 +122,9 @@ class TestSmartDataframe:
         assert smart_dataframe._df is not None
 
     def test_init_without_llm(self, sample_df):
-        with pytest.raises(LLMNotFoundError):
-            SmartDataframe(sample_df)
+        with patch("json.load", return_value={}):
+            with pytest.raises(LLMNotFoundError):
+                SmartDataframe(sample_df, config={"enable_cache": False})
 
     def test_run(self, smart_dataframe: SmartDataframe, llm):
         llm._output = (
@@ -437,7 +438,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         assert isinstance(smart_dataframe._df, pd.DataFrame)
 
-    def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, mocker):
+    def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, llm, mocker):
         expected_df = pd.DataFrame(
             {
                 "filename": ["photo1.jpg", "photo2.jpg"],
@@ -454,9 +455,9 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         )
 
         saved_df_name = "photo"
-        smart_dataframe = SmartDataframe(saved_df_name)
+        smart_dataframe = SmartDataframe(saved_df_name, config={"llm": llm})
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.original, pd.DataFrame)
         assert smart_dataframe._name == saved_df_name
         assert smart_dataframe.original.equals(expected_df)
 
