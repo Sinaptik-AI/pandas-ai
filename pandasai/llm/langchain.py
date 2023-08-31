@@ -14,10 +14,6 @@ class LangchainLLM(LLM):
         try:
             from langchain.llms.base import BaseLLM
 
-            print("*" * 100)
-            print(langchain_llm)
-            print("*" * 100)
-
             if not isinstance(langchain_llm, BaseLLM):
                 raise TypeError(
                     "LangchainLLM must be initialized with a Langchain LLM."
