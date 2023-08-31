@@ -276,6 +276,7 @@ class SmartDatalake:
                     "conversation": self._memory.get_conversation(),
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
+                    "save_charts_path": self._config.save_charts_path.rstrip("/"),
                 }
                 generate_response_instruction, _ = self._get_prompt(
                     "generate_response",
