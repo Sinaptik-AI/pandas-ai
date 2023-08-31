@@ -19,10 +19,15 @@ class DfConfigManager:
     def __init__(self, sdf):
         """
         Args:
-            sdf (SmartDataFrame): SmartDataFrame object
+            sdf (SmartDataframe): SmartDataframe object
         """
 
-        self._sdf = sdf
+        from ..smart_dataframe import SmartDataframe
+
+        if isinstance(sdf, SmartDataframe):
+            self._sdf = sdf
+        else:
+            raise TypeError("Expected instance of type 'SmartDataFrame'")
 
     def _create_csv_save_path(self):
         """
