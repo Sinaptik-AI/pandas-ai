@@ -89,7 +89,7 @@ class DfConfigManager:
 
         # Open config file
         saved_df_keys = "saved_dfs"
-        with open(file_path, "r") as json_file:
+        with open(file_path, "r+") as json_file:
             pandas_json = json.load(json_file)
             if saved_df_keys not in pandas_json:
                 pandas_json[saved_df_keys] = []
@@ -109,9 +109,9 @@ class DfConfigManager:
                 }
             )
 
-        # Save the output in pandasai.json
-        with open(file_path, "w") as json_file:
+            json_file.seek(0)
             json.dump(pandas_json, json_file, indent=2)
+            json_file.truncate()
 
     def load(self, name) -> dict:
         file_path = find_closest("pandasai.json")
