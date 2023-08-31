@@ -1,5 +1,5 @@
-from pydantic import BaseModel, validator
-from typing import List, Optional, Any
+from pydantic import BaseModel, validator, Field
+from typing import Optional, List, Any, Dict
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
@@ -12,12 +12,12 @@ class Config(BaseModel):
     enforce_privacy: bool = False
     enable_cache: bool = True
     use_error_correction_framework: bool = True
-    custom_prompts: dict = {}
+    custom_prompts: Dict = Field(default_factory=dict)
     save_charts: bool = False
     save_charts_path: str = "exports/charts"
-    custom_whitelisted_dependencies: List[str] = []
+    custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
-    middlewares: List[Middleware] = []
+    middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
     llm: Any = None
 
