@@ -13,7 +13,7 @@ from ..constants import (
 from ..middlewares.charts import ChartsMiddleware
 from typing import Union, List, Optional
 from ..helpers.logger import Logger
-from ..helpers.df_config import Config
+from ..schemas.df_config import Config
 import logging
 import traceback
 

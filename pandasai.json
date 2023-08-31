@@ -12,5 +12,6 @@
   "middlewares": [],
   "callback": null,
   "llm": "OpenAI",
-  "llm_options": null
+  "llm_options": null,
+  "saved_dfs": []
 }

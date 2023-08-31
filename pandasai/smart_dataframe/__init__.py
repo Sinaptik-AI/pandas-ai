@@ -19,14 +19,17 @@ Example:
 """
 
 import hashlib
+from io import StringIO
 
 import pandas as pd
+
 from ..smart_datalake import SmartDatalake
-from ..helpers.df_config import Config
+from ..schemas.df_config import Config
 from ..helpers.data_sampler import DataSampler
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
+from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
 from typing import List, Union
 from ..middlewares.base import Middleware
@@ -38,6 +41,7 @@ from ..llm import LLM, LangchainLLM
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
     _engine: str
+    _original_import: any
     _name: str
     _description: str
     _df: pd.DataFrame
@@ -50,6 +54,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         name: str = None,
         description: str = None,
         config: Config = None,
+        sample_head: pd.DataFrame = None,
         logger: Logger = None,
     ):
         """
@@ -60,6 +65,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self._original_import = df
         self._name = name
         self._description = description
 
@@ -69,6 +75,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         self._dl = SmartDatalake([self], config=config, logger=logger)
 
+        if sample_head is not None:
+            self._sample_head = sample_head.to_csv(index=False)
+
     def _load_df(self, df: DataFrameType):
         """
         Load a dataframe into the smart dataframe
@@ -77,6 +86,25 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (DataFrameType): Pandas or Polars dataframe or path to a file
         """
         if isinstance(df, str):
+            if not (
+                df.endswith(".csv")
+                or df.endswith(".parquet")
+                or df.endswith(".xlsx")
+                or df.startswith("https://docs.google.com/spreadsheets/")
+            ):
+                df_config = self._load_from_config(df)
+                if df_config:
+                    if self._name is None:
+                        self._name = df_config["name"]
+                    if self._description is None:
+                        self._description = df_config["description"]
+                    df = df_config["import_path"]
+                else:
+                    raise ValueError(
+                        "Could not find a saved dataframe configuration "
+                        "with the given name."
+                    )
+
             self._df = self._import_from_file(df)
         elif isinstance(df, pd.Series):
             self._df = df.to_frame()
@@ -173,6 +201,22 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
+    def save(self, name: str = None):
+        """
+        Saves the dataframe configuration to be used for later
+        """
+
+        config_manager = DfConfigManager(self)
+        config_manager.save(name)
+
+    def _load_from_config(self, name: str):
+        """
+        Loads a saved dataframe configuration
+        """
+
+        config_manager = DfConfigManager(self)
+        return config_manager.load(name)
+
     def _get_head_csv(self):
         """
         Get the head of the dataframe as a CSV string.
@@ -234,6 +278,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def original(self):
         return self._df
+
+    @property
+    def original_import(self):
+        return self._original_import
 
     @property
     def name(self):
@@ -360,3 +408,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @llm.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
         self._dl.llm = llm
+
+    @property
+    def sample_head(self):
+        data = StringIO(self._sample_head)
+        return pd.read_csv(data)
+
+    @sample_head.setter
+    def sample_head(self, sample_head: pd.DataFrame):
+        self._sample_head = sample_head.to_csv(index=False)

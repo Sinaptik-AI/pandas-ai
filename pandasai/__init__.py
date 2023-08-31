@@ -42,7 +42,7 @@ from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .prompts.base import Prompt
 from .callbacks.base import BaseCallback
-from .helpers.df_config import Config
+from .schemas.df_config import Config
 from .helpers.cache import Cache
 
 __version__ = importlib.metadata.version(__package__ or __name__)
