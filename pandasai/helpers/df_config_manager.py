@@ -47,7 +47,6 @@ class DfConfigManager:
             saved_dfs (List[dict]): List of saved dataframes
         """
 
-        # Check for duplicates
         if any(df_info["name"] == self.name for df_info in saved_dfs):
             raise ValueError(f"Duplicate dataframe found: {self.name}")
 
