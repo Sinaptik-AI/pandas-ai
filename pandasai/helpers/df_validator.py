@@ -64,7 +64,7 @@ class DFValidator:
         elif dataframe_type == "polars":
             return df.to_dicts()
         else:
-            []
+            return []
 
     def validate(self, schema: BaseModel) -> DFValidationResult:
         """
