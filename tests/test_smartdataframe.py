@@ -1,4 +1,6 @@
 """Unit tests for the SmartDatalake class"""
+import json
+import os
 import sys
 from typing import Optional
 from unittest.mock import patch, Mock
@@ -20,8 +22,19 @@ import logging
 
 
 class TestSmartDataframe:
-
     """Unit tests for the SmartDatalake class"""
+
+    def tearDown(self):
+        for filename in ["df_test.csv", "df_test_polars.csv", "df_duplicate.csv"]:
+            if os.path.exists("cache/" + filename):
+                os.remove("cache/" + filename)
+
+        # Remove saved_dfs from pandasai.json
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            data["saved_dfs"] = []
+        with open("pandasai.json", "w") as json_file:
+            json.dump(data, json_file, indent=2)
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
@@ -71,8 +84,27 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def sample_saved_dfs(self):
+        return [
+            {
+                "name": "photo",
+                "description": "Dataframe containing photo metadata",
+                "sample": "filename,format,size\n1.jpg,JPEG,1240KB\n2.png,PNG,320KB",
+                "import_path": "path/to/photo_data.csv",
+            }
+        ]
+
+    @pytest.fixture
+    def sample_head(self, sample_df):
+        return sample_df.head(5).sample(frac=1, axis=1).reset_index(drop=True)
+
+    @pytest.fixture
+    def smart_dataframe(self, llm, sample_df, sample_head):
+        return SmartDataframe(
+            sample_df,
+            config={"llm": llm, "enable_cache": False},
+            sample_head=sample_head,
+        )
 
     @pytest.fixture
     def custom_middleware(self):
@@ -223,8 +255,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(Prompt):
-            text: str = """{_num_rows} | $dfs[0].shape[1] | {_df_head} | {test}
-{_conversation}"""
+            text: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -235,17 +266,13 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             config={
                 "llm": llm,
                 "enable_cache": False,
-                "custom_prompts": {"generate_response": replacement_prompt},
+                "custom_prompts": {"generate_python_code": replacement_prompt},
             },
         )
         question = "Will this work?"
         df.chat(question)
 
         expected_last_prompt = replacement_prompt.to_string()
-        expected_last_prompt = expected_last_prompt.replace(
-            "$dfs[0].shape[1]", str(df.shape[1])
-        )
-
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
@@ -360,7 +387,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         smart_dataframe.use_error_correction_framework = False
         assert smart_dataframe.use_error_correction_framework is False
 
-        smart_dataframe.custom_prompts = {"generate_response": Prompt()}
+        smart_dataframe.custom_prompts = {"generate_python_code": Prompt()}
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True
@@ -375,6 +402,16 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
 
+    def test_sample_head_getter(self, sample_head, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.sample_head.equals(sample_head)
+
+    def test_sample_head_setter(self, sample_head, smart_dataframe: SmartDataframe):
+        new_sample_head = (
+            sample_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
+        )
+        smart_dataframe.sample_head = new_sample_head
+        assert new_sample_head.equals(smart_dataframe.sample_head)
+
     def test_load_dataframe_from_list(self, smart_dataframe):
         input_data = [
             {"column1": 1, "column2": 4},
@@ -384,28 +421,51 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         smart_dataframe._load_dataframe(input_data)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
 
     def test_load_dataframe_from_dict(self, smart_dataframe):
         input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
 
         smart_dataframe._load_dataframe(input_data)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
 
     def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
         pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
         smart_dataframe._load_dataframe(pandas_df)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
+
+    def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, mocker):
+        expected_df = pd.DataFrame(
+            {
+                "filename": ["photo1.jpg", "photo2.jpg"],
+                "format": ["JPEG", "PNG"],
+                "size": ["1240KB", "320KB"],
+            }
+        )
+        mocker.patch.object(pd, "read_csv", return_value=expected_df)
+
+        mocker.patch.object(
+            json,
+            "load",
+            return_value={"saved_dfs": sample_saved_dfs},
+        )
+
+        saved_df_name = "photo"
+        smart_dataframe = SmartDataframe(saved_df_name)
+
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
+        assert smart_dataframe.table_name == saved_df_name
+        assert smart_dataframe.dataframe.equals(expected_df)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
         smart_dataframe._load_dataframe(polars_df)
 
-        assert smart_dataframe._df is polars_df
+        assert smart_dataframe.dataframe is polars_df
 
     def test_import_csv_file(self, smart_dataframe, mocker):
         mocker.patch.object(
@@ -453,3 +513,148 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
     def test_invalid_file_format(self, smart_dataframe, file_path):
         with pytest.raises(ValueError):
             smart_dataframe._import_from_file(file_path)
+
+    def test_import_pandas_series(self, llm):
+        pandas_series = pd.Series([1, 2, 3])
+
+        smart_dataframe = SmartDataframe(pandas_series, config={"llm": llm})
+
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
+        assert smart_dataframe.dataframe.equals(pd.DataFrame({0: [1, 2, 3]}))
+
+    def test_save_pandas_dataframe(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create an instance of SmartDataframe
+        pandas_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        df_object = SmartDataframe(
+            pandas_df,
+            name="df_test",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
+
+        # Call the save function
+        df_object.save()
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "df_test"
+
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_pandas_dataframe_with_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create an instance of SmartDataframe
+        pandas_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        df_object = SmartDataframe(
+            pandas_df,
+            name="df_test",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
+
+        # Call the save function
+        df_object.save("custom_name")
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "custom_name"
+
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_polars_dataframe(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create an instance of SmartDataframe
+        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
+        df_object = SmartDataframe(
+            polars_df,
+            name="df_test_polars",
+            description="Test description",
+            config={"llm": llm, "enable_cache": False},
+        )
+
+        # Call the save function
+        df_object.save()
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "df_test_polars"
+
+        # recover file for next test case
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_pandas_dataframe_duplicate_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+
+        # Create instances of YourDataFrameClass
+        df_object1 = SmartDataframe(
+            df,
+            name="df_duplicate",
+            description="Description 1",
+            config={"llm": llm, "enable_cache": False},
+        )
+        df_object2 = SmartDataframe(
+            df,
+            name="df_duplicate",
+            description="Description 2",
+            config={"llm": llm, "enable_cache": False},
+        )
+
+        # Call the save function for the first instance
+        df_object1.save()
+
+        # Attempt to save the second instance and check for ValueError
+        with pytest.raises(ValueError, match="Duplicate dataframe found: df_duplicate"):
+            df_object2.save()
+
+        # Recover file for next test case
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)
+
+    def test_save_pandas_no_name(self, llm):
+        with open("pandasai.json", "r") as json_file:
+            backup_pandasai = json_file.read()
+
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="No Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Mock the hashlib.sha256() method
+        with patch("hashlib.sha256") as mock_sha256:
+            # Set the return value of the hexdigest() method
+            mock_sha256.return_value.hexdigest.return_value = "mocked_hash"
+
+            # Call the save() method
+            df_object.save()
+
+            # Check that hashlib.sha256() was called with the correct argument
+            mock_sha256.assert_called_with(df_object.head_csv.encode())
+
+        # Verify that the data was saved correctly
+        with open("pandasai.json", "r") as json_file:
+            data = json.load(json_file)
+            assert data["saved_dfs"][0]["name"] == "mocked_hash"
+
+        # Recover file for next test case
+        with open("pandasai.json", "w") as json_file:
+            json_file.write(backup_pandasai)

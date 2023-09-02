@@ -14,8 +14,9 @@ class Notebook:
         """
         Checks whether the code is running inside a notebook environment.
 
-        Returns (bool): True if the code is running inside a Jupyter notebook,
-        False otherwise.
+        Returns:
+            bool: True if the code is running inside a Jupyter notebook,
+                False otherwise.
         """
         try:
             if "IPKernelApp" not in get_ipython().config:
@@ -31,12 +32,14 @@ class Notebook:
         Args:
             contents (str): The contents to be added to the new code cell.
 
-        ImportError:
-            If the IPython module is not installed.
+        Raises:
+            ImportError:
+                If the IPython module is not installed.
 
-        AttributeError:
-            If the 'get_ipython()' call raises an AttributeError, which can happen
-            if the code is not running inside a Jupyter notebook.
+            AttributeError:
+                If the 'get_ipython()' call raises an AttributeError,
+                which can happen when the code is not running inside a
+                Jupyter notebook.
 
         Returns: None
 

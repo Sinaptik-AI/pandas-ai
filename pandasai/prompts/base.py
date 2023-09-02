@@ -3,7 +3,6 @@ In order to better handle the instructions, this prompt module is written.
 """
 
 from pandasai.exceptions import MethodNotImplementedError
-from string import Formatter
 
 
 class Prompt:
@@ -21,18 +20,34 @@ class Prompt:
         if kwargs:
             self._args = kwargs
 
-        """Set all the variables with underscore prefix with default value as DEFAULT
-        This will prevent any possible key errors if anyone tries to print 
-        prompt before running .run method"""
-        if self.text:
-            vars_ = [
-                fn for _, fn, _, _ in Formatter().parse(self.text) if fn is not None
-            ]
-            for var in vars_:
-                if var[0] == "_" and var not in self._args:
-                    self._args[var] = var
+    def _generate_dataframes(self, dfs):
+        """
+        Generate the dataframes metadata
+        Args:
+            dfs: List of Dataframes
+        """
+        dataframes = []
+        for index, df in enumerate(dfs, start=1):
+            description = "Dataframe "
+            if df.table_name is not None:
+                description += f"{df.table_name} (dfs[{index-1}])"
+            else:
+                description += f"dfs[{index-1}]"
+            description += (
+                f", with {df.rows_count} rows and {df.columns_count} columns."
+            )
+            if df.table_description is not None:
+                description += f"\nDescription: {df.table_description}"
+            description += f"""
+This is the metadata of the dataframe dfs[{index-1}]:
+{df.head_csv}"""  # noqa: E501
+            dataframes.append(description)
 
-    def override_var(self, var, value):
+        return "\n\n".join(dataframes)
+
+    def set_var(self, var, value):
+        if var == "dfs":
+            self._args["dataframes"] = self._generate_dataframes(value)
         self._args[var] = value
 
     def to_string(self):

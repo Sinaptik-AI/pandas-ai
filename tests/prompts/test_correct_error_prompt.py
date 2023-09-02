@@ -19,17 +19,14 @@ class TestCorrectErrorPrompt:
                 config={"llm": llm},
             )
         ]
+        prompt = CorrectErrorPrompt(
+            engine="pandas", code="df.head()", error_returned="Error message"
+        )
+        prompt.set_var("dfs", dfs)
+        prompt.set_var("conversation", "What is the correct code?")
 
         assert (
-            str(
-                CorrectErrorPrompt(
-                    conversation="What is the correct code?",
-                    error_returned="Error message",
-                    code="df.head()",
-                    engine="pandas",
-                    dfs=dfs,
-                )
-            )
+            prompt.to_string()
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 

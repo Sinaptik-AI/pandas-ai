@@ -44,7 +44,7 @@ class AzureOpenAI(BaseOpenAI):
         **kwargs,
     ):
         """
-        __init__ method of AzureOpenAI Class
+        __init__ method of AzureOpenAI Class.
 
         Args:
             api_token (str): Azure OpenAI API token.
@@ -55,8 +55,8 @@ class AzureOpenAI(BaseOpenAI):
                 Be aware the API version may change.
             deployment_name (str): Custom name of the deployed model
             is_chat_model (bool): Whether ``deployment_name`` corresponds to a Chat
-                or a Completion model
-            **kwargs: Inference Parameters
+                or a Completion model.
+            **kwargs: Inference Parameters.
         """
 
         self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
@@ -96,9 +96,11 @@ class AzureOpenAI(BaseOpenAI):
 
     @property
     def _default_params(self) -> Dict[str, Any]:
-        """Get the default parameters for calling OpenAI API
+        """
+        Get the default parameters for calling OpenAI API.
 
-        Returns: A dict of Default Params
+        Returns:
+            dict: A dictionary containing Default Params.
 
         """
         return {**super()._default_params, "engine": self.engine}
@@ -108,12 +110,12 @@ class AzureOpenAI(BaseOpenAI):
         Call the Azure OpenAI LLM.
 
         Args:
-            instruction (str): Instruction to pass
-            value (str): Value to pass
-            suffix(str): Suffix to pass
+            instruction (Prompt): A prompt object with instruction for LLM.
+            suffix (str): Suffix to pass.
 
         Returns:
-            str: Response
+            str: LLM response.
+
         """
         self.last_prompt = instruction.to_string() + suffix
 

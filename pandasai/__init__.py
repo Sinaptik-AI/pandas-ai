@@ -33,7 +33,7 @@ Example:
 
     ```
 """
-
+import warnings
 from typing import List, Optional, Union, Dict, Type
 import importlib.metadata
 
@@ -42,7 +42,7 @@ from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .prompts.base import Prompt
 from .callbacks.base import BaseCallback
-from .helpers.df_config import Config
+from .schemas.df_config import Config
 from .helpers.cache import Cache
 
 __version__ = importlib.metadata.version(__package__ or __name__)
@@ -97,23 +97,23 @@ class PandasAI:
 
     """
 
-    _dl: SmartDatalake
+    _dl: SmartDatalake = None
     _config: Config
 
     def __init__(
-        self,
-        llm=None,
-        conversational=False,
-        verbose=False,
-        enforce_privacy=False,
-        save_charts=False,
-        save_charts_path="",
-        enable_cache=True,
-        middlewares=[],
-        custom_whitelisted_dependencies=[],
-        enable_logging=True,
-        non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-        callback: Optional[BaseCallback] = None,
+            self,
+            llm=None,
+            conversational=False,
+            verbose=False,
+            enforce_privacy=False,
+            save_charts=False,
+            save_charts_path="",
+            enable_cache=True,
+            middlewares=None,
+            custom_whitelisted_dependencies=None,
+            enable_logging=True,
+            non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+            callback: Optional[BaseCallback] = None,
     ):
         """
         __init__ method of the Class PandasAI
@@ -142,6 +142,9 @@ class PandasAI:
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
 
+        warnings.warn("`PandasAI` (class) is deprecated since v1.0 and will be removed "
+                      "in a future release. Please use `SmartDataframe` instead.")
+
         self._config = Config(
             conversational=conversational,
             verbose=verbose,
@@ -149,8 +152,8 @@ class PandasAI:
             save_charts=save_charts,
             save_charts_path=save_charts_path,
             enable_cache=enable_cache,
-            middlewares=middlewares,
-            custom_whitelisted_dependencies=custom_whitelisted_dependencies,
+            middlewares=middlewares or [],
+            custom_whitelisted_dependencies=custom_whitelisted_dependencies or [],
             enable_logging=enable_logging,
             non_default_prompts=non_default_prompts,
             llm=llm,
@@ -158,12 +161,12 @@ class PandasAI:
         )
 
     def run(
-        self,
-        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
-        prompt: str,
-        show_code: bool = False,
-        anonymize_df: bool = True,
-        use_error_correction_framework: bool = True,
+            self,
+            data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
+            prompt: str,
+            show_code: bool = False,
+            anonymize_df: bool = True,
+            use_error_correction_framework: bool = True,
     ) -> Union[str, pd.DataFrame]:
         """
         Run the PandasAI to make Dataframes Conversational.
@@ -195,12 +198,12 @@ class PandasAI:
         return self._dl.chat(prompt)
 
     def __call__(
-        self,
-        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
-        prompt: str,
-        show_code: bool = False,
-        anonymize_df: bool = True,
-        use_error_correction_framework: bool = True,
+            self,
+            data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
+            prompt: str,
+            show_code: bool = False,
+            anonymize_df: bool = True,
+            use_error_correction_framework: bool = True,
     ) -> Union[str, pd.DataFrame]:
         """
         __call__ method of PandasAI class. It calls the `run` method.
@@ -227,16 +230,22 @@ class PandasAI:
     @property
     def logs(self) -> List[dict[str, str]]:
         """Return the logs"""
+        if self._dl is None:
+            return []
         return self._dl.logs
 
     @property
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
+        if self._dl is None:
+            return None
         return self._dl.last_prompt_id
 
     @property
     def last_prompt(self) -> str:
         """Return the last prompt that was executed."""
+        if self._dl is None:
+            return None
         return self._dl.last_prompt
 
 

@@ -30,7 +30,8 @@ from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.memory import Memory
-from ..helpers.df_config import Config, load_config
+from ..schemas.df_config import Config
+from ..config import load_config
 from ..prompts.base import Prompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
@@ -205,36 +206,22 @@ class SmartDatalake:
         key: str,
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
-    ) -> tuple[Prompt, dict]:
+    ) -> Prompt:
         if default_values is None:
             default_values = {}
 
-        prompt = self._config.custom_prompts.get(key)
+        custom_prompt = self._config.custom_prompts.get(key)
+        prompt = custom_prompt if custom_prompt else default_prompt()
 
-        if prompt and isinstance(prompt, type):
-            prompt = prompt(**default_values)
+        # set default values for the prompt
+        if "dfs" not in default_values:
+            prompt.set_var("dfs", self._dfs)
+        if "conversation" not in default_values:
+            prompt.set_var("conversation", self._memory.get_conversation())
+        for key, value in default_values.items():
+            prompt.set_var(key, value)
 
-        if prompt:
-            """Override all the variables with _ prefix with default variable values"""
-            for var in prompt._args:
-                if var[0] == "_" and var[1:] in default_values:
-                    prompt.override_var(var, default_values[var[1:]])
-
-            """Declare the global variables to be used in the prompt with $ prefix"""
-            prompt_globals = {"dfs": self._dfs}
-
-            """Replace all variables with $ prefix with evaluated values"""
-            prompt_text = prompt.text.split(" ")
-            for i in range(len(prompt_text)):
-                word = prompt_text[i]
-
-                if word.startswith("$"):
-                    prompt_text[i] = str(eval(word[1:], prompt_globals))
-            prompt.text = " ".join(prompt_text)
-
-            return prompt, prompt._args
-
-        return default_prompt(**default_values, dfs=self._dfs), default_values
+        return prompt
 
     def _get_cache_key(self) -> str:
         cache_key = self._memory.get_conversation()
@@ -275,17 +262,16 @@ class SmartDatalake:
                 code = self._cache.get(self._get_cache_key())
             else:
                 default_values = {
-                    "conversation": self._memory.get_conversation(),
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                 }
-                generate_response_instruction, _ = self._get_prompt(
-                    "generate_response",
+                generate_python_code_instruction = self._get_prompt(
+                    "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
                 )
 
-                code = self._llm.generate_code(generate_response_instruction)
+                code = self._llm.generate_code(generate_python_code_instruction)
 
                 if self._config.enable_cache and self._cache:
                     self._cache.set(self._get_cache_key(), code)
@@ -410,18 +396,12 @@ class SmartDatalake:
 
         self.logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
 
-        # show the traceback
-        from traceback import print_exc
-
-        print_exc()
-
         default_values = {
-            "conversation": self._memory.get_conversation(),
             "engine": self._dfs[0].engine,
             "code": code,
             "error_returned": e,
         }
-        error_correcting_instruction, _ = self._get_prompt(
+        error_correcting_instruction = self._get_prompt(
             "correct_error",
             default_prompt=CorrectErrorPrompt,
             default_values=default_values,
