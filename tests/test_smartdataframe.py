@@ -8,6 +8,7 @@ from uuid import UUID
 
 import pandas as pd
 import polars as pl
+from pydantic import BaseModel, Field
 import pytest
 
 from pandasai import SmartDataframe
@@ -658,3 +659,101 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Recover file for next test case
         with open("pandasai.json", "w") as json_file:
             json_file.write(backup_pandasai)
+
+    def test_pydantic_validate(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is True
+
+    def test_pydantic_validate_false(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": ["Test", "Test2", "Test3", "Test4"], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is False
+
+    def test_pydantic_validate_polars(self, llm):
+        # Create a sample DataFrame
+        df = pl.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+        assert validation_result.passed is True
+
+    def test_pydantic_validate_false_one_record(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, "test", 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+        assert (
+            validation_result.passed is False and len(validation_result.errors()) == 1
+        )
+
+    def test_pydantic_validate_complex_Schema(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of YourDataFrameClass without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int = Field(..., gt=5)
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is False
+
+        class TestSchema(BaseModel):
+            A: int = Field(..., lt=5)
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is True

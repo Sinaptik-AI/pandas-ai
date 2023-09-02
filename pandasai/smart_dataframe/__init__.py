@@ -238,9 +238,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._sample_head = df_head.to_csv(index=False)
         return self._sample_head
 
-    def validate(
-        self, schema: pydantic.BaseModel, n_jobs: int = 1, verbose: bool = False
-    ):
+    def validate(self, schema: pydantic.BaseModel, verbose: bool = False):
         """
         Validates Dataframe rows on the basis Pydantic schema input
         (Args):
@@ -248,7 +246,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             n_jobs: Parallelism for larger dataframe
             verbose: Print Errors
         """
-        df_validator = DFValidator(self.original_import, n_jobs, verbose)
+        df_validator = DFValidator(self.original_import, verbose)
         return df_validator.validate(schema)
 
     @property
