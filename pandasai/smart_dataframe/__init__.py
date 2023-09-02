@@ -22,6 +22,9 @@ import hashlib
 from io import StringIO
 
 import pandas as pd
+import pydantic
+
+from pandasai.helpers.df_validator import DFValidator
 
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
@@ -234,6 +237,19 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         self._sample_head = df_head.to_csv(index=False)
         return self._sample_head
+
+    def validate(
+        self, schema: pydantic.BaseModel, n_jobs: int = 1, verbose: bool = False
+    ):
+        """
+        Validates Dataframe rows on the basis Pydantic schema input
+        (Args):
+            schema: Pydantic schema class
+            n_jobs: Parallelism for larger dataframe
+            verbose: Print Errors
+        """
+        df_validator = DFValidator(self.original_import, n_jobs, verbose)
+        return df_validator.validate(schema)
 
     @property
     def datalake(self):
