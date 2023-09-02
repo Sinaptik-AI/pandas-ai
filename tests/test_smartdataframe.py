@@ -208,6 +208,71 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
         )
 
+    def test_save_chart_non_default_dir(
+        self, smart_dataframe: SmartDataframe, llm, sample_df
+    ):
+        """
+        Test chat with `SmartDataframe` with custom `save_charts_path`.
+
+        Script:
+            1) Ask `SmartDataframe` to build a chart and save it in
+               a custom directory;
+            2) Check if substring representing the directory present in
+               `llm.last_prompt`.
+            3) Check if the code has had a call of `plt.savefig()` passing
+               the custom directory.
+
+        Notes:
+            1) Mock `import_dependency()` util-function to avoid the
+               actual calls to `matplotlib.pyplot`.
+            2) The `analyze_data()` function in the code fixture must have
+               `"type": None` in the result dict. Otherwise, if it had
+               `"type": "plot"` (like it has in practice), `_format_results()`
+               method from `SmartDatalake` object would try to read the image
+               with `matplotlib.image.imread()` and this test would fail.
+               Those calls to `matplotlib.image` are unmockable because of
+               imports inside the function scope, not in the top of a module.
+               @TODO: figure out if we can just move the imports beyond to
+                      make it possible to mock out `matplotlib.image`
+        """
+        llm._output = """
+import pandas as pd
+import matplotlib.pyplot as plt
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0].nlargest(5, 'happiness_index')
+    
+    plt.figure(figsize=(8, 6))
+    plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
+    plt.title('Happiness Index for the 5 Happiest Countries')
+    plt.savefig('custom-dir/output_charts/temp_chart.png')
+    plt.close()
+    
+    return {"type": None, "value": "custom-dir/output_charts/temp_chart.png"}
+result = analyze_data(dfs)
+"""
+        with patch(
+            "pandasai.helpers.code_manager.import_dependency"
+        ) as import_dependency_mock:
+            smart_dataframe = SmartDataframe(
+                sample_df,
+                config={
+                    "llm": llm,
+                    "enable_cache": False,
+                    "save_charts": True,
+                    "save_charts_path": "custom-dir/output_charts/",
+                },
+            )
+
+            smart_dataframe.chat("Plot pie-chart the 5 happiest countries")
+
+        assert "custom-dir/output_charts/temp_chart.png" in llm.last_prompt
+        plt_mock = getattr(import_dependency_mock.return_value, "matplotlib.pyplot")
+        assert plt_mock.savefig.called
+        assert (
+            plt_mock.savefig.call_args.args[0]
+            == "custom-dir/output_charts/temp_chart.png"
+        )
+
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
         middleware = custom_middleware()
         smart_dataframe.add_middlewares(middleware)
