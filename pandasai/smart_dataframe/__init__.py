@@ -203,11 +203,35 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             ):
                 df_config = self._load_from_config(df)
                 if df_config:
+                    if "://" in df_config["import_path"]:
+                        connector_name = df_config["import_path"].split("://")[0]
+                        connector_path = df_config["import_path"].split("://")[1]
+                        connector_host = connector_path.split(":")[0]
+                        connector_port = connector_path.split(":")[1].split("/")[0]
+                        connector_database = connector_path.split(":")[1].split("/")[1]
+                        connector_table = connector_path.split(":")[1].split("/")[2]
+
+                        # instantiate the connector
+                        df = getattr(
+                            __import__(
+                                "pandasai.connectors", fromlist=[connector_name]
+                            ),
+                            connector_name,
+                        )(
+                            {
+                                "host": connector_host,
+                                "port": connector_port,
+                                "database": connector_database,
+                                "table": connector_table,
+                            }
+                        )
+                    else:
+                        df = df_config["import_path"]
+
                     if name is None:
                         name = df_config["name"]
                     if description is None:
                         description = df_config["description"]
-                    df = df_config["import_path"]
                 else:
                     raise ValueError(
                         "Could not find a saved dataframe configuration "

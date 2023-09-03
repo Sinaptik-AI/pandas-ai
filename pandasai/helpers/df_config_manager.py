@@ -55,6 +55,10 @@ class DfConfigManager:
         Gets the import path for the dataframe
         """
 
+        # Handle connectors
+        if self._sdf.connector is not None:
+            return self._sdf.connector.path
+
         # Return if already a string
         if isinstance(self.original_import, str):
             # Check if it is a csv or xlsx file
@@ -88,6 +92,12 @@ class DfConfigManager:
     def save(self, name=None):
         """
         Saves the dataframe object to used for later
+
+        Args:
+            name (str, optional): Name of the dataframe. Defaults to None.
+
+        Raises:
+            ValueError: If the dataframe name already exists
         """
 
         file_path = find_closest("pandasai.json")
@@ -119,6 +129,15 @@ class DfConfigManager:
             json_file.truncate()
 
     def load(self, name) -> dict:
+        """
+        Loads a dataframe from the config file
+
+        Args:
+            name (str): Name of the dataframe
+
+        Returns:
+            dict: Dictionary with dataframe information
+        """
         file_path = find_closest("pandasai.json")
 
         with open(file_path, "r") as json_file:

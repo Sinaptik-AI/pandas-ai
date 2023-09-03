@@ -66,6 +66,24 @@ class BaseConnector(ABC):
         raise NotImplementedError
 
     @property
+    def path(self):
+        """
+        Return the path of the data source that the connector is connected to.
+        """
+        # JDBC string
+        return (
+            self.__class__.__name__
+            + "://"
+            + self._config.host
+            + ":"
+            + str(self._config.port)
+            + "/"
+            + self._config.database
+            + "/"
+            + self._config.table
+        )
+
+    @property
     def logger(self):
         """
         Return the logger for the connector.
