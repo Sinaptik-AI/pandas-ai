@@ -27,7 +27,7 @@ class SQLConfig(BaseModel):
     port: str
     database: str
     table: str
-    where: dict = None
+    where: list[list[str]] = None
 
 
 class SQLConnector(BaseConnector):
@@ -101,12 +101,23 @@ class SQLConnector(BaseConnector):
 
         # Run a SQL query to get all the columns names and 5 random rows
         query = f"SELECT * FROM {self._config.table}"
-        if self._config.where:
+        if (
+            self._config.where
+            or self._additional_filters is not None
+            and len(self._additional_filters) > 0
+        ):
             query += " WHERE "
 
             conditions = []
-            for key, value in self._config.where.items():
-                conditions.append(f"{key} = '{value}'")
+            if self._config.where is not None:
+                for condition in self._config.where:
+                    conditions.append(f"{condition[0]} {condition[1]} '{condition[2]}'")
+            if (
+                self._additional_filters is not None
+                and len(self._additional_filters) > 0
+            ):
+                for condition in self._additional_filters:
+                    conditions.append(f"{condition[0]} {condition[1]} '{condition[2]}'")
 
             query += " AND ".join(conditions)
         if order:
@@ -139,7 +150,7 @@ class SQLConnector(BaseConnector):
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
 
-    def _get_cache_path(self):
+    def _get_cache_path(self, include_additional_filters: bool = False):
         """
         Return the path of the cache file.
 
@@ -153,12 +164,15 @@ class SQLConnector(BaseConnector):
 
         os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
-        filename = self.column_hash + ".csv"
+        filename = (
+            self._get_column_hash(include_additional_filters=include_additional_filters)
+            + ".csv"
+        )
         path = os.path.join(cache_dir, filename)
 
         return path
 
-    def _cached(self):
+    def _cached(self, include_additional_filters: bool = False):
         """
         Return the cached data if it exists and is not older than the cache interval.
 
@@ -166,7 +180,9 @@ class SQLConnector(BaseConnector):
             DataFrame|bool: The cached data if it exists and is not older than
             the cache interval, False otherwise.
         """
-        filename = self._get_cache_path()
+        filename = self._get_cache_path(
+            include_additional_filters=include_additional_filters
+        )
         if not os.path.exists(filename):
             return False
 
@@ -180,7 +196,7 @@ class SQLConnector(BaseConnector):
         if self.logger:
             self.logger.log(f"Loading cached data from {filename}")
 
-        return pd.read_csv(filename)
+        return filename
 
     def _save_cache(self, df):
         """
@@ -190,10 +206,12 @@ class SQLConnector(BaseConnector):
             df (DataFrame): The DataFrame to save to the cache.
         """
 
-        filename = self._get_cache_path()
+        filename = self._get_cache_path(
+            include_additional_filters=self._additional_filters is not None
+            and len(self._additional_filters) > 0
+        )
         df.to_csv(filename, index=False)
 
-    @cache
     def execute(self):
         """
         Execute the SQL query and return the result.
@@ -202,9 +220,11 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
-        cached = self._cached()
-        if cached is not False:
-            return cached
+        # try to load the generic cache first, then the cache with additional
+        # filters as a fallback
+        cached = self._cached() or self._cached(include_additional_filters=True)
+        if cached:
+            return pd.read_csv(cached)
 
         if self.logger:
             self.logger.log(
@@ -279,6 +299,37 @@ class SQLConnector(BaseConnector):
         self._columns_count = self._connection.execute(query).fetchone()[0]
         return self._columns_count
 
+    def _get_column_hash(self, include_additional_filters: bool = False):
+        """
+        Return the hash of the SQL table columns.
+
+        Args:
+            include_additional_filters (bool, optional): Whether to include the
+            additional filters in the hash. Defaults to False.
+
+        Returns:
+            str: The hash of the SQL table columns.
+        """
+
+        # Return the hash of the columns and the where clause
+        columns_str = "".join(self.head().columns)
+        if (
+            self._config.where
+            or include_additional_filters
+            and self._additional_filters is not None
+        ):
+            columns_str += "WHERE"
+        if self._config.where:
+            # where clause is a list of lists
+            for condition in self._config.where:
+                columns_str += f"{condition[0]} {condition[1]} {condition[2]}"
+        if include_additional_filters and self._additional_filters:
+            for condition in self._additional_filters:
+                columns_str += f"{condition[0]} {condition[1]} {condition[2]}"
+
+        hash_object = hashlib.sha256(columns_str.encode())
+        return hash_object.hexdigest()
+
     @cached_property
     def column_hash(self):
         """
@@ -287,11 +338,7 @@ class SQLConnector(BaseConnector):
         Returns:
             str: The hash of the SQL table columns.
         """
-
-        # Return the hash of the columns
-        columns_str = "".join(self.head().columns)
-        hash_object = hashlib.sha256(columns_str.encode())
-        return hash_object.hexdigest()
+        return self._get_column_hash()
 
     @property
     def fallback_name(self):

@@ -1,11 +1,11 @@
 """Example of using PandasAI with a CSV file."""
 
-from pandasai import SmartDataframe
+from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
 from pandasai.connectors import MySQLConnector, PostgreSQLConnector
 
 # With a MySQL database
-connector = MySQLConnector(
+loan_connector = MySQLConnector(
     config={
         "host": "localhost",
         "port": 3306,
@@ -13,35 +13,33 @@ connector = MySQLConnector(
         "username": "root",
         "password": "root",
         "table": "loans",
-        "where": {
+        "where": [
             # this is optional and filters the data to
             # reduce the size of the dataframe
-            "loan_status": "PAIDOFF",
-        },
+            ["loan_status", "=", "PAIDOFF"],
+        ],
     }
 )
-df = connector.execute()
 
 # With a PostgreSQL database
-connector = PostgreSQLConnector(
+payment_connector = PostgreSQLConnector(
     config={
         "host": "localhost",
         "port": 5432,
         "database": "mydb",
         "username": "root",
         "password": "root",
-        "table": "loans",
-        "where": {
+        "table": "payments",
+        "where": [
             # this is optional and filters the data to
             # reduce the size of the dataframe
-            "loan_status": "PAIDOFF",
-        },
+            ["payment_status", "=", "PAIDOFF"],
+        ],
     }
 )
-df = connector.execute()
 
 llm = OpenAI()
-df = SmartDataframe(df, config={"llm": llm})
+df = SmartDatalake([loan_connector, payment_connector], config={"llm": llm})
 response = df.chat("How many people from the United states?")
 print(response)
 # Output: 247 loans have been paid off by men.

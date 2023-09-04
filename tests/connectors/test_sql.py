@@ -24,7 +24,7 @@ class TestSQLConnector(unittest.TestCase):
             port=443,
             database="your_database",
             table="your_table",
-            where={"column_name": "value"},
+            where=[["column_name", "=", "value"]],
         ).dict()
 
         # Create an instance of SQLConnector

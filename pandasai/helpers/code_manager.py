@@ -40,9 +40,7 @@ class CodeManager:
         ast.In: "in",
         ast.NotIn: "not in",
     }
-
-    _last_code_executed: str = None
-
+    _current_code_executed: str = None
     _last_code_executed: str = None
 
     def __init__(
@@ -173,13 +171,13 @@ class CodeManager:
             the code.
         """
 
-        needed_dfs = []
+        required_dfs = []
         for i, df in enumerate(self._dfs):
             if f"dfs[{i}]" in code:
-                needed_dfs.append(df.dataframe)
+                required_dfs.append(df)
             else:
-                needed_dfs.append(None)
-        return needed_dfs
+                required_dfs.append(None)
+        return required_dfs
 
     def execute_code(
         self,
@@ -202,6 +200,7 @@ class CodeManager:
                 on the generated code.
 
         """
+        self._current_code_executed = code
 
         for middleware in self._middlewares:
             code = middleware(code)
@@ -230,7 +229,7 @@ Code running:
         # if the code does not need them
         dfs = self._required_dfs(code_to_run)
         environment: dict = self._get_environment()
-        environment["dfs"] = dfs
+        environment["dfs"] = self._get_samples(dfs)
 
         caught_error = self._execute_catching_errors(code_to_run, environment)
         if caught_error is not None:
@@ -243,17 +242,51 @@ Code running:
 
         analyze_data = environment.get("analyze_data", None)
 
-        return analyze_data(self._get_original_dfs())
+        return analyze_data(self._get_originals(dfs))
 
-    def _get_original_dfs(self):
-        dfs = []
-        for df in self._dfs:
-            if df.engine == "polars":
-                dfs.append(df.dataframe.to_pandas())
+    def _get_samples(self, dfs):
+        """
+        Get samples from the dfs
+
+        Args:
+            dfs (list): List of dfs
+
+        Returns:
+            list: List of samples
+        """
+        samples = []
+        for df in dfs:
+            if df is not None:
+                samples.append(df.head_df)
             else:
-                dfs.append(df.dataframe)
+                samples.append(None)
+        return samples
 
-        return dfs
+    def _get_originals(self, dfs):
+        """
+        Get original dfs
+
+        Args:
+            dfs (list): List of dfs
+
+        Returns:
+            list: List of dfs
+        """
+        original_dfs = []
+        for index, df in enumerate(dfs):
+            if df is None:
+                original_dfs.append(None)
+                continue
+
+            if df.has_connector:
+                extracted_filters = self._extract_filters(self._current_code_executed)
+                filters = extracted_filters.get(f"dfs[{index}]", [])
+                df.connector.set_additional_filters(filters)
+                df.load_connector(temporary=len(filters) > 0)
+
+            original_dfs.append(df.dataframe)
+
+        return original_dfs
 
     def _get_environment(self) -> dict:
         """
@@ -609,7 +642,7 @@ Code running:
                         comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
-    def _extract_filters(self, code: str) -> dict[str, list]:
+    def _extract_filters(self, code) -> dict[str, list]:
         """
         Extract filters to be applied to the dataframe from passed code.
 

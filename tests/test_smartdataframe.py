@@ -465,7 +465,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
         smart_dataframe._load_dataframe(polars_df)
 
-        assert smart_dataframe.dataframe is polars_df
+        print(smart_dataframe.dataframe)
+        print(polars_df)
+
+        assert isinstance(smart_dataframe.dataframe, pl.DataFrame)
+        assert smart_dataframe.dataframe.frame_equal(polars_df)
 
     def test_import_csv_file(self, smart_dataframe, mocker):
         mocker.patch.object(

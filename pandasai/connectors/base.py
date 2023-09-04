@@ -14,6 +14,7 @@ class BaseConnector(ABC):
 
     _config = None
     _logger: Logger = None
+    _additional_filters: list[list[str]] = None
 
     def __init__(self, config):
         """
@@ -40,6 +41,15 @@ class BaseConnector(ABC):
         connected to.
         """
         pass
+
+    def set_additional_filters(self, filters: dict):
+        """
+        Add additional filters to the connector.
+
+        Args:
+            filters (dict): The additional filters to add to the connector.
+        """
+        self._additional_filters = filters if filters else []
 
     @property
     def rows_count(self):

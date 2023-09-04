@@ -49,10 +49,13 @@ class SmartDataframeCore:
 
     _df = None
     _df_loaded: bool = True
+    _temporary_loaded: bool = False
     _connector: BaseConnector = None
     _engine: str = None
+    _logger: Logger = None
 
-    def __init__(self, df: DataFrameType):
+    def __init__(self, df: DataFrameType, logger: Logger = None):
+        self._logger = logger
         self._load_dataframe(df)
 
     def _load_dataframe(self, df):
@@ -64,18 +67,19 @@ class SmartDataframeCore:
             Pandas or Polars dataframe or a connector.
         """
         if isinstance(df, BaseConnector):
-            self._df = None
+            self.dataframe = None
             self.connector = df
-            self._df_loaded = False
+            self.connector.logger = self._logger
+            self.dataframe_loaded = False
         elif isinstance(df, str):
-            self._df = self._import_from_file(df)
+            self.dataframe = self._import_from_file(df)
         elif isinstance(df, pd.Series):
-            self._df = df.to_frame()
+            self.dataframe = df.to_frame()
         elif isinstance(df, (list, dict)):
             # if the list can be converted to a dataframe, convert it
             # otherwise, raise an error
             try:
-                self._df = pd.DataFrame(df)
+                self.dataframe = pd.DataFrame(df)
             except ValueError:
                 raise ValueError(
                     "Invalid input data. We cannot convert it to a dataframe."
@@ -106,7 +110,7 @@ class SmartDataframeCore:
             raise ValueError("Invalid file format.")
 
     def _load_engine(self):
-        engine = df_type(self.dataframe)
+        engine = df_type(self._df)
 
         if engine is None:
             raise ValueError(
@@ -130,14 +134,44 @@ class SmartDataframeCore:
         else:
             return df
 
+    def load_connector(self, temporary: bool = False):
+        """
+        Load a connector into the smart dataframe
+
+        Args:
+            connector (BaseConnector): Connector to be loaded
+        """
+        self.dataframe = self.connector.execute()
+        self._df_loaded = True
+        self._temporary_loaded = temporary
+
+    def _unload_connector(self):
+        """
+        Unload the connector from the smart dataframe.
+        This is done when a partial dataframe is loaded from a connector (i.e.
+        because of a filter) and we want to load the full dataframe or a different
+        partial dataframe.
+        """
+        self._df = None
+        self._df_loaded = False
+        self._temporary_loaded = False
+
     @property
     def dataframe(self) -> DataFrameType:
         if self._df_loaded:
-            return self._df
-        elif self.connector:
-            self._df = self.connector.execute()
-            self._df_loaded = True
-            return self._df
+            return_df = None
+
+            if self._engine == "polars":
+                return_df = self._df.clone()
+            elif self._engine == "pandas":
+                return_df = self._df.copy()
+
+            if self.has_connector and self._df_loaded and self._temporary_loaded:
+                self._unload_connector()
+
+            return return_df
+        elif self.has_connector:
+            return None
 
     @dataframe.setter
     def dataframe(self, df: DataFrameType):
@@ -164,6 +198,10 @@ class SmartDataframeCore:
     @connector.setter
     def connector(self, connector: BaseConnector):
         self._connector = connector
+
+    @property
+    def has_connector(self):
+        return self._connector is not None
 
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
@@ -238,7 +276,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                         "with the given name."
                     )
 
-        self._core = SmartDataframeCore(df)
+        self._core = SmartDataframeCore(df, logger)
 
         self._table_name = name
         self._table_description = description
@@ -294,6 +332,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         config_manager = DfConfigManager(self)
         config_manager.save(name)
+
+    def load_connector(self, temporary: bool = False):
+        """
+        Load a connector into the smart dataframe
+        """
+        self._core.load_connector(temporary)
 
     def _truncate_head_columns(self, df: DataFrameType, max_size=25) -> DataFrameType:
         """
@@ -402,6 +446,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             raise ValueError(
                 "Cannot determine columns_count. No dataframe or connector loaded."
             )
+
+    @cached_property
+    def head_df(self):
+        """
+        Get the head of the dataframe as a dataframe.
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
+        return self._get_sample_head()
 
     @cached_property
     def head_csv(self):
