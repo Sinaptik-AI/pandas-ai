@@ -24,7 +24,7 @@ from io import StringIO
 import pandas as pd
 import pydantic
 
-from pandasai.helpers.df_validator import DFValidator
+from pandasai.helpers.df_validator import DfValidator
 
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
@@ -238,15 +238,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._sample_head = df_head.to_csv(index=False)
         return self._sample_head
 
-    def validate(self, schema: pydantic.BaseModel, verbose: bool = False):
+    def validate(self, schema: pydantic.BaseModel):
         """
         Validates Dataframe rows on the basis Pydantic schema input
         (Args):
             schema: Pydantic schema class
-            n_jobs: Parallelism for larger dataframe
             verbose: Print Errors
         """
-        df_validator = DFValidator(self.original_import, verbose)
+        df_validator = DfValidator(self.original_import)
         return df_validator.validate(schema)
 
     @property

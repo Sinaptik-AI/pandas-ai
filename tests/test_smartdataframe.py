@@ -603,7 +603,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
-        # Create instances of YourDataFrameClass
+        # Create instances of SmartDataframe
         df_object1 = SmartDataframe(
             df,
             name="df_duplicate",
@@ -635,7 +635,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="No Name", config={"llm": llm, "enable_cache": False}
         )
@@ -664,7 +664,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="Name", config={"llm": llm, "enable_cache": False}
         )
@@ -682,7 +682,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": ["Test", "Test2", "Test3", "Test4"], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="Name", config={"llm": llm, "enable_cache": False}
         )
@@ -700,7 +700,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pl.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="Name", config={"llm": llm, "enable_cache": False}
         )
@@ -717,7 +717,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, "test", 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="Name", config={"llm": llm, "enable_cache": False}
         )
@@ -732,11 +732,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             validation_result.passed is False and len(validation_result.errors()) == 1
         )
 
-    def test_pydantic_validate_complex_Schema(self, llm):
+    def test_pydantic_validate_complex_schema(self, llm):
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="Name", config={"llm": llm, "enable_cache": False}
         )
