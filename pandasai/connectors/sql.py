@@ -4,30 +4,12 @@ SQL connectors are used to connect to SQL databases in different dialects.
 
 import os
 import pandas as pd
-from .base import BaseConnector
+from .base import BaseConnector, ConnectorConfig
 from sqlalchemy import create_engine, sql
-from pydantic import BaseModel
-from typing import Optional
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
 import time
-
-
-class SQLConfig(BaseModel):
-    """
-    SQL configuration.
-    """
-
-    dialect: Optional[str] = None
-    driver: Optional[str] = None
-    username: str
-    password: str
-    host: str
-    port: str
-    database: str
-    table: str
-    where: list[list[str]] = None
 
 
 class SQLConnector(BaseConnector):
@@ -41,14 +23,14 @@ class SQLConnector(BaseConnector):
     _columns_count: int = None
     _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, config: SQLConfig, cache_interval: int = 600):
+    def __init__(self, config: ConnectorConfig, cache_interval: int = 600):
         """
         Initialize the SQL connector with the given configuration.
 
         Args:
-            config (SQLConfig): The configuration for the SQL connector.
+            config (ConnectorConfig): The configuration for the SQL connector.
         """
-        config = SQLConfig(**config)
+        config = ConnectorConfig(**config)
         super().__init__(config)
 
         if config.dialect is None:
@@ -57,12 +39,12 @@ class SQLConnector(BaseConnector):
         if config.driver:
             self._engine = create_engine(
                 f"{config.dialect}+{config.driver}://{config.username}:{config.password}"
-                f"@{config.host}:{config.port}/{config.database}"
+                f"@{config.host}:{str(config.port)}/{config.database}"
             )
         else:
             self._engine = create_engine(
                 f"{config.dialect}://{config.username}:{config.password}@{config.host}"
-                f":{config.port}/{config.database}"
+                f":{str(config.port)}/{config.database}"
             )
         self._connection = self._engine.connect()
         self._cache_interval = cache_interval
@@ -84,7 +66,7 @@ class SQLConnector(BaseConnector):
             f"<{self.__class__.__name__} dialect={self._config.dialect} "
             f"driver={self._config.driver} username={self._config.username} "
             f"password={self._config.password} host={self._config.host} "
-            f"port={self._config.port} database={self._config.database} "
+            f"port={str(self._config.port)} database={self._config.database} "
             f"table={self._config.table}>"
         )
 
@@ -350,12 +332,12 @@ class MySQLConnector(SQLConnector):
     MySQL connectors are used to connect to MySQL databases.
     """
 
-    def __init__(self, config: SQLConfig):
+    def __init__(self, config: ConnectorConfig):
         """
         Initialize the MySQL connector with the given configuration.
 
         Args:
-            config (SQLConfig): The configuration for the MySQL connector.
+            config (ConnectorConfig): The configuration for the MySQL connector.
         """
         config["dialect"] = "mysql"
         config["driver"] = "pymysql"
@@ -379,12 +361,12 @@ class PostgreSQLConnector(SQLConnector):
     PostgreSQL connectors are used to connect to PostgreSQL databases.
     """
 
-    def __init__(self, config: SQLConfig):
+    def __init__(self, config: ConnectorConfig):
         """
         Initialize the PostgreSQL connector with the given configuration.
 
         Args:
-            config (SQLConfig): The configuration for the PostgreSQL connector.
+            config (ConnectorConfig): The configuration for the PostgreSQL connector.
         """
         config["dialect"] = "postgresql"
         config["driver"] = "psycopg2"

@@ -207,6 +207,18 @@ class SmartDatalake:
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
     ) -> Prompt:
+        """
+        Return a prompt by key.
+
+        Args:
+            key (str): The key of the prompt
+            default_prompt (Type[Prompt]): The default prompt to use
+            default_values (Optional[dict], optional): The default values to use for the
+            prompt. Defaults to None.
+
+        Returns:
+            Prompt: The prompt
+        """
         if default_values is None:
             default_values = {}
 
@@ -224,11 +236,18 @@ class SmartDatalake:
         return prompt
 
     def _get_cache_key(self) -> str:
+        """
+        Return the cache key for the current conversation.
+
+        Returns:
+            str: The cache key for the current conversation
+        """
         cache_key = self._memory.get_conversation()
 
         # make the cache key unique for each combination of dfs
         for df in self._dfs:
-            cache_key += df.column_hash()
+            hash = df.column_hash()
+            cache_key += str(hash)
 
         return cache_key
 
@@ -338,6 +357,12 @@ class SmartDatalake:
         return self._format_results(result)
 
     def _add_result_to_memory(self, result: dict):
+        """
+        Add the result to the memory.
+
+        Args:
+            result (dict): The result to add to the memory
+        """
         if result is None:
             return
 
@@ -349,6 +374,15 @@ class SmartDatalake:
             self._memory.add("Here is the plot you requested.", False)
 
     def _format_results(self, result: dict):
+        """
+        Format the results based on the type of the result.
+
+        Args:
+            result (dict): The result to format
+
+        Returns:
+            str: The formatted result
+        """
         if result is None:
             return
 

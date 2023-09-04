@@ -5,6 +5,24 @@ Base connector class to be extended by all connectors.
 from abc import ABC, abstractmethod
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
+from pydantic import BaseModel
+from typing import Optional
+
+
+class ConnectorConfig(BaseModel):
+    """
+    Connector configuration.
+    """
+
+    dialect: Optional[str] = None
+    driver: Optional[str] = None
+    username: str
+    password: str
+    host: str
+    port: int
+    database: str
+    table: str
+    where: list[list[str]] = None
 
 
 class BaseConnector(ABC):

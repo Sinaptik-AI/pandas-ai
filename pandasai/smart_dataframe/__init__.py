@@ -70,7 +70,7 @@ class SmartDataframeCore:
             self.dataframe = None
             self.connector = df
             self.connector.logger = self._logger
-            self.dataframe_loaded = False
+            self._df_loaded = False
         elif isinstance(df, str):
             self.dataframe = self._import_from_file(df)
         elif isinstance(df, pd.Series):
@@ -110,6 +110,9 @@ class SmartDataframeCore:
             raise ValueError("Invalid file format.")
 
     def _load_engine(self):
+        """
+        Load the engine of the dataframe (Pandas or Polars)
+        """
         engine = df_type(self._df)
 
         if engine is None:
@@ -120,6 +123,15 @@ class SmartDataframeCore:
         self._engine = engine
 
     def _validate_and_convert_dataframe(self, df: DataFrameType) -> DataFrameType:
+        """
+        Validate the dataframe and convert it to a Pandas or Polars dataframe.
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe or path to a file
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
         if isinstance(df, str):
             return self._import_from_file(df)
         elif isinstance(df, (list, dict)):
@@ -328,6 +340,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def save(self, name: str = None):
         """
         Saves the dataframe configuration to be used for later
+
+        Args:
+            name (str, optional): Name of the dataframe configuration. Defaults to None.
         """
 
         config_manager = DfConfigManager(self)
@@ -336,6 +351,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def load_connector(self, temporary: bool = False):
         """
         Load a connector into the smart dataframe
+
+        Args:
+            temporary (bool, optional): Whether the connector is temporary or not.
+            Defaults to False.
         """
         self._core.load_connector(temporary)
 
