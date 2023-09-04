@@ -143,10 +143,13 @@ class SmartDatalake:
             config (Config): Config to be used
         """
 
-        self._config = load_config(config)
+        config = load_config(config)
 
-        if self._config.llm:
-            self._load_llm(self._config.llm)
+        if config.get("llm"):
+            self._load_llm(config["llm"])
+            config["llm"] = self._llm
+
+        self._config = Config(**config)
 
     def _load_llm(self, llm: LLM):
         """
@@ -161,10 +164,7 @@ class SmartDatalake:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-
-        try:
-            llm.is_pandasai_llm()
-        except AttributeError:
+        if hasattr(llm, "_llm_type"):
             llm = LangchainLLM(llm)
 
         self._llm = llm

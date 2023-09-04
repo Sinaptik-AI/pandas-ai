@@ -123,7 +123,7 @@ class TestSmartDataframe:
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
-            SmartDataframe(sample_df)
+            SmartDataframe(sample_df, config={"llm": None})
 
     def test_run(self, smart_dataframe: SmartDataframe, llm):
         llm._output = (

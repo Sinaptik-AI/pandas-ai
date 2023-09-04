@@ -32,6 +32,4 @@ def load_config(override_config: Config = None):
     if override_config:
         config.update(override_config)
 
-    config = Config(**config)
-
     return config
