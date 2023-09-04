@@ -10,7 +10,7 @@ class Shortcuts(ABC):
         Run method from PandasAI class.
 
         Args:
-            prompt (str): The prompt to be executed.
+            prompt (str): A prompt to be sent to LLM.
 
         Returns:
             DataFrameType: The response from the LLM.
@@ -21,8 +21,6 @@ class Shortcuts(ABC):
     def clean_data(self) -> DataFrameType:
         """
         Do data cleaning and return the dataframe.
-
-        Args:
 
         Returns:
             DataFrameType: The cleaned DataFrame.
@@ -40,8 +38,6 @@ class Shortcuts(ABC):
         """
         Do missing value imputation and return the dataframe.
 
-        Args:
-
         Returns:
             DataFrameType: The DataFrame with imputed missing values.
         """
@@ -57,8 +53,6 @@ class Shortcuts(ABC):
     def generate_features(self) -> DataFrameType:
         """
         Do feature generation and return the dataframe.
-
-        Args:
 
         Returns:
             DataFrameType: The DataFrame with generated features.
@@ -169,8 +163,6 @@ y = {y}
         """
         Plot a correlation heatmap.
 
-        Args:
-
         Returns:
             None
         """
@@ -235,7 +227,8 @@ y_pred = {y_pred}
             style. Defaults to None.
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
 
         if not isinstance(col, (str, list, type(None))):

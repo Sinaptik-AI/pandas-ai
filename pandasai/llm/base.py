@@ -44,6 +44,7 @@ class LLM:
 
         Returns:
             bool: True if the LLM is from pandasAI
+
         """
         return True
 
@@ -57,6 +58,7 @@ class LLM:
 
         Returns:
             str: Type of LLM a string
+
         """
         raise APIKeyNotFoundError("Type has not been implemented")
 
@@ -66,10 +68,11 @@ class LLM:
         removing the imports and removing trailing spaces and new lines.
 
         Args:
-            code (str): Code
+            code (str): A sting of Python code.
 
         Returns:
-            str: Polished code
+            str: Polished code.
+
         """
         if re.match(r"^(python|py)", code):
             code = re.sub(r"^(python|py)", "", code)
@@ -106,6 +109,7 @@ class LLM:
 
         Returns:
             str: Extracted code from the response
+
         """
         code = response
         if len(code.split(separator)) > 1:
@@ -122,11 +126,12 @@ class LLM:
         Execute the LLM with given prompt.
 
         Args:
-            instruction (Prompt): Prompt
+            instruction (Prompt): A prompt object with instruction for LLM.
             suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
             MethodNotImplementedError: Call method has not been implemented
+
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
@@ -134,15 +139,20 @@ class LLM:
         """
         Generate the code based on the instruction and the given prompt.
 
+        Args:
+            instruction (Prompt): Prompt with instruction for LLM.
+
         Returns:
-            str: Code
+            str: A string of Python code.
+
         """
         code = self.call(instruction, suffix="")
         return self._extract_code(code)
 
 
 class BaseOpenAI(LLM, ABC):
-    """Base class to implement a new OpenAI LLM
+    """Base class to implement a new OpenAI LLM.
+
     LLM base class, this class is extended to be used with OpenAI API.
 
     """
@@ -164,7 +174,8 @@ class BaseOpenAI(LLM, ABC):
             **kwargs: ["model", "engine", "deployment_id", "temperature","max_tokens",
             "top_p", "frequency_penalty", "presence_penalty", "stop", ]
 
-        Returns: None
+        Returns:
+            None.
 
         """
 
@@ -188,7 +199,8 @@ class BaseOpenAI(LLM, ABC):
         """
         Get the default parameters for calling OpenAI API
 
-        Returns (Dict): A dict of OpenAi API parameters
+        Returns
+            Dict: A dict of OpenAi API parameters.
 
         """
 
@@ -205,10 +217,11 @@ class BaseOpenAI(LLM, ABC):
         Query the completion API
 
         Args:
-            prompt (str): Prompt
+            prompt (str): A string representation of the prompt.
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
         params = {**self._default_params, "prompt": prompt}
 
@@ -231,7 +244,8 @@ class BaseOpenAI(LLM, ABC):
             value (str): Prompt
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
         params = {
             **self._default_params,
@@ -258,7 +272,7 @@ class BaseOpenAI(LLM, ABC):
 class HuggingFaceLLM(LLM):
     """Base class to implement a new Hugging Face LLM.
 
-    LLM base class is extended to be used with HuggingFace LLM Modes APIs
+    LLM base class is extended to be used with HuggingFace LLM Modes APIs.
 
     """
 
@@ -274,8 +288,10 @@ class HuggingFaceLLM(LLM):
     def _setup(self, **kwargs):
         """
         Setup the HuggingFace LLM
+
         Args:
             **kwargs: ["api_token", "max_retries"]
+
         """
         self.api_token = (
             kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
@@ -292,18 +308,22 @@ class HuggingFaceLLM(LLM):
     def __init__(self, **kwargs):
         """
         __init__ method of HuggingFaceLLM Class
+
         Args:
             **kwargs: ["api_token", "max_retries"]
+
         """
         self._setup(**kwargs)
 
-    def query(self, payload):
+    def query(self, payload) -> str:
         """
         Query the HF API
         Args:
             payload: A JSON form payload
 
-        Returns: Generated Response
+        Returns:
+            str: Value of the field "generated_text" in response JSON
+                given by the remote server.
 
         """
 
@@ -319,11 +339,12 @@ class HuggingFaceLLM(LLM):
         """
         A call method of HuggingFaceLLM class.
         Args:
-            instruction (object): A prompt object
-            value (str):
-            suffix (str):
+            instruction (Prompt): A prompt object with instruction for LLM.
+            suffix (str): A string representing the suffix to be truncated
+                from the generated response.
 
-        Returns (str): A string response
+        Returns
+            str: LLM response.
 
         """
 
@@ -351,6 +372,7 @@ class BaseGoogle(LLM):
     """Base class to implement a new Google LLM
 
     LLM base class is extended to be used with Google Palm API.
+
     """
 
     genai: Any
@@ -363,9 +385,10 @@ class BaseGoogle(LLM):
         """
         Configure Google Palm API Key
         Args:
-            api_key (str): A string of API keys generated from Google Cloud
+            api_key (str): A string of API keys generated from Google Cloud.
 
         Returns:
+            None.
 
         """
 
@@ -380,12 +403,14 @@ class BaseGoogle(LLM):
 
     def _configurevertexai(self, project_id: str, location: str):
         """
-        Configure Google VertexAi
-        Args:
-            project_id: GCP Project
-            location: Location of Project
+        Configure Google VertexAi. Set value `self.vertexai` attribute.
 
-        Returns: Vertexai Object
+        Args:
+            project_id (str): GCP Project.
+            location (str): Location of Project.
+
+        Returns:
+            None.
 
         """
 
@@ -399,11 +424,15 @@ class BaseGoogle(LLM):
 
     def _set_params(self, **kwargs):
         """
-        Set Parameters
+        Dynamically set Parameters for the object.
+
         Args:
-            **kwargs: ["temperature", "top_p", "top_k", "max_output_tokens"]
+            **kwargs:
+                Possible keyword arguments: "temperature", "top_p", "top_k",
+                "max_output_tokens".
 
         Returns:
+            None.
 
         """
 
@@ -433,10 +462,11 @@ class BaseGoogle(LLM):
         Generates text for prompt, specific to implementation.
 
         Args:
-            prompt (str): Prompt
+            prompt (str): A string representation of the prompt.
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
         raise MethodNotImplementedError("method has not been implemented")
 
@@ -450,7 +480,8 @@ class BaseGoogle(LLM):
             suffix (str): Suffix to pass
 
         Returns:
-            str: Response
+            str: LLM response.
+
         """
         self.last_prompt = instruction.to_string() + suffix
         return self._generate_text(self.last_prompt)

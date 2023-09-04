@@ -70,30 +70,9 @@ Using the provided dataframes (`dfs`), update the python code based on the last 
 Updated code:
 """  # noqa: E501
 
-    def __init__(self, **kwargs):
-        dataframes = []
-        for index, df in enumerate(kwargs["dfs"], start=1):
-            description = "Dataframe "
-            if df.name is not None:
-                description += f"{df.name} (dfs[{index-1}])"
-            else:
-                description += f"dfs[{index-1}]"
-            description += (
-                f", with {df.rows_count} rows and {df.columns_count} columns."
-            )
-            if df.description is not None:
-                description += f"\nDescription: {df.description}"
-            description += f"""
-This is the metadata of the dataframe dfs[{index-1}]:
-{df.head_csv}"""  # noqa: E501
-            dataframes.append(description)
-
+    def __init__(self):
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
 
-        super().__init__(
-            **kwargs,
-            dataframes="\n\n".join(dataframes),
-            default_import=default_import,
-            engine_df_name=engine_df_name,
-        )
+        self.set_var("default_import", default_import)
+        self.set_var("engine_df_name", engine_df_name)

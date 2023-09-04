@@ -56,13 +56,14 @@ class GooglePalm(BaseGoogle):
 
     def _generate_text(self, prompt: str) -> str:
         """
-        Generates text for prompt
+        Generates text for prompt.
 
         Args:
-            prompt (str): Prompt
+            prompt (str): A string representation of the prompt.
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
         self._validate()
         completion = self.genai.generate_text(
@@ -128,13 +129,14 @@ class GoogleVertexai(BaseGoogle):
 
     def _generate_text(self, prompt: str) -> str:
         """
-        Generates text for prompt
+        Generates text for prompt.
 
         Args:
-            prompt (str): Prompt
+            prompt (str): A string representation of the prompt.
 
         Returns:
-            str: LLM response
+            str: LLM response.
+
         """
         self._validate()
 

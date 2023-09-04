@@ -2,6 +2,8 @@
 
 PandasAI supports several large language models (LLMs). LLMs are used to generate code from natural language queries. The generated code is then executed to produce the result.
 
+[![Choose the LLM](https://cdn.loom.com/sessions/thumbnails/5496c9c07ee04f69bfef1bc2359cd591-00001.jpg)](https://www.loom.com/share/5496c9c07ee04f69bfef1bc2359cd591 "Choose the LLM")
+
 You can either choose a LLM by instantiating one and passing it to the `SmartDataFrame` or `SmartDatalake` constructor, or you can specify one in the `pandasai.json` file.
 
 If the model expects one or more parameters, you can pass them to the constructor or specify them in the `pandasai.json` file, in the `llm_options` param, as it follows:
@@ -14,8 +16,6 @@ If the model expects one or more parameters, you can pass them to the constructo
   }
 }
 ```
-
-## OpenAI models
 
 In order to use OpenAI models, you need to have an OpenAI API key. You can get one [here](https://platform.openai.com/account/api-keys).
 
@@ -172,3 +172,21 @@ df = SmartDataframe("data.csv", config={"llm": llm})
 ```
 
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `AzureOpenAI` object or set the `OPENAI_PROXY` environment variable to pass through.
+
+## HuggingFace via Text Generation
+
+In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read [text-generation docs](https://huggingface.co/docs/text-generation-inference/index) for more on how to setup an inference server.
+
+This can be used, for example, to use models like LLaMa2, CodeLLaMa, etc. You can find more information about text-generation [here](https://huggingface.co/docs/text-generation-inference/index).
+
+The `inference_server_url` is the only required parameter to instantiate an `HuggingFaceTextGen` model:
+
+```python
+from pandasai.llm import HuggingFaceTextGen
+from pandasai import SmartDataframe
+
+llm = HuggingFaceTextGen(
+    inference_server_url="http://127.0.0.1:8080"
+)
+df = SmartDataframe("data.csv", config={"llm": llm})
+```
