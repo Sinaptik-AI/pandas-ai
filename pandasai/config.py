@@ -1,10 +1,15 @@
 import json
+import logging
+from typing import Optional
+
 from . import llm, middlewares, callbacks
 from .helpers.path import find_closest
 from .schemas.df_config import Config
 
+logger = logging.getLogger(__name__)
 
-def load_config(override_config: Config = None):
+
+def load_config(override_config: Optional[Config | dict] = None):
     config = {}
 
     if override_config is None:
@@ -27,7 +32,7 @@ def load_config(override_config: Config = None):
             if config.get("callback") and not override_config.get("callback"):
                 config["callback"] = getattr(callbacks, config["callback"])()
     except Exception:
-        pass
+        logger.error("Could not load configuration", exc_info=True)
 
     if override_config:
         config.update(override_config)

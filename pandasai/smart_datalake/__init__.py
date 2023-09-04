@@ -44,7 +44,7 @@ from ..helpers.path import find_project_root
 
 class SmartDatalake:
     _dfs: List[DataFrameType]
-    _config: Config
+    _config: [Config | dict]
     _llm: LLM
     _cache: Cache = None
     _logger: Logger
@@ -60,14 +60,14 @@ class SmartDatalake:
     def __init__(
         self,
         dfs: List[Union[DataFrameType, Any]],
-        config: Config = None,
+        config: Optional[Config | dict] = None,
         logger: Logger = None,
         memory: Memory = None,
     ):
         """
         Args:
             dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
-            config (Config, optional): Config to be used. Defaults to None.
+            config ([Config | dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
@@ -135,12 +135,12 @@ class SmartDatalake:
                 smart_dfs.append(df)
         self._dfs = smart_dfs
 
-    def _load_config(self, config: Config):
+    def _load_config(self, config: [Config | dict]):
         """
         Load a config to be used to run the queries.
 
         Args:
-            config (Config): Config to be used
+            config ([Config | dict]): Config to be used
         """
 
         config = load_config(config)
