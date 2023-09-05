@@ -34,7 +34,7 @@ from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
-from typing import List, Union
+from typing import List, Union, Optional
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
@@ -56,7 +56,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         df: DataFrameType,
         name: str = None,
         description: str = None,
-        config: Config = None,
+        config: Optional[Union[Config, dict]] = None,
         sample_head: pd.DataFrame = None,
         logger: Logger = None,
     ):
@@ -65,7 +65,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
-            config (Config, optional): Config to be used. Defaults to None.
+            config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
         self._original_import = df
