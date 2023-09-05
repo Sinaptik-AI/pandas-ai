@@ -98,7 +98,7 @@ class PandasAI:
     """
 
     _dl: SmartDatalake = None
-    _config: [Config | dict]
+    _config: Union[Config, dict]
 
     def __init__(
         self,

@@ -53,7 +53,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         df: DataFrameType,
         name: str = None,
         description: str = None,
-        config: Optional[Config | dict] = None,
+        config: Optional[Union[Config, dict]] = None,
         sample_head: pd.DataFrame = None,
         logger: Logger = None,
     ):
@@ -62,7 +62,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
-            config ([Config | dict], optional): Config to be used. Defaults to None.
+            config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
         self._original_import = df

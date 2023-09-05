@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 from . import llm, middlewares, callbacks
 from .helpers.path import find_closest
@@ -9,7 +9,7 @@ from .schemas.df_config import Config
 logger = logging.getLogger(__name__)
 
 
-def load_config(override_config: Optional[Config | dict] = None):
+def load_config(override_config: Optional[Union[Config, dict]] = None):
     config = {}
 
     if override_config is None:
