@@ -8,7 +8,7 @@ Example:
 
     >>> from pandasai.llm.starcoder import Starcoder
 """
-
+import warnings
 
 from ..helpers import load_dotenv
 from .base import HuggingFaceLLM
@@ -18,15 +18,20 @@ load_dotenv()
 
 class Starcoder(HuggingFaceLLM):
 
-    """Starcoder LLM API
-
-    A base HuggingFaceLLM class is extended to use Starcoder model.
-
-    """
+    """Starcoder LLM API (Deprecated: Kept for backwards compatibility)"""
 
     api_token: str
     _api_url: str = "https://api-inference.huggingface.co/models/bigcode/starcoder"
     _max_retries: int = 30
+
+    def __init__(self, **kwargs):
+        warnings.warn(
+            """Starcoder is deprecated and will be removed in a future release.
+            Please use langchain.llms.HuggingFaceHub instead, although please be 
+            aware that it may perform poorly.
+            """
+        )
+        super().__init__(**kwargs)
 
     @property
     def type(self) -> str:
