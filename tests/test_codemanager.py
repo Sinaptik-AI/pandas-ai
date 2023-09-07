@@ -290,23 +290,42 @@ def analyze_data(dfs: list):
             )
         assert "os" not in environment
 
-    @pytest.mark.parametrize("df_name", ["df", "foobar"])
-    def test_extract_filters_polars(self, df_name, code_manager: CodeManager):
-        code = f"""
+    @pytest.mark.parametrize(
+        "df_name, code",
+        [
+            (
+                "df",
+                """
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    {df_name} = dfs[0]
-    filtered_df = {df_name}.filter(
+    df = dfs[0]
+    filtered_df = df.filter(
         (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
     )
     count = filtered_df.shape[0]
-    result = {{'type': 'number', 'value': count}}
+    result = {'type': 'number', 'value': count}
     return result
 
-    result = analyze_data(dfs)
-    """
-        # @TODO: this test case and the one from above looks almost
-        #        identical, the only difference is code fixture;
-        #        consider using `@pytest.mark.parametrize`
+result = analyze_data(dfs)
+                """,
+            ),
+            (
+                "foobar",
+                """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    foobar = dfs[0]
+    filtered_df = foobar.filter(
+        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
+    )
+    count = filtered_df.shape[0]
+    result = {'type': 'number', 'value': count}
+    return result
+
+result = analyze_data(dfs)
+                """,
+            ),
+        ],
+    )
+    def test_extract_filters_polars(self, df_name, code, code_manager: CodeManager):
         filters = code_manager._extract_filters(code)
         assert isinstance(filters, dict)
         assert "dfs[0]" in filters
@@ -389,10 +408,27 @@ result = analyze_data(dfs)
         assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
         assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
-    def test_extract_filters_col_index_non_default_name(
-        self, code_manager: CodeManager
-    ):
-        code = """
+    @pytest.mark.parametrize(
+        "df_name, code",
+        [
+            (
+                "df",
+                """
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0]
+    filtered_df = df.filter(
+        (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
+    )
+    count = filtered_df.shape[0]
+    result = {'type': 'number', 'value': count}
+    return result
+
+result = analyze_data(dfs)
+                """,
+            ),
+            (
+                "foobar",
+                """
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     foobar = dfs[0]
     filtered_df = foobar[(
@@ -403,10 +439,13 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     return result
 
 result = analyze_data(dfs)
-"""
-        # @TODO: this test case and the one from above looks almost
-        #        identical, the only difference is code fixture;
-        #        consider using `@pytest.mark.parametrize`
+                """,
+            ),
+        ],
+    )
+    def test_extract_filters_col_index_non_default_name(
+        self, df_name, code, code_manager: CodeManager
+    ):
         filters = code_manager._extract_filters(code)
         assert isinstance(filters, dict)
         assert "dfs[0]" in filters

@@ -410,6 +410,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         else:
             head = self.dataframe.head(rows_to_display)
 
+        if head is None:
+            return None
+
         sampler = DataSampler(head)
         sampled_head = sampler.sample(rows_to_display)
 

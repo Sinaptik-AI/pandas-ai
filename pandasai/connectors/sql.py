@@ -10,6 +10,7 @@ from sqlalchemy import create_engine, sql, text, select, asc
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
+from typing import Union
 import time
 
 
@@ -24,7 +25,7 @@ class SQLConnector(BaseConnector):
     _columns_count: int = None
     _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, config: ConnectorConfig, cache_interval: int = 600):
+    def __init__(self, config: Union[ConnectorConfig, dict], cache_interval: int = 600):
         """
         Initialize the SQL connector with the given configuration.
 
@@ -250,7 +251,10 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get the number of rows
-        query = sql.text(f"SELECT COUNT(*) FROM {self._config.table}")
+        query = sql.text(
+            "SELECT COUNT(*) FROM information_schema.columns "
+            "WHERE table_name = :table_name"
+        ).bindparams(table_name=self._config.table)
 
         # Return the number of rows
         self._rows_count = self._connection.execute(query).fetchone()[0]
