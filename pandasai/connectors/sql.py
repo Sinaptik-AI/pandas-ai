@@ -2,10 +2,11 @@
 SQL connectors are used to connect to SQL databases in different dialects.
 """
 
+import re
 import os
 import pandas as pd
 from .base import BaseConnector, ConnectorConfig
-from sqlalchemy import create_engine, sql
+from sqlalchemy import create_engine, sql, text, select, asc
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
@@ -70,45 +71,48 @@ class SQLConnector(BaseConnector):
             f"table={self._config.table}>"
         )
 
-    def _build_query(self, limit: int = None, order: str = None):
-        """
-        Build the SQL query that will be executed.
+    def _validate_column_name(self, column_name):
+        regex = r"^[a-zA-Z0-9_]+$"
+        if not re.match(regex, column_name):
+            raise ValueError("Invalid column name: {}".format(column_name))
 
-        Args:
-            limit (int, optional): The number of rows to return. Defaults to None.
+    def _build_query(self, limit=None, order=None):
+        base_query = select("*").select_from(text(self._config.table))
+        valid_operators = ["=", ">", "<", ">=", "<=", "LIKE", "!=", "IN", "NOT IN"]
 
-        Returns:
-            str: The SQL query that will be executed.
-        """
-
-        # Run a SQL query to get all the columns names and 5 random rows
-        query = f"SELECT * FROM {self._config.table}"
-        if (
-            self._config.where
-            or self._additional_filters is not None
-            and len(self._additional_filters) > 0
-        ):
-            query += " WHERE "
-
+        if self._config.where or self._additional_filters:
+            # conditions is the list of wher + additional filters
             conditions = []
-            if self._config.where is not None:
-                for condition in self._config.where:
-                    conditions.append(f"{condition[0]} {condition[1]} '{condition[2]}'")
-            if (
-                self._additional_filters is not None
-                and len(self._additional_filters) > 0
-            ):
-                for condition in self._additional_filters:
-                    conditions.append(f"{condition[0]} {condition[1]} '{condition[2]}'")
+            if self._config.where:
+                conditions += self._config.where
+            if self._additional_filters:
+                conditions += self._additional_filters
 
-            query += " AND ".join(conditions)
+            query_params = {}
+            condition_strings = []
+
+            for i, condition in enumerate(conditions):
+                if len(condition) == 3:
+                    column_name, operator, value = condition
+                    if operator in valid_operators:
+                        self._validate_column_name(column_name)
+
+                        condition_strings.append(f"{column_name} {operator} :value_{i}")
+                        query_params[f"value_{i}"] = value
+
+            if condition_strings:
+                where_clause = " AND ".join(condition_strings)
+                base_query = base_query.where(
+                    text(where_clause).bindparams(**query_params)
+                )
+
         if order:
-            query += f" ORDER BY {order}"
-        if limit:
-            query += f" LIMIT {limit}"
+            base_query = base_query.order_by(asc(text(order)))
 
-        # Return the query
-        return sql.text(query)
+        if limit:
+            base_query = base_query.limit(limit)
+
+        return base_query
 
     @cache
     def head(self):

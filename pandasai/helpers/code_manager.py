@@ -29,7 +29,7 @@ class CodeManager:
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
     _ast_comparatos_map: dict = {
-        ast.Eq: "==",
+        ast.Eq: "=",
         ast.NotEq: "!=",
         ast.Lt: "<",
         ast.LtE: "<=",
@@ -589,7 +589,7 @@ Code running:
                 }
         """
         comparisons = defaultdict(list)
-        current_df = "dfs0"
+        current_df = "dfs[0]"
 
         visitor = AssignmentVisitor()
         visitor.visit(tree)

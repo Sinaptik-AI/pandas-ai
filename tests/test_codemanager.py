@@ -313,8 +313,8 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         assert isinstance(filters["dfs[0]"], list)
         assert len(filters["dfs[0]"]) == 2
 
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
     def test_extract_filters_polars_multiple_df(self, code_manager: CodeManager):
         code = """
@@ -355,14 +355,14 @@ result = analyze_data(dfs)
         assert len(filters["dfs[0]"]) == 2
         assert len(filters["dfs[1]"]) == 2
 
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
-        assert filters["dfs[1]"][0] == ("loan_status", "==", "PENDING")
-        assert filters["dfs[1]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
+        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
 
-        assert filters["dfs[2]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "==", "female")
+        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[2]"][1] == ("Gender", "=", "female")
 
     @pytest.mark.parametrize("df_name", ["df", "foobar"])
     def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
@@ -386,8 +386,8 @@ result = analyze_data(dfs)
         assert isinstance(filters["dfs[0]"], list)
         assert len(filters["dfs[0]"]) == 2
 
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
     def test_extract_filters_col_index_non_default_name(
         self, code_manager: CodeManager
@@ -413,8 +413,8 @@ result = analyze_data(dfs)
         assert isinstance(filters["dfs[0]"], list)
         assert len(filters["dfs[0]"]) == 2
 
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
     def test_extract_filters_col_index_multiple_df(self, code_manager: CodeManager):
         code = """
@@ -455,11 +455,11 @@ result = analyze_data(dfs)
         assert len(filters["dfs[0]"]) == 2
         assert len(filters["dfs[1]"]) == 2
 
-        assert filters["dfs[0]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
-        assert filters["dfs[1]"][0] == ("loan_status", "==", "PENDING")
-        assert filters["dfs[1]"][1] == ("Gender", "==", "male")
+        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
+        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
 
-        assert filters["dfs[2]"][0] == ("loan_status", "==", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "==", "female")
+        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[2]"][1] == ("Gender", "=", "female")

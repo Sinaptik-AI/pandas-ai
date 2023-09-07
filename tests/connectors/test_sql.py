@@ -50,10 +50,11 @@ class TestSQLConnector(unittest.TestCase):
     def test_build_query_method(self):
         # Test _build_query method
         query = self.connector._build_query(limit=5, order="RAND()")
-        expected_query = (
-            "SELECT * FROM your_table WHERE column_name = 'value' "
-            "ORDER BY RAND() LIMIT 5"
-        )
+        expected_query = """SELECT * 
+FROM your_table 
+WHERE column_name = :value_0 ORDER BY RAND() ASC
+ LIMIT :param_1"""
+
         self.assertEqual(str(query), expected_query)
 
     @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
