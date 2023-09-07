@@ -98,22 +98,22 @@ class PandasAI:
     """
 
     _dl: SmartDatalake = None
-    _config: Config
+    _config: Union[Config, dict]
 
     def __init__(
-            self,
-            llm=None,
-            conversational=False,
-            verbose=False,
-            enforce_privacy=False,
-            save_charts=False,
-            save_charts_path="",
-            enable_cache=True,
-            middlewares=None,
-            custom_whitelisted_dependencies=None,
-            enable_logging=True,
-            non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
-            callback: Optional[BaseCallback] = None,
+        self,
+        llm=None,
+        conversational=False,
+        verbose=False,
+        enforce_privacy=False,
+        save_charts=False,
+        save_charts_path="",
+        enable_cache=True,
+        middlewares=None,
+        custom_whitelisted_dependencies=None,
+        enable_logging=True,
+        non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+        callback: Optional[BaseCallback] = None,
     ):
         """
         __init__ method of the Class PandasAI
@@ -142,8 +142,10 @@ class PandasAI:
         # noinspection PyArgumentList
         # https://stackoverflow.com/questions/61226587/pycharm-does-not-recognize-logging-basicconfig-handlers-argument
 
-        warnings.warn("`PandasAI` (class) is deprecated since v1.0 and will be removed "
-                      "in a future release. Please use `SmartDataframe` instead.")
+        warnings.warn(
+            "`PandasAI` (class) is deprecated since v1.0 and will be removed "
+            "in a future release. Please use `SmartDataframe` instead."
+        )
 
         self._config = Config(
             conversational=conversational,
@@ -161,12 +163,12 @@ class PandasAI:
         )
 
     def run(
-            self,
-            data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
-            prompt: str,
-            show_code: bool = False,
-            anonymize_df: bool = True,
-            use_error_correction_framework: bool = True,
+        self,
+        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
+        prompt: str,
+        show_code: bool = False,
+        anonymize_df: bool = True,
+        use_error_correction_framework: bool = True,
     ) -> Union[str, pd.DataFrame]:
         """
         Run the PandasAI to make Dataframes Conversational.
@@ -198,12 +200,12 @@ class PandasAI:
         return self._dl.chat(prompt)
 
     def __call__(
-            self,
-            data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
-            prompt: str,
-            show_code: bool = False,
-            anonymize_df: bool = True,
-            use_error_correction_framework: bool = True,
+        self,
+        data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
+        prompt: str,
+        show_code: bool = False,
+        anonymize_df: bool = True,
+        use_error_correction_framework: bool = True,
     ) -> Union[str, pd.DataFrame]:
         """
         __call__ method of PandasAI class. It calls the `run` method.

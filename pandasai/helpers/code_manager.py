@@ -25,7 +25,7 @@ import traceback
 class CodeManager:
     _dfs: List
     _middlewares: List[Middleware] = [ChartsMiddleware()]
-    _config: Config
+    _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
     _ast_comparatos_map: dict = {
@@ -46,12 +46,12 @@ class CodeManager:
     def __init__(
         self,
         dfs: List,
-        config: Config,
+        config: Union[Config, dict],
         logger: Logger,
     ):
         """
         Args:
-            config (Config, optional): Config to be used. Defaults to None.
+            config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 

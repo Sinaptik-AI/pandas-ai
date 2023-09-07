@@ -21,6 +21,10 @@ def df_type(df: DataFrameType) -> str:
     Returns:
         str: Type of the dataframe
     """
+    print("*" * 100)
+    print(df)
+    print("*" * 100)
+
     if polars_imported and isinstance(df, pl.DataFrame):
         return "polars"
     elif isinstance(df, pd.DataFrame):

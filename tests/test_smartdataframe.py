@@ -8,6 +8,7 @@ from uuid import UUID
 
 import pandas as pd
 import polars as pl
+from pydantic import BaseModel, Field
 import pytest
 
 from pandasai import SmartDataframe
@@ -123,7 +124,7 @@ class TestSmartDataframe:
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
-            SmartDataframe(sample_df)
+            SmartDataframe(sample_df, config={"llm": None})
 
     def test_run(self, smart_dataframe: SmartDataframe, llm):
         llm._output = (
@@ -238,6 +239,71 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         assert (
             smart_dataframe.last_code_generated
             == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+        )
+
+    def test_save_chart_non_default_dir(
+        self, smart_dataframe: SmartDataframe, llm, sample_df
+    ):
+        """
+        Test chat with `SmartDataframe` with custom `save_charts_path`.
+
+        Script:
+            1) Ask `SmartDataframe` to build a chart and save it in
+               a custom directory;
+            2) Check if substring representing the directory present in
+               `llm.last_prompt`.
+            3) Check if the code has had a call of `plt.savefig()` passing
+               the custom directory.
+
+        Notes:
+            1) Mock `import_dependency()` util-function to avoid the
+               actual calls to `matplotlib.pyplot`.
+            2) The `analyze_data()` function in the code fixture must have
+               `"type": None` in the result dict. Otherwise, if it had
+               `"type": "plot"` (like it has in practice), `_format_results()`
+               method from `SmartDatalake` object would try to read the image
+               with `matplotlib.image.imread()` and this test would fail.
+               Those calls to `matplotlib.image` are unmockable because of
+               imports inside the function scope, not in the top of a module.
+               @TODO: figure out if we can just move the imports beyond to
+                      make it possible to mock out `matplotlib.image`
+        """
+        llm._output = """
+import pandas as pd
+import matplotlib.pyplot as plt
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    df = dfs[0].nlargest(5, 'happiness_index')
+    
+    plt.figure(figsize=(8, 6))
+    plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
+    plt.title('Happiness Index for the 5 Happiest Countries')
+    plt.savefig('custom-dir/output_charts/temp_chart.png')
+    plt.close()
+    
+    return {"type": None, "value": "custom-dir/output_charts/temp_chart.png"}
+result = analyze_data(dfs)
+"""
+        with patch(
+            "pandasai.helpers.code_manager.import_dependency"
+        ) as import_dependency_mock:
+            smart_dataframe = SmartDataframe(
+                sample_df,
+                config={
+                    "llm": llm,
+                    "enable_cache": False,
+                    "save_charts": True,
+                    "save_charts_path": "custom-dir/output_charts/",
+                },
+            )
+
+            smart_dataframe.chat("Plot pie-chart the 5 happiest countries")
+
+        assert "custom-dir/output_charts/temp_chart.png" in llm.last_prompt
+        plt_mock = getattr(import_dependency_mock.return_value, "matplotlib.pyplot")
+        assert plt_mock.savefig.called
+        assert (
+            plt_mock.savefig.call_args.args[0]
+            == "custom-dir/output_charts/temp_chart.png"
         )
 
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
@@ -606,7 +672,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
-        # Create instances of YourDataFrameClass
+        # Create instances of SmartDataframe
         df_object1 = SmartDataframe(
             df,
             name="df_duplicate",
@@ -638,7 +704,7 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
-        # Create an instance of YourDataFrameClass without a name
+        # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
             df, description="No Name", config={"llm": llm, "enable_cache": False}
         )
@@ -662,3 +728,101 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         # Recover file for next test case
         with open("pandasai.json", "w") as json_file:
             json_file.write(backup_pandasai)
+
+    def test_pydantic_validate(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of SmartDataframe without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is True
+
+    def test_pydantic_validate_false(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": ["Test", "Test2", "Test3", "Test4"], "B": [5, 6, 7, 8]})
+
+        # Create an instance of SmartDataframe without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is False
+
+    def test_pydantic_validate_polars(self, llm):
+        # Create a sample DataFrame
+        df = pl.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of SmartDataframe without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+        assert validation_result.passed is True
+
+    def test_pydantic_validate_false_one_record(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, "test", 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of SmartDataframe without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+        assert (
+            validation_result.passed is False and len(validation_result.errors()) == 1
+        )
+
+    def test_pydantic_validate_complex_schema(self, llm):
+        # Create a sample DataFrame
+        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
+
+        # Create an instance of SmartDataframe without a name
+        df_object = SmartDataframe(
+            df, description="Name", config={"llm": llm, "enable_cache": False}
+        )
+
+        # Pydantic Schema
+        class TestSchema(BaseModel):
+            A: int = Field(..., gt=5)
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is False
+
+        class TestSchema(BaseModel):
+            A: int = Field(..., lt=5)
+            B: int
+
+        validation_result = df_object.validate(TestSchema)
+
+        assert validation_result.passed is True

@@ -23,6 +23,10 @@ from io import StringIO
 
 import pandas as pd
 from functools import cached_property
+import pydantic
+
+from pandasai.helpers.df_validator import DfValidator
+
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
 from ..helpers.data_sampler import DataSampler
@@ -435,6 +439,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def connector(self, connector: BaseConnector):
         connector.logger = self.logger
         self._core.connector = connector
+
+    def validate(self, schema: pydantic.BaseModel):
+        """
+        Validates Dataframe rows on the basis Pydantic schema input
+        (Args):
+            schema: Pydantic schema class
+            verbose: Print Errors
+        """
+        df_validator = DfValidator(self.dataframe)
+        return df_validator.validate(schema)
 
     @property
     def lake(self) -> SmartDatalake:

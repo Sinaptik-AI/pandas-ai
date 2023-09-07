@@ -44,7 +44,7 @@ from ..helpers.path import find_project_root
 
 class SmartDatalake:
     _dfs: List[DataFrameType]
-    _config: Config
+    _config: Union[Config, dict]
     _llm: LLM
     _cache: Cache = None
     _logger: Logger
@@ -60,14 +60,14 @@ class SmartDatalake:
     def __init__(
         self,
         dfs: List[Union[DataFrameType, Any]],
-        config: Config = None,
+        config: Optional[Union[Config, dict]] = None,
         logger: Logger = None,
         memory: Memory = None,
     ):
         """
         Args:
             dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
-            config (Config, optional): Config to be used. Defaults to None.
+            config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
@@ -135,18 +135,21 @@ class SmartDatalake:
                 smart_dfs.append(df)
         self._dfs = smart_dfs
 
-    def _load_config(self, config: Config):
+    def _load_config(self, config: Union[Config, dict]):
         """
         Load a config to be used to run the queries.
 
         Args:
-            config (Config): Config to be used
+            config (Union[Config, dict]): Config to be used
         """
 
-        self._config = load_config(config)
+        config = load_config(config)
 
-        if self._config.llm:
-            self._load_llm(self._config.llm)
+        if config.get("llm"):
+            self._load_llm(config["llm"])
+            config["llm"] = self._llm
+
+        self._config = Config(**config)
 
     def _load_llm(self, llm: LLM):
         """
@@ -161,10 +164,7 @@ class SmartDatalake:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-
-        try:
-            llm.is_pandasai_llm()
-        except AttributeError:
+        if hasattr(llm, "_llm_type"):
             llm = LangchainLLM(llm)
 
         self._llm = llm
@@ -283,6 +283,7 @@ class SmartDatalake:
                 default_values = {
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
+                    "save_charts_path": self._config.save_charts_path.rstrip("/"),
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",

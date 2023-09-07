@@ -2,6 +2,8 @@
 
 PandasAI supports several large language models (LLMs). LLMs are used to generate code from natural language queries. The generated code is then executed to produce the result.
 
+[![Choose the LLM](https://cdn.loom.com/sessions/thumbnails/5496c9c07ee04f69bfef1bc2359cd591-00001.jpg)](https://www.loom.com/share/5496c9c07ee04f69bfef1bc2359cd591 "Choose the LLM")
+
 You can either choose a LLM by instantiating one and passing it to the `SmartDataFrame` or `SmartDatalake` constructor, or you can specify one in the `pandasai.json` file.
 
 If the model expects one or more parameters, you can pass them to the constructor or specify them in the `pandasai.json` file, in the `llm_options` param, as it follows:
@@ -14,8 +16,6 @@ If the model expects one or more parameters, you can pass them to the constructo
   }
 }
 ```
-
-## OpenAI models
 
 In order to use OpenAI models, you need to have an OpenAI API key. You can get one [here](https://platform.openai.com/account/api-keys).
 
