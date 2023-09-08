@@ -177,12 +177,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def __repr__(self):
         return self._df.__repr__()
 
-    def add_middlewares(self, *middlewares: List[Middleware]):
+    def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
 
         Args:
-            *middlewares: A list of middlewares
+            *middlewares: Middlewares to be added
 
         """
         self._dl.add_middlewares(*middlewares)

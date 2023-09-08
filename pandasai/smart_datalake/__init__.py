@@ -169,12 +169,12 @@ class SmartDatalake:
 
         self._llm = llm
 
-    def add_middlewares(self, *middlewares: List[Middleware]):
+    def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
 
         Args:
-            *middlewares: A list of middlewares
+            *middlewares: Middlewares to be added
         """
         self._code_manager.add_middlewares(*middlewares)
 
