@@ -34,7 +34,7 @@ from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Literal
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
@@ -247,6 +247,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         df_validator = DfValidator(self.original_import)
         return df_validator.validate(schema)
+
+    def to_dict(
+        self,
+        orient: Literal[
+            "dict", "list", "series", "split", "tight", "records", "index"
+        ] = "dict",
+        into: type[dict] = dict,
+        index: bool = True,
+    ) -> dict | list[dict]:
+        pass
 
     @property
     def datalake(self):

@@ -1,3 +1,6 @@
+from typing import overload
+
+
 class DataframeAbstract:
     # Columns
     @property
@@ -152,6 +155,7 @@ class DataframeAbstract:
     def to_sql(self, name, con):
         raise NotImplementedError
 
+    @overload
     def to_dict(self, orient):
         raise NotImplementedError
 
