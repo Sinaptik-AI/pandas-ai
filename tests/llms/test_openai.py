@@ -24,6 +24,9 @@ class TestOpenAILLM:
 
     def test_type_with_token(self):
         assert OpenAI(api_token="test").type == "openai"
+    
+    def test_type_with_key_path(self):
+        assert OpenAI(api_key_file=".key").type == "openai"
 
     def test_proxy(self):
         proxy = "http://proxy.mycompany.com:8080"
