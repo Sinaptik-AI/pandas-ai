@@ -49,7 +49,7 @@ class OpenAI(BaseOpenAI):
     def __init__(
         self,
         api_token: Optional[str] = None,
-        api_key_path: Optional[str] = None
+        api_key_path: Optional[str] = None,
         **kwargs,
     ):
         """
@@ -64,10 +64,8 @@ class OpenAI(BaseOpenAI):
         self.api_key_path = api_key_path
 
         if (not self.api_token) and (not self.api_key_path):
-            raise APIKeyNotFoundError(
-                "Either OpenAI API key or key path is required"
-            )
-        
+            raise APIKeyNotFoundError("Either OpenAI API key or key path is required")
+
         if self.api_token:
             openai.api_key = self.api_token
         else:
