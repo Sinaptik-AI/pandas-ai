@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+from collections import defaultdict
 from typing import Optional
 from unittest.mock import patch, Mock
 from uuid import UUID
@@ -108,6 +109,16 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
+    def smart_dataframe_mocked_df(self, llm, sample_df, sample_head):
+        smart_df = SmartDataframe(
+            sample_df,
+            config={"llm": llm, "enable_cache": False},
+            sample_head=sample_head,
+        )
+        smart_df._core._df = Mock()
+        return smart_df
+
+    @pytest.fixture
     def custom_middleware(self):
         class CustomMiddleware(Middleware):
             def run(self, code):
@@ -208,6 +219,47 @@ Updated code:
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
+
+    def test_to_dict(self, smart_dataframe: SmartDataframe):
+        expected_keys = ("country", "gdp", "happiness_index")
+
+        result_dict = smart_dataframe.to_dict()
+
+        assert isinstance(result_dict, dict)
+        assert all(key in result_dict for key in expected_keys)
+
+    @pytest.mark.parametrize(
+        "to_dict_params,expected_passing_params,engine_type",
+        [
+            ({}, {"orient": "dict", "into": dict}, "pandas"),
+            ({}, {"as_series": True}, "polars"),
+            ({"orient": "dict"}, {"orient": "dict", "into": dict}, "pandas"),
+            (
+                {"orient": "dict", "into": defaultdict},
+                {"orient": "dict", "into": defaultdict},
+                "pandas",
+            ),
+            ({"as_series": False}, {"as_series": False}, "polars"),
+            (
+                {"as_series": False, "orient": "dict", "into": defaultdict},
+                {"as_series": False},
+                "polars",
+            ),
+        ],
+    )
+    def test_to_dict_passing_parameters(
+        self,
+        smart_dataframe_mocked_df: SmartDataframe,
+        to_dict_params,
+        engine_type,
+        expected_passing_params,
+    ):
+        smart_dataframe_mocked_df._engine = engine_type
+        smart_dataframe_mocked_df.to_dict(**to_dict_params)
+        # noinspection PyUnresolvedReferences
+        smart_dataframe_mocked_df.dataframe.to_dict.assert_called_once_with(
+            **expected_passing_params
+        )
 
     def test_extract_code(self, llm):
         code = """```python
