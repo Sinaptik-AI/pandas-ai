@@ -28,7 +28,7 @@ poetry install --all-extras
 
 ### 📌 Pre-commit
 
-To ensure our standards, make sure to install pre-commit before star to contribute.
+To ensure our standards, make sure to install pre-commit before starting to contribute.
 
 ```bash
 pre-commit install
