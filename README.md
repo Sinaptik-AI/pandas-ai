@@ -44,6 +44,7 @@ For example, you can ask PandasAI to find all the rows in a DataFrame where the 
 ```python
 import pandas as pd
 from pandasai import SmartDataframe
+from pandasai.schemas.df_config import Config
 
 # Sample DataFrame
 df = pd.DataFrame({
@@ -56,7 +57,13 @@ df = pd.DataFrame({
 from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe(df, config={"llm": llm})
+# Define configurations with `Config` class
+llm_configuration = Config(llm=llm)
+
+# Instantiate SmartDataframe with pd.DataFrame
+df = SmartDataframe(df, config=llm_configuration)
+
+# Data query with natural language
 df.chat('Which are the 5 happiest countries?')
 ```
 
