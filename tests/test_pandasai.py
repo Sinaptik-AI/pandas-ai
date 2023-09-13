@@ -63,7 +63,7 @@ class TestPandasAI:
 
     def test_run_with_invalid_arguments(self, pai):
         with pytest.raises(ValueError) as e_info:
-            pai.run(None, "Question")
+            pai.run(0, "Question")
         assert (
             str(e_info.value)
             == "Invalid input data. Must be a Pandas or Polars dataframe."

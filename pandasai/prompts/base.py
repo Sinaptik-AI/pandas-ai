@@ -30,15 +30,15 @@ class Prompt:
         for index, df in enumerate(dfs, start=1):
             description = """<dataframe>
 Dataframe """
-            if df.name is not None:
-                description += f"{df.name} (dfs[{index-1}])"
+            if df.table_name is not None:
+                description += f"{df.table_name} (dfs[{index-1}])"
             else:
                 description += f"dfs[{index-1}]"
             description += (
                 f", with {df.rows_count} rows and {df.columns_count} columns."
             )
-            if df.description is not None:
-                description += f"\nDescription: {df.description}"
+            if df.table_description is not None:
+                description += f"\nDescription: {df.table_description}"
             description += f"""
 This is the metadata of the dataframe dfs[{index-1}]:
 {df.head_csv}</dataframe>"""  # noqa: E501

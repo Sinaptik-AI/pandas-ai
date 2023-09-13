@@ -76,9 +76,9 @@ class SmartDatalake:
         self._load_config(config)
 
         if logger:
-            self._logger = logger
+            self.logger = logger
         else:
-            self._logger = Logger(
+            self.logger = Logger(
                 save_logs=self._config.save_logs, verbose=self._config.verbose
             )
 
@@ -92,7 +92,7 @@ class SmartDatalake:
         self._code_manager = CodeManager(
             dfs=self._dfs,
             config=self._config,
-            logger=self._logger,
+            logger=self.logger,
         )
 
         if self._config.enable_cache:
@@ -129,7 +129,7 @@ class SmartDatalake:
         for df in dfs:
             if not isinstance(df, SmartDataframe):
                 smart_dfs.append(
-                    SmartDataframe(df, config=self._config, logger=self._logger)
+                    SmartDataframe(df, config=self._config, logger=self.logger)
                 )
             else:
                 smart_dfs.append(df)
@@ -187,7 +187,9 @@ class SmartDatalake:
         """Assign a prompt ID"""
 
         self._last_prompt_id = uuid.uuid4()
-        self._logger.log(f"Prompt ID: {self._last_prompt_id}")
+
+        if self.logger:
+            self.logger.log(f"Prompt ID: {self._last_prompt_id}")
 
     def _is_running_in_console(self) -> bool:
         """
@@ -205,6 +207,18 @@ class SmartDatalake:
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
     ) -> Prompt:
+        """
+        Return a prompt by key.
+
+        Args:
+            key (str): The key of the prompt
+            default_prompt (Type[Prompt]): The default prompt to use
+            default_values (Optional[dict], optional): The default values to use for the
+            prompt. Defaults to None.
+
+        Returns:
+            Prompt: The prompt
+        """
         if default_values is None:
             default_values = {}
 
@@ -222,11 +236,18 @@ class SmartDatalake:
         return prompt
 
     def _get_cache_key(self) -> str:
+        """
+        Return the cache key for the current conversation.
+
+        Returns:
+            str: The cache key for the current conversation
+        """
         cache_key = self._memory.get_conversation()
 
         # make the cache key unique for each combination of dfs
         for df in self._dfs:
-            cache_key += df.column_hash()
+            hash = df.column_hash()
+            cache_key += str(hash)
 
         return cache_key
 
@@ -243,8 +264,8 @@ class SmartDatalake:
 
         self._start_timer()
 
-        self._logger.log(f"Question: {query}")
-        self._logger.log(f"Running PandasAI with {self._llm.type} LLM...")
+        self.logger.log(f"Question: {query}")
+        self.logger.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._assign_prompt_id()
 
@@ -256,7 +277,7 @@ class SmartDatalake:
                 and self._cache
                 and self._cache.get(self._get_cache_key())
             ):
-                self._logger.log("Using cached response")
+                self.logger.log("Using cached response")
                 code = self._cache.get(self._get_cache_key())
             else:
                 default_values = {
@@ -279,13 +300,12 @@ class SmartDatalake:
                 self._config.callback.on_code(code)
 
             self.last_code_generated = code
-            self._logger.log(
-                f"""
-                    Code generated:
-                    ```
-                    {code}
-                    ```
-                """
+            self.logger.log(
+                f"""Code generated:
+```
+{code}
+```
+"""
             )
 
             # TODO: figure out what to do with this
@@ -322,7 +342,7 @@ class SmartDatalake:
 
             if result is not None:
                 self.last_result = result
-                self._logger.log(f"Answer: {result}")
+                self.logger.log(f"Answer: {result}")
         except Exception as exception:
             self.last_error = str(exception)
             return (
@@ -331,13 +351,19 @@ class SmartDatalake:
                 f"\n{exception}\n"
             )
 
-        self._logger.log(f"Executed in: {time.time() - self._start_time}s")
+        self.logger.log(f"Executed in: {time.time() - self._start_time}s")
 
         self._add_result_to_memory(result)
 
         return self._format_results(result)
 
     def _add_result_to_memory(self, result: dict):
+        """
+        Add the result to the memory.
+
+        Args:
+            result (dict): The result to add to the memory
+        """
         if result is None:
             return
 
@@ -347,6 +373,15 @@ class SmartDatalake:
             self._memory.add("Ok here it is", False)
 
     def _format_results(self, result: dict):
+        """
+        Format the results based on the type of the result.
+
+        Args:
+            result (dict): The result to format
+
+        Returns:
+            str: The formatted result
+        """
         if result is None:
             return
 
@@ -363,7 +398,7 @@ class SmartDatalake:
             return SmartDataframe(
                 df,
                 config=self._config.__dict__,
-                logger=self._logger,
+                logger=self.logger,
             )
         elif result["type"] == "plot":
             import matplotlib.pyplot as plt
@@ -392,15 +427,12 @@ class SmartDatalake:
         Returns (str): A python code
         """
 
-        self._logger.log(f"Failed with error: {e}. Retrying")
+        self.logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
 
         default_values = {
+            "engine": self._dfs[0].engine,
             "code": code,
             "error_returned": e,
-            # TODO: find a better way to determine these values
-            "df_head": self._dfs[0].head_csv,
-            "num_rows": self._dfs[0].rows_count,
-            "num_columns": self._dfs[0].columns_count,
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
@@ -430,7 +462,15 @@ class SmartDatalake:
 
     @property
     def logs(self):
-        return self._logger.logs
+        return self.logger.logs
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
 
     @property
     def config(self):
@@ -468,7 +508,7 @@ class SmartDatalake:
 
     @callback.setter
     def callback(self, callback: Any):
-        self._config.callback = callback
+        self.config.callback = callback
 
     @property
     def enforce_privacy(self):
@@ -555,7 +595,7 @@ class SmartDatalake:
 
     @last_code_generated.setter
     def last_code_generated(self, last_code_generated: str):
-        self._last_code_generated = last_code_generated
+        self._code_manager._last_code_generated = last_code_generated
 
     @property
     def last_code_executed(self):
