@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+from collections import defaultdict
 from typing import Optional
 from unittest.mock import patch, Mock
 from uuid import UUID
@@ -108,6 +109,16 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
+    def smart_dataframe_mocked_df(self, llm, sample_df, sample_head):
+        smart_df = SmartDataframe(
+            sample_df,
+            config={"llm": llm, "enable_cache": False},
+            sample_head=sample_head,
+        )
+        smart_df._core._df = Mock()
+        return smart_df
+
+    @pytest.fixture
     def custom_middleware(self):
         class CustomMiddleware(Middleware):
             def run(self, code):
@@ -117,10 +128,10 @@ class TestSmartDataframe:
         return CustomMiddleware
 
     def test_init(self, smart_dataframe):
-        assert smart_dataframe._name is None
-        assert smart_dataframe._description is None
-        assert smart_dataframe._engine is not None
-        assert smart_dataframe._df is not None
+        assert smart_dataframe._table_name is None
+        assert smart_dataframe._table_description is None
+        assert smart_dataframe.engine is not None
+        assert smart_dataframe.dataframe is not None
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
@@ -170,36 +181,37 @@ def analyze_data(dfs):
         df.enforce_privacy = True
 
         expected_prompt = """
-You are provided with the following pandas DataFrames with the following metadata:
+You are provided with the following pandas DataFrames:
 
+<dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
 This is the metadata of the dataframe dfs[0]:
 country
+</dataframe>
 
+<conversation>
+User 1: How many countries are in the dataframe?
+</conversation>
 
 This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
 import pandas as pd
 
-# Analyze the data
-# 1. Prepare: Preprocessing and cleaning data if necessary
-# 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-# 3. Analyze: Conducting the actual analysis (if the user asks to create a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
-# 4. Output: return a dictionary of:
-# - type (possible values "text", "number", "dataframe", "plot")
-# - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-# Example output: { "type": "text", "value": "The average loan amount is $15,000." }
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-   # Code goes here (do not add comments)
-    
-
-# Declare a result variable
-result = analyze_data(dfs)
+    \"\"\"
+    Analyze the data
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    4. Output: return a dictionary of:
+    - type (possible values "text", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+    \"\"\"
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last user question:
-User: How many countries are in the dataframe?
+Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
 
 Updated code:
 """  # noqa: E501
@@ -208,6 +220,47 @@ Updated code:
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
+
+    def test_to_dict(self, smart_dataframe: SmartDataframe):
+        expected_keys = ("country", "gdp", "happiness_index")
+
+        result_dict = smart_dataframe.to_dict()
+
+        assert isinstance(result_dict, dict)
+        assert all(key in result_dict for key in expected_keys)
+
+    @pytest.mark.parametrize(
+        "to_dict_params,expected_passing_params,engine_type",
+        [
+            ({}, {"orient": "dict", "into": dict}, "pandas"),
+            ({}, {"as_series": True}, "polars"),
+            ({"orient": "dict"}, {"orient": "dict", "into": dict}, "pandas"),
+            (
+                {"orient": "dict", "into": defaultdict},
+                {"orient": "dict", "into": defaultdict},
+                "pandas",
+            ),
+            ({"as_series": False}, {"as_series": False}, "polars"),
+            (
+                {"as_series": False, "orient": "dict", "into": defaultdict},
+                {"as_series": False},
+                "polars",
+            ),
+        ],
+    )
+    def test_to_dict_passing_parameters(
+        self,
+        smart_dataframe_mocked_df: SmartDataframe,
+        to_dict_params,
+        engine_type,
+        expected_passing_params,
+    ):
+        smart_dataframe_mocked_df._engine = engine_type
+        smart_dataframe_mocked_df.to_dict(**to_dict_params)
+        # noinspection PyUnresolvedReferences
+        smart_dataframe_mocked_df.dataframe.to_dict.assert_called_once_with(
+            **expected_passing_params
+        )
 
     def test_extract_code(self, llm):
         code = """```python
@@ -328,7 +381,7 @@ result = analyze_data(dfs)
 
         replacement_prompt = CustomPrompt(test="test value")
         df = SmartDataframe(
-            pd.DataFrame(),
+            pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}),
             config={
                 "llm": llm,
                 "enable_cache": False,
@@ -355,7 +408,7 @@ result = analyze_data(dfs)
             },
         )
 
-        df._dl._retry_run_code("wrong code", Exception())
+        df.lake._retry_run_code("wrong code", Exception())
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 
@@ -368,13 +421,13 @@ result = analyze_data(dfs)
         error_msg = "Some error log"
         critical_msg = "Some critical log"
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
 
-        smart_dataframe._dl._logger.log(debug_msg, level=logging.DEBUG)
-        smart_dataframe._dl._logger.log(info_msg)  # INFO should be default
-        smart_dataframe._dl._logger.log(warning_msg, level=logging.WARNING)
-        smart_dataframe._dl._logger.log(error_msg, level=logging.ERROR)
-        smart_dataframe._dl._logger.log(critical_msg, level=logging.CRITICAL)
+        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+        smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
+        smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
+        smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
+        smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
         logs = smart_dataframe.logs
 
         assert all("msg" in log and "level" in log for log in logs)
@@ -385,20 +438,20 @@ result = analyze_data(dfs)
         assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.config.verbose is False
+        assert smart_dataframe.verbose is False
 
         smart_dataframe.verbose = True
         assert smart_dataframe.verbose is True
-        assert smart_dataframe._dl._logger.verbose is True
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 1
+        assert smart_dataframe.lake._logger.verbose is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
-            smart_dataframe._dl._logger._logger.handlers[0], logging.StreamHandler
+            smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
         )
 
         smart_dataframe.verbose = False
         assert smart_dataframe.verbose is False
-        assert smart_dataframe._dl._logger.verbose is False
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 0
+        assert smart_dataframe.lake._logger.verbose is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
     def test_updates_save_logs_config_with_setters(
         self, smart_dataframe: SmartDataframe
@@ -407,15 +460,15 @@ result = analyze_data(dfs)
 
         smart_dataframe.save_logs = False
         assert smart_dataframe.save_logs is False
-        assert smart_dataframe._dl._logger.save_logs is False
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 0
+        assert smart_dataframe.lake._logger.save_logs is False
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
         smart_dataframe.save_logs = True
         assert smart_dataframe.save_logs is True
-        assert smart_dataframe._dl._logger.save_logs is True
-        assert len(smart_dataframe._dl._logger._logger.handlers) == 1
+        assert smart_dataframe.lake._logger.save_logs is True
+        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
-            smart_dataframe._dl._logger._logger.handlers[0], logging.FileHandler
+            smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
         )
 
     def test_updates_enable_cache_config_with_setters(
@@ -425,14 +478,14 @@ result = analyze_data(dfs)
 
         smart_dataframe.enable_cache = True
         assert smart_dataframe.enable_cache is True
-        assert smart_dataframe._dl.enable_cache is True
-        assert smart_dataframe._dl.cache is not None
-        assert isinstance(smart_dataframe._dl._cache, Cache)
+        assert smart_dataframe.lake.enable_cache is True
+        assert smart_dataframe.lake.cache is not None
+        assert isinstance(smart_dataframe.lake._cache, Cache)
 
         smart_dataframe.enable_cache = False
         assert smart_dataframe.enable_cache is False
-        assert smart_dataframe._dl.enable_cache is False
-        assert smart_dataframe._dl.cache is None
+        assert smart_dataframe.lake.enable_cache is False
+        assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.callback is None
@@ -485,23 +538,23 @@ result = analyze_data(dfs)
             {"column1": 3, "column2": 6},
         ]
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_dataframe(input_data)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
 
     def test_load_dataframe_from_dict(self, smart_dataframe):
         input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
 
-        smart_dataframe._load_df(input_data)
+        smart_dataframe._load_dataframe(input_data)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
 
     def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
         pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(pandas_df)
+        smart_dataframe._load_dataframe(pandas_df)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
 
     def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, mocker):
         expected_df = pd.DataFrame(
@@ -522,16 +575,20 @@ result = analyze_data(dfs)
         saved_df_name = "photo"
         smart_dataframe = SmartDataframe(saved_df_name)
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
-        assert smart_dataframe._name == saved_df_name
-        assert smart_dataframe.original.equals(expected_df)
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
+        assert smart_dataframe.table_name == saved_df_name
+        assert smart_dataframe.dataframe.equals(expected_df)
 
     def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
-        smart_dataframe._load_df(polars_df)
+        smart_dataframe._load_dataframe(polars_df)
 
-        assert smart_dataframe._df is polars_df
+        print(smart_dataframe.dataframe)
+        print(polars_df)
+
+        assert isinstance(smart_dataframe.dataframe, pl.DataFrame)
+        assert smart_dataframe.dataframe.frame_equal(polars_df)
 
     def test_import_csv_file(self, smart_dataframe, mocker):
         mocker.patch.object(
@@ -580,13 +637,13 @@ result = analyze_data(dfs)
         with pytest.raises(ValueError):
             smart_dataframe._import_from_file(file_path)
 
-    def test_import_pandas_series(self, smart_dataframe):
+    def test_import_pandas_series(self, llm):
         pandas_series = pd.Series([1, 2, 3])
 
-        smart_dataframe._load_df(pandas_series)
+        smart_dataframe = SmartDataframe(pandas_series, config={"llm": llm})
 
-        assert isinstance(smart_dataframe._df, pd.DataFrame)
-        assert smart_dataframe._df.equals(pd.DataFrame({0: [1, 2, 3]}))
+        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
+        assert smart_dataframe.dataframe.equals(pd.DataFrame({0: [1, 2, 3]}))
 
     def test_save_pandas_dataframe(self, llm):
         with open("pandasai.json", "r") as json_file:

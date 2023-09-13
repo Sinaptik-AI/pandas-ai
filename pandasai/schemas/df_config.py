@@ -19,6 +19,7 @@ class Config(BaseModel):
     max_retries: int = 3
     middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
+    lazy_load_connector: bool = True
     llm: Any = None
 
     class Config:

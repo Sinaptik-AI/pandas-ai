@@ -11,7 +11,7 @@ except ImportError:
     DataFrameType = Union[pd.DataFrame, str]
 
 
-def df_type(df: DataFrameType) -> str:
+def df_type(df: DataFrameType) -> Union[str, None]:
     """
     Returns the type of the dataframe.
 

@@ -36,7 +36,7 @@ class DfConfigManager:
 
         directory_path = os.path.join(find_project_root(), "cache")
         create_directory(directory_path)
-        csv_file_path = os.path.join(directory_path, f"{self.name}.csv")
+        csv_file_path = os.path.join(directory_path, f"{self._sdf.table_name}.csv")
         return csv_file_path
 
     def _check_for_duplicates(self, saved_dfs):
@@ -47,19 +47,28 @@ class DfConfigManager:
             saved_dfs (List[dict]): List of saved dataframes
         """
 
-        if any(df_info["name"] == self.name for df_info in saved_dfs):
-            raise ValueError(f"Duplicate dataframe found: {self.name}")
+        if any(df_info["name"] == self._sdf.table_name for df_info in saved_dfs):
+            raise ValueError(f"Duplicate dataframe found: {self._sdf.table_name}")
 
     def _get_import_path(self):
         """
         Gets the import path for the dataframe
         """
 
+        # Handle connectors
+        if self._sdf.connector is not None:
+            return self._sdf.connector.path
+
         # Return if already a string
         if isinstance(self.original_import, str):
             # Check if it is a csv or xlsx file
-            if self.original_import.endswith(".csv") or self.original_import.endswith(
-                ".xlsx"
+            if (
+                self.original_import.endswith(".csv")
+                or self.original_import.endswith(".parquet")
+                or self.original_import.endswith(".xlsx")
+                or self.original_import.startswith(
+                    "https://docs.google.com/spreadsheets/"
+                )
             ):
                 return self.original_import
 
@@ -70,11 +79,11 @@ class DfConfigManager:
         dataframe_type = df_type(self.original_import)
         if dataframe_type == "pandas":
             csv_file_path = self._create_csv_save_path()
-            self._sdf.original.to_csv(csv_file_path)
+            self._sdf.dataframe.to_csv(csv_file_path)
         elif dataframe_type == "polars":
             csv_file_path = self._create_csv_save_path()
             with open(csv_file_path, "w") as f:
-                self._sdf.original.write_csv(f)
+                self._sdf.dataframe.write_csv(f)
         else:
             raise ValueError("Unknown dataframe type")
 
@@ -83,6 +92,12 @@ class DfConfigManager:
     def save(self, name=None):
         """
         Saves the dataframe object to used for later
+
+        Args:
+            name (str, optional): Name of the dataframe. Defaults to None.
+
+        Raises:
+            ValueError: If the dataframe name already exists
         """
 
         file_path = find_closest("pandasai.json")
@@ -103,8 +118,8 @@ class DfConfigManager:
             pandas_json[saved_df_keys].append(
                 {
                     "name": name if name is not None else self.name,
-                    "description": self.description,
-                    "sample": self.head_csv,
+                    "description": self._sdf.table_description,
+                    "sample": self._sdf.head_csv,
                     "import_path": import_path,
                 }
             )
@@ -114,6 +129,15 @@ class DfConfigManager:
             json_file.truncate()
 
     def load(self, name) -> dict:
+        """
+        Loads a dataframe from the config file
+
+        Args:
+            name (str): Name of the dataframe
+
+        Returns:
+            dict: Dictionary with dataframe information
+        """
         file_path = find_closest("pandasai.json")
 
         with open(file_path, "r") as json_file:
@@ -130,17 +154,17 @@ class DfConfigManager:
 
     @property
     def name(self):
-        name = self._sdf.name
+        name = self._sdf.table_name
         if name is None:
             # Generate random hash
-            hash_object = hashlib.sha256(self.head_csv.encode())
+            hash_object = hashlib.sha256(self._sdf.head_csv.encode())
             name = hash_object.hexdigest()
         return name
 
     @property
     def description(self):
-        return self._sdf.description
+        return self._sdf.table_description
 
     @property
     def original_import(self):
-        return self._sdf.original_import
+        return self._sdf._original_import

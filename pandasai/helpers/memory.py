@@ -24,8 +24,9 @@ class Memory:
     def get_conversation(self, limit: int = 1) -> str:
         return "\n".join(
             [
-                f"{'User' if message['is_user'] else 'Bot'}: {message['message']}"
-                for message in self._messages[-limit:]
+                f"{f'User {i+1}' if message['is_user'] else f'Assistant {i}'}: "
+                f"{message['message']}"
+                for i, message in enumerate(self._messages[-limit:])
             ]
         )
 

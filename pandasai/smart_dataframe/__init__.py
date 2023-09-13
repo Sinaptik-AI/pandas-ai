@@ -22,6 +22,7 @@ import hashlib
 from io import StringIO
 
 import pandas as pd
+from functools import cached_property
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
@@ -40,88 +41,55 @@ from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
+from ..connectors.base import BaseConnector
 
 
-class SmartDataframe(DataframeAbstract, Shortcuts):
-    _engine: str
-    _original_import: any
-    _name: str
-    _description: str
-    _df: pd.DataFrame
-    _dl: SmartDatalake
-    _sample_head: str = None
+class SmartDataframeCore:
+    """
+    A smart dataframe class is a wrapper around the pandas/polars dataframe that allows
+    you to query it using natural language. It uses the LLMs to generate Python code
+    from natural language and then executes it on the dataframe.
+    """
 
-    def __init__(
-        self,
-        df: DataFrameType,
-        name: str = None,
-        description: str = None,
-        config: Optional[Union[Config, dict]] = None,
-        sample_head: pd.DataFrame = None,
-        logger: Logger = None,
-    ):
+    _df = None
+    _df_loaded: bool = True
+    _temporary_loaded: bool = False
+    _connector: BaseConnector = None
+    _engine: str = None
+    _logger: Logger = None
+
+    def __init__(self, df: DataFrameType, logger: Logger = None):
+        self._logger = logger
+        self._load_dataframe(df)
+
+    def _load_dataframe(self, df):
         """
-        Args:
-            df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
-            name (str, optional): Name of the dataframe. Defaults to None.
-            description (str, optional): Description of the dataframe. Defaults to "".
-            config (Union[Config, dict], optional): Config to be used. Defaults to None.
-            logger (Logger, optional): Logger to be used. Defaults to None.
-        """
-        self._original_import = df
-        self._name = name
-        self._description = description
-
-        self._load_df(df)
-
-        self._load_engine()
-
-        self._dl = SmartDatalake([self], config=config, logger=logger)
-
-        if sample_head is not None:
-            self._sample_head = sample_head.to_csv(index=False)
-
-    def _load_df(self, df: DataFrameType):
-        """
-        Load a dataframe into the smart dataframe
+        Load the dataframe from a file or a connector.
 
         Args:
-            df (DataFrameType): Pandas or Polars dataframe or path to a file
+            df (Union[pd.DataFrame, pl.DataFrame, BaseConnector]):
+            Pandas or Polars dataframe or a connector.
         """
-        if isinstance(df, str):
-            if not (
-                df.endswith(".csv")
-                or df.endswith(".parquet")
-                or df.endswith(".xlsx")
-                or df.startswith("https://docs.google.com/spreadsheets/")
-            ):
-                df_config = self._load_from_config(df)
-                if df_config:
-                    if self._name is None:
-                        self._name = df_config["name"]
-                    if self._description is None:
-                        self._description = df_config["description"]
-                    df = df_config["import_path"]
-                else:
-                    raise ValueError(
-                        "Could not find a saved dataframe configuration "
-                        "with the given name."
-                    )
-
-            self._df = self._import_from_file(df)
+        if isinstance(df, BaseConnector):
+            self.dataframe = None
+            self.connector = df
+            self.connector.logger = self._logger
+            self._df_loaded = False
+        elif isinstance(df, str):
+            self.dataframe = self._import_from_file(df)
         elif isinstance(df, pd.Series):
-            self._df = df.to_frame()
+            self.dataframe = df.to_frame()
         elif isinstance(df, (list, dict)):
             # if the list can be converted to a dataframe, convert it
             # otherwise, raise an error
             try:
-                self._df = pd.DataFrame(df)
+                self.dataframe = pd.DataFrame(df)
             except ValueError:
                 raise ValueError(
                     "Invalid input data. We cannot convert it to a dataframe."
                 )
         else:
-            self._df = df
+            self.dataframe = df
 
     def _import_from_file(self, file_path: str):
         """
@@ -146,36 +114,196 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             raise ValueError("Invalid file format.")
 
     def _load_engine(self):
-        self._engine = df_type(self._df)
+        """
+        Load the engine of the dataframe (Pandas or Polars)
+        """
+        engine = df_type(self._df)
 
-        if self._engine is None:
+        if engine is None:
             raise ValueError(
                 "Invalid input data. Must be a Pandas or Polars dataframe."
             )
 
-    def __getattr__(self, name):
-        if name in self.__dict__:
-            return self.__dict__[name]
-        elif name in dir(SmartDataframe):
-            return object.__getattribute__(self, name)
-        elif hasattr(self._df, name):
-            return getattr(self._df, name)
+        self._engine = engine
+
+    def _validate_and_convert_dataframe(self, df: DataFrameType) -> DataFrameType:
+        """
+        Validate the dataframe and convert it to a Pandas or Polars dataframe.
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe or path to a file
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
+        if isinstance(df, str):
+            return self._import_from_file(df)
+        elif isinstance(df, (list, dict)):
+            # if the list or dictionary can be converted to a dataframe, convert it
+            # otherwise, raise an error
+            try:
+                return pd.DataFrame(df)
+            except ValueError:
+                raise ValueError(
+                    "Invalid input data. We cannot convert it to a dataframe."
+                )
         else:
-            raise AttributeError(
-                f"'{name}' is not a valid attribute for SmartDataframe"
-            )
+            return df
 
-    def __dir__(self):
-        return dir(self._df)
+    def load_connector(self, temporary: bool = False):
+        """
+        Load a connector into the smart dataframe
 
-    def __getitem__(self, key):
-        return self._df[key]
+        Args:
+            connector (BaseConnector): Connector to be loaded
+        """
+        self.dataframe = self.connector.execute()
+        self._df_loaded = True
+        self._temporary_loaded = temporary
 
-    def __setitem__(self, key, value):
-        self._df[key] = value
+    def _unload_connector(self):
+        """
+        Unload the connector from the smart dataframe.
+        This is done when a partial dataframe is loaded from a connector (i.e.
+        because of a filter) and we want to load the full dataframe or a different
+        partial dataframe.
+        """
+        self._df = None
+        self._df_loaded = False
+        self._temporary_loaded = False
 
-    def __repr__(self):
-        return self._df.__repr__()
+    @property
+    def dataframe(self) -> DataFrameType:
+        if self._df_loaded:
+            return_df = None
+
+            if self._engine == "polars":
+                return_df = self._df.clone()
+            elif self._engine == "pandas":
+                return_df = self._df.copy()
+
+            if self.has_connector and self._df_loaded and self._temporary_loaded:
+                self._unload_connector()
+
+            return return_df
+        elif self.has_connector:
+            return None
+
+    @dataframe.setter
+    def dataframe(self, df: DataFrameType):
+        """
+        Load a dataframe into the smart dataframe
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe or path to a file
+        """
+        df = self._validate_and_convert_dataframe(df)
+        self._df = df
+
+        if df is not None:
+            self._load_engine()
+
+    @property
+    def engine(self) -> str:
+        return self._engine
+
+    @property
+    def connector(self):
+        return self._connector
+
+    @connector.setter
+    def connector(self, connector: BaseConnector):
+        self._connector = connector
+
+    @property
+    def has_connector(self):
+        return self._connector is not None
+
+
+class SmartDataframe(DataframeAbstract, Shortcuts):
+    _table_name: str
+    _table_description: str
+    _sample_head: str = None
+    _original_import: any
+    _core: SmartDataframeCore
+    _lake: SmartDatalake
+
+    def __init__(
+        self,
+        df: DataFrameType,
+        name: str = None,
+        description: str = None,
+        sample_head: pd.DataFrame = None,
+        config: Config = None,
+        logger: Logger = None,
+    ):
+        """
+        Args:
+            df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
+            name (str, optional): Name of the dataframe. Defaults to None.
+            description (str, optional): Description of the dataframe. Defaults to "".
+            sample_head (pd.DataFrame, optional): Sample head of the dataframe.
+            config (Config, optional): Config to be used. Defaults to None.
+            logger (Logger, optional): Logger to be used. Defaults to None.
+        """
+        self._original_import = df
+
+        if isinstance(df, str):
+            if not (
+                df.endswith(".csv")
+                or df.endswith(".parquet")
+                or df.endswith(".xlsx")
+                or df.startswith("https://docs.google.com/spreadsheets/")
+            ):
+                df_config = self._load_from_config(df)
+                if df_config:
+                    if "://" in df_config["import_path"]:
+                        connector_name = df_config["import_path"].split("://")[0]
+                        connector_path = df_config["import_path"].split("://")[1]
+                        connector_host = connector_path.split(":")[0]
+                        connector_port = connector_path.split(":")[1].split("/")[0]
+                        connector_database = connector_path.split(":")[1].split("/")[1]
+                        connector_table = connector_path.split(":")[1].split("/")[2]
+
+                        # instantiate the connector
+                        df = getattr(
+                            __import__(
+                                "pandasai.connectors", fromlist=[connector_name]
+                            ),
+                            connector_name,
+                        )(
+                            {
+                                "host": connector_host,
+                                "port": connector_port,
+                                "database": connector_database,
+                                "table": connector_table,
+                            }
+                        )
+                    else:
+                        df = df_config["import_path"]
+
+                    if name is None:
+                        name = df_config["name"]
+                    if description is None:
+                        description = df_config["description"]
+                else:
+                    raise ValueError(
+                        "Could not find a saved dataframe configuration "
+                        "with the given name."
+                    )
+
+        self._core = SmartDataframeCore(df, logger)
+
+        self._table_name = name
+        self._table_description = description
+        self._lake = SmartDatalake([self], config, logger)
+
+        # If no name is provided, use the fallback name provided the connector
+        if self._table_name is None and self.connector:
+            self._table_name = self.connector.fallback_name
+
+        if sample_head is not None:
+            self._sample_head = sample_head.to_csv(index=False)
 
     def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
@@ -185,7 +313,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             *middlewares: Middlewares to be added
 
         """
-        self._dl.add_middlewares(*middlewares)
+        self.lake.add_middlewares(*middlewares)
 
     def chat(self, query: str):
         """
@@ -197,20 +325,98 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Raises:
             ValueError: If the query is empty
         """
-        return self._dl.chat(query)
+        return self.lake.chat(query)
 
     def column_hash(self) -> str:
-        columns_str = "".join(self._df.columns)
+        """
+        Get the hash of the columns of the dataframe.
+
+        Returns:
+            str: Hash of the columns of the dataframe
+        """
+        if not self._core._df_loaded and self.connector:
+            return self.connector.column_hash
+
+        columns_str = "".join(self.dataframe.columns)
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
     def save(self, name: str = None):
         """
         Saves the dataframe configuration to be used for later
+
+        Args:
+            name (str, optional): Name of the dataframe configuration. Defaults to None.
         """
 
         config_manager = DfConfigManager(self)
         config_manager.save(name)
+
+    def load_connector(self, temporary: bool = False):
+        """
+        Load a connector into the smart dataframe
+
+        Args:
+            temporary (bool, optional): Whether the connector is temporary or not.
+            Defaults to False.
+        """
+        self._core.load_connector(temporary)
+
+    def _truncate_head_columns(self, df: DataFrameType, max_size=25) -> DataFrameType:
+        """
+        Truncate the columns of the dataframe to a maximum of 20 characters.
+
+        Args:
+            df (DataFrameType): Pandas or Polars dataframe
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
+
+        if df_type(df) == "pandas":
+            df_trunc = df.copy()
+
+            for col in df.columns:
+                if df[col].dtype == "object":
+                    first_val = df[col].iloc[0]
+                    if isinstance(first_val, str) and len(first_val) > max_size:
+                        df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+        elif df_type(df) == "polars":
+            try:
+                import polars as pl
+
+                df_trunc = df.clone()
+
+                for col in df.columns:
+                    if df[col].dtype == pl.Utf8:
+                        first_val = df[col][0]
+                        if isinstance(first_val, str) and len(df_trunc[col]) > max_size:
+                            df_trunc[col] = (
+                                df_trunc[col].str.slice(0, max_size - 3) + "..."
+                            )
+            except ImportError:
+                raise ImportError(
+                    "Polars is not installed. "
+                    "Please install Polars to use this feature."
+                )
+
+        return df_trunc
+
+    def _get_sample_head(self) -> DataFrameType:
+        head = None
+        rows_to_display = 0 if self.lake.config.enforce_privacy else 5
+        if not self._core._df_loaded and self.connector:
+            head = self.connector.head()
+        else:
+            head = self.dataframe.head(rows_to_display)
+
+        if head is None:
+            return None
+
+        sampler = DataSampler(head)
+        sampled_head = sampler.sample(rows_to_display)
+
+        return self._truncate_head_columns(sampled_head)
 
     def _load_from_config(self, name: str):
         """
@@ -220,23 +426,22 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         config_manager = DfConfigManager(self)
         return config_manager.load(name)
 
-    def _get_head_csv(self):
-        """
-        Get the head of the dataframe as a CSV string.
+    @property
+    def dataframe(self) -> DataFrameType:
+        return self._core.dataframe
 
-        Returns:
-            str: CSV string
-        """
-        if self._sample_head is not None:
-            return self._sample_head
+    @property
+    def engine(self):
+        return self._core.engine
 
-        rows_to_display = 0 if self._dl.config.enforce_privacy else 5
+    @property
+    def connector(self):
+        return self._core.connector
 
-        sample = DataSampler(self._df)
-        df_head = sample.sample(rows_to_display)
-
-        self._sample_head = df_head.to_csv(index=False)
-        return self._sample_head
+    @connector.setter
+    def connector(self, connector: BaseConnector):
+        connector.logger = self.logger
+        self._core.connector = connector
 
     def validate(self, schema: pydantic.BaseModel):
         """
@@ -245,182 +450,212 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             schema: Pydantic schema class
             verbose: Print Errors
         """
-        df_validator = DfValidator(self.original_import)
+        df_validator = DfValidator(self.dataframe)
         return df_validator.validate(schema)
 
     @property
-    def datalake(self):
-        return self._dl
+    def lake(self) -> SmartDatalake:
+        return self._lake
+
+    @lake.setter
+    def lake(self, lake: SmartDatalake):
+        self._lake = lake
 
     @property
     def rows_count(self):
-        return self._df.shape[0]
+        if self._core._df_loaded:
+            return self.dataframe.shape[0]
+        elif self.connector is not None:
+            return self.connector.rows_count
+        else:
+            raise ValueError(
+                "Cannot determine rows_count. No dataframe or connector loaded."
+            )
 
     @property
     def columns_count(self):
-        return self._df.shape[1]
+        if self._core._df_loaded:
+            return self.dataframe.shape[1]
+        elif self.connector is not None:
+            return self.connector.columns_count
+        else:
+            raise ValueError(
+                "Cannot determine columns_count. No dataframe or connector loaded."
+            )
 
-    @property
+    @cached_property
+    def head_df(self):
+        """
+        Get the head of the dataframe as a dataframe.
+
+        Returns:
+            DataFrameType: Pandas or Polars dataframe
+        """
+        return self._get_sample_head()
+
+    @cached_property
     def head_csv(self):
-        return self._get_head_csv()
+        """
+        Get the head of the dataframe as a CSV string.
+
+        Returns:
+            str: CSV string
+        """
+        df_head = self._get_sample_head()
+        return df_head.to_csv(index=False)
 
     @property
     def last_prompt(self):
-        return self._dl.last_prompt
+        return self.lake.last_prompt
 
     @property
     def last_prompt_id(self) -> str:
-        return self._dl.last_prompt_id
+        return self.lake.last_prompt_id
 
     @property
     def last_code_generated(self):
-        return self._dl.last_code_generated
+        return self.lake.last_code_executed
 
     @property
     def last_code_executed(self):
-        return self._dl.last_code_executed
+        return self.lake.last_code_executed
 
     @property
     def last_result(self):
-        return self._dl.last_result
+        return self.lake.last_result
 
     @property
     def last_error(self):
-        return self._dl.last_error
+        return self.lake.last_error
 
     @property
-    def original(self):
-        return self._df
+    def cache(self):
+        return self.lake.cache
 
     @property
+    def middlewares(self):
+        return self.lake.middlewares
+
     def original_import(self):
         return self._original_import
 
     @property
-    def name(self):
-        return self._name
+    def logger(self):
+        return self.lake.logger
 
-    @property
-    def engine(self):
-        return self._engine
-
-    @property
-    def description(self):
-        return self._description
-
-    @property
-    def config(self):
-        return self._dl.config
-
-    @property
-    def cache(self):
-        return self._dl.cache
-
-    @property
-    def middlewares(self):
-        return self._dl.middlewares
+    @logger.setter
+    def logger(self, logger: Logger):
+        self.lake.logger = logger
 
     @property
     def logs(self):
-        return self._dl.logs
+        return self.lake.logs
 
     @property
     def verbose(self):
-        return self._dl.verbose
+        return self.lake.verbose
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        self._dl.verbose = verbose
+        self.lake.verbose = verbose
 
     @property
     def save_logs(self):
-        return self._dl.save_logs
+        return self.lake.save_logs
 
     @save_logs.setter
     def save_logs(self, save_logs: bool):
-        self._dl.save_logs = save_logs
+        self.lake.save_logs = save_logs
 
     @property
     def callback(self):
-        return self._dl.callback
+        return self.lake.callback
 
     @callback.setter
     def callback(self, callback: BaseCallback):
-        self._dl.callback = callback
+        self.lake.callback = callback
 
     @property
     def enforce_privacy(self):
-        return self._dl.enforce_privacy
+        return self.lake.enforce_privacy
 
     @enforce_privacy.setter
     def enforce_privacy(self, enforce_privacy: bool):
-        self._dl.enforce_privacy = enforce_privacy
+        self.lake.enforce_privacy = enforce_privacy
 
     @property
     def enable_cache(self):
-        return self._dl.enable_cache
+        return self.lake.enable_cache
 
     @enable_cache.setter
     def enable_cache(self, enable_cache: bool):
-        self._dl.enable_cache = enable_cache
+        self.lake.enable_cache = enable_cache
 
     @property
     def use_error_correction_framework(self):
-        return self._dl.use_error_correction_framework
+        return self.lake.use_error_correction_framework
 
     @use_error_correction_framework.setter
     def use_error_correction_framework(self, use_error_correction_framework: bool):
-        self._dl.use_error_correction_framework = use_error_correction_framework
+        self.lake.use_error_correction_framework = use_error_correction_framework
 
     @property
     def custom_prompts(self):
-        return self._dl.custom_prompts
+        return self.lake.custom_prompts
 
     @custom_prompts.setter
     def custom_prompts(self, custom_prompts: dict):
-        self._dl.custom_prompts = custom_prompts
+        self.lake.custom_prompts = custom_prompts
 
     @property
     def save_charts(self):
-        return self._dl.save_charts
+        return self.lake.save_charts
 
     @save_charts.setter
     def save_charts(self, save_charts: bool):
-        self._dl.save_charts = save_charts
+        self.lake.save_charts = save_charts
 
     @property
     def save_charts_path(self):
-        return self._dl.save_charts_path
+        return self.lake.save_charts_path
 
     @save_charts_path.setter
     def save_charts_path(self, save_charts_path: str):
-        self._dl.save_charts_path = save_charts_path
+        self.lake.save_charts_path = save_charts_path
 
     @property
     def custom_whitelisted_dependencies(self):
-        return self._dl.custom_whitelisted_dependencies
+        return self.lake.custom_whitelisted_dependencies
 
     @custom_whitelisted_dependencies.setter
     def custom_whitelisted_dependencies(
         self, custom_whitelisted_dependencies: List[str]
     ):
-        self._dl.custom_whitelisted_dependencies = custom_whitelisted_dependencies
+        self.lake.custom_whitelisted_dependencies = custom_whitelisted_dependencies
 
     @property
     def max_retries(self):
-        return self._dl.max_retries
+        return self.lake.max_retries
 
     @max_retries.setter
     def max_retries(self, max_retries: int):
-        self._dl.max_retries = max_retries
+        self.lake.max_retries = max_retries
 
     @property
     def llm(self):
-        return self._dl.llm
+        return self.lake.llm
 
     @llm.setter
     def llm(self, llm: Union[LLM, LangchainLLM]):
-        self._dl.llm = llm
+        self.lake.llm = llm
+
+    @property
+    def table_name(self):
+        return self._table_name
+
+    @property
+    def table_description(self):
+        return self._table_description
 
     @property
     def sample_head(self):
@@ -430,3 +665,26 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @sample_head.setter
     def sample_head(self, sample_head: pd.DataFrame):
         self._sample_head = sample_head.to_csv(index=False)
+
+    def __getattr__(self, name):
+        if name in self._core.__dir__():
+            return getattr(self._core, name)
+        elif name in self.dataframe.__dir__():
+            return getattr(self.dataframe, name)
+        else:
+            return self.__getattribute__(name)
+
+    def __getitem__(self, key):
+        return self.dataframe.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        return self.dataframe.__setitem__(key, value)
+
+    def __dir__(self):
+        return dir(self._core) + dir(self.dataframe) + dir(self.__class__)
+
+    def __repr__(self):
+        return self.dataframe.__repr__()
+
+    def __len__(self):
+        return len(self.dataframe)
