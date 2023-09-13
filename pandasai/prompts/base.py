@@ -28,7 +28,8 @@ class Prompt:
         """
         dataframes = []
         for index, df in enumerate(dfs, start=1):
-            description = "Dataframe "
+            description = """<dataframe>
+Dataframe """
             if df.table_name is not None:
                 description += f"{df.table_name} (dfs[{index-1}])"
             else:
@@ -40,7 +41,7 @@ class Prompt:
                 description += f"\nDescription: {df.table_description}"
             description += f"""
 This is the metadata of the dataframe dfs[{index-1}]:
-{df.head_csv}"""  # noqa: E501
+{df.head_csv}</dataframe>"""  # noqa: E501
             dataframes.append(description)
 
         return "\n\n".join(dataframes)

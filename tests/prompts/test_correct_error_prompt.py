@@ -30,10 +30,11 @@ class TestCorrectErrorPrompt:
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 
+<dataframe>
 Dataframe dfs[0], with 0 rows and 0 columns.
 This is the metadata of the dataframe dfs[0]:
 
-
+</dataframe>
 
 The user asked the following question:
 What is the correct code?

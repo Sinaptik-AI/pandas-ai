@@ -1,31 +1,32 @@
 """ Prompt to generate Python code
 ```
-You are provided with the following pandas DataFrames with the following metadata:
+You are provided with the following pandas DataFrames:
 
 {dataframes}
+
+<conversation>
+{conversation}
+</conversation>
 
 This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
 {default_import}
 
-# Analyze the data
-# 1. Prepare: Preprocessing and cleaning data if necessary
-# 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-# 3. Analyze: Conducting the actual analysis (if the user asks to create a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
-# 4. Output: return a dictionary of:
-# - type (possible values "text", "number", "dataframe", "plot")
-# - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-# Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
 def analyze_data(dfs: list[{engine_df_name}]) -> dict:
-    # Code goes here (do not add comments)
-
-
-# Declare a result variable
-result = analyze_data(dfs)
+    \"\"\"
+    Analyze the data
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
+    4. Output: return a dictionary of:
+    - type (possible values "text", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
+    \"\"\"
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last user question:
+Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
 {conversation}
 
 Updated code:
@@ -39,33 +40,33 @@ class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-You are provided with the following pandas DataFrames with the following metadata:
+You are provided with the following pandas DataFrames:
 
 {dataframes}
+
+<conversation>
+{conversation}
+</conversation>
 
 This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
 {default_import}
 
-# Analyze the data
-# 1. Prepare: Preprocessing and cleaning data if necessary
-# 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-# 3. Analyze: Conducting the actual analysis (if the user asks to create a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
-# 4. Output: return a dictionary of:
-# - type (possible values "text", "number", "dataframe", "plot")
-# - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-# Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
 def analyze_data(dfs: list[{engine_df_name}]) -> dict:
-   # Code goes here (do not add comments)
-    
-
-# Declare a result variable
-result = analyze_data(dfs)
+    \"\"\"
+    Analyze the data
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
+    4. Output: return a dictionary of:
+    - type (possible values "text", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
+    \"\"\"
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last user question:
-{conversation}
+Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
 
 Updated code:
 """  # noqa: E501

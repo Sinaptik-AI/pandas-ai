@@ -62,12 +62,12 @@ class CodeManager:
         if self._config.middlewares is not None:
             self.add_middlewares(*self._config.middlewares)
 
-    def add_middlewares(self, *middlewares: List[Middleware]):
+    def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
 
         Args:
-            *middlewares: A list of middlewares
+            *middlewares: Middlewares to be added
 
         """
         self._middlewares.extend(middlewares)

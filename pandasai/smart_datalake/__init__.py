@@ -169,12 +169,12 @@ class SmartDatalake:
 
         self._llm = llm
 
-    def add_middlewares(self, *middlewares: List[Middleware]):
+    def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
 
         Args:
-            *middlewares: A list of middlewares
+            *middlewares: Middlewares to be added
         """
         self._code_manager.add_middlewares(*middlewares)
 
@@ -367,12 +367,10 @@ class SmartDatalake:
         if result is None:
             return
 
-        if result["type"] == "string":
+        if result["type"] == "string" or result["type"] == "number":
             self._memory.add(result["value"], False)
-        elif result["type"] == "dataframe":
-            self._memory.add("Here is the data you requested.", False)
-        elif result["type"] == "plot":
-            self._memory.add("Here is the plot you requested.", False)
+        elif result["type"] == "dataframe" or result["type"] == "plot":
+            self._memory.add("Ok here it is", False)
 
     def _format_results(self, result: dict):
         """

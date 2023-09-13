@@ -1,15 +1,25 @@
 import json
-import logging
 from typing import Optional, Union
 
 from . import llm, middlewares, callbacks
 from .helpers.path import find_closest
 from .schemas.df_config import Config
 
-logger = logging.getLogger(__name__)
 
+def load_config(
+    override_config: Optional[Union[Config, dict]] = None,
+):
+    """
+    Load the configuration from the pandasai.json file.
 
-def load_config(override_config: Optional[Union[Config, dict]] = None):
+    Args:
+        override_config (Optional[Union[Config, dict]], optional): The configuration to
+        override the one in the file. Defaults to None.
+
+    Returns:
+        dict: The configuration.
+    """
+
     config = {}
 
     if override_config is None:
@@ -32,7 +42,8 @@ def load_config(override_config: Optional[Union[Config, dict]] = None):
             if config.get("callback") and not override_config.get("callback"):
                 config["callback"] = getattr(callbacks, config["callback"])()
     except Exception:
-        logger.error("Could not load configuration", exc_info=True)
+        # Ignore the error if the file does not exist, will use the default config
+        pass
 
     if override_config:
         config.update(override_config)
