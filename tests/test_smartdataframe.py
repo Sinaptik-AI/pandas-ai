@@ -434,13 +434,39 @@ result = analyze_data(dfs)
             assert len(logs) == 5
 
             assert all(
-                "msg" in log and "level" in log and "time" in log for log in logs
+                ("msg" in log and "level" in log and "time" in log and "source" in log)
+                for log in logs
             )
-            assert {"msg": debug_msg, "level": "DEBUG", "time": 0} in logs
-            assert {"msg": info_msg, "level": "INFO", "time": 0} in logs
-            assert {"msg": warning_msg, "level": "WARNING", "time": 0} in logs
-            assert {"msg": error_msg, "level": "ERROR", "time": 0} in logs
-            assert {"msg": critical_msg, "level": "CRITICAL", "time": 0} in logs
+            assert {
+                "msg": debug_msg,
+                "level": "DEBUG",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": info_msg,
+                "level": "INFO",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": warning_msg,
+                "level": "WARNING",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": error_msg,
+                "level": "ERROR",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": critical_msg,
+                "level": "CRITICAL",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.verbose is False

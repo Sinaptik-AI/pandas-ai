@@ -16,6 +16,7 @@ Example:
     ```
 """
 
+import inspect
 import time
 import sys
 from typing import List
@@ -82,8 +83,23 @@ class Logger:
                 "msg": message,
                 "level": logging.getLevelName(level),
                 "time": self._calculate_time_diff(),
+                "source": self._invoked_from(),
             }
         )
+
+    def _invoked_from(self, level: int = 5) -> str:
+        """Return the name of the class that invoked the logger"""
+        calling_class = None
+        for frame_info in inspect.stack()[1:]:
+            frame_locals = frame_info[0].f_locals
+            calling_instance = frame_locals.get("self")
+            if calling_instance and calling_instance.__class__ != self.__class__:
+                calling_class = calling_instance.__class__.__name__
+                break
+            level -= 1
+            if level <= 0:
+                break
+        return calling_class
 
     def _calculate_time_diff(self):
         """Calculate the time difference since the last log"""
