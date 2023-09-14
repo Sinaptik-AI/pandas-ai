@@ -1,5 +1,4 @@
 import os
-import yfinance as yf
 import pandas as pd
 from .base import ConnectorConfig, BaseConnector
 import time
@@ -15,6 +14,13 @@ class YahooFinanceConnector(BaseConnector):
     _cache_interval: int = 600  # 10 minutes
 
     def __init__(self, stock_ticker, where=None, cache_interval: int = 600):
+        try:
+            import yfinance
+        except ImportError:
+            raise ImportError(
+                "Could not import yfinance python package. "
+                "Please install it with `pip install yfinance`."
+            )
         yahoo_finance_config = ConnectorConfig(
             dialect="yahoo_finance",
             username="",
@@ -27,6 +33,7 @@ class YahooFinanceConnector(BaseConnector):
         )
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
+        self.ticker = yfinance.Ticker(self._config.table)
 
     def head(self):
         """
@@ -36,8 +43,7 @@ class YahooFinanceConnector(BaseConnector):
             DataFrameType: The head of the data source that the connector is
             connected to.
         """
-        ticker = yf.Ticker(self._config.table)
-        head_data = ticker.history(period="5d")
+        head_data = self.ticker.history(period="5d")
         return head_data
 
     def _get_cache_path(self, include_additional_filters: bool = False):
@@ -105,8 +111,7 @@ class YahooFinanceConnector(BaseConnector):
             return pd.read_csv(cached_path)
 
         # Use yfinance to retrieve historical stock data
-        ticker = yf.Ticker(self._config.table)
-        stock_data = ticker.history(period="max")
+        stock_data = self.ticker.history(period="max")
 
         # Save the result to the cache
         stock_data.to_csv(self._get_cache_path(), index=False)

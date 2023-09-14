@@ -16,6 +16,7 @@ openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = "^1"
+sqlalchemy = "^2.0.19"
 google-generativeai = {version = "^0.1.0rc2", optional = true}
 google-cloud-aiplatform = {version = "^1.26.1", optional = true}
 langchain = {version = "^0.0.199", optional = true}
@@ -32,7 +33,6 @@ streamlit = {version = "^1.23.1", optional = true}
 beautifulsoup4 = { version = "^4.12.2", optional = true }
 text-generation = { version = ">=0.6.0", optional = true }
 openpyxl = { version = "^3.0.7", optional = true }
-sqlalchemy = { version = "^2.0.19", optional = true }
 pymysql = { version = "^1.1.0", optional = true }
 psycopg2 = { version = "^2.9.7", optional = true }
 yfinance = { version = "^0.2.28", optional = true }
@@ -51,7 +51,7 @@ coverage = "^7.2.7"
 google-cloud-aiplatform = "^1.26.1"
 
 [tool.poetry.extras]
-connectors = ["sqlalchemy", "pymysql", "psycopg2"]
+connectors = ["pymysql", "psycopg2"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
