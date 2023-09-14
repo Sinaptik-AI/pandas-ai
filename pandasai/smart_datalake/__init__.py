@@ -233,6 +233,8 @@ class SmartDatalake:
         for key, value in default_values.items():
             prompt.set_var(key, value)
 
+        self.logger.log(f"Using prompt: {prompt}")
+
         return prompt
 
     def _get_cache_key(self) -> str:
