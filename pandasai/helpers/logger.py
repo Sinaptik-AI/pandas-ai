@@ -16,6 +16,7 @@ Example:
     ```
 """
 
+import time
 import sys
 from typing import List
 import logging
@@ -36,11 +37,13 @@ class Logger:
     _logs: List[Log]
     _logger: logging.Logger
     _verbose: bool
+    _last_time: float
 
     def __init__(self, save_logs: bool = True, verbose: bool = False):
         """Initialize the logger"""
         self._logs = []
         self._verbose = verbose
+        self._last_time = time.time()
 
         if save_logs:
             try:
@@ -74,7 +77,19 @@ class Logger:
         elif level == logging.CRITICAL:
             self._logger.critical(message)
 
-        self._logs.append({"msg": message, "level": level})
+        self._logs.append(
+            {
+                "msg": message,
+                "level": logging.getLevelName(level),
+                "time": self._calculate_time_diff(),
+            }
+        )
+
+    def _calculate_time_diff(self):
+        """Calculate the time difference since the last log"""
+        time_diff = time.time() - self._last_time
+        self._last_time = time.time()
+        return time_diff
 
     @property
     def logs(self) -> List[str]:

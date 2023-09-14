@@ -413,29 +413,34 @@ result = analyze_data(dfs)
         assert llm.last_prompt == expected_last_prompt
 
     def test_saves_logs(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.logs == []
+        with patch.object(smart_dataframe.lake.logger, "_calculate_time_diff"):
+            smart_dataframe.lake.logger._calculate_time_diff.return_value = 0
 
-        debug_msg = "Some debug log"
-        info_msg = "Some info log"
-        warning_msg = "Some warning log"
-        error_msg = "Some error log"
-        critical_msg = "Some critical log"
+            assert smart_dataframe.logs == []
 
-        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+            debug_msg = "Some debug log"
+            info_msg = "Some info log"
+            warning_msg = "Some warning log"
+            error_msg = "Some error log"
+            critical_msg = "Some critical log"
 
-        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
-        smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
-        smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
-        smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
-        smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
-        logs = smart_dataframe.logs
+            smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+            smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
+            smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
+            smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
+            smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
+            logs = smart_dataframe.logs
 
-        assert all("msg" in log and "level" in log for log in logs)
-        assert {"msg": debug_msg, "level": logging.DEBUG} in logs
-        assert {"msg": info_msg, "level": logging.INFO} in logs
-        assert {"msg": warning_msg, "level": logging.WARNING} in logs
-        assert {"msg": error_msg, "level": logging.ERROR} in logs
-        assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
+            assert len(logs) == 5
+
+            assert all(
+                "msg" in log and "level" in log and "time" in log for log in logs
+            )
+            assert {"msg": debug_msg, "level": "DEBUG", "time": 0} in logs
+            assert {"msg": info_msg, "level": "INFO", "time": 0} in logs
+            assert {"msg": warning_msg, "level": "WARNING", "time": 0} in logs
+            assert {"msg": error_msg, "level": "ERROR", "time": 0} in logs
+            assert {"msg": critical_msg, "level": "CRITICAL", "time": 0} in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.verbose is False
