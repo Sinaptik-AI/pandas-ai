@@ -206,6 +206,7 @@ class SmartDatalake:
         key: str,
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
+        output_type: Optional[str] = None,
     ) -> Prompt:
         """
         Return a prompt by key.
@@ -214,7 +215,9 @@ class SmartDatalake:
             key (str): The key of the prompt
             default_prompt (Type[Prompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
-            prompt. Defaults to None.
+                prompt. Defaults to None.
+            output_type (Optional[str]): Interpolate an according output
+                type hint for LLM.
 
         Returns:
             Prompt: The prompt
@@ -223,7 +226,9 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt if custom_prompt else default_prompt()
+        prompt = (
+            custom_prompt if custom_prompt else default_prompt(output_type=output_type)
+        )
 
         # set default values for the prompt
         if "dfs" not in default_values:
@@ -257,7 +262,17 @@ class SmartDatalake:
 
         Args:
             query (str): Query to run on the dataframe
-            output_type (Optional[str]):
+            output_type (Optional[str]): Add a hint for LLM of which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
 
         Raises:
             ValueError: If the query is empty
@@ -281,17 +296,16 @@ class SmartDatalake:
                 self.logger.log("Using cached response")
                 code = self._cache.get(self._get_cache_key())
             else:
-                prompt_cls = GeneratePythonCodePrompt
                 default_values = {
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
-                    "output_type_hint": prompt_cls.get_output_type_hint(output_type),
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
+                    output_type=output_type,
                 )
 
                 code = self._llm.generate_code(generate_python_code_instruction)

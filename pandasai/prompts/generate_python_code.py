@@ -69,7 +69,7 @@ Using the provided dataframes (`dfs`), update the python code based on the last 
 
 Updated code:
 """  # noqa: E501
-    _output_type_map = {
+    _output_type_map: dict[str, str] = {
         "number": """- type (must be "number")
     - value (must be a number)""",
         "dataframe": """- type (must be "dataframe")
@@ -79,16 +79,16 @@ Updated code:
         "string": """- type (must be "string")
     - value (must be a conversational answer, as a string)""",
     }
-    _output_type_default = """- type (possible values "text", "number", "dataframe", "plot")
+    _output_type_default: str = """- type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)"""  # noqa E501
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
+        output_type_hint = self._output_type_map.get(
+            kwargs.get("output_type"), self._output_type_default
+        )
 
         self.set_var("default_import", default_import)
         self.set_var("engine_df_name", engine_df_name)
-
-    @classmethod
-    def get_output_type_hint(cls, output_type):
-        return cls._output_type_map.get(output_type, cls._output_type_default)
+        self.set_var("output_type_hint", output_type_hint)
