@@ -353,7 +353,6 @@ Code running:
                 ".to_gbq",
                 ".to_stata",
                 ".to_records",
-                ".to_string",
                 ".to_latex",
                 ".to_html",
                 ".to_markdown",
