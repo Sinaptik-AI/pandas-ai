@@ -1,5 +1,5 @@
 """Unit tests for the generate python code prompt class"""
-
+import sys
 
 import pandas as pd
 from pandasai import SmartDataframe
@@ -24,9 +24,12 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "exports/charts")
-        assert (
-            prompt.to_string()
-            == """
+        output_type_hint = """- type (possible values "text", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+"""  # noqa E501
+        prompt.set_var("output_type_hint", output_type_hint)
+
+        expected_prompt_content = '''
 You are provided with the following pandas DataFrames:
 
 <dataframe>
@@ -46,7 +49,7 @@ This is the initial python code to be updated:
 import pandas as pd
 
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
+    """
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
@@ -54,15 +57,19 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+
     Example output: { "type": "text", "value": "The average loan amount is $15,000." }
-    \"\"\"
+    """
 ```
 
 Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
 
 Updated code:
-"""  # noqa: E501
-        )
+'''  # noqa E501
+        actual_prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            actual_prompt_content = expected_prompt_content.replace("\r\n", "\n")
+        assert actual_prompt_content == expected_prompt_content
 
     def test_str_with_custom_save_charts_path(self):
         """Test that the __str__ method is implemented"""
@@ -79,10 +86,13 @@ Updated code:
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "custom_path")
+        # noqa E501
+        output_type_hint = """- type (possible values "text", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+"""  # noqa E501
+        prompt.set_var("output_type_hint", output_type_hint)
 
-        assert (
-            prompt.to_string()
-            == """
+        expected_prompt_content = '''
 You are provided with the following pandas DataFrames:
 
 <dataframe>
@@ -102,7 +112,7 @@ This is the initial python code to be updated:
 import pandas as pd
 
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
+    """
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
@@ -111,11 +121,14 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Example output: { "type": "text", "value": "The average loan amount is $15,000." }
-    \"\"\"
+    """
 ```
 
 Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
 
 Updated code:
-"""  # noqa: E501
-        )
+'''  # noqa E501
+        actual_prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            actual_prompt_content = expected_prompt_content.replace("\r\n", "\n")
+        assert actual_prompt_content == expected_prompt_content

@@ -251,12 +251,13 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(self, query: str):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
         Args:
             query (str): Query to run on the dataframe
+            output_type (Optional[str]):
 
         Raises:
             ValueError: If the query is empty
@@ -280,10 +281,12 @@ class SmartDatalake:
                 self.logger.log("Using cached response")
                 code = self._cache.get(self._get_cache_key())
             else:
+                prompt_cls = GeneratePythonCodePrompt
                 default_values = {
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
+                    "output_type_hint": prompt_cls.get_output_type_hint(output_type),
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",

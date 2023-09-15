@@ -315,17 +315,18 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         self.lake.add_middlewares(*middlewares)
 
-    def chat(self, query: str):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
         Args:
             query (str): Query to run on the dataframe
+            output_type (Optional[str]):
 
         Raises:
             ValueError: If the query is empty
         """
-        return self.lake.chat(query)
+        return self.lake.chat(query, output_type)
 
     def column_hash(self) -> str:
         """

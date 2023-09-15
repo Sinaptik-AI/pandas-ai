@@ -221,6 +221,53 @@ Updated code:
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
 
+    def test_run_passing_output_type(self, llm):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        df.enforce_privacy = True
+
+        expected_prompt = '''
+You are provided with the following pandas DataFrames:
+
+<dataframe>
+Dataframe dfs[0], with 0 rows and 1 columns.
+This is the metadata of the dataframe dfs[0]:
+country
+</dataframe>
+
+<conversation>
+User 1: How many countries are in the dataframe?
+</conversation>
+
+This is the initial python code to be updated:
+```python
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    """
+    Analyze the data
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    4. Output: return a dictionary of:
+    - type (must be "number")
+    - value (must be a number)
+    Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+    """
+```
+
+Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
+
+Updated code:
+'''  # noqa: E501
+
+        df.chat("How many countries are in the dataframe?", output_type="number")
+        last_prompt = df.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = df.last_prompt.replace("\r\n", "\n")
+        assert last_prompt == expected_prompt
+
     def test_to_dict(self, smart_dataframe: SmartDataframe):
         expected_keys = ("country", "gdp", "happiness_index")
 
