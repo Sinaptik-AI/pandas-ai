@@ -17,7 +17,7 @@ from pandasai.exceptions import LLMNotFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
-from pandasai.prompts import Prompt
+from pandasai.prompts import Prompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 
 import logging
@@ -221,12 +221,19 @@ Updated code:
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
 
-    def test_run_passing_output_type(self, llm):
+    @pytest.mark.parametrize(
+        "output_type,output_type_hint",
+        [
+            (None, GeneratePythonCodePrompt._output_type_default),
+            *GeneratePythonCodePrompt._output_type_map.items(),
+        ],
+    )
+    def test_run_passing_output_type(self, llm, output_type, output_type_hint):
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
         df.enforce_privacy = True
 
-        expected_prompt = '''
+        expected_prompt = f'''
 You are provided with the following pandas DataFrames:
 
 <dataframe>
@@ -251,9 +258,8 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
-    - type (must be "number")
-    - value (must be a number)
-    Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+    {output_type_hint}
+    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
     """
 ```
 
@@ -262,7 +268,7 @@ Using the provided dataframes (`dfs`), update the python code based on the last 
 Updated code:
 '''  # noqa: E501
 
-        df.chat("How many countries are in the dataframe?", output_type="number")
+        df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
