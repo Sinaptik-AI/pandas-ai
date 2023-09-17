@@ -132,9 +132,9 @@ Once you have basic setup, you can use it to instantiate a Google PaLM through v
 
 ```python
 from pandasai import SmartDataframe
-from pandasai.llm import GoogleVertexai
+from pandasai.llm import GoogleVertexAI
 
-llm = GoogleVertexai(project_id="generative-ai-training",
+llm = GoogleVertexAI(project_id="generative-ai-training",
                      location="us-central1",
                      model="text-bison@001")
 df = SmartDataframe("data.csv", config={"llm": llm})
