@@ -5,6 +5,11 @@ import pandas as pd
 import pytest
 
 from pandasai import SmartDataframe
+from pandasai.helpers.output_types import (
+    output_type_factory,
+    DefaultOutputType,
+    output_types_map,
+)
 from pandasai.prompts import GeneratePythonCodePrompt
 from pandasai.llm.fake import FakeLLM
 
@@ -15,11 +20,11 @@ class TestGeneratePythonCodePrompt:
     @pytest.mark.parametrize(
         "save_charts_path,output_type_hint",
         [
-            ("exports/charts", GeneratePythonCodePrompt._output_type_default),
-            ("custom/dir/for/charts", GeneratePythonCodePrompt._output_type_default),
+            ("exports/charts", DefaultOutputType().template_hint),
+            ("custom/dir/for/charts", DefaultOutputType().template_hint),
             *[
-                ("exports/charts", GeneratePythonCodePrompt._output_type_map[type_])
-                for type_ in GeneratePythonCodePrompt._output_type_map
+                ("exports/charts", output_type_factory(type_).template_hint)
+                for type_ in output_types_map
             ],
         ],
     )
@@ -31,7 +36,7 @@ class TestGeneratePythonCodePrompt:
         * `save_charts_path` is "custom/dir/for/charts", `output_type_hint`
             is default
         * `save_charts_path` is "exports/charts", `output_type_hint` any of
-            possible types in `GeneratePythonCodePrompt._output_type_map`
+            possible types in `pandasai.helpers.output_types.output_types_map`
         """
 
         llm = FakeLLM("plt.show()")
@@ -41,11 +46,10 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodePrompt()
+        prompt = GeneratePythonCodePrompt(output_type_hint=output_type_hint)
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
-        prompt.set_var("output_type_hint", output_type_hint)
 
         expected_prompt_content = f'''
 You are provided with the following pandas DataFrames:

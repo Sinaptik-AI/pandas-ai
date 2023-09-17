@@ -69,25 +69,11 @@ Using the provided dataframes (`dfs`), update the python code based on the last 
 
 Updated code:
 """  # noqa: E501
-    _output_type_map: dict[str, str] = {
-        "number": """- type (must be "number")
-    - value (must be a number)""",
-        "dataframe": """- type (must be "dataframe")
-    - value (must be a pandas dataframe)""",
-        "plot": """- type (must be "plot")
-    - value (must be a string containing the path of the plot image)""",
-        "string": """- type (must be "string")
-    - value (must be a conversational answer, as a string)""",
-    }
-    _output_type_default: str = """- type (possible values "text", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)"""  # noqa E501
 
     def __init__(self, **kwargs):
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
-        output_type_hint = self._output_type_map.get(
-            kwargs.get("output_type"), self._output_type_default
-        )
+        output_type_hint = kwargs.pop("output_type_hint")
 
         self.set_var("default_import", default_import)
         self.set_var("engine_df_name", engine_df_name)

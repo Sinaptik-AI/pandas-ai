@@ -24,6 +24,7 @@ import sys
 import logging
 import os
 
+from ..helpers.output_types import output_type_factory
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 
@@ -206,7 +207,7 @@ class SmartDatalake:
         key: str,
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
-        output_type: Optional[str] = None,
+        output_type_hint: Optional[str] = None,
     ) -> Prompt:
         """
         Return a prompt by key.
@@ -216,8 +217,8 @@ class SmartDatalake:
             default_prompt (Type[Prompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
                 prompt. Defaults to None.
-            output_type (Optional[str]): Interpolate an according output
-                type hint for LLM.
+            output_type_hint (Optional[str]): Interpolate an according output
+                type hint to the prompt for LLM.
 
         Returns:
             Prompt: The prompt
@@ -227,7 +228,9 @@ class SmartDatalake:
 
         custom_prompt = self._config.custom_prompts.get(key)
         prompt = (
-            custom_prompt if custom_prompt else default_prompt(output_type=output_type)
+            custom_prompt
+            if custom_prompt
+            else default_prompt(output_type_hint=output_type_hint)
         )
 
         # set default values for the prompt
@@ -262,7 +265,7 @@ class SmartDatalake:
 
         Args:
             query (str): Query to run on the dataframe
-            output_type (Optional[str]): Add a hint for LLM of which
+            output_type (Optional[str]): Add a hint for LLM which
                 type should be returned by `analyze_data()` in generated
                 code. Possible values: "number", "dataframe", "plot", "string":
                     * number - specifies that user expects to get a number
@@ -273,6 +276,8 @@ class SmartDatalake:
                         a plot
                     * string - specifies that user expects to get text
                         as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
 
         Raises:
             ValueError: If the query is empty
@@ -288,6 +293,8 @@ class SmartDatalake:
         self._memory.add(query, True)
 
         try:
+            output_type_helper = output_type_factory(output_type)
+
             if (
                 self._config.enable_cache
                 and self._cache
@@ -305,7 +312,7 @@ class SmartDatalake:
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
-                    output_type=output_type,
+                    output_type_hint=output_type_helper.template_hint,
                 )
 
                 code = self._llm.generate_code(generate_python_code_instruction)
@@ -358,6 +365,13 @@ class SmartDatalake:
                     code_to_run = self._retry_run_code(code, e)
 
             if result is not None:
+                if isinstance(result, dict):
+                    validation_ok, validation_logs = output_type_helper.validate(result)
+                    if not validation_ok:
+                        self.logger.log(
+                            "\n".join(validation_logs), level=logging.WARNING
+                        )
+
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
         except Exception as exception:
@@ -461,6 +475,17 @@ class SmartDatalake:
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code
+
+    # def _check_output_type(self, result, excepted_output_type):
+    #     actual_output_type = result.get('type')
+    #     if actual_output_type != excepted_output_type:
+    #         self.logger.log(
+    #             message=f"Inappropriate type of the result returned by LLM!\n"
+    #                     f"Actual type: '{actual_output_type}'\n"
+    #                     f"Expected type: '{excepted_output_type}'"
+    #         )
+
+    # def _check_output_
 
     @property
     def engine(self):

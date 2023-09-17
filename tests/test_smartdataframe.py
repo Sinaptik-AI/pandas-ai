@@ -14,10 +14,15 @@ import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.helpers.output_types import (
+    DefaultOutputType,
+    output_types_map,
+    output_type_factory,
+)
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
-from pandasai.prompts import Prompt, GeneratePythonCodePrompt
+from pandasai.prompts import Prompt
 from pandasai.helpers.cache import Cache
 
 import logging
@@ -224,14 +229,16 @@ Updated code:
     @pytest.mark.parametrize(
         "output_type,output_type_hint",
         [
-            (None, GeneratePythonCodePrompt._output_type_default),
-            *GeneratePythonCodePrompt._output_type_map.items(),
+            (None, DefaultOutputType().template_hint),
+            *[
+                (type_, output_type_factory(type_).template_hint)
+                for type_ in output_types_map
+            ],
         ],
     )
     def test_run_passing_output_type(self, llm, output_type, output_type_hint):
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
-        df.enforce_privacy = True
 
         expected_prompt = f'''
 You are provided with the following pandas DataFrames:
@@ -273,6 +280,40 @@ Updated code:
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
+
+    @pytest.mark.parametrize(
+        "output_type_to_pass,output_type_returned",
+        [
+            ("number", "string"),
+            ("string", "number"),
+        ],
+    )
+    def test_run_incorrect_output_type_returned(
+        self,
+        smart_dataframe: SmartDataframe,
+        llm,
+        sample_df,
+        output_type_to_pass,
+        output_type_returned,
+    ):
+        llm._output = f"""
+def analyze_data(dfs: list[pd.DataFrame]) ->dict:
+    highest_gdp = dfs[0]['gdp'].max()
+    return {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
+"""
+        smart_dataframe = SmartDataframe(
+            sample_df, config={"llm": llm, "enable_cache": False}
+        )
+
+        smart_dataframe.chat(
+            "What is the highest GDP?", output_type=output_type_to_pass
+        )
+        expected_log = (
+            f"The result dict contains inappropriate 'type'. "
+            f"Expected '{output_type_to_pass}', actual "
+            f"'{output_type_returned}'"
+        )
+        assert any((expected_log in log.get("msg") for log in smart_dataframe.logs))
 
     def test_to_dict(self, smart_dataframe: SmartDataframe):
         expected_keys = ("country", "gdp", "happiness_index")
