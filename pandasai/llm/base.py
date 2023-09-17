@@ -28,7 +28,6 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..helpers.optional import import_dependency
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import Prompt
 
@@ -371,53 +370,13 @@ class HuggingFaceLLM(LLM):
 class BaseGoogle(LLM):
     """Base class to implement a new Google LLM
 
-    LLM base class is extended to be used with Google Palm API.
-
+    LLM base class is extended to be used with
     """
 
-    genai: Any
     temperature: Optional[float] = 0
     top_p: Optional[float] = 0.8
     top_k: Optional[float] = 0.3
     max_output_tokens: Optional[int] = 1000
-
-    def _configure(self, api_key: str):
-        """
-        Configure Google Palm API Key
-        Args:
-            api_key (str): A string of API keys generated from Google Cloud.
-
-        Returns:
-            None.
-
-        """
-
-        if not api_key:
-            raise APIKeyNotFoundError("Google Palm API key is required")
-
-        err_msg = "Install google-generativeai >= 0.1 for Google Palm API"
-        genai = import_dependency("google.generativeai", extra=err_msg)
-
-        genai.configure(api_key=api_key)
-        self.genai = genai
-
-    def _configurevertexai(self, project_id: str, location: str):
-        """
-        Configure Google VertexAi. Set value `self.vertexai` attribute.
-
-        Args:
-            project_id (str): GCP Project.
-            location (str): Location of Project.
-
-        Returns:
-            None.
-
-        """
-
-        err_msg = "Install google-cloud-aiplatform for Google Vertexai"
-        vertexai = import_dependency("vertexai", extra=err_msg)
-        vertexai.init(project=project_id, location=location)
-        self.vertexai = vertexai
 
     def _valid_params(self):
         return ["temperature", "top_p", "top_k", "max_output_tokens"]
