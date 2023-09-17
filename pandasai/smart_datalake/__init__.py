@@ -476,17 +476,6 @@ class SmartDatalake:
             self._config.callback.on_code(code)
         return code
 
-    # def _check_output_type(self, result, excepted_output_type):
-    #     actual_output_type = result.get('type')
-    #     if actual_output_type != excepted_output_type:
-    #         self.logger.log(
-    #             message=f"Inappropriate type of the result returned by LLM!\n"
-    #                     f"Actual type: '{actual_output_type}'\n"
-    #                     f"Expected type: '{excepted_output_type}'"
-    #         )
-
-    # def _check_output_
-
     @property
     def engine(self):
         return self._dfs[0].engine
