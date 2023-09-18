@@ -46,10 +46,11 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodePrompt(output_type_hint=output_type_hint)
+        prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
+        prompt.set_var("output_type_hint", output_type_hint)
 
         expected_prompt_content = f'''
 You are provided with the following pandas DataFrames:
@@ -78,7 +79,6 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     {output_type_hint}
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
     """
 ```
 

@@ -22,7 +22,7 @@ def analyze_data(dfs: list[{engine_df_name}]) -> dict:
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
+    Example output: {{ "type": "string", "value": "The average loan amount is $15,000." }}
     \"\"\"
 ```
 
@@ -61,7 +61,6 @@ def analyze_data(dfs: list[{engine_df_name}]) -> dict:
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     {output_type_hint}
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
     \"\"\"
 ```
 
@@ -70,11 +69,9 @@ Using the provided dataframes (`dfs`), update the python code based on the last 
 Updated code:
 """  # noqa: E501
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
-        output_type_hint = kwargs.pop("output_type_hint")
 
         self.set_var("default_import", default_import)
         self.set_var("engine_df_name", engine_df_name)
-        self.set_var("output_type_hint", output_type_hint)

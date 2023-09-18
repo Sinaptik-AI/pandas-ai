@@ -210,9 +210,16 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
-    - type (possible values "text", "number", "dataframe", "plot")
+    - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+    Examples: 
+        { "type": "string", "value": "The highest salary is $9,000." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "export/charts/temp.png" }
     \"\"\"
 ```
 
@@ -266,7 +273,6 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     {output_type_hint}
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
     """
 ```
 

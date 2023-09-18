@@ -207,7 +207,6 @@ class SmartDatalake:
         key: str,
         default_prompt: Type[Prompt],
         default_values: Optional[dict] = None,
-        output_type_hint: Optional[str] = None,
     ) -> Prompt:
         """
         Return a prompt by key.
@@ -217,8 +216,6 @@ class SmartDatalake:
             default_prompt (Type[Prompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
                 prompt. Defaults to None.
-            output_type_hint (Optional[str]): Interpolate an according output
-                type hint to the prompt for LLM.
 
         Returns:
             Prompt: The prompt
@@ -227,11 +224,7 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = (
-            custom_prompt
-            if custom_prompt
-            else default_prompt(output_type_hint=output_type_hint)
-        )
+        prompt = custom_prompt if custom_prompt else default_prompt()
 
         # set default values for the prompt
         if "dfs" not in default_values:
@@ -293,7 +286,7 @@ class SmartDatalake:
         self._memory.add(query, True)
 
         try:
-            output_type_helper = output_type_factory(output_type)
+            output_type_helper = output_type_factory(output_type, logger=self.logger)
 
             if (
                 self._config.enable_cache
@@ -307,12 +300,12 @@ class SmartDatalake:
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
+                    "output_type_hint": output_type_helper.template_hint,
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
-                    output_type_hint=output_type_helper.template_hint,
                 )
 
                 code = self._llm.generate_code(generate_python_code_instruction)

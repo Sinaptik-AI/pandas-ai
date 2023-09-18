@@ -3,8 +3,7 @@ from decimal import Decimal
 from abc import abstractmethod, ABC
 from typing import Any, Iterable
 
-import pandas as pd
-import polars as pl
+from ..df_info import df_type
 
 
 class BaseOutputType(ABC):
@@ -68,7 +67,8 @@ class NumberOutputType(BaseOutputType):
     @property
     def template_hint(self):
         return """- type (must be "number")
-    - value (must be a number)"""
+    - value (must be a number)
+    Example output: { "type": "number", "value": 125 }"""
 
     @property
     def name(self):
@@ -84,23 +84,23 @@ class DataFrameOutputType(BaseOutputType):
     @property
     def template_hint(self):
         return """- type (must be "dataframe")
-    - value (must be a pandas dataframe)"""
+    - value (must be a pandas dataframe)
+    Example output: { "type": "dataframe", "value": pd.DataFrame({...}) }"""
 
     @property
     def name(self):
         return "dataframe"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        if isinstance(actual_value, (pd.DataFrame, pl.DataFrame)):
-            return True
-        return False
+        return bool(df_type(actual_value))
 
 
 class PlotOutputType(BaseOutputType):
     @property
     def template_hint(self):
         return """- type (must be "plot")
-    - value (must be a string containing the path of the plot image)"""
+    - value (must be a string containing the path of the plot image)
+    Example output: { "type": "plot", "value": "export/charts/temp.png" }"""
 
     @property
     def name(self):
@@ -121,7 +121,8 @@ class StringOutputType(BaseOutputType):
     @property
     def template_hint(self):
         return """- type (must be "string")
-    - value (must be a conversational answer, as a string)"""
+    - value (must be a conversational answer, as a string)
+    Example output: { "type": "string", "value": "The highest salary is $9,000." }"""
 
     @property
     def name(self):
@@ -136,8 +137,16 @@ class StringOutputType(BaseOutputType):
 class DefaultOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (possible values "text", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)"""  # noqa E501
+        return """- type (possible values "string", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Examples: 
+        { "type": "string", "value": "The highest salary is $9,000." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "export/charts/temp.png" }"""  # noqa E501
 
     @property
     def name(self):
