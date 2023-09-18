@@ -22,7 +22,7 @@ def analyze_data(dfs: list[{engine_df_name}]) -> dict:
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
+    Example output: {{ "type": "string", "value": "The average loan amount is $15,000." }}
     \"\"\"
 ```
 
@@ -60,9 +60,7 @@ def analyze_data(dfs: list[{engine_df_name}]) -> dict:
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in {save_charts_path}/temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
-    - type (possible values "text", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: {{ "type": "text", "value": "The average loan amount is $15,000." }}
+    {output_type_hint}
     \"\"\"
 ```
 

@@ -315,17 +315,28 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         self.lake.add_middlewares(*middlewares)
 
-    def chat(self, query: str):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
         Args:
             query (str): Query to run on the dataframe
+            output_type (Optional[str]): Add a hint for LLM of which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
 
         Raises:
             ValueError: If the query is empty
         """
-        return self.lake.chat(query)
+        return self.lake.chat(query, output_type)
 
     def column_hash(self) -> str:
         """

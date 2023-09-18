@@ -24,6 +24,7 @@ import sys
 import logging
 import os
 
+from ..helpers.output_types import output_type_factory
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 
@@ -214,7 +215,7 @@ class SmartDatalake:
             key (str): The key of the prompt
             default_prompt (Type[Prompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
-            prompt. Defaults to None.
+                prompt. Defaults to None.
 
         Returns:
             Prompt: The prompt
@@ -253,12 +254,25 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(self, query: str):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
         Args:
             query (str): Query to run on the dataframe
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
 
         Raises:
             ValueError: If the query is empty
@@ -274,6 +288,8 @@ class SmartDatalake:
         self._memory.add(query, True)
 
         try:
+            output_type_helper = output_type_factory(output_type, logger=self.logger)
+
             if (
                 self._config.enable_cache
                 and self._cache
@@ -286,6 +302,7 @@ class SmartDatalake:
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
+                    "output_type_hint": output_type_helper.template_hint,
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
@@ -343,6 +360,13 @@ class SmartDatalake:
                     code_to_run = self._retry_run_code(code, e)
 
             if result is not None:
+                if isinstance(result, dict):
+                    validation_ok, validation_logs = output_type_helper.validate(result)
+                    if not validation_ok:
+                        self.logger.log(
+                            "\n".join(validation_logs), level=logging.WARNING
+                        )
+
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
         except Exception as exception:

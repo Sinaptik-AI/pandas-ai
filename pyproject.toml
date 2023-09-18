@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "1.2.1"
+version = "1.2.2"
 description = "PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -16,10 +16,12 @@ openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = "^1"
+sqlalchemy = "^2.0.19"
+duckdb = "^0.8.1"
 google-generativeai = {version = "^0.1.0rc2", optional = true}
 google-cloud-aiplatform = {version = "^1.26.1", optional = true}
 langchain = {version = "^0.0.199", optional = true}
-polars = "^0.18.15"
+polars = {version = "^0.18.15", optional = true}
 statsmodels = {version = "^0.14.0", optional = true}
 scikit-learn = {version = "^1.2.2", optional = true}
 seaborn = {version = "^0.12.2", optional = true}
@@ -32,7 +34,6 @@ streamlit = {version = "^1.23.1", optional = true}
 beautifulsoup4 = { version = "^4.12.2", optional = true }
 text-generation = { version = ">=0.6.0", optional = true }
 openpyxl = { version = "^3.0.7", optional = true }
-sqlalchemy = { version = "^2.0.19", optional = true }
 pymysql = { version = "^1.1.0", optional = true }
 psycopg2 = { version = "^2.9.7", optional = true }
 yfinance = { version = "^0.2.28", optional = true }
@@ -51,7 +52,7 @@ coverage = "^7.2.7"
 google-cloud-aiplatform = "^1.26.1"
 
 [tool.poetry.extras]
-connectors = ["sqlalchemy", "pymysql", "psycopg2"]
+connectors = ["pymysql", "psycopg2"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
