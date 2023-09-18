@@ -35,6 +35,19 @@ class SQLConnector(BaseConnector):
         config = ConnectorConfig(**config)
         super().__init__(config)
 
+        self._init_connection(config)
+
+        self._cache_interval = cache_interval
+
+    def _init_connection(self, config):
+        """_summary_
+
+        Args:
+            config (_type_): _description_
+
+        Raises:
+            Exception: _description_
+        """
         if config.dialect is None:
             raise Exception("SQL dialect must be specified")
 
@@ -48,8 +61,8 @@ class SQLConnector(BaseConnector):
                 f"{config.dialect}://{config.username}:{config.password}@{config.host}"
                 f":{str(config.port)}/{config.database}"
             )
+        
         self._connection = self._engine.connect()
-        self._cache_interval = cache_interval
 
     def __del__(self):
         """
@@ -391,3 +404,45 @@ class PostgreSQLConnector(SQLConnector):
             config["password"] = os.getenv("POSTGRESQL_PASSWORD")
 
         super().__init__(config)
+
+class SnowFlakeSQLConnector(SQLConnector):
+    """
+    SnowFlake connectors are used to connect to SnowFlake Data Cloud.
+    """
+
+    def __init__(self, config: ConnectorConfig):
+        """
+        Initialize the SnowFlake connector with the given configuration.
+
+        Args:
+            config (ConnectorConfig): The configuration for the SnowFlake connector.
+        """
+        config["dialect"] = "snowflake"
+
+        if "host" not in config and os.getenv("SNOWFLAKE_HOST"):
+            config["host"] = os.getenv("SNOWFLAKE_HOST")
+        if "port" not in config and os.getenv("SNOWFLAKE_PORT"):
+            config["port"] = os.getenv("SNOWFLAKE_PORT")
+        if "database" not in config and os.getenv("SNOWFLAKE_DATABASE"):
+            config["database"] = os.getenv("SNOWFLAKE_DATABASE")
+        # if "schema" not in config and os.getenv("SNOWFLAKE_DATABASE"):
+        #     config["database"] = os.getenv("SNOWFLAKE_DATABASE")
+        if "username" not in config and os.getenv("SNOWFLAKE_USERNAME"):
+            config["username"] = os.getenv("SNOWFLAKE_USERNAME")
+        if "password" not in config and os.getenv("SNOWFLAKE_PASSWORD"):
+            config["password"] = os.getenv("SNOWFLAKE_PASSWORD")
+
+        super().__init__(config)
+
+    def _init_connection(self, config):
+        if config.dialect is None:
+            raise Exception("SQL dialect must be specified")
+        
+        # snowflake://testuser1:0123456@myorganization-myaccount/testdb/public?warehouse=testwh&role=myrole
+        self._engine = create_engine(
+            f"{config.dialect}://{config.username}:{config.password}@{config.host}"
+            f"/{config.database}"
+        )
+        
+        self._connection = self._engine.connect()
+

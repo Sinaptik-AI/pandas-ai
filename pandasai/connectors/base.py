@@ -42,6 +42,13 @@ class BaseConnector(ABC):
             config (dict): The configuration for the connector.
         """
         self._config = config
+    
+    @abstractmethod
+    def _init_connection(self):
+        """
+        make connection to database
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def head(self):
