@@ -25,10 +25,10 @@ class OpenAI(BaseOpenAI):
     """OpenAI LLM using BaseOpenAI Class.
 
     An API call to OpenAI API is sent and response is recorded and returned.
-    The default chat model is **gpt-3.5-turbo** while **text-davinci-003** is only
-    supported completion model.
-    The list of supported Chat models includes ["gpt-4", "gpt-4-0314", "gpt-4-32k",
-     "gpt-4-32k-0314","gpt-3.5-turbo", "gpt-3.5-turbo-0301"].
+    The default chat model is **gpt-3.5-turbo**.
+    The list of supported Chat models includes ["gpt-4", "gpt-4-0613", "gpt-4-32k",
+     "gpt-4-32k-0613", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613",
+     "gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-instruct"].
 
     """
 
@@ -41,8 +41,8 @@ class OpenAI(BaseOpenAI):
         "gpt-3.5-turbo-16k",
         "gpt-3.5-turbo-0613",
         "gpt-3.5-turbo-16k-0613",
+        "gpt-3.5-turbo-instruct",
     ]
-    _supported_completion_models = ["text-davinci-003"]
 
     model: str = "gpt-3.5-turbo"
 
@@ -101,9 +101,7 @@ class OpenAI(BaseOpenAI):
         """
         self.last_prompt = instruction.to_string() + suffix
 
-        if self.model in self._supported_completion_models:
-            response = self.completion(self.last_prompt)
-        elif self.model in self._supported_chat_models:
+        if self.model in self._supported_chat_models:
             response = self.chat_completion(self.last_prompt)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
