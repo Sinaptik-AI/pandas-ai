@@ -510,3 +510,19 @@ class SnowFlakeConnector(SQLConnector):
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
+
+    def __repr__(self):
+        """
+        Return the string representation of the SnowFlake connector.
+
+        Returns:
+            str: The string representation of the SnowFlake connector.
+        """
+        return (
+            f"<{self.__class__.__name__} dialect={self._config.dialect} "
+            f"username={self._config.username} "
+            f"password={self._config.password} Account={self._config.account} "
+            f"warehouse={self._config.warehouse} "
+            f"database={self._config.database} schema={str(self._config.dbSchema)}  "
+            f"table={self._config.table}>"
+        )
