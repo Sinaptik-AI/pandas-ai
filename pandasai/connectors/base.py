@@ -23,7 +23,7 @@ class BaseConnectorConfig(BaseModel):
 
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
     """
-    Connector configuration for SnowFlake.
+    Connector configuration for Yahoo Finance.
     """
 
     host: str
