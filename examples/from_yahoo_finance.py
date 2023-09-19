@@ -2,13 +2,10 @@ from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
-
 yahoo_connector = YahooFinanceConnector("MSFT")
 
-
-OPEN_AI_API = "OPEN_API_KEY"
-llm = OpenAI(api_token=OPEN_AI_API)
+llm = OpenAI(api_token="OPEN_API_KEY")
 df = SmartDataframe(yahoo_connector, config={"llm": llm})
 
-response = df.chat("closing price yesterday")
+response = df.chat("What is the closing price for yesterday?")
 print(response)
