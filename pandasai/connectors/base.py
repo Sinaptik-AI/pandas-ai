@@ -9,20 +9,42 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class ConnectorConfig(BaseModel):
+class BaseConnectorConfig(BaseModel):
     """
-    Connector configuration.
+    Base Connector configuration.
     """
-
     dialect: Optional[str] = None
     driver: Optional[str] = None
-    username: str
-    password: str
-    host: str
-    port: int
     database: str
     table: str
     where: list[list[str]] = None
+
+class YahooFinanceConnectorConfig(BaseModel):
+    """
+    Connector configuration for SnowFlake.
+    """
+    host: str
+    port: int
+
+class SQLConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration.
+    """
+    host: str
+    port: int
+    username: str
+    password: str
+
+class SnowFlakeConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
+    Account: str
+    database: str
+    username: str
+    password: str
+    dbSchema: Optional[str] = None
+    warehouse: Optional[str] = None
 
 
 class BaseConnector(ABC):
@@ -42,9 +64,20 @@ class BaseConnector(ABC):
             config (dict): The configuration for the connector.
         """
         self._config = config
+
+    def _load_connector_config(self, config: BaseConnectorConfig):
+        """Loads passed Configuration to object
+
+        Args:
+            config (BaseConnectorConfig): Construct config in structure
+
+        Returns:
+            _type_: BaseConnectorConfig
+        """
+        raise NotImplementedError
     
     @abstractmethod
-    def _init_connection(self):
+    def _init_connection(self, config: BaseConnectorConfig):
         """
         make connection to database
         """

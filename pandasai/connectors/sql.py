@@ -5,14 +5,13 @@ SQL connectors are used to connect to SQL databases in different dialects.
 import re
 import os
 import pandas as pd
-from .base import BaseConnector, ConnectorConfig
+from .base import BaseConnector, SQLConnectorConfig, BaseConnectorConfig, SnowFlakeConnectorConfig
 from sqlalchemy import create_engine, sql, text, select, asc
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
 from typing import Union
 import time
-
 
 class SQLConnector(BaseConnector):
     """
@@ -25,31 +24,41 @@ class SQLConnector(BaseConnector):
     _columns_count: int = None
     _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, config: Union[ConnectorConfig, dict], cache_interval: int = 600):
+    def __init__(self, config: Union[BaseConnectorConfig, dict], cache_interval: int = 600):
         """
         Initialize the SQL connector with the given configuration.
 
         Args:
             config (ConnectorConfig): The configuration for the SQL connector.
         """
-        config = ConnectorConfig(**config)
+        config  = self._load_connector_config(config)
         super().__init__(config)
 
+        if config.dialect is None:
+            raise Exception("SQL dialect must be specified")
+        
         self._init_connection(config)
 
         self._cache_interval = cache_interval
-
-    def _init_connection(self, config):
-        """_summary_
+    
+    def _load_connector_config(self, config: SQLConnectorConfig):
+        """
+        Loads passed Configuration to object
 
         Args:
-            config (_type_): _description_
+            config (BaseConnectorConfig): Construct config in structure
 
-        Raises:
-            Exception: _description_
         """
-        if config.dialect is None:
-            raise Exception("SQL dialect must be specified")
+        return SQLConnectorConfig(**config)
+    
+    def _init_connection(self, config: SQLConnectorConfig):
+        """
+        Initialize Database Connection
+
+        Args:
+            config (SQLConnectorConfig): Configurations to load database
+
+        """
 
         if config.driver:
             self._engine = create_engine(
@@ -353,7 +362,7 @@ class MySQLConnector(SQLConnector):
     MySQL connectors are used to connect to MySQL databases.
     """
 
-    def __init__(self, config: ConnectorConfig):
+    def __init__(self, config: SQLConnectorConfig):
         """
         Initialize the MySQL connector with the given configuration.
 
@@ -382,7 +391,7 @@ class PostgreSQLConnector(SQLConnector):
     PostgreSQL connectors are used to connect to PostgreSQL databases.
     """
 
-    def __init__(self, config: ConnectorConfig):
+    def __init__(self, config: SQLConnectorConfig):
         """
         Initialize the PostgreSQL connector with the given configuration.
 
@@ -410,7 +419,7 @@ class SnowFlakeSQLConnector(SQLConnector):
     SnowFlake connectors are used to connect to SnowFlake Data Cloud.
     """
 
-    def __init__(self, config: ConnectorConfig):
+    def __init__(self, config: SnowFlakeConnectorConfig):
         """
         Initialize the SnowFlake connector with the given configuration.
 
@@ -434,15 +443,15 @@ class SnowFlakeSQLConnector(SQLConnector):
 
         super().__init__(config)
 
-    def _init_connection(self, config):
-        if config.dialect is None:
-            raise Exception("SQL dialect must be specified")
-        
-        # snowflake://testuser1:0123456@myorganization-myaccount/testdb/public?warehouse=testwh&role=myrole
-        self._engine = create_engine(
-            f"{config.dialect}://{config.username}:{config.password}@{config.host}"
-            f"/{config.database}"
-        )
-        
-        self._connection = self._engine.connect()
+    def _load_connector_config(self, config: SnowFlakeConnectorConfig):
+        return SnowFlakeConnectorConfig(**config)
 
+    def _init_connection(self, config: SnowFlakeConnectorConfig):
+        
+        connection_str = f"{config.dialect}://{config.username}:{config.password}@{config.Account}/?warehouse={config.warehouse}&database={config.database}&schema={config.dbSchema}"
+
+        self._engine = create_engine(
+            connection_str
+        )
+
+        self._connection = self._engine.connect()
