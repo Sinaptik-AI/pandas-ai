@@ -437,7 +437,7 @@ class PostgreSQLConnector(SQLConnector):
         return pd.read_sql(query, self._connection)
 
 
-class SnowFlakeSQLConnector(SQLConnector):
+class SnowFlakeConnector(SQLConnector):
     """
     SnowFlake connectors are used to connect to SnowFlake Data Cloud.
     """
@@ -451,14 +451,14 @@ class SnowFlakeSQLConnector(SQLConnector):
         """
         config["dialect"] = "snowflake"
 
-        if "host" not in config and os.getenv("SNOWFLAKE_HOST"):
-            config["host"] = os.getenv("SNOWFLAKE_HOST")
-        if "port" not in config and os.getenv("SNOWFLAKE_PORT"):
-            config["port"] = os.getenv("SNOWFLAKE_PORT")
+        if "account" not in config and os.getenv("SNOWFLAKE_HOST"):
+            config["account"] = os.getenv("SNOWFLAKE_HOST")
         if "database" not in config and os.getenv("SNOWFLAKE_DATABASE"):
             config["database"] = os.getenv("SNOWFLAKE_DATABASE")
-        # if "schema" not in config and os.getenv("SNOWFLAKE_DATABASE"):
-        #     config["database"] = os.getenv("SNOWFLAKE_DATABASE")
+        if "warehouse" not in config and os.getenv("SNOWFLAKE_WAREHOUSE"):
+            config["warehouse"] = os.getenv("SNOWFLAKE_WAREHOUSE")
+        if "dbSchema" not in config and os.getenv("SNOWFLAKE_SCHEMA"):
+            config["dbSchema"] = os.getenv("SNOWFLAKE_SCHEMA")
         if "username" not in config and os.getenv("SNOWFLAKE_USERNAME"):
             config["username"] = os.getenv("SNOWFLAKE_USERNAME")
         if "password" not in config and os.getenv("SNOWFLAKE_PASSWORD"):
@@ -470,11 +470,15 @@ class SnowFlakeSQLConnector(SQLConnector):
         return SnowFlakeConnectorConfig(**config)
 
     def _init_connection(self, config: SnowFlakeConnectorConfig):
-        
-        connection_str = f"{config.dialect}://{config.username}:{config.password}@{config.Account}/?warehouse={config.warehouse}&database={config.database}&schema={config.dbSchema}"
+        """
+        Initialize Database Connection
 
+        Args:
+            config (SQLConnectorConfig): Configurations to load database
+
+        """
         self._engine = create_engine(
-            connection_str
+            f"{config.dialect}://{config.username}:{config.password}@{config.account}/?warehouse={config.warehouse}&database={config.database}&schema={config.dbSchema}"
         )
 
         self._connection = self._engine.connect()

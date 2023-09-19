@@ -2,11 +2,11 @@
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
-from pandasai.connectors import SnowFlakeSQLConnector
+from pandasai.connectors import SnowFlakeConnector
 
 
-snowflake_connector = SnowFlakeSQLConnector(config={
-        "Account": "ehxzojy-ue47135", 
+snowflake_connector = SnowFlakeConnector(config={
+        "account": "ehxzojy-ue47135", 
         "database": "SNOWFLAKE_SAMPLE_DATA",
         "username": "test",
         "password": "*****",

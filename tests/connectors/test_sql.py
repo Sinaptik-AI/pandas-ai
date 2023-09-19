@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import ConnectorConfig
+from pandasai.connectors.base import SQLConnectorConfig
 from pandasai.connectors.sql import SQLConnector
 
 
@@ -16,7 +16,7 @@ class TestSQLConnector(unittest.TestCase):
         mock_create_engine.return_value = self.mock_engine
 
         # Define your ConnectorConfig instance here
-        self.config = ConnectorConfig(
+        self.config = SQLConnectorConfig(
             dialect="mysql",
             driver="pymysql",
             username="your_username",

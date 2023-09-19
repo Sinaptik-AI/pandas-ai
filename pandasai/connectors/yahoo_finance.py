@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+from sqlalchemy import create_engine
+
 from .base import YahooFinanceConnectorConfig, BaseConnector
 import time
 from ..helpers.path import find_project_root
@@ -32,6 +34,25 @@ class YahooFinanceConnector(BaseConnector):
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
         self.ticker = yfinance.Ticker(self._config.table)
+    
+    def _load_connector_config(self, config: YahooFinanceConnectorConfig):
+        """
+        Loads passed Configuration to object
+
+        Args:
+            config (BaseConnectorConfig): Construct config in structure
+
+        """
+        return YahooFinanceConnectorConfig(**config)
+    
+    def _init_connection(self, config: YahooFinanceConnectorConfig):
+        
+        self._engine = create_engine(
+                f"{config.dialect}://{config.username}:{config.password}@{config.host}"
+                f":{str(config.port)}/{config.database}"
+        )
+
+        self._connection = self._engine.connect()
 
     def head(self):
         """

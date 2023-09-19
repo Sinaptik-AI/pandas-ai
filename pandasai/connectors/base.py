@@ -19,7 +19,7 @@ class BaseConnectorConfig(BaseModel):
     table: str
     where: list[list[str]] = None
 
-class YahooFinanceConnectorConfig(BaseModel):
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
     """
     Connector configuration for SnowFlake.
     """
@@ -39,12 +39,12 @@ class SnowFlakeConnectorConfig(BaseConnectorConfig):
     """
     Connector configuration for SnowFlake.
     """
-    Account: str
+    account: str
     database: str
     username: str
     password: str
-    dbSchema: Optional[str] = None
-    warehouse: Optional[str] = None
+    dbSchema: str
+    warehouse: str
 
 
 class BaseConnector(ABC):
