@@ -14,11 +14,18 @@ class BaseConnectorConfig(BaseModel):
     Base Connector configuration.
     """
 
-    dialect: Optional[str] = None
-    driver: Optional[str] = None
     database: str
     table: str
     where: list[list[str]] = None
+
+
+class SQLBaseConnectorConfig(BaseConnectorConfig):
+    """
+    Base Connector configuration.
+    """
+
+    driver: Optional[str] = None
+    dialect: Optional[str] = None
 
 
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
@@ -26,11 +33,13 @@ class YahooFinanceConnectorConfig(BaseConnectorConfig):
     Connector configuration for Yahoo Finance.
     """
 
+    dialect: str = "yahoo_finance"
+    host: str = "yahoo.finance.com"
+    database: str = "stock_data"
     host: str
-    port: int
 
 
-class SQLConnectorConfig(BaseConnectorConfig):
+class SQLConnectorConfig(SQLBaseConnectorConfig):
     """
     Connector configuration.
     """
@@ -41,7 +50,7 @@ class SQLConnectorConfig(BaseConnectorConfig):
     password: str
 
 
-class SnowFlakeConnectorConfig(BaseConnectorConfig):
+class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
     """
     Connector configuration for SnowFlake.
     """
@@ -59,17 +68,20 @@ class BaseConnector(ABC):
     Base connector class to be extended by all connectors.
     """
 
-    _config = None
+    _config: BaseConnectorConfig = None
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config):
+    def __init__(self, config: Union[BaseConnectorConfig, dict]):
         """
         Initialize the connector with the given configuration.
 
         Args:
             config (dict): The configuration for the connector.
         """
+        if isinstance(config, dict):
+            config = self._load_connector_config(config)
+
         self._config = config
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
@@ -145,17 +157,11 @@ class BaseConnector(ABC):
         Return the path of the data source that the connector is connected to.
         """
         # JDBC string
-        return (
-            self.__class__.__name__
-            + "://"
-            + self._config.host
-            + ":"
-            + str(self._config.port)
-            + "/"
-            + self._config.database
-            + "/"
-            + self._config.table
-        )
+        path = self.__class__.__name__ + "://" + self._config.host + ":"
+        if hasattr(self._config, "port"):
+            path += str(self._config.port)
+        path += "/" + self._config.database + "/" + self._config.table
+        return path
 
     @property
     def logger(self):

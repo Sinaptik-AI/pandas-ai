@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from typing import Optional, Union
 
 from .base import YahooFinanceConnectorConfig, BaseConnector
 import time
@@ -14,7 +15,17 @@ class YahooFinanceConnector(BaseConnector):
 
     _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, stock_ticker, where=None, cache_interval: int = 600):
+    def __init__(
+        self,
+        stock_ticker: Optional[str] = None,
+        config: Optional[Union[YahooFinanceConnectorConfig, dict]] = None,
+        cache_interval: int = 600,
+    ):
+        if not stock_ticker and not config:
+            raise ValueError(
+                "You must specify either a stock ticker or a config object."
+            )
+
         try:
             import yfinance
         except ImportError:
@@ -22,18 +33,22 @@ class YahooFinanceConnector(BaseConnector):
                 "Could not import yfinance python package. "
                 "Please install it with `pip install yfinance`."
             )
-        yahoo_finance_config = YahooFinanceConnectorConfig(
-            dialect="yahoo_finance",
-            host="yahoo.finance.com",
-            port=443,
-            database="stock_data",
-            table=stock_ticker,
-            where=where,
-        )
+
+        if not isinstance(config, YahooFinanceConnectorConfig):
+            if not config:
+                config = {}
+
+            if stock_ticker:
+                config["table"] = stock_ticker
+
+            yahoo_finance_config = YahooFinanceConnectorConfig(**config)
+        else:
+            yahoo_finance_config = config
+
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
         self.ticker = yfinance.Ticker(self._config.table)
-    
+
     def head(self):
         """
         Return the head of the data source that the connector is connected to.

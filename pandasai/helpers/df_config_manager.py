@@ -39,7 +39,7 @@ class DfConfigManager:
         csv_file_path = os.path.join(directory_path, f"{self._sdf.table_name}.csv")
         return csv_file_path
 
-    def _check_for_duplicates(self, saved_dfs):
+    def _check_for_duplicates(self, saved_dfs, name: str):
         """
         Checks if the dataframe name already exists
 
@@ -47,8 +47,8 @@ class DfConfigManager:
             saved_dfs (List[dict]): List of saved dataframes
         """
 
-        if any(df_info["name"] == self._sdf.table_name for df_info in saved_dfs):
-            raise ValueError(f"Duplicate dataframe found: {self._sdf.table_name}")
+        if any(df_info["name"] == name for df_info in saved_dfs):
+            raise ValueError(f"Duplicate dataframe found: {name}")
 
     def _get_import_path(self):
         """
@@ -89,7 +89,7 @@ class DfConfigManager:
 
         return csv_file_path
 
-    def save(self, name=None):
+    def save(self, name: str = None):
         """
         Saves the dataframe object to used for later
 
@@ -102,6 +102,9 @@ class DfConfigManager:
 
         file_path = find_closest("pandasai.json")
 
+        if not name:
+            name = self.name
+
         # Open config file
         saved_df_keys = "saved_dfs"
         with open(file_path, "r+") as json_file:
@@ -110,14 +113,14 @@ class DfConfigManager:
                 pandas_json[saved_df_keys] = []
 
             # Check for duplicates
-            self._check_for_duplicates(pandas_json[saved_df_keys])
+            self._check_for_duplicates(pandas_json[saved_df_keys], name)
 
             # Get import path
             import_path = self._get_import_path()
 
             pandas_json[saved_df_keys].append(
                 {
-                    "name": name if name is not None else self.name,
+                    "name": name,
                     "description": self._sdf.table_description,
                     "sample": self._sdf.head_csv,
                     "import_path": import_path,
