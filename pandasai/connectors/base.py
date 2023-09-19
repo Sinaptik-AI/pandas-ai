@@ -74,14 +74,14 @@ class BaseConnector(ABC):
         Returns:
             _type_: BaseConnectorConfig
         """
-        raise NotImplementedError
+        pass
     
     @abstractmethod
     def _init_connection(self, config: BaseConnectorConfig):
         """
         make connection to database
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def head(self):
