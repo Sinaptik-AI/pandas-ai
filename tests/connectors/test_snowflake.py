@@ -1,8 +1,8 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import SQLConnector
+from pandasai.connectors.base import SnowFlakeConnectorConfig
+from pandasai.connectors.sql import SnowFlakeConnector
 
 
 class TestSQLConnector(unittest.TestCase):
@@ -16,20 +16,20 @@ class TestSQLConnector(unittest.TestCase):
         mock_create_engine.return_value = self.mock_engine
 
         # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
+        self.config = SnowFlakeConnectorConfig(
+            dialect="snowflake",
+            account="ehxzojy-ue47135",
             username="your_username",
             password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
+            database="SNOWFLAKE_SAMPLE_DATA",
+            warehouse="COMPUTED",
+            dbSchema="tpch_sf1",
+            table="lineitem",
             where=[["column_name", "=", "value"]],
         ).dict()
 
         # Create an instance of SQLConnector
-        self.connector = SQLConnector(self.config)
+        self.connector = SnowFlakeConnector(self.config)
 
     def test_constructor_and_properties(self):
         # Test constructor and properties
@@ -41,18 +41,18 @@ class TestSQLConnector(unittest.TestCase):
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
-            "<SQLConnector dialect=mysql driver=pymysql "
-            "username=your_username password=your_password "
-            "host=your_host port=443 database=your_database table=your_table>"
+            "<SnowFlakeConnector dialect=snowflake username=your_username "
+            "password=your_password Account=ehxzojy-ue47135 warehouse=COMPUTED "
+            "database=SNOWFLAKE_SAMPLE_DATA schema=tpch_sf1  table=lineitem>"
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
     def test_build_query_method(self):
         # Test _build_query method
-        query = self.connector._build_query(limit=5, order="RAND()")
+        query = self.connector._build_query(limit=5, order="RANDOM()")
         expected_query = """SELECT * 
-FROM your_table 
-WHERE column_name = :value_0 ORDER BY RAND() ASC
+FROM lineitem 
+WHERE column_name = :value_0 ORDER BY RANDOM() ASC
  LIMIT :param_1"""
 
         self.assertEqual(str(query), expected_query)
@@ -93,4 +93,4 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
     def test_fallback_name_property(self):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
-        self.assertEqual(fallback_name, "your_table")
+        self.assertEqual(fallback_name, "lineitem")
