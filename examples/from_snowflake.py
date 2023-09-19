@@ -4,7 +4,6 @@ from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 from pandasai.connectors import SnowFlakeConnector
 
-
 snowflake_connector = SnowFlakeConnector(
     config={
         "account": "ehxzojy-ue47135",
@@ -22,9 +21,8 @@ snowflake_connector = SnowFlakeConnector(
     }
 )
 
-OPEN_AI_API = "Your-API-Key"
-llm = OpenAI(api_token=OPEN_AI_API)
+llm = OpenAI(api_token="OPEN_API_KEY")
 df = SmartDataframe(snowflake_connector, config={"llm": llm})
 
-response = df.chat("Count line status is F")
+response = df.chat("How many records has status 'F'?")
 print(response)
