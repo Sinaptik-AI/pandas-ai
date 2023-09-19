@@ -11,7 +11,8 @@ theme:
 nav:
   - Introduction: index.md
   - Getting Started: getting-started.md
-  - Examples: examples.md
+  - Connectors:
+      - connectors.md
   - LLMs:
       - LLMs/llms.md
       - LLMs/langchain.md
@@ -24,7 +25,10 @@ nav:
       - callbacks.md
       - custom-prompts.md
       - custom-optional-dependencies.md
-  - Command Line Tool: pai_cli.md
+  - Examples:
+      - examples.md
+  - Command Line Tool:
+      - pai_cli.md
   - API:
       - API/pandasai.md
       - API/prompts.md
