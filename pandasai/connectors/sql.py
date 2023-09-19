@@ -5,13 +5,15 @@ SQL connectors are used to connect to SQL databases in different dialects.
 import re
 import os
 import pandas as pd
-from .base import BaseConnector, SQLConnectorConfig, BaseConnectorConfig, SnowFlakeConnectorConfig
+from .base import BaseConnector, SQLConnectorConfig
+from .base import BaseConnectorConfig, SnowFlakeConnectorConfig
 from sqlalchemy import create_engine, sql, text, select, asc
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
 from typing import Union
 import time
+
 
 class SQLConnector(BaseConnector):
     """
@@ -24,33 +26,37 @@ class SQLConnector(BaseConnector):
     _columns_count: int = None
     _cache_interval: int = 600  # 10 minutes
 
-    def __init__(self, config: Union[BaseConnectorConfig, dict], cache_interval: int = 600):
+    def __init__(
+        self, config: Union[BaseConnectorConfig, dict], cache_interval: int = 600
+    ):
         """
         Initialize the SQL connector with the given configuration.
 
         Args:
             config (ConnectorConfig): The configuration for the SQL connector.
         """
-        config  = self._load_connector_config(config)
+        config = self._load_connector_config(config)
         super().__init__(config)
 
         if config.dialect is None:
             raise Exception("SQL dialect must be specified")
-        
+
         self._init_connection(config)
 
         self._cache_interval = cache_interval
-    
-    def _load_connector_config(self, config: SQLConnectorConfig):
+
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """
         Loads passed Configuration to object
 
         Args:
             config (BaseConnectorConfig): Construct config in structure
 
+        Returns:
+            config: BaseConenctorConfig
         """
         return SQLConnectorConfig(**config)
-    
+
     def _init_connection(self, config: SQLConnectorConfig):
         """
         Initialize Database Connection
@@ -70,7 +76,7 @@ class SQLConnector(BaseConnector):
                 f"{config.dialect}://{config.username}:{config.password}@{config.host}"
                 f":{str(config.port)}/{config.database}"
             )
-        
+
         self._connection = self._engine.connect()
 
     def __del__(self):
@@ -466,7 +472,7 @@ class SnowFlakeConnector(SQLConnector):
 
         super().__init__(config)
 
-    def _load_connector_config(self, config: SnowFlakeConnectorConfig):
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         return SnowFlakeConnectorConfig(**config)
 
     def _init_connection(self, config: SnowFlakeConnectorConfig):
