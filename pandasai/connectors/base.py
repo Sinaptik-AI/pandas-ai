@@ -6,23 +6,52 @@ from abc import ABC, abstractmethod
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 
 
-class ConnectorConfig(BaseModel):
+class BaseConnectorConfig(BaseModel):
     """
-    Connector configuration.
+    Base Connector configuration.
     """
 
     dialect: Optional[str] = None
     driver: Optional[str] = None
-    username: str
-    password: str
-    host: str
-    port: int
     database: str
     table: str
     where: list[list[str]] = None
+
+
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Yahoo Finance.
+    """
+
+    host: str
+    port: int
+
+
+class SQLConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration.
+    """
+
+    host: str
+    port: int
+    username: str
+    password: str
+
+
+class SnowFlakeConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
+
+    account: str
+    database: str
+    username: str
+    password: str
+    dbSchema: str
+    warehouse: str
 
 
 class BaseConnector(ABC):
@@ -42,6 +71,23 @@ class BaseConnector(ABC):
             config (dict): The configuration for the connector.
         """
         self._config = config
+
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
+        """Loads passed Configuration to object
+
+        Args:
+            config (BaseConnectorConfig): Construct config in structure
+
+        Returns:
+            config: BaseConnectorConfig
+        """
+        pass
+
+    def _init_connection(self, config: BaseConnectorConfig):
+        """
+        make connection to database
+        """
+        pass
 
     @abstractmethod
     def head(self):

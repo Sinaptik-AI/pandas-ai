@@ -1,6 +1,7 @@
 import os
 import pandas as pd
-from .base import ConnectorConfig, BaseConnector
+
+from .base import YahooFinanceConnectorConfig, BaseConnector
 import time
 from ..helpers.path import find_project_root
 import hashlib
@@ -21,10 +22,8 @@ class YahooFinanceConnector(BaseConnector):
                 "Could not import yfinance python package. "
                 "Please install it with `pip install yfinance`."
             )
-        yahoo_finance_config = ConnectorConfig(
+        yahoo_finance_config = YahooFinanceConnectorConfig(
             dialect="yahoo_finance",
-            username="",
-            password="",
             host="yahoo.finance.com",
             port=443,
             database="stock_data",
@@ -34,7 +33,7 @@ class YahooFinanceConnector(BaseConnector):
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
         self.ticker = yfinance.Ticker(self._config.table)
-
+    
     def head(self):
         """
         Return the head of the data source that the connector is connected to.
