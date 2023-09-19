@@ -83,7 +83,6 @@ class BaseConnector(ABC):
         """
         pass
 
-    @abstractmethod
     def _init_connection(self, config: BaseConnectorConfig):
         """
         make connection to database
