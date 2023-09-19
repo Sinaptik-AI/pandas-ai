@@ -2,11 +2,11 @@ import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
 from pandasai.connectors.base import SnowFlakeConnectorConfig
-from pandasai.connectors.sql import SnowFlakeConnector
+from pandasai.connectors import SnowFlakeConnector
 
 
 class TestSQLConnector(unittest.TestCase):
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("pandasai.connectors.snowflake.create_engine", autospec=True)
     @patch("pandasai.connectors.sql.sql", autospec=True)
     def setUp(self, mock_sql, mock_create_engine):
         # Create a mock engine and connection
@@ -57,7 +57,7 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
 
         self.assertEqual(str(query), expected_query)
 
-    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    @patch("pandasai.connectors.snowflake.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data

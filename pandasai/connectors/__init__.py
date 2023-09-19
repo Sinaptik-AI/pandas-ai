@@ -5,7 +5,8 @@ The connectors package contains all the connectors that are used by the applicat
 """
 
 from .base import BaseConnector
-from .sql import SQLConnector, MySQLConnector, PostgreSQLConnector, SnowFlakeConnector
+from .sql import SQLConnector, MySQLConnector, PostgreSQLConnector
+from .snowflake import SnowFlakeConnector
 from .yahoo_finance import YahooFinanceConnector
 
 __all__ = [
@@ -14,5 +15,5 @@ __all__ = [
     "MySQLConnector",
     "PostgreSQLConnector",
     "YahooFinanceConnector",
-    "SnowFlakeConnector"
+    "SnowFlakeConnector",
 ]
