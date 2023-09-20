@@ -12,22 +12,22 @@ from .sql import SQLConnector
 
 class DatabricksConnector(SQLConnector):
     """
-    SnowFlake connectors are used to connect to SnowFlake Data Cloud.
+    Databricks connectors are used to connect to Databricks Data Cloud.
     """
 
     def __init__(self, config: DatabricksConnectorConfig):
         """
-        Initialize the SnowFlake connector with the given configuration.
+        Initialize the Databricks connector with the given configuration.
 
         Args:
-            config (ConnectorConfig): The configuration for the SnowFlake connector.
+            config (ConnectorConfig): The configuration for the Databricks connector.
         """
         config["dialect"] = "databricks"
 
         if "token" not in config and os.getenv("DATABRICKS_TOKEN"):
             config["token"] = os.getenv("DATABRICKS_TOKEN")
-        if "database" not in config and os.getenv("SNOWFLAKE_DATABASE"):
-            config["database"] = os.getenv("SNOWFLAKE_DATABASE")
+        if "database" not in config and os.getenv("DATABRICKS_DATABASE"):
+            config["database"] = os.getenv("DATABRICKS_DATABASE")
         if "host" not in config and os.getenv("DATABRICKS_HOST"):
             config["host"] = os.getenv("DATABRICKS_HOST")
         if "port" not in config and os.getenv("DATABRICKS_PORT"):
@@ -45,7 +45,7 @@ class DatabricksConnector(SQLConnector):
         Initialize Database Connection
 
         Args:
-            config (SQLConnectorConfig): Configurations to load database
+            config (DatabricksConnectorConfig): Configurations to load database
 
         """
         self._engine = create_engine(
@@ -56,10 +56,10 @@ class DatabricksConnector(SQLConnector):
 
     def __repr__(self):
         """
-        Return the string representation of the SnowFlake connector.
+        Return the string representation of the Databricks connector.
 
         Returns:
-        str: The string representation of the SnowFlake connector.
+        str: The string representation of the Databricks connector.
         """
         return (
             f"<{self.__class__.__name__} dialect={self._config.dialect} "
