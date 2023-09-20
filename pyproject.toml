@@ -52,7 +52,7 @@ coverage = "^7.2.7"
 google-cloud-aiplatform = "^1.26.1"
 
 [tool.poetry.extras]
-connectors = ["pymysql", "psycopg2", "snowflake-sqlalchemy"]
+connectors = ["pymysql", "psycopg2", "snowflake-sqlalchemy", "databricks-sql-connector"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]

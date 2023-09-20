@@ -63,6 +63,17 @@ class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
     warehouse: str
 
 
+class DatabricksConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for DataBricks.
+    """
+
+    host: str
+    port: int
+    token: str
+    httpPath: str
+
+
 class BaseConnector(ABC):
     """
     Base connector class to be extended by all connectors.
