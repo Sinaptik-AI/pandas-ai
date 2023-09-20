@@ -279,10 +279,7 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get the number of rows
-        query = sql.text(
-            "SELECT COUNT(*) FROM information_schema.columns "
-            "WHERE table_name = :table_name"
-        ).bindparams(table_name=self._config.table)
+        query = sql.text(f"SELECT COUNT(*) FROM {self._config.table}")
 
         # Return the number of rows
         self._rows_count = self._connection.execute(query).fetchone()[0]
@@ -307,14 +304,7 @@ class SQLConnector(BaseConnector):
                 f"{self._config.dialect}"
             )
 
-        # Run a SQL query to get the number of columns
-        query = sql.text(
-            "SELECT COUNT(*) FROM information_schema.columns "
-            f"WHERE table_name = '{self._config.table}'"
-        )
-
-        # Return the number of columns
-        self._columns_count = self._connection.execute(query).fetchone()[0]
+        self._columns_count = len(self.head().columns)
         return self._columns_count
 
     def _get_column_hash(self, include_additional_filters: bool = False):

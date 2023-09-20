@@ -76,11 +76,11 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
     def test_columns_count_property(self):
         # Test columns_count property
         self.connector._columns_count = None
-        self.mock_connection.execute.return_value.fetchone.return_value = (
-            8,
-        )  # Sample columns count
+        mock_df = Mock()
+        mock_df.columns = ["Column1", "Column2"]
+        self.connector.head = Mock(return_value=mock_df)
         columns_count = self.connector.columns_count
-        self.assertEqual(columns_count, 8)
+        self.assertEqual(columns_count, 2)
 
     def test_column_hash_property(self):
         # Test column_hash property

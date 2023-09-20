@@ -6,22 +6,22 @@ from pandasai.connectors import DatabricksConnector
 
 databricks_connector = DatabricksConnector(
     config={
-        "host": "ehxzojy-ue47135",
-        "database": "SNOWFLAKE_SAMPLE_DATA",
-        "token": "",
+        "host": "adb-*****.azuredatabricks.net",
+        "database": "default",
+        "token": "dapidfd412321",
         "port": 443,
-        "table": "lineitem",
-        "httpPath": "tpch_sf1",
+        "table": "loan_payments_data",
+        "httpPath": "/sql/1.0/warehouses/213421312",
         "where": [
             # this is optional and filters the data to
             # reduce the size of the dataframe
-            ["l_quantity", ">", "49"]
+            ["loan_status", "=", "PAIDOFF"],
         ],
     }
 )
 
-llm = OpenAI(api_token="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")
+llm = OpenAI("OPEN_API_KEY")
 df = SmartDataframe(databricks_connector, config={"llm": llm})
 
-response = df.chat("How many records has status 'F'?")
+response = df.chat("How many people from the United states?")
 print(response)
