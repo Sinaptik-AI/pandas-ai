@@ -24,7 +24,7 @@ nav:
       - middlewares.md
       - callbacks.md
       - custom-prompts.md
-      - custom-optional-dependencies.md
+      - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md
   - Command Line Tool:
