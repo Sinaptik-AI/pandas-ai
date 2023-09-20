@@ -122,7 +122,7 @@ class StringOutputType(BaseOutputType):
     def template_hint(self):
         return """- type (must be "string")
     - value (must be a conversational answer, as a string)
-    Example output: { "type": "string", "value": "The highest salary is $9,000." }"""
+    Example output: { "type": "string", "value": f"The highest salary is {highest_salary}." }"""  # noqa E501
 
     @property
     def name(self):
