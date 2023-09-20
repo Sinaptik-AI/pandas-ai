@@ -27,7 +27,11 @@ class TestSmartDataframe:
     """Unit tests for the SmartDatalake class"""
 
     def tearDown(self):
-        for filename in ["df_test.csv", "df_test_polars.csv", "df_duplicate.csv"]:
+        for filename in [
+            "df_test.parquet",
+            "df_test_polars.parquet",
+            "df_duplicate.parquet",
+        ]:
             if os.path.exists("cache/" + filename):
                 os.remove("cache/" + filename)
 
@@ -92,7 +96,7 @@ class TestSmartDataframe:
                 "name": "photo",
                 "description": "Dataframe containing photo metadata",
                 "sample": "filename,format,size\n1.jpg,JPEG,1240KB\n2.png,PNG,320KB",
-                "import_path": "path/to/photo_data.csv",
+                "import_path": "path/to/photo_data.parquet",
             }
         ]
 
@@ -564,7 +568,7 @@ result = analyze_data(dfs)
                 "size": ["1240KB", "320KB"],
             }
         )
-        mocker.patch.object(pd, "read_csv", return_value=expected_df)
+        mocker.patch.object(pd, "read_parquet", return_value=expected_df)
 
         mocker.patch.object(
             json,
@@ -593,11 +597,11 @@ result = analyze_data(dfs)
     def test_import_csv_file(self, smart_dataframe, mocker):
         mocker.patch.object(
             pd,
-            "read_csv",
+            "read_parquet",
             return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
         )
 
-        file_path = "sample.csv"
+        file_path = "sample.parquet"
 
         df = smart_dataframe._import_from_file(file_path)
 

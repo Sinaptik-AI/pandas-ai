@@ -73,7 +73,7 @@ class YahooFinanceConnector(BaseConnector):
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.csv")
+        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
 
     def _get_cache_path(self):
         """
@@ -86,7 +86,7 @@ class YahooFinanceConnector(BaseConnector):
 
         os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.csv")
+        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
 
     def _cached(self):
         """
@@ -122,13 +122,13 @@ class YahooFinanceConnector(BaseConnector):
         """
         cached_path = self._cached()
         if cached_path:
-            return pd.read_csv(cached_path)
+            return pd.read_parquet(cached_path)
 
         # Use yfinance to retrieve historical stock data
         stock_data = self.ticker.history(period="max")
 
         # Save the result to the cache
-        stock_data.to_csv(self._get_cache_path(), index=False)
+        stock_data.to_parquet(self._get_cache_path())
 
         return stock_data
 
