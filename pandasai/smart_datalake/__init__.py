@@ -23,6 +23,7 @@ import uuid
 import sys
 import logging
 import os
+import traceback
 
 from ..helpers.output_types import output_type_factory
 from ..llm.base import LLM
@@ -357,7 +358,8 @@ class SmartDatalake:
                         level=logging.WARNING,
                     )
 
-                    code_to_run = self._retry_run_code(code, e)
+                    traceback_error = traceback.format_exc()
+                    code_to_run = self._retry_run_code(code, traceback_error)
 
             if result is not None:
                 if isinstance(result, dict):
