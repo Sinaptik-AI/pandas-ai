@@ -114,8 +114,8 @@ As an alternative, you can simply edit the `pandasai.json` file in the root of y
 
 Settings:
 
-- `llm`: the LLM to use. You can pass an instance of an LLM or the name of an LLM. You can use one of the LLMs supported. You can find more information about LLMs [here](llms.md).
-- `llm_options`: the options to use for the LLM (for example the api token, etc). You can find more information about the settings [here](llms.md).
+- `llm`: the LLM to use. You can pass an instance of an LLM or the name of an LLM. You can use one of the LLMs supported. You can find more information about LLMs [here](./LLMs/llms.md).
+- `llm_options`: the options to use for the LLM (for example the api token, etc). You can find more information about the settings [here](./LLMs/llms.md).
 - `save_logs`: whether to save the logs of the LLM. Defaults to `True`. You will find the logs in the `pandasai.log` file in the root of your project.
 - `verbose`: whether to print the logs in the console as PandasAI is executed. Defaults to `False`.
 - `enforce_privacy`: whether to enforce privacy. Defaults to `False`. If set to `True`, PandasAI will not send any data to the LLM, but only the metadata. By default, PandasAI will send 5 samples that are anonymized to improve the accuracy of the results.
