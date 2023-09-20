@@ -181,7 +181,7 @@ class SQLConnector(BaseConnector):
 
         filename = (
             self._get_column_hash(include_additional_filters=include_additional_filters)
-            + ".csv"
+            + ".parquet"
         )
         path = os.path.join(cache_dir, filename)
 
@@ -225,7 +225,7 @@ class SQLConnector(BaseConnector):
             include_additional_filters=self._additional_filters is not None
             and len(self._additional_filters) > 0
         )
-        df.to_csv(filename, index=False)
+        df.to_parquet(filename)
 
     def execute(self):
         """
@@ -239,7 +239,7 @@ class SQLConnector(BaseConnector):
         # filters as a fallback
         cached = self._cached() or self._cached(include_additional_filters=True)
         if cached:
-            return pd.read_csv(cached)
+            return pd.read_parquet(cached)
 
         if self.logger:
             self.logger.log(

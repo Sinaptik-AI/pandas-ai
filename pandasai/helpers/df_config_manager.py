@@ -29,14 +29,14 @@ class DfConfigManager:
         else:
             raise TypeError("Expected instance of type 'SmartDataFrame'")
 
-    def _create_csv_save_path(self):
+    def _create_save_path(self):
         """
         Creates the path for the csv file to be saved
         """
 
         directory_path = os.path.join(find_project_root(), "cache")
         create_directory(directory_path)
-        csv_file_path = os.path.join(directory_path, f"{self._sdf.table_name}.csv")
+        csv_file_path = os.path.join(directory_path, f"{self._sdf.table_name}.parquet")
         return csv_file_path
 
     def _check_for_duplicates(self, saved_dfs, name: str):
@@ -78,16 +78,16 @@ class DfConfigManager:
         # Save df if pandas or polar
         dataframe_type = df_type(self.original_import)
         if dataframe_type == "pandas":
-            csv_file_path = self._create_csv_save_path()
-            self._sdf.dataframe.to_csv(csv_file_path)
+            file_path = self._create_save_path()
+            self._sdf.dataframe.to_parquet(file_path)
         elif dataframe_type == "polars":
-            csv_file_path = self._create_csv_save_path()
-            with open(csv_file_path, "w") as f:
+            file_path = self._create_save_path()
+            with open(file_path, "w") as f:
                 self._sdf.dataframe.write_csv(f)
         else:
             raise ValueError("Unknown dataframe type")
 
-        return csv_file_path
+        return file_path
 
     def save(self, name: str = None):
         """

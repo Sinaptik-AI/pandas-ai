@@ -50,7 +50,7 @@ def test_head(yahoo_finance_connector):
 
 def test_get_cache_path(yahoo_finance_connector):
     with patch("os.path.join") as mock_join:
-        expected_result = "../AAPL_data.csv"
+        expected_result = "../AAPL_data.parquet"
         mock_join.return_value = expected_result
         assert yahoo_finance_connector._get_cache_path() == expected_result
 
