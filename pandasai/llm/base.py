@@ -434,9 +434,8 @@ class BaseGoogle(LLM):
         Call the Google LLM.
 
         Args:
-            instruction (object): Instruction to pass
-            value (str): Value to pass
-            suffix (str): Suffix to pass
+            instruction (Prompt): Instruction to pass.
+            suffix (str): Suffix to pass. Defaults to an empty string ("").
 
         Returns:
             str: LLM response.
