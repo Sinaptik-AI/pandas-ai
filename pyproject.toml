@@ -16,7 +16,7 @@ openai = "^0.27.5"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = "^1"
-sqlalchemy = "^2.0.19"
+sqlalchemy = "^1.4.49"
 duckdb = "^0.8.1"
 beautifulsoup4 = "^4.12.2"
 google-generativeai = {version = "^0.1.0rc2", optional = true}
@@ -50,9 +50,11 @@ coverage = "^7.2.7"
 
 [tool.poetry.group.extras.dependencies]
 google-cloud-aiplatform = "^1.26.1"
+sqlalchemy-databricks = "^0.2.0"
+snowflake-sqlalchemy = "^1.5.0"
 
 [tool.poetry.extras]
-connectors = ["pymysql", "psycopg2", "sqlalchemy-databricks", "snowflake-sqlalchemy"]
+connectors = [ "pymysql", "psycopg2"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
