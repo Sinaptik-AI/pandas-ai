@@ -1,8 +1,9 @@
-"""Example of using PandasAI with a Snowflake"""
+"""Example of using PandasAI with a DataBricks"""
 
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 from pandasai.connectors import DatabricksConnector
+
 
 databricks_connector = DatabricksConnector(
     config={

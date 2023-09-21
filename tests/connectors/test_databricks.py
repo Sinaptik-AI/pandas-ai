@@ -7,8 +7,8 @@ from pandasai.connectors import DatabricksConnector
 
 class TestDataBricksConnector(unittest.TestCase):
     @patch("pandasai.connectors.databricks.create_engine", autospec=True)
-    @patch("pandasai.connectors.sql.sql", autospec=True)
-    def setUp(self, mock_sql, mock_create_engine):
+    # @patch("pandasai.connectors.sql.sql", autospec=True)
+    def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -21,7 +21,7 @@ class TestDataBricksConnector(unittest.TestCase):
             host="ehxzojy-ue47135",
             port=443,
             token="token",
-            database="SNOWFLAKE_SAMPLE_DATA",
+            database="DATABRICKS_SAMPLE_DATA",
             httpPath="/sql/1.0/warehouses/1241rsa32",
             table="lineitem",
             where=[["column_name", "=", "value"]],
@@ -30,31 +30,39 @@ class TestDataBricksConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = DatabricksConnector(self.config)
 
-    def test_constructor_and_properties(self):
+    @patch("pandasai.connectors.DatabricksConnector._load_connector_config")
+    @patch("pandasai.connectors.DatabricksConnector._init_connection")
+    def test_constructor_and_properties(
+        self, mock_load_connector_config, mock_init_connection
+    ):
         # Test constructor and properties
+
+        mock_load_connector_config.return_value = self.config
         self.assertEqual(self.connector._config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)
+        DatabricksConnector(self.config)
+        mock_load_connector_config.assert_called()
+        mock_init_connection.assert_called()
 
     def test_repr_method(self):
         # Test __repr__ method
 
         expected_repr = (
-            "<DatabricksConnector dialect=databricks token=token "
+            "<DatabricksConnector dialect=databricks "
             "host=ehxzojy-ue47135 port=443 "
-            "database=SNOWFLAKE_SAMPLE_DATA httpPath=/sql/1.0/warehouses/1241rsa32"
+            "database=DATABRICKS_SAMPLE_DATA httpPath=/sql/1.0/warehouses/1241rsa32"
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
     def test_build_query_method(self):
         # Test _build_query method
-        query = self.connector._build_query(limit=5, order="RANDOM()")
+        query = self.connector._build_query(limit=5, order="RAND()")
         expected_query = """SELECT * 
 FROM lineitem 
-WHERE column_name = :value_0 ORDER BY RANDOM() ASC
+WHERE column_name = :value_0 ORDER BY RAND() ASC
  LIMIT :param_1"""
-
         self.assertEqual(str(query), expected_query)
 
     @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
@@ -89,6 +97,10 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
         self.connector.head = Mock(return_value=mock_df)
         column_hash = self.connector.column_hash
         self.assertIsNotNone(column_hash)
+        self.assertEqual(
+            column_hash,
+            "ea6a80582b83e1511f8be83412b13e7b86d20c45b96fcf9731f3b99dc3b568aa",
+        )
 
     def test_fallback_name_property(self):
         # Test fallback_name property

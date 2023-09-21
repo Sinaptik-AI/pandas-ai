@@ -7,8 +7,7 @@ from pandasai.connectors import SnowFlakeConnector
 
 class TestSQLConnector(unittest.TestCase):
     @patch("pandasai.connectors.snowflake.create_engine", autospec=True)
-    @patch("pandasai.connectors.sql.sql", autospec=True)
-    def setUp(self, mock_sql, mock_create_engine):
+    def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -31,18 +30,25 @@ class TestSQLConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = SnowFlakeConnector(self.config)
 
-    def test_constructor_and_properties(self):
+    @patch("pandasai.connectors.SnowFlakeConnector._load_connector_config")
+    @patch("pandasai.connectors.SnowFlakeConnector._init_connection")
+    def test_constructor_and_properties(
+        self, mock_load_connector_config, mock_init_connection
+    ):
         # Test constructor and properties
         self.assertEqual(self.connector._config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)
+        SnowFlakeConnector(self.config)
+        mock_load_connector_config.assert_called()
+        mock_init_connection.assert_called()
 
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
-            "<SnowFlakeConnector dialect=snowflake username=your_username "
-            "password=your_password Account=ehxzojy-ue47135 warehouse=COMPUTED "
+            "<SnowFlakeConnector dialect=snowflake "
+            "Account=ehxzojy-ue47135 warehouse=COMPUTED "
             "database=SNOWFLAKE_SAMPLE_DATA schema=tpch_sf1  table=lineitem>"
         )
         self.assertEqual(repr(self.connector), expected_repr)
@@ -89,6 +95,10 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
         self.connector.head = Mock(return_value=mock_df)
         column_hash = self.connector.column_hash
         self.assertIsNotNone(column_hash)
+        self.assertEqual(
+            column_hash,
+            "ea6a80582b83e1511f8be83412b13e7b86d20c45b96fcf9731f3b99dc3b568aa",
+        )
 
     def test_fallback_name_property(self):
         # Test fallback_name property

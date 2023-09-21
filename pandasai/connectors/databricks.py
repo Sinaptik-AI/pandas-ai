@@ -3,7 +3,6 @@ Databricks Connector to connects you to your Databricks SQL Warhouse on
 Azure, AWS and GCP
 """
 
-import os
 from .base import BaseConnectorConfig, DatabricksConnectorConfig
 from sqlalchemy import create_engine
 from typing import Union
@@ -15,7 +14,7 @@ class DatabricksConnector(SQLConnector):
     Databricks connectors are used to connect to Databricks Data Cloud.
     """
 
-    def __init__(self, config: DatabricksConnectorConfig):
+    def __init__(self, config: Union[DatabricksConnectorConfig, dict]):
         """
         Initialize the Databricks connector with the given configuration.
 
@@ -23,17 +22,15 @@ class DatabricksConnector(SQLConnector):
             config (ConnectorConfig): The configuration for the Databricks connector.
         """
         config["dialect"] = "databricks"
-
-        if "token" not in config and os.getenv("DATABRICKS_TOKEN"):
-            config["token"] = os.getenv("DATABRICKS_TOKEN")
-        if "database" not in config and os.getenv("DATABRICKS_DATABASE"):
-            config["database"] = os.getenv("DATABRICKS_DATABASE")
-        if "host" not in config and os.getenv("DATABRICKS_HOST"):
-            config["host"] = os.getenv("DATABRICKS_HOST")
-        if "port" not in config and os.getenv("DATABRICKS_PORT"):
-            config["port"] = os.getenv("DATABRICKS_PORT")
-        if "httpPath" not in config and os.getenv("DATABRICKS_HTTP_PATH"):
-            config["httpPath"] = os.getenv("DATABRICKS_HTTP_PATH")
+        if isinstance(config, dict):
+            env_vars = {
+                "token": "DATABRICKS_TOKEN",
+                "database": "DATABRICKS_DATABASE",
+                "host": "DATABRICKS_HOST",
+                "port": "DATABRICKS_PORT",
+                "httpPath": "DATABRICKS_HTTP_PATH",
+            }
+            config = self._populate_config_from_env(config, env_vars)
 
         super().__init__(config)
 
@@ -63,7 +60,6 @@ class DatabricksConnector(SQLConnector):
         """
         return (
             f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"token={self._config.token} "
             f"host={self._config.host} port={self._config.port} "
             f"database={self._config.database} httpPath={str(self._config.httpPath)}"
         )

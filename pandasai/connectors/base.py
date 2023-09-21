@@ -3,6 +3,7 @@ Base connector class to be extended by all connectors.
 """
 
 from abc import ABC, abstractmethod
+import os
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
@@ -105,6 +106,24 @@ class BaseConnector(ABC):
             config: BaseConnectorConfig
         """
         pass
+
+    def _populate_config_from_env(self, config: dict, envs_mapping: dict):
+        """
+        Populate the configuration dictionary with values from environment variables
+        if not exists in the config.
+
+        Args:
+            config (dict): The configuration dictionary to be populated.
+
+        Returns:
+            dict: The populated configuration dictionary.
+        """
+
+        for key, env_var in envs_mapping.items():
+            if key not in config and os.getenv(env_var):
+                config[key] = os.getenv(env_var)
+
+        return config
 
     def _init_connection(self, config: BaseConnectorConfig):
         """
