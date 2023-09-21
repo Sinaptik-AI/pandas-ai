@@ -2,7 +2,6 @@
 SnowFlake connectors are used to connect to SnowFlake Data Cloud.
 """
 
-import os
 import pandas as pd
 from .base import BaseConnectorConfig, SnowFlakeConnectorConfig
 from sqlalchemy import create_engine
@@ -16,7 +15,7 @@ class SnowFlakeConnector(SQLConnector):
     SnowFlake connectors are used to connect to SnowFlake Data Cloud.
     """
 
-    def __init__(self, config: SnowFlakeConnectorConfig):
+    def __init__(self, config: Union[SnowFlakeConnectorConfig, dict]):
         """
         Initialize the SnowFlake connector with the given configuration.
 
@@ -25,18 +24,16 @@ class SnowFlakeConnector(SQLConnector):
         """
         config["dialect"] = "snowflake"
 
-        if "account" not in config and os.getenv("SNOWFLAKE_HOST"):
-            config["account"] = os.getenv("SNOWFLAKE_HOST")
-        if "database" not in config and os.getenv("SNOWFLAKE_DATABASE"):
-            config["database"] = os.getenv("SNOWFLAKE_DATABASE")
-        if "warehouse" not in config and os.getenv("SNOWFLAKE_WAREHOUSE"):
-            config["warehouse"] = os.getenv("SNOWFLAKE_WAREHOUSE")
-        if "dbSchema" not in config and os.getenv("SNOWFLAKE_SCHEMA"):
-            config["dbSchema"] = os.getenv("SNOWFLAKE_SCHEMA")
-        if "username" not in config and os.getenv("SNOWFLAKE_USERNAME"):
-            config["username"] = os.getenv("SNOWFLAKE_USERNAME")
-        if "password" not in config and os.getenv("SNOWFLAKE_PASSWORD"):
-            config["password"] = os.getenv("SNOWFLAKE_PASSWORD")
+        if isinstance(config, dict):
+            snowflake_env_vars = {
+                "account": "SNOWFLAKE_HOST",
+                "database": "SNOWFLAKE_DATABASE",
+                "warehouse": "SNOWFLAKE_WAREHOUSE",
+                "dbSchema": "SNOWFLAKE_SCHEMA",
+                "username": "SNOWFLAKE_USERNAME",
+                "password": "SNOWFLAKE_PASSWORD",
+            }
+            config = self._populate_config_from_env(config, snowflake_env_vars)
 
         super().__init__(config)
 
@@ -88,8 +85,7 @@ class SnowFlakeConnector(SQLConnector):
         """
         return (
             f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"username={self._config.username} "
-            f"password={self._config.password} Account={self._config.account} "
+            f"Account={self._config.account} "
             f"warehouse={self._config.warehouse} "
             f"database={self._config.database} schema={str(self._config.dbSchema)}  "
             f"table={self._config.table}>"
