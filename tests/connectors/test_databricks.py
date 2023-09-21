@@ -1,12 +1,13 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import SQLConnector
+from pandasai.connectors.base import DatabricksConnectorConfig
+from pandasai.connectors import DatabricksConnector
 
 
-class TestSQLConnector(unittest.TestCase):
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+class TestDataBricksConnector(unittest.TestCase):
+    @patch("pandasai.connectors.databricks.create_engine", autospec=True)
+    # @patch("pandasai.connectors.sql.sql", autospec=True)
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
@@ -15,41 +16,43 @@ class TestSQLConnector(unittest.TestCase):
         mock_create_engine.return_value = self.mock_engine
 
         # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
+        self.config = DatabricksConnectorConfig(
+            dialect="databricks",
+            host="ehxzojy-ue47135",
             port=443,
-            database="your_database",
-            table="your_table",
+            token="token",
+            database="DATABRICKS_SAMPLE_DATA",
+            httpPath="/sql/1.0/warehouses/1241rsa32",
+            table="lineitem",
             where=[["column_name", "=", "value"]],
         ).dict()
 
         # Create an instance of SQLConnector
-        self.connector = SQLConnector(self.config)
+        self.connector = DatabricksConnector(self.config)
 
-    @patch("pandasai.connectors.SQLConnector._load_connector_config")
-    @patch("pandasai.connectors.SQLConnector._init_connection")
+    @patch("pandasai.connectors.DatabricksConnector._load_connector_config")
+    @patch("pandasai.connectors.DatabricksConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
         # Test constructor and properties
 
+        mock_load_connector_config.return_value = self.config
         self.assertEqual(self.connector._config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)
-        SQLConnector(self.config)
+        DatabricksConnector(self.config)
         mock_load_connector_config.assert_called()
         mock_init_connection.assert_called()
 
     def test_repr_method(self):
         # Test __repr__ method
+
         expected_repr = (
-            "<SQLConnector dialect=mysql driver=pymysql "
-            "host=your_host port=443 database=your_database table=your_table>"
+            "<DatabricksConnector dialect=databricks "
+            "host=ehxzojy-ue47135 port=443 "
+            "database=DATABRICKS_SAMPLE_DATA httpPath=/sql/1.0/warehouses/1241rsa32"
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
@@ -57,10 +60,9 @@ class TestSQLConnector(unittest.TestCase):
         # Test _build_query method
         query = self.connector._build_query(limit=5, order="RAND()")
         expected_query = """SELECT * 
-FROM your_table 
+FROM lineitem 
 WHERE column_name = :value_0 ORDER BY RAND() ASC
  LIMIT :param_1"""
-
         self.assertEqual(str(query), expected_query)
 
     @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
@@ -103,4 +105,4 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
     def test_fallback_name_property(self):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
-        self.assertEqual(fallback_name, "your_table")
+        self.assertEqual(fallback_name, "lineitem")
