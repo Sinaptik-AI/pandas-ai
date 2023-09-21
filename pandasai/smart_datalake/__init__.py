@@ -251,7 +251,7 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(self, query: str):
+    def chat(self, query: str, conversation: Union[str, None] = None):
         """
         Run a query on the dataframe.
 
@@ -285,6 +285,9 @@ class SmartDatalake:
                     "engine": self._dfs[0].engine,
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
                 }
+                if conversation is not None:
+                    default_values["conversation"] = conversation
+
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
@@ -616,3 +619,7 @@ class SmartDatalake:
     @last_error.setter
     def last_error(self, last_error: str):
         self._last_error = last_error
+
+    @property
+    def dfs(self):
+        return self._dfs
