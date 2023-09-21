@@ -49,7 +49,7 @@ class SmartDatalake:
     _cache: Cache = None
     _logger: Logger
     _start_time: float
-    _last_prompt_id: uuid
+    _last_prompt_id: uuid.UUID
     _code_manager: CodeManager
     _memory: Memory
 
