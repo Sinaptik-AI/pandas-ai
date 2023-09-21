@@ -44,6 +44,7 @@ from .prompts.base import Prompt
 from .callbacks.base import BaseCallback
 from .schemas.df_config import Config
 from .helpers.cache import Cache
+from .agent import Agent
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 
@@ -257,4 +258,4 @@ def clear_cache(filename: str = None):
     cache.clear()
 
 
-__all__ = ["PandasAI", "SmartDataframe", "SmartDatalake", "clear_cache"]
+__all__ = ["PandasAI", "SmartDataframe", "SmartDatalake", "Agent", "clear_cache"]
