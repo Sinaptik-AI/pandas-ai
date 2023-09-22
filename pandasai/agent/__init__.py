@@ -107,13 +107,12 @@ class Agent:
                 f"\n{exception}\n",
             )
 
-    def start_new_conversation(self) -> True:
+    def start_new_conversation(self):
         """
         Clears the previous conversation
         """
 
         self._memory.clear()
-        return True
 
     def explain(self) -> str:
         """

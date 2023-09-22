@@ -8,7 +8,7 @@ class ClarificationResponse:
     """
 
     def __init__(
-        self, success: bool = True, questions: List[str] = None, message: str = ""
+        self, success: bool = True, questions: List[str] = [], message: str = ""
     ):
         """
         Args:
@@ -24,7 +24,7 @@ class ClarificationResponse:
         return self._questions
 
     @property
-    def message(self) -> List[str]:
+    def message(self) -> str:
         return self._message
 
     @property
