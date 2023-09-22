@@ -1,47 +1,23 @@
-""" Prompt to get clarification questions
-You are provided with the following pandas DataFrames:
-
-<dataframe>
-{dataframe}
-</dataframe>
-
-<conversation>
-{conversation}
-</conversation>
-
-Based on the conversation, are there any clarification questions that a senior data scientist would ask? These are questions for non technical people, only ask for questions they could ask given low tech expertise and no knowledge about how the dataframes are structured.
-
-Return the JSON array of the clarification questions. If there is no clarification question, return an empty array.
-
-Json:
-"""  # noqa: E501
+""" Prompt to explain solution generated
+Based on the last conversation you generated the code. 
+Can you explain briefly for non technical person on how you came up with code 
+without explaining pandas library?
+"""
 
 
 from .base import Prompt
 
 
-class ClarificationQuestionPrompt(Prompt):
+class ExplainPrompt(Prompt):
     """Prompt to get clarification questions"""
 
     text: str = """
-You are provided with the following pandas DataFrames:
+Based on the last conversation you generated the code. 
 
-<dataframe>
-{dataframes}
-</dataframe>
+<Code>
+{code}
+</Code
 
-<conversation>
-{conversation}
-</conversation>
-
-Based on the conversation, are there any clarification questions 
-that a senior data scientist would ask? These are questions for non technical people, 
-only ask for questions they could ask given low tech expertise and 
-no knowledge about how the dataframes are structured.
-
-Return the JSON array of the clarification questions. 
-
-If there is no clarification question, return an empty array.
-
-Json:
+Can you explain briefly for non technical person on how you came up with code 
+without explaining pandas library?
 """
