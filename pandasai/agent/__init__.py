@@ -16,7 +16,6 @@ class Agent:
 
     _lake: SmartDatalake = None
     _logger: Optional[Logger] = None
-    _memory_size: int = None
 
     def __init__(
         self,
