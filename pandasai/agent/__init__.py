@@ -121,6 +121,7 @@ class Agent:
         try:
             prompt = ExplainPrompt()
             prompt.set_var("code", self._lake.last_code_executed)
+            prompt.set_var("conversation", self._get_conversation())
             response = self._lake.llm.call(prompt)
             self.logger.log(
                 f"""Explaination:  {response}
