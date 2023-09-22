@@ -45,7 +45,7 @@ class Agent:
         """
         return "\n".join(
             [
-                f"{'Question: ' if message['is_user'] else 'Answer:'}: "
+                f"{'Question' if message['is_user'] else 'Answer'}: "
                 f"{message['message']}"
                 for i, message in enumerate(self._memory.all())
             ]
@@ -77,13 +77,14 @@ class Agent:
         try:
             prompt = self._get_clarification_prompt()
             result = self._lake.llm.generate_code(prompt)
+            questions = json.loads(result)
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your clarification questions, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
-        questions = json.loads(result)
+
         return questions[:3]
 
     def start_new_conversation(self):

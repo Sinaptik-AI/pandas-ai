@@ -19,10 +19,10 @@ salaries_df = pd.DataFrame(salaries_data)
 
 
 llm = OpenAI("OPEN_API")
-dl = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
-response = dl.chat("Who gets paid the most?")
+agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
+response = agent.chat("Who gets paid the most?")
 print(response)
-response = dl.clarification_questions()
-
-response = dl.chat("Which department does he belongs to?")
+questions = agent.clarification_questions()
+print(questions)
+response = agent.chat("Which department he belongs to?")
 print(response)
