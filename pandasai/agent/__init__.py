@@ -1,14 +1,10 @@
 import json
 from typing import Union, List, Optional
-from pandasai.agent.response import ClarificationResponse
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
-from pandasai.helpers.memory import Memory
-from pandasai.prompts.base import Prompt
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 from pandasai.schemas.df_config import Config
-
 from pandasai.smart_datalake import SmartDatalake
 
 
@@ -17,9 +13,9 @@ class Agent:
     Agent class to improve the conversational experience in PandasAI
     """
 
-    _memory: Memory
     _lake: SmartDatalake = None
-    logger: Optional[Logger] = None
+    _logger: Optional[Logger] = None
+    _memory_size: int = None
 
     def __init__(
         self,
@@ -38,34 +34,21 @@ class Agent:
             dfs = [dfs]
 
         self._lake = SmartDatalake(dfs, config, logger)
-        self.logger = self._lake.logger
-        # For the conversation multiple the memory size by 2
-        self._memory = Memory(memory_size * 2)
-
-    def _get_conversation(self):
-        """
-        Get Conversation from history
-
-        """
-        return "\n".join(
-            [
-                f"{'Question' if message['is_user'] else 'Answer'}: "
-                f"{message['message']}"
-                for i, message in enumerate(self._memory.all())
-            ]
-        )
+        self._logger = self._lake.logger
+        self._memory_size = memory_size
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            self._memory.add(query, True)
-            conversation = self._get_conversation()
             result = self._lake.chat(
-                query, output_type=output_type, start_conversation=conversation
+                query,
+                output_type=output_type,
+                start_conversation=self._lake._memory.get_conversation(
+                    self._memory_size
+                ),
             )
-            self._memory.add(result, False)
             return result
         except Exception as exception:
             return (
@@ -74,56 +57,43 @@ class Agent:
                 f"\n{exception}\n"
             )
 
-    def _get_clarification_prompt(self) -> Prompt:
-        """
-        Create a clarification prompt with relevant variables.
-        """
-        prompt = ClarificationQuestionPrompt()
-        prompt.set_var("dfs", self._lake.dfs)
-        prompt.set_var("conversation", self._get_conversation())
-        return prompt
-
-    def clarification_questions(self) -> ClarificationResponse:
+    def clarification_questions(self) -> List[str]:
         """
         Generate clarification questions based on the data
         """
         try:
-            prompt = self._get_clarification_prompt()
+            prompt = ClarificationQuestionPrompt(
+                self._lake.dfs, self._lake._memory.get_conversation(self._memory_size)
+            )
+
             result = self._lake.llm.call(prompt)
-            self.logger.log(
+            self._logger.log(
                 f"""Clarification Questions:  {result}
                 """
             )
             questions: list[str] = json.loads(result)
-            return ClarificationResponse(
-                success=True, questions=questions[:3], message=result
-            )
+            return questions[:3]
+
         except Exception as exception:
-            return ClarificationResponse(
-                False,
-                [],
-                "Unfortunately, I was not able to get your clarification questions, "
-                "because of the following error:\n"
-                f"\n{exception}\n",
-            )
+            raise exception
 
     def start_new_conversation(self):
         """
         Clears the previous conversation
         """
-
-        self._memory.clear()
+        self._lake._memory.clear()
 
     def explain(self) -> str:
         """
         Returns the explanation of the code how it reached to the solution
         """
         try:
-            prompt = ExplainPrompt()
-            prompt.set_var("code", self._lake.last_code_executed)
-            prompt.set_var("conversation", self._get_conversation())
+            prompt = ExplainPrompt(
+                self._lake._memory.get_conversation(self._memory_size),
+                self._lake.last_code_executed,
+            )
             response = self._lake.llm.call(prompt)
-            self.logger.log(
+            self._logger.log(
                 f"""Explaination:  {response}
                 """
             )

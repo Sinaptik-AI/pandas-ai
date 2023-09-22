@@ -18,13 +18,17 @@ The previous conversation we had
 {conversation}
 </Conversation>
 
-Based on the last conversation you generated the code. 
+Based on the last conversation you generated the following code:
 
 <Code>
 {code}
 </Code
 
-Can you explain briefly for non technical person on how you came up with code 
-without explaining pandas library?
+Explain how you came up with code for non-technical people without 
+mentioning technical details or mentioning the libraries used?
 
 """
+
+    def __init__(self, conversation, code):
+        self.set_var("conversation", conversation)
+        self.set_var("code", code)

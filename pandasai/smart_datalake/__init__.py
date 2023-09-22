@@ -656,3 +656,7 @@ class SmartDatalake:
     @property
     def dfs(self):
         return self._dfs
+
+    @property
+    def memory(self):
+        return self._memory

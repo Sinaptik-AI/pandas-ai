@@ -26,15 +26,11 @@ response = agent.chat("Who gets paid the most?")
 print(response)
 
 
-# Get Clarification Questions
-response = agent.clarification_questions()
+# # Get Clarification Questions
+questions = agent.clarification_questions()
 
-if response:
-    for question in response.questions:
-        print(question)
-else:
-    print(response.message)
-
+for question in questions:
+    print(question)
 
 # Explain how the chat response is generated
 response = agent.explain()

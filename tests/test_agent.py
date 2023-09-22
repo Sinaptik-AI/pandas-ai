@@ -3,7 +3,6 @@ from unittest.mock import Mock
 from pandasai.agent import Agent
 import pandas as pd
 import pytest
-from pandasai.agent.response import ClarificationResponse
 from pandasai.llm.fake import FakeLLM
 
 from pandasai.smart_datalake import SmartDatalake
@@ -81,94 +80,14 @@ class TestAgent:
         assert isinstance(response, str)
         assert response == "United States has the highest gdp"
 
-    def test_chat_memory(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.chat = Mock()
-        agent._lake.chat.return_value = "United States has the highest gdp"
-
-        # Test the chat function
-        agent.chat("Which country has the highest gdp?")
-
-        memory = agent._memory.all()
-        assert len(memory) == 2
-        assert memory[0]["message"] == "Which country has the highest gdp?"
-        assert memory[1]["message"] == "United States has the highest gdp"
-
-        # Add another conversation
-        agent._lake.chat.return_value = "United Kingdom has the second highest gdp"
-        agent.chat("Which country has the second highest gdp?")
-
-        memory = agent._memory.all()
-        assert len(memory) == 4
-        assert memory[0]["message"] == "Which country has the highest gdp?"
-        assert memory[1]["message"] == "United States has the highest gdp"
-        assert memory[2]["message"] == "Which country has the second highest gdp?"
-        assert memory[3]["message"] == "United Kingdom has the second highest gdp"
-
-    def test_chat_memory_rollup(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=1)
-        agent._lake.chat = Mock()
-        agent._lake.chat.return_value = "United States has the highest gdp"
-
-        # Test the chat function
-        agent.chat("Which country has the highest gdp?")
-
-        memory = agent._memory.all()
-        assert len(memory) == 2
-        assert memory[0]["message"] == "Which country has the highest gdp?"
-        assert memory[1]["message"] == "United States has the highest gdp"
-
-        # Add another conversation
-        agent._lake.chat.return_value = "United Kingdom has the second highest gdp"
-        agent.chat("Which country has the second highest gdp?")
-
-        memory = agent._memory.all()
-        assert len(memory) == 2
-        assert memory[0]["message"] == "Which country has the second highest gdp?"
-        assert memory[1]["message"] == "United Kingdom has the second highest gdp"
-
-    def test_chat_get_conversation(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.chat = Mock()
-        agent._lake.chat.return_value = "United States has the highest gdp"
-
-        agent.chat("Which country has the highest gdp?")
-
-        conversation = agent._get_conversation()
-
-        assert conversation == (
-            "Question: Which country has the highest gdp?\n"
-            "Answer: United States has the highest gdp"
-        )
-
-        # Add another conversation
-        agent._lake.chat.return_value = "United Kingdom has the second highest gdp"
-        agent.chat("Which country has the second highest gdp?")
-
-        conversation = agent._get_conversation()
-        assert conversation == (
-            "Question: Which country has the highest gdp?\n"
-            "Answer: United States has the highest gdp"
-            "\nQuestion: Which country has the second highest gdp?\n"
-            "Answer: United Kingdom has the second highest gdp"
-        )
-
     def test_start_new_conversation(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.chat = Mock()
-        agent._lake.chat.return_value = "United States has the highest gdp"
-
-        agent.chat("Which country has the highest gdp?")
-
-        memory = agent._memory.all()
-        assert len(memory) == 2
-
+        agent._lake._memory.add("Which country has the highest gdp?", True)
+        memory = agent._lake._memory.all()
+        assert len(memory) == 1
         agent.start_new_conversation()
-        memory = agent._memory.all()
+        memory = agent._lake._memory.all()
         assert len(memory) == 0
-
-        conversation = agent._get_conversation()
-        assert conversation == ""
 
     def test_clarification_questions(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -178,10 +97,10 @@ class TestAgent:
         )
         agent._lake.llm.call.return_value = clarification_response
 
-        response = agent.clarification_questions()
-        assert len(response.questions) == 2
-        assert response.questions[0] == "What is happiest index for you?"
-        assert response.questions[1] == "What is unit of measure for gdp?"
+        questions = agent.clarification_questions()
+        assert len(questions) == 2
+        assert questions[0] == "What is happiest index for you?"
+        assert questions[1] == "What is unit of measure for gdp?"
 
     def test_clarification_questions_failure(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -189,8 +108,8 @@ class TestAgent:
 
         agent._lake.llm.call.return_value = Exception("This is a mock exception")
 
-        response = agent.clarification_questions()
-        assert response.success is False
+        with pytest.raises(Exception):
+            agent.clarification_questions()
 
     def test_clarification_questions_fail_non_json(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -198,8 +117,8 @@ class TestAgent:
 
         agent._lake.llm.call.return_value = "This is not json response"
 
-        response = agent.clarification_questions()
-        assert response.success is False
+        with pytest.raises(Exception):
+            agent.clarification_questions()
 
     def test_clarification_questions_max_3(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -212,16 +131,10 @@ class TestAgent:
         )
         agent._lake.llm.call.return_value = clarification_response
 
-        response = agent.clarification_questions()
-        assert isinstance(response, ClarificationResponse)
-        assert response.success is True
-        assert len(response.questions) == 3
-        assert response.message == (
-            '["What is happiest index for you", '
-            '"What is unit of measure for gdp", '
-            '"How many countries are involved in the survey", '
-            '"How do you want this data to be represented"]'
-        )
+        questions = agent.clarification_questions()
+
+        assert isinstance(questions, list)
+        assert len(questions) == 3
 
     def test_explain(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)

@@ -1,23 +1,16 @@
 """ Memory class to store the conversations """
-import sys
 
 
 class Memory:
     """Memory class to store the conversations"""
 
     _messages: list
-    _max_messages: int
 
-    def __init__(self, max_messages: int = sys.maxsize):
+    def __init__(self):
         self._messages = []
-        self._max_messages = max_messages
 
     def add(self, message: str, is_user: bool):
         self._messages.append({"message": message, "is_user": is_user})
-
-        # Delete two entry because of the conversation
-        if len(self._messages) > self._max_messages:
-            del self._messages[:2]
 
     def count(self) -> int:
         return len(self._messages)

@@ -45,3 +45,7 @@ If there is no clarification question, return an empty array.
 
 Json:
 """
+
+    def __init__(self, dataframes, conversation):
+        self.set_var("dataframes", dataframes)
+        self.set_var("conversation", conversation)
