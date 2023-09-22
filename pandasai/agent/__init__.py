@@ -2,6 +2,7 @@ import json
 from typing import Union, List, Optional
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
+from pandasai.helpers.memory import Memory
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 from pandasai.schemas.df_config import Config
@@ -33,22 +34,15 @@ class Agent:
         if not isinstance(dfs, list):
             dfs = [dfs]
 
-        self._lake = SmartDatalake(dfs, config, logger)
+        self._lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
         self._logger = self._lake.logger
-        self._memory_size = memory_size
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            result = self._lake.chat(
-                query,
-                output_type=output_type,
-                start_conversation=self._lake._memory.get_conversation(
-                    self._memory_size
-                ),
-            )
+            result = self._lake.chat(query, output_type=output_type)
             return result
         except Exception as exception:
             return (
@@ -63,7 +57,7 @@ class Agent:
         """
         try:
             prompt = ClarificationQuestionPrompt(
-                self._lake.dfs, self._lake._memory.get_conversation(self._memory_size)
+                self._lake.dfs, self._lake._memory.get_conversation()
             )
 
             result = self._lake.llm.call(prompt)
@@ -89,7 +83,7 @@ class Agent:
         """
         try:
             prompt = ExplainPrompt(
-                self._lake._memory.get_conversation(self._memory_size),
+                self._lake._memory.get_conversation(),
                 self._lake.last_code_executed,
             )
             response = self._lake.llm.call(prompt)

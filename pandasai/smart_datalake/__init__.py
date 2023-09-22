@@ -255,12 +255,7 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(
-        self,
-        query: str,
-        output_type: Optional[str] = None,
-        start_conversation: Optional[str] = None,
-    ):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
@@ -310,8 +305,6 @@ class SmartDatalake:
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
                     "output_type_hint": output_type_helper.template_hint,
                 }
-                if start_conversation is not None:
-                    default_values["conversation"] = start_conversation
 
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
