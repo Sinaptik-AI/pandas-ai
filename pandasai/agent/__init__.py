@@ -92,3 +92,9 @@ class Agent:
         Clears the previous conversation
         """
         self._memory.clear()
+
+    def explain(self):
+        """
+        Returns the explanation of the code how it reached to the solution
+        """
+        pass
