@@ -18,7 +18,7 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-llm = OpenAI("sk-lyDyNVyBwnykr1lJ4Yc7T3BlbkFJtJNyJlKTAvUa2E2D5Wdb44")
+llm = OpenAI("OPEN_API_KEY")
 agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
 
 # Chat with the agent

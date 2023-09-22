@@ -19,13 +19,13 @@ class Agent:
 
     _memory: Memory
     _lake: SmartDatalake = None
-    logger: Logger = None
+    logger: Optional[Logger] = None
 
     def __init__(
         self,
         dfs: Union[DataFrameType, List[DataFrameType]],
         config: Optional[Union[Config, dict]] = None,
-        logger: Logger = None,
+        logger: Optional[Logger] = None,
         memory_size: int = 1,
     ):
         """
