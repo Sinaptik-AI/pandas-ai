@@ -54,21 +54,17 @@ class Agent:
         """
         Generate clarification questions based on the data
         """
-        try:
-            prompt = ClarificationQuestionPrompt(
-                self._lake.dfs, self._lake._memory.get_conversation()
-            )
+        prompt = ClarificationQuestionPrompt(
+            self._lake.dfs, self._lake._memory.get_conversation()
+        )
 
-            result = self._lake.llm.call(prompt)
-            self._logger.log(
-                f"""Clarification Questions:  {result}
-                """
-            )
-            questions: list[str] = json.loads(result)
-            return questions[:3]
-
-        except Exception as exception:
-            raise exception
+        result = self._lake.llm.call(prompt)
+        self._logger.log(
+            f"""Clarification Questions:  {result}
+            """
+        )
+        questions: list[str] = json.loads(result)
+        return questions[:3]
 
     def start_new_conversation(self):
         """

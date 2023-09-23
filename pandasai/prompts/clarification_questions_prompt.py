@@ -26,9 +26,7 @@ class ClarificationQuestionPrompt(Prompt):
     text: str = """
 You are provided with the following pandas DataFrames:
 
-<dataframe>
 {dataframes}
-</dataframe>
 
 <conversation>
 {conversation}
@@ -47,5 +45,5 @@ Json:
 """
 
     def __init__(self, dataframes, conversation):
-        self.set_var("dataframes", dataframes)
+        self.set_var("dfs", dataframes)
         self.set_var("conversation", conversation)
