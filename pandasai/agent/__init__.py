@@ -26,8 +26,10 @@ class Agent:
     ):
         """
         Args:
-            df (Union[SmartDataframe, SmartDatalake]): _description_
-            memory_size (int, optional): _description_. Defaults to 1.
+            df (Union[DataFrameType, List[DataFrameType]]): DataFrame can be Pandas,
+            Polars or Database connectors
+            memory_size (int, optional): Conversation history to use during chat.
+            Defaults to 1.
         """
 
         if not isinstance(dfs, list):
