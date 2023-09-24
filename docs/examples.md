@@ -206,3 +206,56 @@ print(paid_from_males_df)
 
 # [247 rows x 11 columns]
 ```
+
+## Working with Agent
+
+With the chat agent, you can engage in dynamic conversations where the agent retains context throughout the discussion. This enables you to have more interactive and meaningful exchanges.
+
+**Key Features**
+
+- **Context Retention:** The agent remembers the conversation history, allowing for seamless, context-aware interactions.
+
+- **Clarification Questions:** You can use the `clarification_questions` method to request clarification on any aspect of the conversation. This helps ensure you fully understand the information provided.
+
+- **Explanation:** The `explain` method is available to obtain detailed explanations of how the agent arrived at a particular solution or response. It offers transparency and insights into the agent's decision-making process.
+
+Feel free to initiate conversations, seek clarifications, and explore explanations to enhance your interactions with the chat agent!
+
+```
+import pandas as pd
+from pandasai import Agent
+
+from pandasai.llm.openai import OpenAI
+
+employees_data = {
+    "EmployeeID": [1, 2, 3, 4, 5],
+    "Name": ["John", "Emma", "Liam", "Olivia", "William"],
+    "Department": ["HR", "Sales", "IT", "Marketing", "Finance"],
+}
+
+salaries_data = {
+    "EmployeeID": [1, 2, 3, 4, 5],
+    "Salary": [5000, 6000, 4500, 7000, 5500],
+}
+
+employees_df = pd.DataFrame(employees_data)
+salaries_df = pd.DataFrame(salaries_data)
+
+
+llm = OpenAI("OpenAI_API_KEY")
+agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
+
+# Chat with the agent
+response = agent.chat("Who gets paid the most?")
+print(response)
+
+# Get Clarification Questions
+questions = agent.clarification_questions()
+
+for question in questions:
+    print(question)
+
+# Explain how the chat response is generated
+response = agent.explain()
+print(response)
+```

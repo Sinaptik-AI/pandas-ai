@@ -305,6 +305,7 @@ class SmartDatalake:
                     "save_charts_path": self._config.save_charts_path.rstrip("/"),
                     "output_type_hint": output_type_helper.template_hint,
                 }
+
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
@@ -623,7 +624,7 @@ class SmartDatalake:
 
     @last_code_generated.setter
     def last_code_generated(self, last_code_generated: str):
-        self._code_manager._last_code_generated = last_code_generated
+        self._last_code_generated = last_code_generated
 
     @property
     def last_code_executed(self):
@@ -644,3 +645,11 @@ class SmartDatalake:
     @last_error.setter
     def last_error(self, last_error: str):
         self._last_error = last_error
+
+    @property
+    def dfs(self):
+        return self._dfs
+
+    @property
+    def memory(self):
+        return self._memory
