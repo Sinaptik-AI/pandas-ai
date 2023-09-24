@@ -1,4 +1,4 @@
-""" Prompt to explain solution generated
+""" Prompt to explain code generation by the LLM
 The previous conversation we had
 
 <Conversation>
@@ -19,7 +19,7 @@ from .base import Prompt
 
 
 class ExplainPrompt(Prompt):
-    """Prompt to get clarification questions"""
+    """Prompt to explain code generation by the LLM"""
 
     text: str = """
 The previous conversation we had
@@ -39,6 +39,6 @@ mentioning technical details or mentioning the libraries used?
 
 """
 
-    def __init__(self, conversation, code):
+    def __init__(self, conversation: str, code: str):
         self.set_var("conversation", conversation)
         self.set_var("code", code)

@@ -1,9 +1,7 @@
 """ Prompt to get clarification questions
 You are provided with the following pandas DataFrames:
 
-<dataframe>
-{dataframe}
-</dataframe>
+{dataframes}
 
 <conversation>
 {conversation}
@@ -17,6 +15,8 @@ Json:
 """  # noqa: E501
 
 
+from typing import List
+import pandas as pd
 from .base import Prompt
 
 
@@ -44,6 +44,6 @@ If there is no clarification question, return an empty array.
 Json:
 """
 
-    def __init__(self, dataframes, conversation):
+    def __init__(self, dataframes: List[pd.DataFrame], conversation: str):
         self.set_var("dfs", dataframes)
         self.set_var("conversation", conversation)
