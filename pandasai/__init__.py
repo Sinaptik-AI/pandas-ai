@@ -70,7 +70,6 @@ class PandasAI:
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure.
         Default to 3
-        _in_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None

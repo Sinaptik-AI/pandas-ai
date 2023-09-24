@@ -329,10 +329,6 @@ class SmartDatalake:
 """
             )
 
-            # TODO: figure out what to do with this
-            # if show_code and self._in_notebook:
-            #     self.notebook.create_new_cell(code)
-
             retry_count = 0
             code_to_run = code
             result = None
