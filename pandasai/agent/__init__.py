@@ -5,6 +5,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
+from pandasai.prompts.rephase_query_prompt import RephraseQueryPrompt
 from pandasai.schemas.df_config import Config
 from pandasai.smart_datalake import SmartDatalake
 
@@ -92,6 +93,24 @@ class Agent:
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to explain, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+    def rephrase_query(self, query: str):
+        try:
+            prompt = RephraseQueryPrompt(
+                query, self._lake.dfs, self._lake._memory.get_conversation()
+            )
+            response = self._lake.llm.call(prompt)
+            self._logger.log(
+                f"""Rephrased Response:  {response}
+                """
+            )
+            return response
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to repharse query, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
