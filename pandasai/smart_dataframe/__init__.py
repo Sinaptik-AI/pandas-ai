@@ -265,20 +265,21 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                         connector_database = connector_path.split(":")[1].split("/")[1]
                         connector_table = connector_path.split(":")[1].split("/")[2]
 
+                        connector_data = {
+                            "host": connector_host,
+                            "database": connector_database,
+                            "table": connector_table,
+                        }
+                        if connector_port:
+                            connector_data["port"] = connector_port
+
                         # instantiate the connector
                         df = getattr(
                             __import__(
                                 "pandasai.connectors", fromlist=[connector_name]
                             ),
                             connector_name,
-                        )(
-                            {
-                                "host": connector_host,
-                                "port": connector_port,
-                                "database": connector_database,
-                                "table": connector_table,
-                            }
-                        )
+                        )(config=connector_data)
                     else:
                         df = df_config["import_path"]
 

@@ -11,8 +11,8 @@ def stock_ticker():
 
 
 @pytest.fixture
-def where():
-    return [["column1", "=", "value1"], ["column2", ">", "value2"]]
+def config():
+    return {"where": [["column1", "=", "value1"], ["column2", ">", "value2"]]}
 
 
 @pytest.fixture
@@ -21,22 +21,8 @@ def cache_interval():
 
 
 @pytest.fixture
-def yahoo_finance_config(stock_ticker, where, cache_interval):
-    return {
-        "dialect": "yahoo_finance",
-        "username": "",
-        "password": "",
-        "host": "yahoo.finance.com",
-        "port": 443,
-        "database": "stock_data",
-        "table": stock_ticker,
-        "where": where,
-    }
-
-
-@pytest.fixture
-def yahoo_finance_connector(stock_ticker, where, cache_interval):
-    return YahooFinanceConnector(stock_ticker, where, cache_interval)
+def yahoo_finance_connector(stock_ticker, config, cache_interval):
+    return YahooFinanceConnector(stock_ticker, config, cache_interval)
 
 
 def test_head(yahoo_finance_connector):
@@ -64,7 +50,7 @@ def test_head(yahoo_finance_connector):
 
 def test_get_cache_path(yahoo_finance_connector):
     with patch("os.path.join") as mock_join:
-        expected_result = "../AAPL_data.csv"
+        expected_result = "../AAPL_data.parquet"
         mock_join.return_value = expected_result
         assert yahoo_finance_connector._get_cache_path() == expected_result
 

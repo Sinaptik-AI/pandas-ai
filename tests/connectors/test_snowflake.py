@@ -1,12 +1,12 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import SQLConnector
+from pandasai.connectors.base import SnowFlakeConnectorConfig
+from pandasai.connectors import SnowFlakeConnector
 
 
 class TestSQLConnector(unittest.TestCase):
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("pandasai.connectors.snowflake.create_engine", autospec=True)
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
@@ -15,55 +15,55 @@ class TestSQLConnector(unittest.TestCase):
         mock_create_engine.return_value = self.mock_engine
 
         # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
+        self.config = SnowFlakeConnectorConfig(
+            dialect="snowflake",
+            account="ehxzojy-ue47135",
             username="your_username",
             password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
+            database="SNOWFLAKE_SAMPLE_DATA",
+            warehouse="COMPUTED",
+            dbSchema="tpch_sf1",
+            table="lineitem",
             where=[["column_name", "=", "value"]],
         ).dict()
 
         # Create an instance of SQLConnector
-        self.connector = SQLConnector(self.config)
+        self.connector = SnowFlakeConnector(self.config)
 
-    @patch("pandasai.connectors.SQLConnector._load_connector_config")
-    @patch("pandasai.connectors.SQLConnector._init_connection")
+    @patch("pandasai.connectors.SnowFlakeConnector._load_connector_config")
+    @patch("pandasai.connectors.SnowFlakeConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
         # Test constructor and properties
-
         self.assertEqual(self.connector._config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)
-        SQLConnector(self.config)
+        SnowFlakeConnector(self.config)
         mock_load_connector_config.assert_called()
         mock_init_connection.assert_called()
 
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
-            "<SQLConnector dialect=mysql driver=pymysql "
-            "host=your_host port=443 database=your_database table=your_table>"
+            "<SnowFlakeConnector dialect=snowflake "
+            "Account=ehxzojy-ue47135 warehouse=COMPUTED "
+            "database=SNOWFLAKE_SAMPLE_DATA schema=tpch_sf1  table=lineitem>"
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
     def test_build_query_method(self):
         # Test _build_query method
-        query = self.connector._build_query(limit=5, order="RAND()")
+        query = self.connector._build_query(limit=5, order="RANDOM()")
         expected_query = """SELECT * 
-FROM your_table 
-WHERE column_name = :value_0 ORDER BY RAND() ASC
+FROM lineitem 
+WHERE column_name = :value_0 ORDER BY RANDOM() ASC
  LIMIT :param_1"""
 
         self.assertEqual(str(query), expected_query)
 
-    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    @patch("pandasai.connectors.snowflake.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data
@@ -103,4 +103,4 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
     def test_fallback_name_property(self):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
-        self.assertEqual(fallback_name, "your_table")
+        self.assertEqual(fallback_name, "lineitem")

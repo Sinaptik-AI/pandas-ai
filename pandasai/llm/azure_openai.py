@@ -40,7 +40,7 @@ class AzureOpenAI(BaseOpenAI):
         api_base: Optional[str] = None,
         api_version: Optional[str] = None,
         deployment_name: str = None,
-        is_chat_model: Optional[bool] = False,
+        is_chat_model: bool = True,
         **kwargs,
     ):
         """
