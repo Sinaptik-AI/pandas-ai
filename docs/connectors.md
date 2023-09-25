@@ -15,6 +15,9 @@ poetry add pandasai[connectors]
 pip install pandasai[connectors]
 ```
 
+Have a look at the video of how to use the connectors:
+[![Intro to Connectors](https://cdn.loom.com/sessions/thumbnails/db24dea5a9e0428b87ad86ff596d5f7c-00001.jpg)](https://www.loom.com/embed/db24dea5a9e0428b87ad86ff596d5f7c?sid=0593ef29-9f5c-418a-a9ef-c0537c57d2ad "Intro to Connectors")
+
 ## SQL connectors
 
 PandasAI provides connectors for the following SQL databases:
