@@ -3,10 +3,10 @@ You are provided with the following pandas DataFrames:
 
 {dataframes}
 {conversation}
+
 Use the provided dataframe and conversation we have had to Return the rephrased 
 sentence of "{query}” in order to obtain more accurate and comprehensive responses 
 without any explanations.
-
 """
 from typing import List
 
@@ -22,10 +22,10 @@ You are provided with the following pandas DataFrames:
 
 {dataframes}
 {conversation}
+
 Use the provided dataframe and conversation we have had to Return the rephrased 
 sentence of "{query}” in order to obtain more accurate and comprehensive responses 
 without any explanations.
-
 """
 
     conversation_text: str = """

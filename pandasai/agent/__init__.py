@@ -3,6 +3,7 @@ from typing import Union, List, Optional
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
+from pandasai.prompts.base import Prompt
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 from pandasai.prompts.rephase_query_prompt import RephraseQueryPrompt
@@ -39,6 +40,28 @@ class Agent:
         self._lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
         self._logger = self._lake.logger
 
+    def _call_llm_with_prompt(self, prompt: Prompt):
+        """
+        Call LLM with prompt using error handling to retry based on config
+        Args:
+            prompt (Prompt): Prompt to pass to LLM's
+        """
+        retry_count = 0
+        while retry_count < self._lake.config.max_retries:
+            try:
+                result: str = self._lake.llm.call(prompt)
+                if prompt.validate(result):
+                    return result
+                else:
+                    raise Exception("Response validation failed!")
+            except Exception:
+                if (
+                    not self._lake.use_error_correction_framework
+                    or retry_count >= self._lake.config.max_retries - 1
+                ):
+                    raise
+                retry_count += 1
+
     def chat(self, query: str, output_type: Optional[str] = None):
         """
         Simulate a chat interaction with the assistant on Dataframe.
@@ -61,7 +84,7 @@ class Agent:
             self._lake.dfs, self._lake._memory.get_conversation(), query
         )
 
-        result = self._lake.llm.call(prompt)
+        result = self._call_llm_with_prompt(prompt)
         self._logger.log(
             f"""Clarification Questions:  {result}
             """
@@ -84,7 +107,7 @@ class Agent:
                 self._lake._memory.get_conversation(),
                 self._lake.last_code_executed,
             )
-            response = self._lake.llm.call(prompt)
+            response = self._call_llm_with_prompt(prompt)
             self._logger.log(
                 f"""Explaination:  {response}
                 """
@@ -102,7 +125,7 @@ class Agent:
             prompt = RephraseQueryPrompt(
                 query, self._lake.dfs, self._lake._memory.get_conversation()
             )
-            response = self._lake.llm.call(prompt)
+            response = self._call_llm_with_prompt(prompt)
             self._logger.log(
                 f"""Rephrased Response:  {response}
                 """
