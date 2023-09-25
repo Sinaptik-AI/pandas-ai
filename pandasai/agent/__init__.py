@@ -48,7 +48,11 @@ class Agent:
         retry_count = 0
         while retry_count < self._lake.config.max_retries:
             try:
-                return self._lake.llm.call(prompt)
+                result: str = self._lake.llm.call(prompt)
+                if prompt.validate(result):
+                    return result
+                else:
+                    raise Exception("Response validation failed!")
             except Exception:
                 if (
                     not self._lake.use_error_correction_framework

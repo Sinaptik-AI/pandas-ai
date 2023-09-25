@@ -15,6 +15,7 @@ Json:
 """  # noqa: E501
 
 
+import json
 from typing import List
 import pandas as pd
 from .base import Prompt
@@ -47,3 +48,10 @@ Json:
     def __init__(self, dataframes: List[pd.DataFrame], conversation: str):
         self.set_var("dfs", dataframes)
         self.set_var("conversation", conversation)
+
+    def validate(self, output) -> bool:
+        try:
+            json_data = json.loads(output)
+            return isinstance(json_data, List)
+        except Exception:
+            raise
