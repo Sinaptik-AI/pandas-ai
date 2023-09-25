@@ -162,6 +162,17 @@ print("The answer is", response)
 print("The explanation is", explanation)
 ```
 
+### Rephrase Question
+
+Rephrase question to get accurate and comprehensive response from the model. For example:
+
+```python
+rephrased_query = agent.rephrase_query('What is the GDP of the United States?')
+
+print("The answer is", rephrased_query)
+
+```
+
 ## Config
 
 When you instantiate a `SmartDataframe`, you can pass a `config` object as the second argument. This object can contain custom settings that will be used by `pandasai` when generating code.

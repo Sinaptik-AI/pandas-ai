@@ -59,3 +59,6 @@ This is the metadata of the dataframe dfs[{index-1}]:
 
     def __str__(self):
         return self.to_string()
+
+    def validate(self, output: str) -> bool:
+        return isinstance(output, str)
