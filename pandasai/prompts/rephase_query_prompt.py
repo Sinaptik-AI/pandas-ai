@@ -34,8 +34,9 @@ And based on our conversation:
 </conversation>
 
 Return the rephrased sentence of "{query}” in order to obtain more accurate and 
-comprehensive responses without any explanations.
-
+comprehensive responses without any explanations. If something from the original
+query is ambiguous, please clarify it in the rephrased query, making assumptions,
+if necessary.
 """
 
     def __init__(self, query: str, dataframes: List[pd.DataFrame], conversation: str):
