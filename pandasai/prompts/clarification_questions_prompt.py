@@ -53,5 +53,5 @@ Json:
         try:
             json_data = json.loads(output)
             return isinstance(json_data, List)
-        except Exception:
-            raise
+        except json.JSONDecodeError:
+            return False
