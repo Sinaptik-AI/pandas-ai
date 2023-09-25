@@ -105,7 +105,7 @@ class TestAgent:
         )
         agent._lake.llm.call.return_value = clarification_response
 
-        questions = agent.clarification_questions()
+        questions = agent.clarification_questions("What is the happiest country?")
         assert len(questions) == 2
         assert questions[0] == "What is happiest index for you?"
         assert questions[1] == "What is unit of measure for gdp?"
@@ -117,7 +117,7 @@ class TestAgent:
         agent._lake.llm.call.return_value = Exception("This is a mock exception")
 
         with pytest.raises(Exception):
-            agent.clarification_questions()
+            agent.clarification_questions("What is the happiest country?")
 
     def test_clarification_questions_fail_non_json(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -126,7 +126,7 @@ class TestAgent:
         agent._lake.llm.call.return_value = "This is not json response"
 
         with pytest.raises(Exception):
-            agent.clarification_questions()
+            agent.clarification_questions("What is the happiest country?")
 
     def test_clarification_questions_max_3(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
@@ -139,7 +139,7 @@ class TestAgent:
         )
         agent._lake.llm.call.return_value = clarification_response
 
-        questions = agent.clarification_questions()
+        questions = agent.clarification_questions("What is the happiest country?")
 
         assert isinstance(questions, list)
         assert len(questions) == 3

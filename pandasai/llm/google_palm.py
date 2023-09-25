@@ -8,16 +8,11 @@ Example:
     Use below example to call GooglePalm Model
 
     >>> from pandasai.llm.google_palm import GooglePalm
-
-Example:
-    Use below example to call Google VertexAi
-
-    >>> from pandasai.llm.google_palm import GoogleVertexai
-
 """
-from typing import Optional
-
 from .base import BaseGoogle
+from typing import Any
+from ..helpers.optional import import_dependency
+from ..exceptions import APIKeyNotFoundError
 
 
 class GooglePalm(BaseGoogle):
@@ -28,6 +23,7 @@ class GooglePalm(BaseGoogle):
     """
 
     model: str = "models/text-bison-001"
+    google_palm: Any
 
     def __init__(self, api_key: str, **kwargs):
         """
@@ -38,6 +34,25 @@ class GooglePalm(BaseGoogle):
         """
         self._configure(api_key=api_key)
         self._set_params(**kwargs)
+
+    def _configure(self, api_key: str):
+        """
+        Configure Google Palm API Key
+        Args:
+            api_key (str): A string of API keys generated from Google Cloud.
+
+        Returns:
+            None.
+        """
+
+        if not api_key:
+            raise APIKeyNotFoundError("Google Palm API key is required")
+
+        err_msg = "Install google-generativeai >= 0.1 for Google Palm API"
+        google_palm = import_dependency("google.generativeai", extra=err_msg)
+
+        google_palm.configure(api_key=api_key)
+        self.google_palm = google_palm
 
     def _valid_params(self):
         """Returns if the Parameters are valid or Not"""
@@ -66,7 +81,7 @@ class GooglePalm(BaseGoogle):
 
         """
         self._validate()
-        completion = self.genai.generate_text(
+        completion = self.google_palm.generate_text(
             model=self.model,
             prompt=prompt,
             temperature=self.temperature,
@@ -79,93 +94,3 @@ class GooglePalm(BaseGoogle):
     @property
     def type(self) -> str:
         return "google-palm"
-
-
-class GoogleVertexai(BaseGoogle):
-    """Google Palm Vertexai LLM
-    BaseGoogle class is extended for Google Palm model using Vertexai.
-    The default model support at the moment is text-bison-001.
-    However, user can choose to use code-bison-001 too.
-
-    """
-
-    def __init__(
-        self, project_id: str, location: str, model: Optional[str] = None, **kwargs
-    ):
-        """
-        A init class to implement the Google Vertexai Models
-
-        Args:
-            project_id (str): GCP project
-            location (str): GCP project Location
-            model Optional (str): Model to use Default to text-bison@001
-            **kwargs: Arguments to control the Model Parameters
-        """
-
-        if model is None:
-            self.model = "text-bison@001"
-        else:
-            self.model = model
-
-        self._configurevertexai(project_id, location)
-        self.project_id = project_id
-        self.location = location
-        self._set_params(**kwargs)
-
-    def _valid_params(self):
-        """Returns if the Parameters are valid or Not"""
-        return super()._valid_params() + ["model"]
-
-    def _validate(self):
-        """
-        A method to Validate the Model
-
-        """
-
-        super()._validate()
-
-        if not self.model:
-            raise ValueError("model is required.")
-
-    def _generate_text(self, prompt: str) -> str:
-        """
-        Generates text for prompt.
-
-        Args:
-            prompt (str): A string representation of the prompt.
-
-        Returns:
-            str: LLM response.
-
-        """
-        self._validate()
-
-        from vertexai.preview.language_models import (
-            CodeGenerationModel,
-            TextGenerationModel,
-        )
-
-        if self.model == "code-bison@001":
-            code_generation = CodeGenerationModel.from_pretrained(self.model)
-
-            completion = code_generation.predict(
-                prefix=prompt,
-                temperature=self.temperature,
-                max_output_tokens=self.max_output_tokens,
-            )
-        else:
-            text_generation = TextGenerationModel.from_pretrained(self.model)
-
-            completion = text_generation.predict(
-                prompt=prompt,
-                temperature=self.temperature,
-                top_p=self.top_p,
-                top_k=self.top_k,
-                max_output_tokens=self.max_output_tokens,
-            )
-
-        return str(completion)
-
-    @property
-    def type(self) -> str:
-        return "google-vertexai"

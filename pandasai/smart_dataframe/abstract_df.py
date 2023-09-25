@@ -318,6 +318,12 @@ class DataframeAbstract(ABC):
         """
         return self.dataframe.to_markdown()
 
+    def to_parquet(self):
+        """
+        A proxy-call to the dataframe's `.to_parquet()`.
+        """
+        return self.dataframe.to_parquet()
+
     # Query
     def query(self, expr):
         """

@@ -3,26 +3,76 @@ Base connector class to be extended by all connectors.
 """
 
 from abc import ABC, abstractmethod
+import os
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 
 
-class ConnectorConfig(BaseModel):
+class BaseConnectorConfig(BaseModel):
+    """
+    Base Connector configuration.
+    """
+
+    database: str
+    table: str
+    where: list[list[str]] = None
+
+
+class SQLBaseConnectorConfig(BaseConnectorConfig):
+    """
+    Base Connector configuration.
+    """
+
+    driver: Optional[str] = None
+    dialect: Optional[str] = None
+
+
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Yahoo Finance.
+    """
+
+    dialect: str = "yahoo_finance"
+    host: str = "yahoo.finance.com"
+    database: str = "stock_data"
+    host: str
+
+
+class SQLConnectorConfig(SQLBaseConnectorConfig):
     """
     Connector configuration.
     """
 
-    dialect: Optional[str] = None
-    driver: Optional[str] = None
-    username: str
-    password: str
     host: str
     port: int
+    username: str
+    password: str
+
+
+class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
+
+    account: str
     database: str
-    table: str
-    where: list[list[str]] = None
+    username: str
+    password: str
+    dbSchema: str
+    warehouse: str
+
+
+class DatabricksConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for DataBricks.
+    """
+
+    host: str
+    port: int
+    token: str
+    httpPath: str
 
 
 class BaseConnector(ABC):
@@ -30,18 +80,56 @@ class BaseConnector(ABC):
     Base connector class to be extended by all connectors.
     """
 
-    _config = None
+    _config: BaseConnectorConfig = None
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config):
+    def __init__(self, config: Union[BaseConnectorConfig, dict]):
         """
         Initialize the connector with the given configuration.
 
         Args:
             config (dict): The configuration for the connector.
         """
+        if isinstance(config, dict):
+            config = self._load_connector_config(config)
+
         self._config = config
+
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
+        """Loads passed Configuration to object
+
+        Args:
+            config (BaseConnectorConfig): Construct config in structure
+
+        Returns:
+            config: BaseConnectorConfig
+        """
+        pass
+
+    def _populate_config_from_env(self, config: dict, envs_mapping: dict):
+        """
+        Populate the configuration dictionary with values from environment variables
+        if not exists in the config.
+
+        Args:
+            config (dict): The configuration dictionary to be populated.
+
+        Returns:
+            dict: The populated configuration dictionary.
+        """
+
+        for key, env_var in envs_mapping.items():
+            if key not in config and os.getenv(env_var):
+                config[key] = os.getenv(env_var)
+
+        return config
+
+    def _init_connection(self, config: BaseConnectorConfig):
+        """
+        make connection to database
+        """
+        pass
 
     @abstractmethod
     def head(self):
@@ -99,17 +187,11 @@ class BaseConnector(ABC):
         Return the path of the data source that the connector is connected to.
         """
         # JDBC string
-        return (
-            self.__class__.__name__
-            + "://"
-            + self._config.host
-            + ":"
-            + str(self._config.port)
-            + "/"
-            + self._config.database
-            + "/"
-            + self._config.table
-        )
+        path = self.__class__.__name__ + "://" + self._config.host + ":"
+        if hasattr(self._config, "port"):
+            path += str(self._config.port)
+        path += "/" + self._config.database + "/" + self._config.table
+        return path
 
     @property
     def logger(self):

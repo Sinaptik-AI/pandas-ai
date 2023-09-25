@@ -12,14 +12,12 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-32k-0613": 0.06,
     # GPT-3.5 input
     "gpt-3.5-turbo": 0.0015,
+    "gpt-3.5-turbo-instruct": 0.0015,
     "gpt-3.5-turbo-0613": 0.0015,
     "gpt-3.5-turbo-16k": 0.003,
     "gpt-3.5-turbo-16k-0613": 0.003,
     # Others
     "gpt-35-turbo": 0.002,  # Azure OpenAI version of ChatGPT
-    "text-davinci-003": 0.02,
-    "text-davinci-002": 0.02,
-    "code-davinci-002": 0.02,
 }
 
 
