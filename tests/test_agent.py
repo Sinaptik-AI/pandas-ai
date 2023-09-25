@@ -69,7 +69,7 @@ class TestAgent:
         agent_2 = Agent([sample_df], config)
         assert isinstance(agent_2._lake, SmartDatalake)
 
-        # test multiple agents instances
+        # test multiple agents instances data overlap
         agent_1._lake._memory.add("Which country has the highest gdp?", True)
         memory = agent_1._lake._memory.all()
         assert len(memory) == 1
