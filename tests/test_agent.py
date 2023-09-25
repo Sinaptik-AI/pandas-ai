@@ -69,11 +69,19 @@ class TestAgent:
         return Agent(sample_df, config)
 
     def test_constructor(self, sample_df, config):
-        agent = Agent(sample_df, config)
-        assert isinstance(agent._lake, SmartDatalake)
+        agent_1 = Agent(sample_df, config)
+        assert isinstance(agent_1._lake, SmartDatalake)
 
-        agent = Agent([sample_df], config)
-        assert isinstance(agent._lake, SmartDatalake)
+        agent_2 = Agent([sample_df], config)
+        assert isinstance(agent_2._lake, SmartDatalake)
+
+        # test multiple agents instances data overlap
+        agent_1._lake._memory.add("Which country has the highest gdp?", True)
+        memory = agent_1._lake._memory.all()
+        assert len(memory) == 1
+
+        memory = agent_2._lake._memory.all()
+        assert len(memory) == 0
 
     def test_chat(self, sample_df, config):
         # Create an Agent instance for testing
@@ -249,3 +257,19 @@ What is expected Salary Increase?
         result = agent._call_llm_with_prompt(prompt)
         # Didn't raise any exception
         assert isinstance(result, str)
+
+    def test_rephrase(self, sample_df, config):
+        agent = Agent(sample_df, config, memory_size=10)
+        agent._lake.llm.call = Mock()
+        clarification_response = """
+How much has the total salary expense increased?
+        """
+        agent._lake.llm.call.return_value = clarification_response
+
+        response = agent.rephrase_query("how much has the revenue increased?")
+
+        assert response == (
+            """
+How much has the total salary expense increased?
+        """
+        )
