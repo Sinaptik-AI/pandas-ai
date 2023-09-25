@@ -63,6 +63,7 @@ class SmartDatalake:
         config: Optional[Union[Config, dict]] = None,
         logger: Logger = None,
         memory: Memory = None,
+        cache: Cache = None,
     ):
         """
         Args:
@@ -95,7 +96,9 @@ class SmartDatalake:
             logger=self.logger,
         )
 
-        if self._config.enable_cache:
+        if cache:
+            self._cache = cache
+        elif self._config.enable_cache:
             self._cache = Cache()
 
     def initialize(self):
