@@ -410,7 +410,7 @@ class SmartDatalake:
             # Display the image
             plt.imshow(image)
             plt.axis("off")
-            plt.show(block=self._is_running_in_console())
+            plt.show(block=self.config.open_charts and self._is_running_in_console())
             plt.close("all")
         else:
             return result["value"]
