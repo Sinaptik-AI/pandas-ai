@@ -21,6 +21,10 @@ PandasAI provides connectors for the following SQL databases:
 
 - PostgreSQL
 - MySQL
+- Generic SQL
+- Snowflake
+- DataBricks
+- Yahoo Finance
 
 Additionally, PandasAI provides a generic SQL connector that can be used to connect to any SQL database.
 
@@ -31,7 +35,7 @@ The PostgreSQL connector allows you to connect to a PostgreSQL database. It is d
 To use the PostgreSQL connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors.sql import PostgreSQLConnector
+from pandasai.connectors import PostgreSQLConnector
 
 postgres_connector = PostgreSQLConnector(
     config={
@@ -60,7 +64,7 @@ Similarly to the PostgreSQL connector, the MySQL connector allows you to connect
 To use the MySQL connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors.sql import MySQLConnector
+from pandasai.connectors import MySQLConnector
 
 mysql_connector = MySQLConnector(
     config={
@@ -89,7 +93,7 @@ The generic SQL connector allows you to connect to any SQL database that is supp
 To use the generic SQL connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors.sql import SQLConnector
+from pandasai.connectors import SQLConnector
 
 sql_connector = SQLConnector(
     config={
@@ -117,7 +121,7 @@ The Snowflake connector allows you to connect to Snowflake. It is very similar t
 To use the Snowflake connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors.snowflake import SnowFlakeConnector
+from pandasai.connectors import SnowFlakeConnector
 
 snowflake_connector = SnowFlakeConnector(
     config={
@@ -140,6 +144,32 @@ df = SmartDataframe(snowflake_connector)
 df.chat("How many records has status 'F'?")
 ```
 
+## DataBricks connector
+
+The DataBricks connector allows you to connect to DataBricks. It is very similar to the SQL connectors, but it has some differences.
+
+To use the DataBricks connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import DataBricksConnector
+
+databricks_connector = DatabricksConnector(
+    config={
+        "host": "adb-*****.azuredatabricks.net",
+        "database": "default",
+        "token": "dapidfd412321",
+        "port": 443,
+        "table": "loan_payments_data",
+        "httpPath": "/sql/1.0/warehouses/213421312",
+        "where": [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            ["loan_status", "=", "PAIDOFF"],
+        ],
+    }
+)
+```
+
 ## Yahoo Finance connector
 
 The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply passing the ticker symbol of the stock you want to analyze.
@@ -147,7 +177,7 @@ The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply pa
 To use the Yahoo Finance connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors.yahoo_finance import YahooFinanceConnector
+from pandasai.yahoo_finance import YahooFinanceConnector
 
 yahoo_connector = YahooFinanceConnector("MSFT")
 
