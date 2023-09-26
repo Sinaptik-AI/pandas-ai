@@ -26,7 +26,7 @@ def get_google_sheet(src) -> list:
         cols = row.find_all("td")
         clean_row = []
         for col in cols:
-            clean_row.append(col.text)
+            clean_row.append(col.template)
         grid.append(clean_row)
     return grid
 

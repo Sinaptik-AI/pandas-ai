@@ -15,7 +15,7 @@ import openai
 from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -85,12 +85,12 @@ class OpenAI(BaseOpenAI):
             "model": self.model,
         }
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
         Args:
-            instruction (Prompt): A prompt object with instruction for LLM.
+            instruction (AbstractPrompt): A prompt object with instruction for LLM.
             suffix (str): Suffix to pass.
 
         Raises:

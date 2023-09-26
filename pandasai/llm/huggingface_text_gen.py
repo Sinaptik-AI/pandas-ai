@@ -2,7 +2,7 @@ from typing import Optional, Any, List, Dict
 
 from .base import LLM
 from ..helpers import load_dotenv
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ class HuggingFaceTextGen(LLM):
     top_k: Optional[int] = None
     top_p: Optional[float] = 0.8
     typical_p: Optional[float] = 0.8
-    temperature: float = 1E-3  # must be strictly positive
+    temperature: float = 1e-3  # must be strictly positive
     repetition_penalty: Optional[float] = None
     truncate: Optional[int] = None
     stop_sequences: List[str] = None
@@ -29,7 +29,7 @@ class HuggingFaceTextGen(LLM):
         try:
             import text_generation
 
-            for (key, val) in kwargs.items():
+            for key, val in kwargs.items():
                 if key in self.__annotations__:
                     setattr(self, key, val)
 
@@ -60,14 +60,14 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
 
         params = self._default_params
         if self.streaming:
             completion = ""
             for chunk in self.client.generate_stream(prompt, **params):
-                completion += chunk.text
+                completion += chunk.template
             return completion
 
         res = self.client.generate(prompt, **params)
@@ -76,8 +76,8 @@ class HuggingFaceTextGen(LLM):
             for stop_seq in self.stop_sequences:
                 if stop_seq in res.generated_text:
                     res.generated_text = res.generated_text[
-                                         :res.generated_text.index(stop_seq)
-                                         ]
+                        : res.generated_text.index(stop_seq)
+                    ]
         return res.generated_text
 
     @property

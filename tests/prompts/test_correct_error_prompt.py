@@ -1,8 +1,9 @@
 """Unit tests for the correct error prompt class"""
+import sys
 
 import pandas as pd
 from pandasai import SmartDataframe
-from pandasai.prompts import CorrectErrorPrompt
+from pandasai.prompts import CorrectErrorAbstractPrompt
 from pandasai.llm.fake import FakeLLM
 
 
@@ -19,14 +20,17 @@ class TestCorrectErrorPrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = CorrectErrorPrompt(
+        prompt = CorrectErrorAbstractPrompt(
             engine="pandas", code="df.head()", error_returned="Error message"
         )
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "What is the correct code?")
+        prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            prompt_content = prompt_content.replace("\r\n", "\n")
 
         assert (
-            prompt.to_string()
+            prompt_content
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 

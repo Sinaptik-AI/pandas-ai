@@ -1,9 +1,9 @@
 """Unit tests for the generate python code prompt class"""
-
+import sys
 
 import pandas as pd
 from pandasai import SmartDataframe
-from pandasai.prompts import GeneratePythonCodePrompt
+from pandasai.prompts import GeneratePythonCodeAbstractPrompt
 from pandasai.llm.fake import FakeLLM
 
 
@@ -20,12 +20,17 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodePrompt()
+        prompt = GeneratePythonCodeAbstractPrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "exports/charts")
+
+        prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            prompt_content = prompt_content.replace("\r\n", "\n")
+
         assert (
-            prompt.to_string()
+            prompt_content
             == """
 You are provided with the following pandas DataFrames:
 
@@ -75,13 +80,17 @@ Updated code:
             )
         ]
 
-        prompt = GeneratePythonCodePrompt()
+        prompt = GeneratePythonCodeAbstractPrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "custom_path")
 
+        prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            prompt_content = prompt_content.replace("\r\n", "\n")
+
         assert (
-            prompt.to_string()
+            prompt_content
             == """
 You are provided with the following pandas DataFrames:
 

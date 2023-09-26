@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from pandasai.llm.base import HuggingFaceLLM
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt
 
 
 class TestBaseHfLLM:
@@ -16,10 +16,10 @@ class TestBaseHfLLM:
 
     @pytest.fixture
     def prompt(self):
-        class MockPrompt(Prompt):
-            text: str = "instruction"
+        class MockAbstractPrompt(AbstractPrompt):
+            template: str = "instruction"
 
-        return MockPrompt()
+        return MockAbstractPrompt()
 
     def test_type(self):
         assert HuggingFaceLLM(api_token="test_token").type == "huggingface-llm"
@@ -62,10 +62,10 @@ class TestBaseHfLLM:
     def test_call_removes_original_prompt(self, mocker):
         huggingface = HuggingFaceLLM(api_token="test_token")
 
-        class MockPrompt(Prompt):
-            text: str = "instruction "
+        class MockAbstractPrompt(AbstractPrompt):
+            template: str = "instruction "
 
-        instruction = MockPrompt()
+        instruction = MockAbstractPrompt()
         suffix = "suffix "
 
         mocker.patch.object(

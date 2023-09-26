@@ -4,7 +4,7 @@ import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
 from pandasai.llm import OpenAI
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt
 from openai.openai_object import OpenAIObject
 
 
@@ -13,10 +13,10 @@ class TestOpenAILLM:
 
     @pytest.fixture
     def prompt(self):
-        class MockPrompt(Prompt):
-            text: str = "instruction"
+        class MockAbstractPrompt(AbstractPrompt):
+            template: str = "instruction"
 
-        return MockPrompt()
+        return MockAbstractPrompt()
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):

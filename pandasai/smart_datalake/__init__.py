@@ -32,9 +32,9 @@ from ..helpers.cache import Cache
 from ..helpers.memory import Memory
 from ..schemas.df_config import Config
 from ..config import load_config
-from ..prompts.base import Prompt
-from ..prompts.correct_error_prompt import CorrectErrorPrompt
-from ..prompts.generate_python_code import GeneratePythonCodePrompt
+from ..prompts.base import AbstractPrompt
+from ..prompts.correct_error_prompt import CorrectErrorAbstractPrompt
+from ..prompts.generate_python_code import GeneratePythonCodeAbstractPrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
@@ -204,20 +204,20 @@ class SmartDatalake:
     def _get_prompt(
         self,
         key: str,
-        default_prompt: Type[Prompt],
+        default_prompt: Type[AbstractPrompt],
         default_values: Optional[dict] = None,
-    ) -> Prompt:
+    ) -> AbstractPrompt:
         """
         Return a prompt by key.
 
         Args:
             key (str): The key of the prompt
-            default_prompt (Type[Prompt]): The default prompt to use
+            default_prompt (Type[AbstractPrompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
             prompt. Defaults to None.
 
         Returns:
-            Prompt: The prompt
+            AbstractPrompt: The prompt
         """
         if default_values is None:
             default_values = {}
@@ -287,7 +287,7 @@ class SmartDatalake:
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
-                    default_prompt=GeneratePythonCodePrompt,
+                    default_prompt=GeneratePythonCodeAbstractPrompt,
                     default_values=default_values,
                 )
 
@@ -436,7 +436,7 @@ class SmartDatalake:
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
-            default_prompt=CorrectErrorPrompt,
+            default_prompt=CorrectErrorAbstractPrompt,
             default_values=default_values,
         )
 
