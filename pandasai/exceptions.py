@@ -75,7 +75,7 @@ class BadImportError(Exception):
 
 class TemplateFileNotFoundError(FileNotFoundError):
     """
-    Raised when a library not in the whitelist is imported.
+    Raised when a template file cannot be found.
     """
 
     def __init__(self, template_path, prompt_name="Unknown"):
