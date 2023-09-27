@@ -36,7 +36,7 @@ Updated code:
 from .base import FileBasedPrompt
 
 
-class GeneratePythonCodeAbstractPrompt(FileBasedPrompt):
+class GeneratePythonCodePrompt(FileBasedPrompt):
     """Prompt to generate Python code"""
 
     _path_to_template = "assets/prompt-templates/generate_python_code.tmpl"

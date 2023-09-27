@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 from pandasai import SmartDataframe
-from pandasai.prompts import GeneratePythonCodeAbstractPrompt
+from pandasai.prompts import GeneratePythonCodePrompt
 from pandasai.llm.fake import FakeLLM
 
 
@@ -20,7 +20,7 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodeAbstractPrompt()
+        prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "exports/charts")
@@ -80,7 +80,7 @@ Updated code:
             )
         ]
 
-        prompt = GeneratePythonCodeAbstractPrompt()
+        prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "custom_path")

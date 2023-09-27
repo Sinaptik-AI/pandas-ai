@@ -1,9 +1,9 @@
 from .base import AbstractPrompt
-from .correct_error_prompt import CorrectErrorAbstractPrompt
-from .generate_python_code import GeneratePythonCodeAbstractPrompt
+from .correct_error_prompt import CorrectErrorPrompt
+from .generate_python_code import GeneratePythonCodePrompt
 
 __all__ = [
     "AbstractPrompt",
-    "CorrectErrorAbstractPrompt",
-    "GeneratePythonCodeAbstractPrompt",
+    "CorrectErrorPrompt",
+    "GeneratePythonCodePrompt",
 ]

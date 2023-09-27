@@ -1,5 +1,6 @@
 """Unit tests for the SmartDatalake class"""
 import os
+import sys
 
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -146,8 +147,12 @@ class TestSmartDatalake:
             e=Exception("Test error"),
         )
 
+        last_prompt = smart_datalake.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
+
         assert (
-            smart_datalake.last_prompt
+            last_prompt
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 

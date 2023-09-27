@@ -33,8 +33,8 @@ from ..helpers.memory import Memory
 from ..schemas.df_config import Config
 from ..config import load_config
 from ..prompts.base import AbstractPrompt
-from ..prompts.correct_error_prompt import CorrectErrorAbstractPrompt
-from ..prompts.generate_python_code import GeneratePythonCodeAbstractPrompt
+from ..prompts.correct_error_prompt import CorrectErrorPrompt
+from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
@@ -287,7 +287,7 @@ class SmartDatalake:
                 }
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
-                    default_prompt=GeneratePythonCodeAbstractPrompt,
+                    default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
                 )
 
@@ -436,7 +436,7 @@ class SmartDatalake:
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
-            default_prompt=CorrectErrorAbstractPrompt,
+            default_prompt=CorrectErrorPrompt,
             default_values=default_values,
         )
 

@@ -19,7 +19,7 @@ Correct the python code and return a new python code (do not import anything) th
 from .base import FileBasedPrompt
 
 
-class CorrectErrorAbstractPrompt(FileBasedPrompt):
+class CorrectErrorPrompt(FileBasedPrompt):
     """Prompt to Correct Python code on Error"""
 
     _path_to_template = "assets/prompt-templates/correct_error_prompt.tmpl"

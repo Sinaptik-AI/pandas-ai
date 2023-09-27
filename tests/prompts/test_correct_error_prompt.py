@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 from pandasai import SmartDataframe
-from pandasai.prompts import CorrectErrorAbstractPrompt
+from pandasai.prompts import CorrectErrorPrompt
 from pandasai.llm.fake import FakeLLM
 
 
@@ -20,7 +20,7 @@ class TestCorrectErrorPrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = CorrectErrorAbstractPrompt(
+        prompt = CorrectErrorPrompt(
             engine="pandas", code="df.head()", error_returned="Error message"
         )
         prompt.set_var("dfs", dfs)
