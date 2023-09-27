@@ -1,8 +1,9 @@
 """ Base class to implement a new Prompt
 In order to better handle the instructions, this prompt module is written.
 """
-import os
 from abc import ABC, abstractmethod
+
+from ..exceptions import TemplateFileNotFoundError
 
 
 class AbstractPrompt(ABC):
@@ -81,10 +82,14 @@ class FileBasedPrompt(AbstractPrompt):
 
     @property
     def template(self) -> str:
-        if not os.path.exists(self._path_to_template):
-            raise FileNotFoundError(
-                f"Unable to find a file with template at '{self._path_to_template}' "
-                f"for '{self.__class__.__name__}' prompt."
+        try:
+            with open(self._path_to_template) as fp:
+                return fp.read()
+        except FileNotFoundError:
+            raise TemplateFileNotFoundError(
+                self._path_to_template, self.__class__.__name__
             )
-        with open(self._path_to_template) as fp:
-            return fp.read()
+        except IOError as exc:
+            raise RuntimeError(
+                f"Failed to read template file '{self._path_to_template}': {exc}"
+            )
