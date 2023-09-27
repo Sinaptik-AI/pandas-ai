@@ -6,7 +6,10 @@ from abc import ABC, abstractmethod
 
 
 class AbstractPrompt(ABC):
-    """Base class to implement a new Prompt"""
+    """Base class to implement a new Prompt.
+
+    Inheritors have to override `template` property.
+    """
 
     _args = {}
 
@@ -47,7 +50,7 @@ This is the metadata of the dataframe dfs[{index-1}]:
 
     @property
     @abstractmethod
-    def template(self):
+    def template(self) -> str:
         ...
 
     def set_var(self, var, value):
@@ -63,6 +66,11 @@ This is the metadata of the dataframe dfs[{index-1}]:
 
 
 class FileBasedPrompt(AbstractPrompt):
+    """Base class for prompts supposed to read template content from a file.
+
+    `_path_to_template` attribute has to be specified.
+    """
+
     _path_to_template: str
 
     def __init__(self, **kwargs):
@@ -72,7 +80,7 @@ class FileBasedPrompt(AbstractPrompt):
         super().__init__(**kwargs)
 
     @property
-    def template(self):
+    def template(self) -> str:
         if not os.path.exists(self._path_to_template):
             raise FileNotFoundError(
                 f"Unable to find a file with template at '{self._path_to_template}' "

@@ -20,12 +20,39 @@ from pandasai.prompts import AbstractPrompt
 
 
 class MyCustomPrompt(AbstractPrompt):
-    template = """This is your custom text for your prompt with custom {my_custom_value}"""
+    @property
+    def template(self):
+        return """This is your custom text for your prompt with custom {my_custom_value}"""
 
 
 df = SmartDataframe("data.csv", {
     "custom_prompts": {
         "generate_python_code": MyCustomPrompt(
+            my_custom_value="my custom value")
+    }
+})
+```
+
+You can also use `FileBasedPrompt` in case you prefer to store prompt template in a file:
+
+_my_prompt_template.tmpl:_
+```
+This is your custom text for your prompt with custom {my_custom_value}
+```
+_python code:_
+
+```python
+from pandasai import SmartDataframe
+from pandasai.prompts import FileBasedPrompt
+
+
+class MyCustomFileBasedPrompt(FileBasedPrompt):
+    _path_to_template = "path/to/my_prompt_template.tmpl"
+
+
+df = SmartDataframe("data.csv", {
+    "custom_prompts": {
+        "generate_python_code": MyCustomFileBasedPrompt(
             my_custom_value="my custom value")
     }
 })
