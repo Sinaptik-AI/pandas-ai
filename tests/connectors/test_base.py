@@ -14,7 +14,6 @@ class MockConfig:
 
 # Mock subclass of BaseConnector for testing
 class MockConnector(BaseConnector):
-
     def _load_connector_config(self, config: BaseConnectorConfig):
         pass
 

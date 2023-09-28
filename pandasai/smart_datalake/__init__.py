@@ -32,7 +32,7 @@ from ..helpers.cache import Cache
 from ..helpers.memory import Memory
 from ..schemas.df_config import Config
 from ..config import load_config
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
@@ -207,20 +207,20 @@ class SmartDatalake:
     def _get_prompt(
         self,
         key: str,
-        default_prompt: Type[Prompt],
+        default_prompt: Type[AbstractPrompt],
         default_values: Optional[dict] = None,
-    ) -> Prompt:
+    ) -> AbstractPrompt:
         """
         Return a prompt by key.
 
         Args:
             key (str): The key of the prompt
-            default_prompt (Type[Prompt]): The default prompt to use
+            default_prompt (Type[AbstractPrompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
             prompt. Defaults to None.
 
         Returns:
-            Prompt: The prompt
+            AbstractPrompt: The prompt
         """
         if default_values is None:
             default_values = {}

@@ -17,7 +17,7 @@ from pandasai.exceptions import LLMNotFoundError
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 
 import logging
@@ -377,8 +377,8 @@ result = analyze_data(dfs)
         smart_dataframe.chat.assert_called_once()
 
     def test_replace_generate_code_prompt(self, llm):
-        class CustomPrompt(Prompt):
-            text: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
+        class CustomPrompt(AbstractPrompt):
+            template: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -399,8 +399,10 @@ result = analyze_data(dfs)
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = "Custom prompt"
+        class ReplacementPrompt(AbstractPrompt):
+            @property
+            def template(self):
+                return "Custom prompt"
 
         replacement_prompt = ReplacementPrompt()
         df = SmartDataframe(
@@ -510,7 +512,9 @@ result = analyze_data(dfs)
         smart_dataframe.use_error_correction_framework = False
         assert smart_dataframe.use_error_correction_framework is False
 
-        smart_dataframe.custom_prompts = {"generate_python_code": Prompt()}
+        smart_dataframe.custom_prompts = {
+            "generate_python_code": GeneratePythonCodePrompt()
+        }
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True

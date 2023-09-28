@@ -71,3 +71,23 @@ class BadImportError(Exception):
             f"Generated code includes import of {library_name} which"
             " is not in whitelist."
         )
+
+
+class TemplateFileNotFoundError(FileNotFoundError):
+    """
+    Raised when a template file cannot be found.
+    """
+
+    def __init__(self, template_path, prompt_name="Unknown"):
+        """
+        __init__ method of TemplateFileNotFoundError Class
+
+        Args:
+            template_path (str): Path for template file.
+            prompt_name (str): Prompt name. Defaults to "Unknown".
+        """
+        self.template_path = template_path
+        super().__init__(
+            f"Unable to find a file with template at '{template_path}' "
+            f"for '{prompt_name}' prompt."
+        )

@@ -1,10 +1,10 @@
 """Unit tests for the LLaMa2TextGen LLM class"""
-from pandasai import Prompt
+from pandasai import AbstractPrompt
 from pandasai.llm import HuggingFaceTextGen
 
 
-class MockPrompt(Prompt):
-    text: str = "instruction."
+class MockAbstractPrompt(AbstractPrompt):
+    template: str = "instruction."
 
 
 class MockResponse:
@@ -19,9 +19,8 @@ class TestHuggingFaceTextGen:
 
     def test_type_with_token(self):
         assert (
-                HuggingFaceTextGen(
-                inference_server_url="http://127.0.0.1:8080"
-            ).type == "huggingface-text-generation"
+            HuggingFaceTextGen(inference_server_url="http://127.0.0.1:8080").type
+            == "huggingface-text-generation"
         )
 
     def test_params_setting(self):
@@ -30,7 +29,7 @@ class TestHuggingFaceTextGen:
             max_new_tokens=1024,
             top_p=0.8,
             typical_p=0.8,
-            temperature=1E-3,
+            temperature=1e-3,
             stop_sequences=["\n"],
             seed=0,
             do_sample=False,
@@ -53,11 +52,9 @@ class TestHuggingFaceTextGen:
         expected_text = "This is the generated text."
         tgi_mock.return_value = MockResponse(expected_text)
 
-        llm = HuggingFaceTextGen(
-            inference_server_url="http://127.0.0.1:8080"
-        )
+        llm = HuggingFaceTextGen(inference_server_url="http://127.0.0.1:8080")
 
-        instruction = MockPrompt()
+        instruction = MockAbstractPrompt()
         result = llm.call(instruction)
 
         tgi_mock.assert_called_once_with(
