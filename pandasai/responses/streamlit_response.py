@@ -23,7 +23,12 @@ class StreamlitResponse(ResponseParser):
         import matplotlib.image as mpimg
 
         # Load the image file
-        image = mpimg.imread(result["value"])
+        try:
+            image = mpimg.imread(result["value"])
+        except FileNotFoundError:
+            raise FileNotFoundError(f"The file {result['value']} does not exist.")
+        except OSError:
+            raise ValueError(f"The file {result['value']} is not a valid image file.")
 
         # Display the image
         plt.imshow(image)

@@ -67,11 +67,10 @@ class ResponseParser(IResponseParser):
         from ..smart_dataframe import SmartDataframe
 
         df = result["value"]
-        if self._context.engine == "polars":
-            if polars_imported:
-                import polars as pl
+        if self._context.engine == "polars" and polars_imported:
+            import polars as pl
 
-                df = pl.from_pandas(df)
+            df = pl.from_pandas(df)
 
         return SmartDataframe(
             df,
