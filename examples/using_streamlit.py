@@ -26,7 +26,7 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("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")
+llm = OpenAI()
 dl = SmartDatalake(
     [employees_df, salaries_df],
     config={"llm": llm, "verbose": True, "response_parser": StreamLitResponse},
