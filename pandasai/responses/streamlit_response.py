@@ -13,7 +13,12 @@ class StreamlitResponse(ResponseParser):
     def __init__(self, context):
         super().__init__(context)
 
-    def format_plot(self, result):
+    def format_plot(self, result) -> None:
+        """
+        Display plot against a user query in Streamlit
+        Args:
+            result (dict): result contains type and value
+        """
         import matplotlib.pyplot as plt
         import matplotlib.image as mpimg
 

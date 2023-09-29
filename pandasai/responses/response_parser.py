@@ -9,7 +9,16 @@ from pandasai.exceptions import MethodNotImplementedError
 class IResponseParser(ABC):
     @abstractmethod
     def parse(self, result: dict) -> Any:
-        """Runs the parser"""
+        """
+        Parses result from the chat input
+        Args:
+            result (dict): result contains type and value
+        Raises:
+            ValueError: if result is not a dictionary with valid key
+
+        Returns:
+            Any: Returns depending on the user input
+        """
         raise MethodNotImplementedError
 
 
@@ -25,10 +34,20 @@ class ResponseParser(IResponseParser):
         self._context = context
 
     def parse(self, result: dict) -> Any:
+        """
+        Parses result from the chat input
+        Args:
+            result (dict): result contains type and value
+        Raises:
+            ValueError: if result is not a dictionary with valid key
+
+        Returns:
+            Any: Returns depending on the user input
+        """
         if not isinstance(result, dict) or not all(
             key in result for key in ["type", "value"]
         ):
-            raise ValueError(f"Unsupported result format: {result}")
+            raise ValueError("Unsupported result format")
 
         if result["type"] == "dataframe":
             return self.format_dataframe(result)
@@ -38,7 +57,13 @@ class ResponseParser(IResponseParser):
             return self.format_other(result)
 
     def format_dataframe(self, result: dict) -> Any:
-        # Format and process dataframe
+        """
+        Format dataframe generate against a user query
+        Args:
+            result (dict): result contains type and value
+        Returns:
+            Any: Returns depending on the user input
+        """
         from ..smart_dataframe import SmartDataframe
 
         df = result["value"]
@@ -55,7 +80,13 @@ class ResponseParser(IResponseParser):
         )
 
     def format_plot(self, result: dict) -> Any:
-        """"""
+        """
+        Display matplotlib plot against a user query
+        Args:
+            result (dict): result contains type and value
+        Returns:
+            Any: Returns depending on the user input
+        """
         import matplotlib.pyplot as plt
         import matplotlib.image as mpimg
 
@@ -74,5 +105,12 @@ class ResponseParser(IResponseParser):
         plt.close("all")
 
     def format_other(self, result) -> Any:
-        # Format other results
+        """
+        Returns the result generated against a user query other than dataframes
+        and plots
+        Args:
+            result (dict): result contains type and value
+        Returns:
+            Any: Returns depending on the user input
+        """
         return result["value"]
