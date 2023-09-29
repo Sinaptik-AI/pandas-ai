@@ -25,7 +25,8 @@ import os
 import traceback
 
 from ..helpers.output_types import output_type_factory
-from pandasai.response import Context, ResponseParser
+from pandasai.response.context import Context
+from pandasai.response.response_parser import ResponseParser
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
