@@ -4,7 +4,6 @@ import pandas as pd
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
-from pandasai.response.streamlit_response import StreamLitResponse
 
 employees_df = pd.DataFrame(
     {
@@ -24,8 +23,8 @@ salaries_df = pd.DataFrame(
 llm = OpenAI()
 dl = SmartDatalake(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True, "response_parser": StreamLitResponse},
+    config={"llm": llm, "verbose": True},
 )
 response = dl.chat("Plot salaries againtname")
 print(response)
-# Output: Olivia
+# Output: <expected output>

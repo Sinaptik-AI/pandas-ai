@@ -1,7 +1,7 @@
 from pydantic import BaseModel, validator, Field
 from typing import Optional, List, Any, Dict, Type
 
-from pandasai.response import ResponseParser
+from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM

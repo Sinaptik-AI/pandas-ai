@@ -17,9 +17,19 @@ class ResponseParser(IResponseParser):
     _context = None
 
     def __init__(self, context) -> None:
+        """
+        Initialize the ResponseParser with Context from SmartDataLake
+        Args:
+            context (Context): context contains the config, logger and engine
+        """
         self._context = context
 
-    def parse(self, result) -> Any:
+    def parse(self, result: dict) -> Any:
+        if not isinstance(result, dict) or not all(
+            key in result for key in ["type", "value"]
+        ):
+            raise ValueError(f"Unsupported result format: {result}")
+
         if result["type"] == "dataframe":
             return self.format_dataframe(result)
         elif result["type"] == "plot":
@@ -50,7 +60,12 @@ class ResponseParser(IResponseParser):
         import matplotlib.image as mpimg
 
         # Load the image file
-        image = mpimg.imread(result["value"])
+        try:
+            image = mpimg.imread(result["value"])
+        except FileNotFoundError:
+            raise FileNotFoundError(f"The file {result['value']} does not exist.")
+        except OSError:
+            raise ValueError(f"The file {result['value']} is not a valid image file.")
 
         # Display the image
         plt.imshow(image)

@@ -1,12 +1,15 @@
-from pandasai.response.response_parser import ResponseParser
+from pandasai.responses.response_parser import ResponseParser
 
 try:
     import streamlit as st
 except ImportError:
-    raise
+    raise ImportError(
+        "The 'streamlit' module is required but not installed. "
+        "Please install it using pip: pip install streamlit"
+    )
 
 
-class StreamLitResponse(ResponseParser):
+class StreamlitResponse(ResponseParser):
     def __init__(self, context):
         super().__init__(context)
 

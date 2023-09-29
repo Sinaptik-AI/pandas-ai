@@ -26,5 +26,5 @@ class Context:
 
     @property
     def engine(self):
-        """Getter for _logger attribute."""
+        """Getter for _engine attribute."""
         return self._engine

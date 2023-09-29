@@ -8,7 +8,7 @@ import pandas as pd
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
-from pandasai.response.streamlit_response import StreamLitResponse
+from pandasai.responses.streamlit_response import StreamlitResponse
 
 
 employees_df = pd.DataFrame(
@@ -29,7 +29,7 @@ salaries_df = pd.DataFrame(
 llm = OpenAI()
 dl = SmartDatalake(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True, "response_parser": StreamLitResponse},
+    config={"llm": llm, "verbose": True, "response_parser": StreamlitResponse},
 )
 
 dl.chat("Plot salaries against employee name")
