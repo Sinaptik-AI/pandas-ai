@@ -43,11 +43,6 @@ from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 
 
-class Test:
-    def __init__(self, config, logger) -> None:
-        print("test passed")
-
-
 class SmartDatalake:
     _dfs: List[DataFrameType]
     _config: Union[Config, dict]
@@ -105,8 +100,6 @@ class SmartDatalake:
             self._cache = Cache()
 
         context = Context(self._config, self.logger, self.engine)
-        # test = Test(self._config, self.logger)
-        # print(test)
 
         if self._config.response_parser:
             self._response_parser = self._config.response_parser(context)

@@ -4,6 +4,7 @@ import pandas as pd
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
+from pandasai.response.streamlit_response import StreamLitResponse
 
 employees_df = pd.DataFrame(
     {
@@ -20,14 +21,11 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("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")
+llm = OpenAI()
 dl = SmartDatalake(
     [employees_df, salaries_df],
-    config={
-        "llm": llm,
-        "verbose": True,
-    },
+    config={"llm": llm, "verbose": True, "response_parser": StreamLitResponse},
 )
-response = dl.chat("Who gets paid the most?")
+response = dl.chat("Plot salaries againtname")
 print(response)
 # Output: Olivia
