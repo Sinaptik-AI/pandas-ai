@@ -1,9 +1,13 @@
-"""
-Example of using displaying PandasAI charts in Streamlit
+# Streamlit
 
-Usage:
-streamlit run examples/using_streamlit.py
-"""
+PandasAI offers the flexibility to handle chat responses in a customized manner. By default, PandasAI includes a ResponseParser class that can be extended to modify the response output according to your needs.
+
+You have the option to provide a custom parser, such as `StreamLitResponse`, to the configuration object like this:
+
+## Example Usage
+
+```python
+
 import pandas as pd
 
 from pandasai import SmartDatalake
@@ -32,4 +36,6 @@ dl = SmartDatalake(
     config={"llm": llm, "verbose": True, "response_parser": StreamLitResponse},
 )
 
-dl.chat("Plot salaries against employee name")
+dl.chat("Plot salaries against name")
+
+```

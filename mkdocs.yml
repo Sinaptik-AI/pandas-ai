@@ -22,6 +22,8 @@ nav:
       - save-dataframes.md
       - cache.md
       - middlewares.md
+      - custom-response.md
+      - streamlit.md
       - callbacks.md
       - custom-prompts.md
       - custom-whitelisted-dependencies.md
