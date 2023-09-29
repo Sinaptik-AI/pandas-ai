@@ -25,6 +25,6 @@ dl = SmartDatalake(
     [employees_df, salaries_df],
     config={"llm": llm, "verbose": True},
 )
-response = dl.chat("Plot salaries againtname")
+response = dl.chat("Plot salaries againt name")
 print(response)
 # Output: <expected output>
