@@ -7,7 +7,9 @@ class Context:
     _logger = None
     _engine: str = None
 
-    def __init__(self, config: Config, logger=Logger, engine: str = None) -> None:
+    def __init__(
+        self, config: Config, logger: Logger = None, engine: str = None
+    ) -> None:
         self._config = config
         self._logger = logger
         self._engine = engine
