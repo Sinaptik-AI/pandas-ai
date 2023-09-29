@@ -27,4 +27,4 @@ dl = SmartDatalake(
 )
 response = dl.chat("Plot salaries againt name")
 print(response)
-# Output: <expected output>
+# Output: <displays the plot>
