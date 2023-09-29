@@ -1,5 +1,7 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Type
+
+from pandasai.response import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
@@ -20,6 +22,7 @@ class Config(BaseModel):
     middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
     lazy_load_connector: bool = True
+    response_parser: Type[ResponseParser] = None
     llm: Any = None
 
     class Config:

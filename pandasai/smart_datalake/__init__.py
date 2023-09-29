@@ -20,15 +20,14 @@ Example:
 
 import time
 import uuid
-import sys
 import logging
 import os
 import traceback
 
 from ..helpers.output_types import output_type_factory
+from pandasai.response import Context, ResponseParser
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
-
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.memory import Memory
@@ -40,8 +39,13 @@ from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
-from ..helpers.df_info import DataFrameType, polars_imported
+from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
+
+
+class Test:
+    def __init__(self, config, logger) -> None:
+        print("test passed")
 
 
 class SmartDatalake:
@@ -99,6 +103,15 @@ class SmartDatalake:
 
         if self._config.enable_cache:
             self._cache = Cache()
+
+        context = Context(self._config, self.logger, self.engine)
+        # test = Test(self._config, self.logger)
+        # print(test)
+
+        if self._config.response_parser:
+            self._response_parser = self._config.response_parser(context)
+        else:
+            self._response_parser = ResponseParser(context)
 
     def initialize(self):
         """Initialize the SmartDatalake"""
@@ -192,16 +205,6 @@ class SmartDatalake:
 
         if self.logger:
             self.logger.log(f"Prompt ID: {self._last_prompt_id}")
-
-    def _is_running_in_console(self) -> bool:
-        """
-        Check if the code is running in console or not.
-
-        Returns:
-            bool: True if running in console else False
-        """
-
-        return sys.stdout.isatty()
 
     def _get_prompt(
         self,
@@ -380,7 +383,7 @@ class SmartDatalake:
 
         self._add_result_to_memory(result)
 
-        return self._format_results(result)
+        return self._response_parser.parse(result)
 
     def _add_result_to_memory(self, result: dict):
         """
@@ -396,49 +399,6 @@ class SmartDatalake:
             self._memory.add(result["value"], False)
         elif result["type"] == "dataframe" or result["type"] == "plot":
             self._memory.add("Ok here it is", False)
-
-    def _format_results(self, result: dict):
-        """
-        Format the results based on the type of the result.
-
-        Args:
-            result (dict): The result to format
-
-        Returns:
-            str: The formatted result
-        """
-        if result is None:
-            return
-
-        if result["type"] == "dataframe":
-            from ..smart_dataframe import SmartDataframe
-
-            df = result["value"]
-            if self.engine == "polars":
-                if polars_imported:
-                    import polars as pl
-
-                    df = pl.from_pandas(df)
-
-            return SmartDataframe(
-                df,
-                config=self._config.__dict__,
-                logger=self.logger,
-            )
-        elif result["type"] == "plot":
-            import matplotlib.pyplot as plt
-            import matplotlib.image as mpimg
-
-            # Load the image file
-            image = mpimg.imread(result["value"])
-
-            # Display the image
-            plt.imshow(image)
-            plt.axis("off")
-            plt.show(block=self._is_running_in_console())
-            plt.close("all")
-        else:
-            return result["value"]
 
     def _retry_run_code(self, code: str, e: Exception):
         """
