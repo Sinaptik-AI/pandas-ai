@@ -209,7 +209,7 @@ class CodeManager:
             code = add_save_chart(
                 code,
                 logger=self._logger,
-                folder_name=str(prompt_id),
+                file_name=str(prompt_id),
                 save_charts_path=self._config.save_charts_path,
             )
 

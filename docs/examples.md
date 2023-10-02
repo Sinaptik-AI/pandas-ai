@@ -127,6 +127,7 @@ print(response)
 
 ## Saving Plots with User Defined Path
 
+You can pass a custom path to save the charts. The path must be a valid global path.
 Below is the example to Save Charts with user defined location.
 
 ```python

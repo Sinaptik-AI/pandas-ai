@@ -55,7 +55,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -83,7 +83,6 @@ Updated code:
         prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
-        prompt.set_var("save_charts_path", "custom_path")
 
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
@@ -115,7 +114,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in custom_path/temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
