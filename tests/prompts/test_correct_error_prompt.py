@@ -49,6 +49,6 @@ df.head()
 It fails with the following error:
 Error message
 
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
 """  # noqa: E501
         )
