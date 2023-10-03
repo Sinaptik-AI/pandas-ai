@@ -2,8 +2,8 @@
 In order to better handle the instructions, this prompt module is written.
 """
 from abc import ABC, abstractmethod
-
-from pandasai.helpers.path import find_closest
+import os
+from pathlib import Path
 
 from ..exceptions import TemplateFileNotFoundError
 
@@ -80,7 +80,10 @@ class FileBasedPrompt(AbstractPrompt):
         if (template_path := kwargs.pop("path_to_template", None)) is not None:
             self._path_to_template = template_path
         else:
-            self._path_to_template = find_closest(self._path_to_template)
+            current_dir_path = Path(__file__).parent
+            self._path_to_template = os.path.join(
+                current_dir_path, "..", self._path_to_template
+            )
 
         super().__init__(**kwargs)
 

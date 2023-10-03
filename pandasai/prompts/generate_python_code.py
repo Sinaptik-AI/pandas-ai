@@ -39,7 +39,7 @@ from .base import FileBasedPrompt
 class GeneratePythonCodePrompt(FileBasedPrompt):
     """Prompt to generate Python code"""
 
-    _path_to_template = "pandasai/assets/prompt-templates/generate_python_code.tmpl"
+    _path_to_template = "assets/prompt-templates/generate_python_code.tmpl"
 
     def __init__(self, **kwargs):
         default_import = "import pandas as pd"
