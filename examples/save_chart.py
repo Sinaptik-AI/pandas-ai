@@ -16,7 +16,10 @@ try:
     user_defined_path = path.find_project_root()
 except ValueError:
     user_defined_path = os.getcwd()
+
+user_defined_path = os.path.join(user_defined_path, "exports", "charts")
 df = SmartDataframe(
+    df,
     config={
         "llm": llm,
         "save_charts_path": user_defined_path,

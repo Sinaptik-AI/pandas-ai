@@ -207,7 +207,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     - type (possible values "text", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -334,10 +334,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     plt.figure(figsize=(8, 6))
     plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
     plt.title('Happiness Index for the 5 Happiest Countries')
-    plt.savefig('custom-dir/output_charts/temp_chart.png')
+    plt.savefig('temp_chart.png')
     plt.close()
     
-    return {"type": None, "value": "custom-dir/output_charts/temp_chart.png"}
+    return {"type": None, "value": "temp_chart.png"}
 result = analyze_data(dfs)
 """
         with patch(
@@ -349,18 +349,16 @@ result = analyze_data(dfs)
                     "llm": llm,
                     "enable_cache": False,
                     "save_charts": True,
-                    "save_charts_path": "custom-dir/output_charts/",
                 },
             )
 
             smart_dataframe.chat("Plot pie-chart the 5 happiest countries")
 
-        assert "custom-dir/output_charts/temp_chart.png" in llm.last_prompt
         plt_mock = getattr(import_dependency_mock.return_value, "matplotlib.pyplot")
         assert plt_mock.savefig.called
         assert (
             plt_mock.savefig.call_args.args[0]
-            == "custom-dir/output_charts/temp_chart.png"
+            == f"exports/charts/{smart_dataframe.last_prompt_id}.png"
         )
 
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
