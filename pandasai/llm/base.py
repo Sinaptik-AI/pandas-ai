@@ -375,7 +375,7 @@ class BaseGoogle(LLM):
 
     temperature: Optional[float] = 0
     top_p: Optional[float] = 0.8
-    top_k: Optional[float] = 0.3
+    top_k: Optional[int] = 40
     max_output_tokens: Optional[int] = 1000
 
     def _valid_params(self):
@@ -409,8 +409,8 @@ class BaseGoogle(LLM):
         if self.top_p is not None and not 0 <= self.top_p <= 1:
             raise ValueError("top_p must be in the range [0.0, 1.0]")
 
-        if self.top_k is not None and not 0 <= self.top_k <= 1:
-            raise ValueError("top_k must be in the range [0.0, 1.0]")
+        if self.top_k is not None and not 0 <= self.top_k <= 100:
+            raise ValueError("top_k must be in the range [0.0, 100.0]")
 
         if self.max_output_tokens is not None and self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be greater than zero")
