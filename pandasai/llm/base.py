@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 import openai
+import litellm
 import requests
 
 from ..exceptions import (
@@ -259,7 +260,7 @@ class BaseOpenAI(LLM, ABC):
         if self.stop is not None:
             params["stop"] = [self.stop]
 
-        response = openai.ChatCompletion.create(**params)
+        response = litellm.completion(**params)
 
         openai_handler = openai_callback_var.get()
         if openai_handler:
