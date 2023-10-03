@@ -3,6 +3,8 @@ In order to better handle the instructions, this prompt module is written.
 """
 from abc import ABC, abstractmethod
 
+from pandasai.helpers.path import find_closest
+
 from ..exceptions import TemplateFileNotFoundError
 
 
@@ -77,6 +79,8 @@ class FileBasedPrompt(AbstractPrompt):
     def __init__(self, **kwargs):
         if (template_path := kwargs.pop("path_to_template", None)) is not None:
             self._path_to_template = template_path
+        else:
+            self._path_to_template = find_closest(self._path_to_template)
 
         super().__init__(**kwargs)
 
