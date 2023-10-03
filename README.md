@@ -160,12 +160,6 @@ In order to generate the Python code to run, we take the dataframe head, we rand
 
 Also, if you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
 
-## ⚙️ Command-Line Tool
-
-Pai is the command line tool designed to provide a convenient way to interact with PandasAI through a command line interface (CLI). In order to access the CLI tool, make sure to create a virtualenv for testing purpose and to install project dependencies in your local virtual environment using `pip` by running the following command:
-
-Read more about how to use the CLI [here](https://pandas-ai.readthedocs.io/en/latest/pai_cli/).
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please check out the todos below, and feel free to open a pull request.
