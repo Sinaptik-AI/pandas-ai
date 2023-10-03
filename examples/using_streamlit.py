@@ -1,9 +1,15 @@
-"""Example of using PandasAI on multiple Pandas DataFrame"""
+"""
+Example of using displaying PandasAI charts in Streamlit
 
+Usage:
+streamlit run examples/using_streamlit.py
+"""
 import pandas as pd
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
+from pandasai.responses.streamlit_response import StreamlitResponse
+
 
 employees_df = pd.DataFrame(
     {
@@ -23,8 +29,7 @@ salaries_df = pd.DataFrame(
 llm = OpenAI()
 dl = SmartDatalake(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True},
+    config={"llm": llm, "verbose": True, "response_parser": StreamlitResponse},
 )
-response = dl.chat("Plot salaries againt name")
-print(response)
-# Output: <displays the plot>
+
+dl.chat("Plot salaries against employee name")
