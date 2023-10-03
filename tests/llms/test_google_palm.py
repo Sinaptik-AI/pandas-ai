@@ -37,14 +37,14 @@ class TestGooglePalm:
             model="models/text-bison-001",
             temperature=0.5,
             top_p=1.0,
-            top_k=0.5,
+            top_k=50,
             max_output_tokens=64,
         )
 
         assert llm.model == "models/text-bison-001"
         assert llm.temperature == 0.5
         assert llm.top_p == 1.0
-        assert llm.top_k == 0.5
+        assert llm.top_k == 50
         assert llm.max_output_tokens == 64
 
     def test_validations(self, prompt):
@@ -69,14 +69,14 @@ class TestGooglePalm:
             GooglePalm(api_key="test", top_p=1.1).call(prompt, "World")
 
         with pytest.raises(
-            ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
+            ValueError, match=re.escape("top_k must be in the range [0.0, 100.0]")
         ):
-            GooglePalm(api_key="test", top_k=-1).call(prompt, "World")
+            GooglePalm(api_key="test", top_k=-100).call(prompt, "World")
 
         with pytest.raises(
-            ValueError, match=re.escape("top_k must be in the range [0.0, 1.0]")
+            ValueError, match=re.escape("top_k must be in the range [0.0, 100.0]")
         ):
-            GooglePalm(api_key="test", top_k=1.1).call(prompt, "World")
+            GooglePalm(api_key="test", top_k=110).call(prompt, "World")
 
         with pytest.raises(
             ValueError, match=re.escape("max_output_tokens must be greater than zero")
