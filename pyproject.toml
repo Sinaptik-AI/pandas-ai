@@ -75,8 +75,6 @@ mkdocs = "1.4.0"
 mkdocstrings-python = "0.7.1"
 markdown-include = "^0.6.0"
 
-[tool.poetry.scripts]
-pai = "pai.__main__:main"
 
 [build-system]
 requires = ["poetry-core"]
