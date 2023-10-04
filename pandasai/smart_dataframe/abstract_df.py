@@ -279,7 +279,7 @@ class DataframeAbstract(ABC):
         """
         A proxy-call to the dataframe's `.to_csv()`.
         """
-        return self.dataframe.to_csv(path=path)
+        return self.dataframe.to_csv(path_or_buf=path)
 
     def to_json(self, path):
         """
