@@ -9,7 +9,7 @@ Based on the last conversation you generated the following code:
 
 <Code>
 {code}
-</Code
+</Code>
 
 Explain how you came up with code for non-technical people without 
 mentioning technical details or mentioning the libraries used?
@@ -23,8 +23,6 @@ class ExplainPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/explain_prompt.tmpl"
 
-    def __init__(self, conversation: str, code: str, **kwargs):
+    def setup(self, conversation: str, code: str):
         self.set_var("conversation", conversation)
         self.set_var("code", code)
-
-        super().__init__(**kwargs)

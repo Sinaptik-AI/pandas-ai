@@ -183,7 +183,10 @@ It's like finding the person who has the most marbles in a game
 What is expected Salary Increase?
         """
         agent._lake.llm.call.return_value = clarification_response
-        prompt = ExplainPrompt("test conversation", "")
+        prompt = ExplainPrompt(
+            conversation="test conversation",
+            code="test code",
+        )
         agent._call_llm_with_prompt(prompt)
         assert agent._lake.llm.call.call_count == 1
 
@@ -200,7 +203,7 @@ What is expected Salary Increase?
         # test the LLM call failed twice but succeed third time
         agent._lake.llm.call = Mock()
         agent._lake.llm.call.side_effect = [Exception(), Exception(), "LLM Result"]
-        prompt = ExplainPrompt("test conversation", "")
+        prompt = ExplainPrompt(conversation="test conversation", code="")
         result = agent._call_llm_with_prompt(prompt)
         assert result == "LLM Result"
         assert agent._lake.llm.call.call_count == 3
@@ -209,7 +212,7 @@ What is expected Salary Increase?
         # test the LLM call failed once but succeed second time
         agent._lake.llm.call = Mock()
         agent._lake.llm.call.side_effect = [Exception(), "LLM Result"]
-        prompt = ExplainPrompt("test conversation", "")
+        prompt = ExplainPrompt(conversation="test conversation", code="")
         result = agent._call_llm_with_prompt(prompt)
 
         assert result == "LLM Result"
@@ -245,7 +248,9 @@ What is expected Salary Increase?
         agent._lake.llm.call.return_value = "This is not json"
 
         prompt = ClarificationQuestionPrompt(
-            agent._lake.dfs, "test conversation", "test query"
+            dataframes=agent._lake.dfs,
+            conversation="test conversation",
+            query="test query",
         )
         with pytest.raises(Exception):
             agent._call_llm_with_prompt(prompt)
@@ -256,7 +261,9 @@ What is expected Salary Increase?
         agent._lake.llm.call.return_value = '["This is test quesiton"]'
 
         prompt = ClarificationQuestionPrompt(
-            agent._lake.dfs, "test conversation", "test query"
+            dataframes=agent._lake.dfs,
+            conversation="test conversation",
+            query="test query",
         )
         result = agent._call_llm_with_prompt(prompt)
         # Didn't raise any exception

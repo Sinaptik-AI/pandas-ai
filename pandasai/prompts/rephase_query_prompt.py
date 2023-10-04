@@ -19,9 +19,7 @@ class RephraseQueryPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/rephrase_query_prompt.tmpl"
 
-    def __init__(
-        self, query: str, dataframes: List[pd.DataFrame], conversation: str, **kwargs
-    ):
+    def setup(self, query: str, dataframes: List[pd.DataFrame], conversation: str):
         conversation_content = (
             self.conversation_text.format(conversation=conversation)
             if conversation
@@ -30,5 +28,3 @@ class RephraseQueryPrompt(FileBasedPrompt):
         self.set_var("conversation", conversation_content)
         self.set_var("query", query)
         self.set_var("dfs", dataframes)
-
-        super().__init__(**kwargs)

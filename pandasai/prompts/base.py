@@ -25,8 +25,11 @@ class AbstractPrompt(ABC):
         if self._args is None:
             self._args = {}
 
-        if kwargs:
-            self._args = {**kwargs, **self._args}
+        self._args.update(kwargs)
+        self.setup(**kwargs)
+
+    def setup(self, **kwargs):
+        pass
 
     def _generate_dataframes(self, dfs):
         """

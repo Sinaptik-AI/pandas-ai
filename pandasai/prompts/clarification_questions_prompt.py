@@ -26,14 +26,10 @@ class ClarificationQuestionPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/clarification_questions_prompt.tmpl"
 
-    def __init__(
-        self, dataframes: List[pd.DataFrame], conversation: str, query: str, **kwargs
-    ):
+    def setup(self, dataframes: List[pd.DataFrame], conversation: str, query: str):
         self.set_var("dfs", dataframes)
         self.set_var("conversation", conversation)
         self.set_var("query", query)
-
-        super().__init__(**kwargs)
 
     def validate(self, output) -> bool:
         try:

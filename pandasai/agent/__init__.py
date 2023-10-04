@@ -81,7 +81,9 @@ class Agent:
         Generate clarification questions based on the data
         """
         prompt = ClarificationQuestionPrompt(
-            self._lake.dfs, self._lake._memory.get_conversation(), query
+            dataframes=self._lake.dfs,
+            conversation=self._lake._memory.get_conversation(),
+            query=query,
         )
 
         result = self._call_llm_with_prompt(prompt)
@@ -104,8 +106,8 @@ class Agent:
         """
         try:
             prompt = ExplainPrompt(
-                self._lake._memory.get_conversation(),
-                self._lake.last_code_executed,
+                conversation=self._lake._memory.get_conversation(),
+                code=self._lake.last_code_executed,
             )
             response = self._call_llm_with_prompt(prompt)
             self._logger.log(
@@ -123,7 +125,9 @@ class Agent:
     def rephrase_query(self, query: str):
         try:
             prompt = RephraseQueryPrompt(
-                query, self._lake.dfs, self._lake._memory.get_conversation()
+                query=query,
+                dataframes=self._lake.dfs,
+                conversation=self._lake._memory.get_conversation(),
             )
             response = self._call_llm_with_prompt(prompt)
             self._logger.log(

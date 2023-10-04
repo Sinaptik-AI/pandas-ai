@@ -41,7 +41,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/generate_python_code.tmpl"
 
-    def __init__(self, **kwargs):
+    def setup(self, **kwargs):
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
 
@@ -57,8 +57,6 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
 3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
             )
-
-        super().__init__(**kwargs)
 
     def _set_instructions(self, instructions: str):
         lines = instructions.split("\n")
