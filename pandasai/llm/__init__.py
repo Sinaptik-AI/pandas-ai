@@ -7,6 +7,7 @@ from .google_vertexai import GoogleVertexAI
 from .huggingface_text_gen import HuggingFaceTextGen
 from .langchain import LangchainLLM
 from .starcoder import Starcoder
+from .gpt4free import Gpt4free
 
 __all__ = [
     "LLM",
@@ -19,4 +20,5 @@ __all__ = [
     "HuggingFaceTextGen",
     "LangchainLLM",
     "Starcoder",
+    "Gpt4free",
 ]
