@@ -100,7 +100,7 @@ class PlotOutputType(BaseOutputType):
     def template_hint(self):
         return """- type (must be "plot")
     - value (must be a string containing the path of the plot image)
-    Example output: { "type": "plot", "value": "export/charts/temp.png" }"""
+    Example output: { "type": "plot", "value": "export/charts/temp_chart.png" }"""
 
     @property
     def name(self):
@@ -146,7 +146,7 @@ class DefaultOutputType(BaseOutputType):
         or
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
-        { "type": "plot", "value": "export/charts/temp.png" }"""  # noqa E501
+        { "type": "plot", "value": "temp_chart.png" }"""  # noqa E501
 
     @property
     def name(self):

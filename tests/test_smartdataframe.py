@@ -22,7 +22,7 @@ from pandasai.helpers.output_types import (
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 
 import logging
@@ -212,7 +212,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -223,7 +223,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         or
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
-        { "type": "plot", "value": "export/charts/temp.png" }
+        { "type": "plot", "value": "temp_chart.png" }
     \"\"\"
 ```
 
@@ -274,7 +274,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in exports/charts/temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     4. Output: return a dictionary of:
     {output_type_hint}
     """
@@ -434,10 +434,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     plt.figure(figsize=(8, 6))
     plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
     plt.title('Happiness Index for the 5 Happiest Countries')
-    plt.savefig('custom-dir/output_charts/temp_chart.png')
+    plt.savefig('temp_chart.png')
     plt.close()
     
-    return {"type": None, "value": "custom-dir/output_charts/temp_chart.png"}
+    return {"type": None, "value": "temp_chart.png"}
 result = analyze_data(dfs)
 """
         with patch(
@@ -449,18 +449,16 @@ result = analyze_data(dfs)
                     "llm": llm,
                     "enable_cache": False,
                     "save_charts": True,
-                    "save_charts_path": "custom-dir/output_charts/",
                 },
             )
 
             smart_dataframe.chat("Plot pie-chart the 5 happiest countries")
 
-        assert "custom-dir/output_charts/temp_chart.png" in llm.last_prompt
         plt_mock = getattr(import_dependency_mock.return_value, "matplotlib.pyplot")
         assert plt_mock.savefig.called
         assert (
             plt_mock.savefig.call_args.args[0]
-            == "custom-dir/output_charts/temp_chart.png"
+            == f"exports/charts/{smart_dataframe.last_prompt_id}.png"
         )
 
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
@@ -477,8 +475,8 @@ result = analyze_data(dfs)
         smart_dataframe.chat.assert_called_once()
 
     def test_replace_generate_code_prompt(self, llm):
-        class CustomPrompt(Prompt):
-            text: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
+        class CustomPrompt(AbstractPrompt):
+            template: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -499,8 +497,10 @@ result = analyze_data(dfs)
         assert llm.last_prompt == expected_last_prompt
 
     def test_replace_correct_error_prompt(self, llm):
-        class ReplacementPrompt(Prompt):
-            text = "Custom prompt"
+        class ReplacementPrompt(AbstractPrompt):
+            @property
+            def template(self):
+                return "Custom prompt"
 
         replacement_prompt = ReplacementPrompt()
         df = SmartDataframe(
@@ -641,7 +641,9 @@ result = analyze_data(dfs)
         smart_dataframe.use_error_correction_framework = False
         assert smart_dataframe.use_error_correction_framework is False
 
-        smart_dataframe.custom_prompts = {"generate_python_code": Prompt()}
+        smart_dataframe.custom_prompts = {
+            "generate_python_code": GeneratePythonCodePrompt()
+        }
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True

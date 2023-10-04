@@ -2,7 +2,7 @@ from typing import Optional, Any, List, Dict
 
 from .base import LLM
 from ..helpers import load_dotenv
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 
 load_dotenv()
 
@@ -60,14 +60,14 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
 
         params = self._default_params
         if self.streaming:
             completion = ""
             for chunk in self.client.generate_stream(prompt, **params):
-                completion += chunk.text
+                completion += chunk.template
             return completion
 
         res = self.client.generate(prompt, **params)

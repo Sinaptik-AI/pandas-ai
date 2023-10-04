@@ -28,21 +28,18 @@ nav:
       - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md
-  - Command Line Tool:
-      - pai_cli.md
   - API:
       - API/pandasai.md
       - API/prompts.md
       - API/llms.md
       - API/helpers.md
-      - API/pai.md
   - About:
       - Release Notes: release-notes.md
       - Contributing: CONTRIBUTING.md
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "1.2.6"
+  version: "1.2.10"
 plugins:
   - search
   - mkdocstrings:

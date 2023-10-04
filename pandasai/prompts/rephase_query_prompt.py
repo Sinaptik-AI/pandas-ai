@@ -11,32 +11,17 @@ without any explanations.
 from typing import List
 
 import pandas as pd
-from .base import Prompt
+from .base import FileBasedPrompt
 
 
-class RephraseQueryPrompt(Prompt):
+class RephraseQueryPrompt(FileBasedPrompt):
     """Prompt to rephrase query to get more accurate responses"""
 
-    text: str = """
-You are provided with the following pandas DataFrames:
+    _path_to_template = "assets/prompt_templates/rephrase_query_prompt.tmpl"
 
-{dataframes}
-{conversation}
-
-Use the provided dataframe and conversation we have had to Return the rephrased 
-sentence of "{query}” in order to obtain more accurate and comprehensive responses 
-without any explanations.
-"""
-
-    conversation_text: str = """
-And based on our conversation:
-
-<conversation>
-{conversation}
-</conversation>
-"""
-
-    def __init__(self, query: str, dataframes: List[pd.DataFrame], conversation: str):
+    def __init__(
+        self, query: str, dataframes: List[pd.DataFrame], conversation: str, **kwargs
+    ):
         conversation_content = (
             self.conversation_text.format(conversation=conversation)
             if conversation
@@ -45,3 +30,5 @@ And based on our conversation:
         self.set_var("conversation", conversation_content)
         self.set_var("query", query)
         self.set_var("dfs", dataframes)
+
+        super().__init__(**kwargs)

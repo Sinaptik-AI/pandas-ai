@@ -1,86 +1,48 @@
-"""Unit tests for the save_chart module."""
-import ast
-import os.path
-import pytest
-
+import os
+import tempfile
 from pandasai.helpers.logger import Logger
-from pandasai.helpers.save_chart import add_save_chart, is_show_node
+from pandasai.helpers.save_chart import add_save_chart
 
 
-class TestSaveChart:
-    """Unit tests for the save_chart module."""
-
-    @pytest.fixture
-    def logger(self):
-        return Logger()
-
-    def test_is_show_node(self):
-        node1 = ast.parse("plt.show()").body[0]
-        node2 = ast.parse("plt.show(*some-args)").body[0]
-        node3 = ast.parse("print(r'hello/word.jpeg')").body[0]
-        node4 = ast.parse("print()").body[0]
-
-        assert is_show_node(node1)
-        assert is_show_node(node2)
-        assert not is_show_node(node3)
-        assert not is_show_node(node4)
-
-    def test_save_chart(self, logger):
-        chart_code = """
+class TestAddSaveChart:
+    def test_add_save_chart_with_default_path(self):
+        code = """
 import matplotlib.pyplot as plt
-import pandas as pd
-df = pd.DataFrame({'a': [1,2,3], 'b': [4,5,6]})
-df.plot()
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.savefig("temp_chart.png")
 plt.show()
 """
-        line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code, logger, "test_folder"))
-        show_call_pos = [i for i, node in enumerate(tree.body) if is_show_node(node)][0]
-        assert len(tree.body) == line_count + 1
-        assert tree.body[show_call_pos - 1].value.func.value.id == "plt"
-        assert tree.body[show_call_pos - 1].value.func.attr == "savefig"
-
-    def test_save_chart_with_args(self, logger):
-        chart_code = """
+        logger = Logger()
+        file_name = "test_chart"
+        expected_code = """
 import matplotlib.pyplot as plt
-import pandas as pd
-df = pd.DataFrame({'a': [1,2,3], 'b': [4,5,6]})
-df.plot()
-plt.show(block=False)
-"""
-        line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code, logger, "test_folder"))
-        assert len(tree.body) == line_count + 1
-        show_call_pos = [i for i, node in enumerate(tree.body) if is_show_node(node)][0]
-        assert tree.body[show_call_pos - 1].value.func.value.id == "plt"
-        assert tree.body[show_call_pos - 1].value.func.attr == "savefig"
-
-    def test_save_multiple_charts(self, logger):
-        chart_code = """
-import matplotlib.pyplot as plt
-import pandas as pd
-df = pd.DataFrame({'a': [1,2,3], 'b': [4,5,6]})
-df.plot('a')
-plt.show()
-df.plot('b')
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.savefig("temp_chart.png")
 plt.show()
 """
-        line_count = len(ast.parse(chart_code).body)
-        tree = ast.parse(add_save_chart(chart_code, logger, "test_folder"))
-        show_call_pos = [i for i, node in enumerate(tree.body) if is_show_node(node)]
+        result = add_save_chart(code, logger, file_name)
+        assert result == expected_code
 
-        assert len(tree.body) == line_count + 2
+    def test_add_save_chart_with_user_defined_path(self):
+        code = """
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.savefig("temp_chart.png")
+plt.show()
+"""
+        logger = Logger()
+        file_name = "temp_chart"
 
-        # check first node is plt.savefig() and filename ends with a
-        actual_node = tree.body[show_call_pos[0] - 1]
-        assert tree.body[show_call_pos[0] - 1].value.func.value.id == "plt"
-        assert tree.body[show_call_pos[0] - 1].value.func.attr == "savefig"
-        actual_node_args = [a.value for a in actual_node.value.args]
-        assert os.path.splitext(actual_node_args[0])[0][-1] == "a"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            save_charts_path = os.path.join(temp_dir, "charts")
+            assert not os.path.exists(save_charts_path)
 
-        # check second node is plt.savefig() and filename ends with n
-        actual_node = tree.body[show_call_pos[1] - 1]
-        assert tree.body[show_call_pos[1] - 1].value.func.value.id == "plt"
-        assert tree.body[show_call_pos[1] - 1].value.func.attr == "savefig"
-        actual_node_args = [a.value for a in actual_node.value.args]
-        assert os.path.splitext(actual_node_args[0])[0][-1] == "b"
+            expected_code = f"""
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.savefig("{os.path.join(save_charts_path, file_name)}.png")
+plt.show()
+"""
+            result = add_save_chart(code, logger, file_name, save_charts_path)
+            assert result == expected_code
+            assert os.path.exists(save_charts_path)

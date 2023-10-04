@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 from .base import LLM
 
 
@@ -16,7 +16,7 @@ class FakeLLM(LLM):
         if output is not None:
             self._output = output
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         self.last_prompt = instruction.to_string() + suffix
         return self._output
 

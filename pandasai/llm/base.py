@@ -29,7 +29,7 @@ from ..exceptions import (
     NoCodeFoundError,
 )
 from ..helpers.openai_info import openai_callback_var
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 
 
 class LLM:
@@ -120,12 +120,12 @@ class LLM:
         return code
 
     @abstractmethod
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
-            instruction (Prompt): A prompt object with instruction for LLM.
+            instruction (AbstractPrompt): A prompt object with instruction for LLM.
             suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
@@ -134,12 +134,12 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: Prompt) -> str:
+    def generate_code(self, instruction: AbstractPrompt) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
         Args:
-            instruction (Prompt): Prompt with instruction for LLM.
+            instruction (AbstractPrompt): Prompt with instruction for LLM.
 
         Returns:
             str: A string of Python code.
@@ -334,11 +334,11 @@ class HuggingFaceLLM(LLM):
 
         return response.json()[0]["generated_text"]
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
         A call method of HuggingFaceLLM class.
         Args:
-            instruction (Prompt): A prompt object with instruction for LLM.
+            instruction (AbstractPrompt): A prompt object with instruction for LLM.
             suffix (str): A string representing the suffix to be truncated
                 from the generated response.
 
@@ -375,7 +375,7 @@ class BaseGoogle(LLM):
 
     temperature: Optional[float] = 0
     top_p: Optional[float] = 0.8
-    top_k: Optional[float] = 0.3
+    top_k: Optional[int] = 40
     max_output_tokens: Optional[int] = 1000
 
     def _valid_params(self):
@@ -409,8 +409,8 @@ class BaseGoogle(LLM):
         if self.top_p is not None and not 0 <= self.top_p <= 1:
             raise ValueError("top_p must be in the range [0.0, 1.0]")
 
-        if self.top_k is not None and not 0 <= self.top_k <= 1:
-            raise ValueError("top_k must be in the range [0.0, 1.0]")
+        if self.top_k is not None and not 0 <= self.top_k <= 100:
+            raise ValueError("top_k must be in the range [0.0, 100.0]")
 
         if self.max_output_tokens is not None and self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be greater than zero")
@@ -429,12 +429,12 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
         Call the Google LLM.
 
         Args:
-            instruction (Prompt): Instruction to pass.
+            instruction (AbstractPrompt): Instruction to pass.
             suffix (str): Suffix to pass. Defaults to an empty string ("").
 
         Returns:

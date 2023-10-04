@@ -1,4 +1,5 @@
 """Unit tests for the CodeManager class"""
+import uuid
 from typing import Optional
 from unittest.mock import Mock, patch
 
@@ -75,18 +76,23 @@ class TestCodeManager:
         code = """def analyze_data(dfs):
     return {'type': 'number', 'value': 1 + 1}"""
 
-        assert code_manager.execute_code(code, "")["value"] == 2
+        assert code_manager.execute_code(code, uuid.uuid4())["value"] == 2
         assert code_manager.last_code_executed == code
 
     def test_run_code_invalid_code(self, code_manager: CodeManager):
         with pytest.raises(Exception):
-            code_manager.execute_code("1+ ", "")
+            # noinspection PyStatementEffect
+            code_manager.execute_code("1+ ", uuid.uuid4())["value"]
 
     def test_clean_code_remove_builtins(self, code_manager: CodeManager):
         builtins_code = """import set
 def analyze_data(dfs):
     return {'type': 'number', 'value': set([1, 2, 3])}"""
-        assert code_manager.execute_code(builtins_code, "")["value"] == {1, 2, 3}
+        assert code_manager.execute_code(builtins_code, uuid.uuid4())["value"] == {
+            1,
+            2,
+            3,
+        }
         assert (
             code_manager.last_code_executed
             == """def analyze_data(dfs):
@@ -123,7 +129,7 @@ import os
 print(os.listdir())
 """
         with pytest.raises(BadImportError):
-            code_manager.execute_code(malicious_code, "")
+            code_manager.execute_code(malicious_code, uuid.uuid4())
 
     def test_remove_dfs_overwrites(self, code_manager: CodeManager):
         hallucinated_code = """def analyze_data(dfs):

@@ -12,12 +12,15 @@ class Cache:
         filename (str): filename to store the cache.
     """
 
-    def __init__(self, filename="cache_db"):
+    def __init__(self, filename="cache_db", abs_path=None):
         # Define cache directory and create directory if it does not exist
-        try:
-            cache_dir = os.path.join(find_project_root(), "cache")
-        except ValueError:
-            cache_dir = os.path.join(os.getcwd(), "cache")
+        if abs_path:
+            cache_dir = abs_path
+        else:
+            try:
+                cache_dir = os.path.join(find_project_root(), "cache")
+            except ValueError:
+                cache_dir = os.path.join(os.getcwd(), "cache")
 
         os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 

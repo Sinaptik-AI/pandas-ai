@@ -155,7 +155,10 @@ class SmartDataframeCore:
         Load a connector into the smart dataframe
 
         Args:
-            connector (BaseConnector): Connector to be loaded
+            temporary (bool): Whether the connector is for one time usage.
+                If `True` passed, the connector will be unbound during
+                the next call of `dataframe` providing that dataframe has
+                been loaded.
         """
         self.dataframe = self.connector.execute()
         self._df_loaded = True

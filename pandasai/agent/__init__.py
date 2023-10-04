@@ -3,7 +3,7 @@ from typing import Union, List, Optional
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
-from pandasai.prompts.base import Prompt
+from pandasai.prompts.base import AbstractPrompt
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 from pandasai.prompts.rephase_query_prompt import RephraseQueryPrompt
@@ -40,11 +40,11 @@ class Agent:
         self._lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
         self._logger = self._lake.logger
 
-    def _call_llm_with_prompt(self, prompt: Prompt):
+    def _call_llm_with_prompt(self, prompt: AbstractPrompt):
         """
         Call LLM with prompt using error handling to retry based on config
         Args:
-            prompt (Prompt): Prompt to pass to LLM's
+            prompt (AbstractPrompt): AbstractPrompt to pass to LLM's
         """
         retry_count = 0
         while retry_count < self._lake.config.max_retries:

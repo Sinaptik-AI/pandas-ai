@@ -15,7 +15,7 @@ import openai
 from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
-from ..prompts.base import Prompt
+from ..prompts.base import AbstractPrompt
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -29,7 +29,8 @@ class OpenAI(BaseOpenAI):
     The list of supported Chat models includes ["gpt-4", "gpt-4-0613", "gpt-4-32k",
      "gpt-4-32k-0613", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613",
      "gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-instruct"].
-
+    The list of supported Completion models includes "gpt-3.5-turbo-instruct" and
+     "text-davinci-003" (soon to be deprecated).
     """
 
     _supported_chat_models = [
@@ -41,8 +42,8 @@ class OpenAI(BaseOpenAI):
         "gpt-3.5-turbo-16k",
         "gpt-3.5-turbo-0613",
         "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-instruct",
     ]
+    _supported_completion_models = ["text-davinci-003", "gpt-3.5-turbo-instruct"]
 
     model: str = "gpt-3.5-turbo"
 
@@ -85,12 +86,12 @@ class OpenAI(BaseOpenAI):
             "model": self.model,
         }
 
-    def call(self, instruction: Prompt, suffix: str = "") -> str:
+    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
         Call the OpenAI LLM.
 
         Args:
-            instruction (Prompt): A prompt object with instruction for LLM.
+            instruction (AbstractPrompt): A prompt object with instruction for LLM.
             suffix (str): Suffix to pass.
 
         Raises:
@@ -103,6 +104,8 @@ class OpenAI(BaseOpenAI):
 
         if self.model in self._supported_chat_models:
             response = self.chat_completion(self.last_prompt)
+        elif self.model in self._supported_completion_models:
+            response = self.completion(self.last_prompt)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
 

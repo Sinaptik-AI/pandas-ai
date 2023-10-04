@@ -16,14 +16,44 @@ To create your custom prompt create a new CustomPromptClass inherited from base 
 
 ```python
 from pandasai import SmartDataframe
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt
 
-class MyCustomPrompt(Prompt):
-    text = """This is your custom text for your prompt with custom {my_custom_value}"""
+
+class MyCustomPrompt(AbstractPrompt):
+    @property
+    def template(self):
+        return """This is your custom text for your prompt with custom {my_custom_value}"""
+
 
 df = SmartDataframe("data.csv", {
     "custom_prompts": {
-        "generate_python_code": MyCustomPrompt(my_custom_value="my custom value")
+        "generate_python_code": MyCustomPrompt(
+            my_custom_value="my custom value")
+    }
+})
+```
+
+You can also use `FileBasedPrompt` in case you prefer to store prompt template in a file:
+
+_my_prompt_template.tmpl:_
+```
+This is your custom text for your prompt with custom {my_custom_value}
+```
+_python code:_
+
+```python
+from pandasai import SmartDataframe
+from pandasai.prompts import FileBasedPrompt
+
+
+class MyCustomFileBasedPrompt(FileBasedPrompt):
+    _path_to_template = "path/to/my_prompt_template.tmpl"
+
+
+df = SmartDataframe("data.csv", {
+    "custom_prompts": {
+        "generate_python_code": MyCustomFileBasedPrompt(
+            my_custom_value="my custom value")
     }
 })
 ```
@@ -36,14 +66,16 @@ You can directly access the default prompt variables (for example dfs, conversat
 
 ```python
 from pandasai import SmartDataframe
-from pandasai.prompts import Prompt
+from pandasai.prompts import AbstractPrompt
 
-class MyCustomPrompt(Prompt):
-    text = """You are given a dataframe with number if rows equal to {dfs[0].shape[0]} and number of columns equal to {dfs[0].shape[1]}
+
+class MyCustomPrompt(AbstractPrompt):
+    template = """You are given a dataframe with number if rows equal to {dfs[0].shape[0]} and number of columns equal to {dfs[0].shape[1]}
 
 Here's the conversation:
 {conversation}
 """
+
 
 df = SmartDataframe("data.csv", {
     "custom_prompts": {

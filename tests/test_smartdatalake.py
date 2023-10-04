@@ -1,5 +1,6 @@
 """Unit tests for the SmartDatalake class"""
 import os
+import sys
 
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -146,8 +147,12 @@ class TestSmartDatalake:
             e=Exception("Test error"),
         )
 
+        last_prompt = smart_datalake.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = last_prompt.replace("\r\n", "\n")
+
         assert (
-            smart_datalake.last_prompt
+            last_prompt
             == """
 You are provided with the following pandas DataFrames with the following metadata:
 
@@ -170,7 +175,7 @@ def analyze_data(df):
 It fails with the following error:
 Test error
 
-Correct the python code and return a new python code (do not import anything) that fixes the above mentioned error. Do not generate the same code again.
+Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
 """  # noqa: E501
         )
 

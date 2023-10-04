@@ -40,7 +40,7 @@ import importlib.metadata
 import pandas as pd
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
-from .prompts.base import Prompt
+from .prompts.base import AbstractPrompt
 from .callbacks.base import BaseCallback
 from .schemas.df_config import Config
 from .helpers.cache import Cache
@@ -112,7 +112,7 @@ class PandasAI:
         middlewares=None,
         custom_whitelisted_dependencies=None,
         enable_logging=True,
-        non_default_prompts: Optional[Dict[str, Type[Prompt]]] = None,
+        non_default_prompts: Optional[Dict[str, Type[AbstractPrompt]]] = None,
         callback: Optional[BaseCallback] = None,
     ):
         """
