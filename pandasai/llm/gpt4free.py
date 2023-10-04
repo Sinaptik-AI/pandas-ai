@@ -21,8 +21,6 @@ class Gpt4free(LLM):
     with gpt4free.
     """
 
-    _langchain_llm = None
-
     def __init__(
         self,
         model: str = "gpt-3.5-turbo",
@@ -45,11 +43,14 @@ class Gpt4free(LLM):
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
 
-        response = g4f.ChatCompletion.create(
-            model=self.model,
-            provider=self.provider,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        try:
+            response = g4f.ChatCompletion.create(
+                model=self.model,
+                provider=self.provider,
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except Exception as e:
+            raise RuntimeError("Failed to create chat completion with Gpt4free") from e
         return response
 
     @property
