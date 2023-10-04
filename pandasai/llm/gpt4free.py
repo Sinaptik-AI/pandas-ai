@@ -50,7 +50,7 @@ class Gpt4free(LLM):
                 messages=[{"role": "user", "content": prompt}],
             )
         except Exception as e:
-            raise RuntimeError("Failed to create chat completion with Gpt4free") from e
+            raise RuntimeError(f"Failed to create chat completion with Gpt4free: {str(e)}") from e
         return response
 
     @property

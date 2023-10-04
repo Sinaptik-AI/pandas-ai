@@ -33,4 +33,4 @@ class TestGpt4freeLLM:
             messages=[{"role": "user", "content": prompt.to_string()}],
         )
 
-        assert result != None
+        assert result == expected_response
