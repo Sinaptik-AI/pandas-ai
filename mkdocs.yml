@@ -24,6 +24,7 @@ nav:
       - middlewares.md
       - custom-response.md
       - callbacks.md
+      - custom-instructions.md
       - custom-prompts.md
       - custom-whitelisted-dependencies.md
   - Examples:

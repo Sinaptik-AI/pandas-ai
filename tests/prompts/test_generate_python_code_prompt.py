@@ -77,7 +77,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
-    4. Output: return a dictionary of:
+    At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
@@ -90,3 +90,22 @@ Updated code:
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
         assert actual_prompt_content == expected_prompt_content
+
+    def test_custom_instructions(self):
+        custom_instructions = """Analyze the data
+1. Load: Load the data from a file or database
+2. Prepare: Preprocessing and cleaning data if necessary
+3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+
+        prompt = GeneratePythonCodePrompt(custom_instructions=custom_instructions)
+        actual_instructions = prompt._args["instructions"]
+
+        assert (
+            actual_instructions
+            == """Analyze the data
+    1. Load: Load the data from a file or database
+    2. Prepare: Preprocessing and cleaning data if necessary
+    3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+        )

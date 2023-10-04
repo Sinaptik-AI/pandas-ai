@@ -14,7 +14,7 @@ class AbstractPrompt(ABC):
     Inheritors have to override `template` property.
     """
 
-    _args = {}
+    _args: dict = None
 
     def __init__(self, **kwargs):
         """
@@ -22,8 +22,11 @@ class AbstractPrompt(ABC):
         Args:
             **kwargs: Inferred Keyword Arguments
         """
+        if self._args is None:
+            self._args = {}
+
         if kwargs:
-            self._args = kwargs
+            self._args = {**kwargs, **self._args}
 
     def _generate_dataframes(self, dfs):
         """
@@ -57,6 +60,9 @@ This is the metadata of the dataframe dfs[{index-1}]:
         ...
 
     def set_var(self, var, value):
+        if self._args is None:
+            self._args = {}
+
         if var == "dfs":
             self._args["dataframes"] = self._generate_dataframes(value)
         self._args[var] = value

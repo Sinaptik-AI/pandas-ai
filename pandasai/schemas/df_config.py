@@ -15,6 +15,7 @@ class Config(BaseModel):
     enable_cache: bool = True
     use_error_correction_framework: bool = True
     custom_prompts: Dict = Field(default_factory=dict)
+    custom_instructions: Optional[str] = None
     open_charts: bool = True
     save_charts: bool = False
     save_charts_path: str = "exports/charts"
