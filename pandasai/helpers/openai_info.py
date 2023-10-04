@@ -102,7 +102,9 @@ class OpenAICallbackHandler:
 
         model_name = response.model
         if model_name in MODEL_COST_PER_1K_TOKENS:
-            prompt_cost = get_openai_token_cost_for_model(model_name, usage.prompt_tokens)
+            prompt_cost = get_openai_token_cost_for_model(
+                model_name, usage.prompt_tokens
+            )
             completion_cost = get_openai_token_cost_for_model(
                 model_name, usage.completion_tokens, is_completion=True
             )
