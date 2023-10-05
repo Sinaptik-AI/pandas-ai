@@ -26,7 +26,9 @@ class ClarificationQuestionPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/clarification_questions_prompt.tmpl"
 
-    def setup(self, dataframes: List[pd.DataFrame], conversation: str, query: str):
+    def setup(
+        self, dataframes: List[pd.DataFrame], conversation: str, query: str
+    ) -> None:
         self.set_var("dfs", dataframes)
         self.set_var("conversation", conversation)
         self.set_var("query", query)

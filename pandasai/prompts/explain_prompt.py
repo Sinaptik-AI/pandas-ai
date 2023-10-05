@@ -23,6 +23,6 @@ class ExplainPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/explain_prompt.tmpl"
 
-    def setup(self, conversation: str, code: str):
+    def setup(self, conversation: str, code: str) -> None:
         self.set_var("conversation", conversation)
         self.set_var("code", code)

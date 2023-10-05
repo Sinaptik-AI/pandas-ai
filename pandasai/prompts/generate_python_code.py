@@ -41,7 +41,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/generate_python_code.tmpl"
 
-    def setup(self, **kwargs):
+    def setup(self, **kwargs) -> None:
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
 

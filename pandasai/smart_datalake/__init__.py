@@ -426,6 +426,12 @@ class SmartDatalake:
             self._config.callback.on_code(code)
         return code
 
+    def clear_memory(self):
+        """
+        Clears the memory
+        """
+        self._memory.clear()
+
     @property
     def engine(self):
         return self._dfs[0].engine

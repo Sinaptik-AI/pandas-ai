@@ -98,7 +98,7 @@ class Agent:
         """
         Clears the previous conversation
         """
-        self._lake._memory.clear()
+        self._lake.clear_memory()
 
     def explain(self) -> str:
         """

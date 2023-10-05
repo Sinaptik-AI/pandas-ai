@@ -19,7 +19,9 @@ class RephraseQueryPrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/rephrase_query_prompt.tmpl"
 
-    def setup(self, query: str, dataframes: List[pd.DataFrame], conversation: str):
+    def setup(
+        self, query: str, dataframes: List[pd.DataFrame], conversation: str
+    ) -> None:
         conversation_content = (
             self.conversation_text.format(conversation=conversation)
             if conversation

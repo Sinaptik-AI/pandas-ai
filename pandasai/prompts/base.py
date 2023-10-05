@@ -28,7 +28,7 @@ class AbstractPrompt(ABC):
         self._args.update(kwargs)
         self.setup(**kwargs)
 
-    def setup(self, **kwargs):
+    def setup(self, **kwargs) -> None:
         pass
 
     def _generate_dataframes(self, dfs):
