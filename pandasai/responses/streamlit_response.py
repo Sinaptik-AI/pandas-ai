@@ -1,13 +1,5 @@
 from pandasai.responses.response_parser import ResponseParser
 
-try:
-    import streamlit as st
-except ImportError:
-    raise ImportError(
-        "The 'streamlit' module is required but not installed. "
-        "Please install it using pip: pip install streamlit"
-    )
-
 
 class StreamlitResponse(ResponseParser):
     def __init__(self, context):
@@ -29,6 +21,14 @@ class StreamlitResponse(ResponseParser):
             raise FileNotFoundError(f"The file {result['value']} does not exist.")
         except OSError:
             raise ValueError(f"The file {result['value']} is not a valid image file.")
+
+        try:
+            import streamlit as st
+        except ImportError:
+            raise ImportError(
+                "The 'streamlit' module is required to use StreamLit Response. "
+                "Please install it using pip: pip install streamlit"
+            )
 
         # Display the image
         plt.imshow(image)
