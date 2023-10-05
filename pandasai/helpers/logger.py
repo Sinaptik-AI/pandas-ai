@@ -16,6 +16,8 @@ Example:
     ```
 """
 
+import inspect
+import time
 import sys
 from typing import List
 import logging
@@ -36,11 +38,13 @@ class Logger:
     _logs: List[Log]
     _logger: logging.Logger
     _verbose: bool
+    _last_time: float
 
     def __init__(self, save_logs: bool = True, verbose: bool = False):
         """Initialize the logger"""
         self._logs = []
         self._verbose = verbose
+        self._last_time = time.time()
 
         if save_logs:
             try:
@@ -74,7 +78,34 @@ class Logger:
         elif level == logging.CRITICAL:
             self._logger.critical(message)
 
-        self._logs.append({"msg": message, "level": level})
+        self._logs.append(
+            {
+                "msg": message,
+                "level": logging.getLevelName(level),
+                "time": self._calculate_time_diff(),
+                "source": self._invoked_from(),
+            }
+        )
+
+    def _invoked_from(self, level: int = 5) -> str:
+        """Return the name of the class that invoked the logger"""
+        calling_class = None
+        for frame_info in inspect.stack()[1:]:
+            frame_locals = frame_info[0].f_locals
+            calling_instance = frame_locals.get("self")
+            if calling_instance and calling_instance.__class__ != self.__class__:
+                calling_class = calling_instance.__class__.__name__
+                break
+            level -= 1
+            if level <= 0:
+                break
+        return calling_class
+
+    def _calculate_time_diff(self):
+        """Calculate the time difference since the last log"""
+        time_diff = time.time() - self._last_time
+        self._last_time = time.time()
+        return time_diff
 
     @property
     def logs(self) -> List[str]:

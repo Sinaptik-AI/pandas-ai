@@ -44,6 +44,7 @@ from .prompts.base import AbstractPrompt
 from .callbacks.base import BaseCallback
 from .schemas.df_config import Config
 from .helpers.cache import Cache
+from .agent import Agent
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 
@@ -69,7 +70,6 @@ class PandasAI:
         Sensitive data. Default to False
         _max_retries (int, optional): max no. of tries to generate code on failure.
         Default to 3
-        _in_notebook (bool, optional): Whether to run code in notebook. Default to False
         _original_instructions (dict, optional): The dict of instruction to run. Default
         to None
         _cache (Cache, optional): Cache object to store the results. Default to None
@@ -257,4 +257,4 @@ def clear_cache(filename: str = None):
     cache.clear()
 
 
-__all__ = ["PandasAI", "SmartDataframe", "SmartDatalake", "clear_cache"]
+__all__ = ["PandasAI", "SmartDataframe", "SmartDatalake", "Agent", "clear_cache"]

@@ -14,6 +14,11 @@ import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.helpers.output_types import (
+    DefaultOutputType,
+    output_types_map,
+    output_type_factory,
+)
 from pandasai.llm.fake import FakeLLM
 from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
@@ -208,10 +213,17 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
-    4. Output: return a dictionary of:
-    - type (possible values "text", "number", "dataframe", "plot")
+    At the end, return a dictionary of:
+    - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: { "type": "text", "value": "The average loan amount is $15,000." }
+    Examples: 
+        { "type": "string", "value": "The highest salary is $9,000." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "temp_chart.png" }
     \"\"\"
 ```
 
@@ -224,6 +236,94 @@ Updated code:
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
         assert last_prompt == expected_prompt
+
+    @pytest.mark.parametrize(
+        "output_type,output_type_hint",
+        [
+            (None, DefaultOutputType().template_hint),
+            *[
+                (type_, output_type_factory(type_).template_hint)
+                for type_ in output_types_map
+            ],
+        ],
+    )
+    def test_run_passing_output_type(self, llm, output_type, output_type_hint):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+
+        expected_prompt = f'''
+You are provided with the following pandas DataFrames:
+
+<dataframe>
+Dataframe dfs[0], with 0 rows and 1 columns.
+This is the metadata of the dataframe dfs[0]:
+country
+</dataframe>
+
+<conversation>
+User 1: How many countries are in the dataframe?
+</conversation>
+
+This is the initial python code to be updated:
+```python
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    """
+    Analyze the data
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    At the end, return a dictionary of:
+    {output_type_hint}
+    """
+```
+
+Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
+
+Updated code:
+'''  # noqa: E501
+
+        df.chat("How many countries are in the dataframe?", output_type=output_type)
+        last_prompt = df.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = df.last_prompt.replace("\r\n", "\n")
+        assert last_prompt == expected_prompt
+
+    @pytest.mark.parametrize(
+        "output_type_to_pass,output_type_returned",
+        [
+            ("number", "string"),
+            ("string", "number"),
+        ],
+    )
+    def test_run_incorrect_output_type_returned(
+        self,
+        smart_dataframe: SmartDataframe,
+        llm,
+        sample_df,
+        output_type_to_pass,
+        output_type_returned,
+    ):
+        llm._output = f"""
+def analyze_data(dfs: list[pd.DataFrame]) ->dict:
+    highest_gdp = dfs[0]['gdp'].max()
+    return {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
+"""
+        smart_dataframe = SmartDataframe(
+            sample_df, config={"llm": llm, "enable_cache": False}
+        )
+
+        smart_dataframe.chat(
+            "What is the highest GDP?", output_type=output_type_to_pass
+        )
+        expected_log = (
+            f"The result dict contains inappropriate 'type'. "
+            f"Expected '{output_type_to_pass}', actual "
+            f"'{output_type_returned}'"
+        )
+        assert any((expected_log in log.get("msg") for log in smart_dataframe.logs))
 
     def test_to_dict(self, smart_dataframe: SmartDataframe):
         expected_keys = ("country", "gdp", "happiness_index")
@@ -417,29 +517,60 @@ result = analyze_data(dfs)
         assert llm.last_prompt == expected_last_prompt
 
     def test_saves_logs(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.logs == []
+        with patch.object(smart_dataframe.lake.logger, "_calculate_time_diff"):
+            smart_dataframe.lake.logger._calculate_time_diff.return_value = 0
 
-        debug_msg = "Some debug log"
-        info_msg = "Some info log"
-        warning_msg = "Some warning log"
-        error_msg = "Some error log"
-        critical_msg = "Some critical log"
+            assert smart_dataframe.logs == []
 
-        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+            debug_msg = "Some debug log"
+            info_msg = "Some info log"
+            warning_msg = "Some warning log"
+            error_msg = "Some error log"
+            critical_msg = "Some critical log"
 
-        smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
-        smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
-        smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
-        smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
-        smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
-        logs = smart_dataframe.logs
+            smart_dataframe.lake.logger.log(debug_msg, level=logging.DEBUG)
+            smart_dataframe.lake.logger.log(info_msg)  # INFO should be default
+            smart_dataframe.lake.logger.log(warning_msg, level=logging.WARNING)
+            smart_dataframe.lake.logger.log(error_msg, level=logging.ERROR)
+            smart_dataframe.lake.logger.log(critical_msg, level=logging.CRITICAL)
+            logs = smart_dataframe.logs
 
-        assert all("msg" in log and "level" in log for log in logs)
-        assert {"msg": debug_msg, "level": logging.DEBUG} in logs
-        assert {"msg": info_msg, "level": logging.INFO} in logs
-        assert {"msg": warning_msg, "level": logging.WARNING} in logs
-        assert {"msg": error_msg, "level": logging.ERROR} in logs
-        assert {"msg": critical_msg, "level": logging.CRITICAL} in logs
+            assert len(logs) == 5
+
+            assert all(
+                ("msg" in log and "level" in log and "time" in log and "source" in log)
+                for log in logs
+            )
+            assert {
+                "msg": debug_msg,
+                "level": "DEBUG",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": info_msg,
+                "level": "INFO",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": warning_msg,
+                "level": "WARNING",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": error_msg,
+                "level": "ERROR",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
+            assert {
+                "msg": critical_msg,
+                "level": "CRITICAL",
+                "time": 0,
+                "source": "TestSmartDataframe",
+            } in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.verbose is False

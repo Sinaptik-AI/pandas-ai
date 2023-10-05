@@ -180,7 +180,7 @@ The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply pa
 To use the Yahoo Finance connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.yahoo_finance import YahooFinanceConnector
+from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 
 yahoo_connector = YahooFinanceConnector("MSFT")
 

@@ -22,4 +22,4 @@ from .base import FileBasedPrompt
 class CorrectErrorPrompt(FileBasedPrompt):
     """Prompt to Correct Python code on Error"""
 
-    _path_to_template = "assets/prompt-templates/correct_error_prompt.tmpl"
+    _path_to_template = "assets/prompt_templates/correct_error_prompt.tmpl"
