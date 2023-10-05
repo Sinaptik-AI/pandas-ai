@@ -114,6 +114,8 @@ class BaseConnector(ABC):
 
         Args:
             config (dict): The configuration dictionary to be populated.
+            envs_mapping (dict): The dictionary representing a map of config's keys
+                and according names of the environment variables.
 
         Returns:
             dict: The populated configuration dictionary.

@@ -7,7 +7,7 @@ import os
 import pandas as pd
 from .base import BaseConnector, SQLConnectorConfig
 from .base import BaseConnectorConfig
-from sqlalchemy import create_engine, text, select, asc
+from sqlalchemy import create_engine, text, select, asc, Connection
 
 from functools import cached_property, cache
 import hashlib
@@ -22,7 +22,7 @@ class SQLConnector(BaseConnector):
     """
 
     _engine = None
-    _connection: int = None
+    _connection: Connection = None
     _rows_count: int = None
     _columns_count: int = None
     _cache_interval: int = 600  # 10 minutes
@@ -169,6 +169,11 @@ class SQLConnector(BaseConnector):
         """
         Return the path of the cache file.
 
+        Args:
+            include_additional_filters (bool, optional): Whether to include the
+                additional filters in when calling `_get_column_hash()`.
+                Defaults to False.
+
         Returns:
             str: The path of the cache file.
         """
@@ -187,13 +192,18 @@ class SQLConnector(BaseConnector):
 
         return path
 
-    def _cached(self, include_additional_filters: bool = False):
+    def _cached(self, include_additional_filters: bool = False) -> Union[str, bool]:
         """
         Return the cached data if it exists and is not older than the cache interval.
 
+        Args:
+            include_additional_filters (bool, optional): Whether to include the
+                additional filters in when calling `_get_column_hash()`.
+                Defaults to False.
+
         Returns:
-            DataFrame|bool: The cached data if it exists and is not older than
-            the cache interval, False otherwise.
+            DataFrame|bool: The name of the file containing cached data if it exists
+                and is not older than the cache interval, False otherwise.
         """
         filename = self._get_cache_path(
             include_additional_filters=include_additional_filters
@@ -313,7 +323,7 @@ class SQLConnector(BaseConnector):
 
         Args:
             include_additional_filters (bool, optional): Whether to include the
-            additional filters in the hash. Defaults to False.
+                additional filters in the hash. Defaults to False.
 
         Returns:
             str: The hash of the SQL table columns.
