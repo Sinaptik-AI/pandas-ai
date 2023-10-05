@@ -7,7 +7,8 @@ import os
 import pandas as pd
 from .base import BaseConnector, SQLConnectorConfig
 from .base import BaseConnectorConfig
-from sqlalchemy import create_engine, text, select, asc, Connection
+from sqlalchemy import create_engine, text, select, asc
+from sqlalchemy.engine import Connection
 
 from functools import cached_property, cache
 import hashlib
