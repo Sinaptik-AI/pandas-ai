@@ -20,13 +20,15 @@ Example:
 
 import time
 import uuid
-import sys
 import logging
 import os
+import traceback
 
+from ..helpers.output_types import output_type_factory
+from pandasai.responses.context import Context
+from pandasai.responses.response_parser import ResponseParser
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
-
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
 from ..helpers.memory import Memory
@@ -38,7 +40,7 @@ from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
 from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
-from ..helpers.df_info import DataFrameType, polars_imported
+from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 
 
@@ -100,6 +102,13 @@ class SmartDatalake:
             self._cache = cache
         elif self._config.enable_cache:
             self._cache = Cache()
+
+        context = Context(self._config, self.logger, self.engine)
+
+        if self._config.response_parser:
+            self._response_parser = self._config.response_parser(context)
+        else:
+            self._response_parser = ResponseParser(context)
 
     def initialize(self):
         """Initialize the SmartDatalake"""
@@ -194,16 +203,6 @@ class SmartDatalake:
         if self.logger:
             self.logger.log(f"Prompt ID: {self._last_prompt_id}")
 
-    def _is_running_in_console(self) -> bool:
-        """
-        Check if the code is running in console or not.
-
-        Returns:
-            bool: True if running in console else False
-        """
-
-        return sys.stdout.isatty()
-
     def _get_prompt(
         self,
         key: str,
@@ -217,7 +216,7 @@ class SmartDatalake:
             key (str): The key of the prompt
             default_prompt (Type[AbstractPrompt]): The default prompt to use
             default_values (Optional[dict], optional): The default values to use for the
-            prompt. Defaults to None.
+                prompt. Defaults to None.
 
         Returns:
             AbstractPrompt: The prompt
@@ -235,6 +234,8 @@ class SmartDatalake:
             prompt.set_var("conversation", self._memory.get_conversation())
         for key, value in default_values.items():
             prompt.set_var(key, value)
+
+        self.logger.log(f"Using prompt: {prompt}")
 
         return prompt
 
@@ -254,12 +255,25 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(self, query: str):
+    def chat(self, query: str, output_type: Optional[str] = None):
         """
         Run a query on the dataframe.
 
         Args:
             query (str): Query to run on the dataframe
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
 
         Raises:
             ValueError: If the query is empty
@@ -275,6 +289,8 @@ class SmartDatalake:
         self._memory.add(query, True)
 
         try:
+            output_type_helper = output_type_factory(output_type, logger=self.logger)
+
             if (
                 self._config.enable_cache
                 and self._cache
@@ -286,7 +302,9 @@ class SmartDatalake:
                 default_values = {
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
+                    "output_type_hint": output_type_helper.template_hint,
                 }
+
                 generate_python_code_instruction = self._get_prompt(
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
@@ -309,10 +327,6 @@ class SmartDatalake:
 ```
 """
             )
-
-            # TODO: figure out what to do with this
-            # if show_code and self._in_notebook:
-            #     self.notebook.create_new_cell(code)
 
             retry_count = 0
             code_to_run = code
@@ -340,9 +354,17 @@ class SmartDatalake:
                         level=logging.WARNING,
                     )
 
-                    code_to_run = self._retry_run_code(code, e)
+                    traceback_error = traceback.format_exc()
+                    code_to_run = self._retry_run_code(code, traceback_error)
 
             if result is not None:
+                if isinstance(result, dict):
+                    validation_ok, validation_logs = output_type_helper.validate(result)
+                    if not validation_ok:
+                        self.logger.log(
+                            "\n".join(validation_logs), level=logging.WARNING
+                        )
+
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
         except Exception as exception:
@@ -357,7 +379,7 @@ class SmartDatalake:
 
         self._add_result_to_memory(result)
 
-        return self._format_results(result)
+        return self._response_parser.parse(result)
 
     def _add_result_to_memory(self, result: dict):
         """
@@ -373,49 +395,6 @@ class SmartDatalake:
             self._memory.add(result["value"], False)
         elif result["type"] == "dataframe" or result["type"] == "plot":
             self._memory.add("Ok here it is", False)
-
-    def _format_results(self, result: dict):
-        """
-        Format the results based on the type of the result.
-
-        Args:
-            result (dict): The result to format
-
-        Returns:
-            str: The formatted result
-        """
-        if result is None:
-            return
-
-        if result["type"] == "dataframe":
-            from ..smart_dataframe import SmartDataframe
-
-            df = result["value"]
-            if self.engine == "polars":
-                if polars_imported:
-                    import polars as pl
-
-                    df = pl.from_pandas(df)
-
-            return SmartDataframe(
-                df,
-                config=self._config.__dict__,
-                logger=self.logger,
-            )
-        elif result["type"] == "plot":
-            import matplotlib.pyplot as plt
-            import matplotlib.image as mpimg
-
-            # Load the image file
-            image = mpimg.imread(result["value"])
-
-            # Display the image
-            plt.imshow(image)
-            plt.axis("off")
-            plt.show(block=self.config.open_charts and self._is_running_in_console())
-            plt.close("all")
-        else:
-            return result["value"]
 
     def _retry_run_code(self, code: str, e: Exception):
         """
@@ -446,6 +425,12 @@ class SmartDatalake:
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code
+
+    def clear_memory(self):
+        """
+        Clears the memory
+        """
+        self._memory.clear()
 
     @property
     def engine(self):
@@ -597,7 +582,7 @@ class SmartDatalake:
 
     @last_code_generated.setter
     def last_code_generated(self, last_code_generated: str):
-        self._code_manager._last_code_generated = last_code_generated
+        self._last_code_generated = last_code_generated
 
     @property
     def last_code_executed(self):
@@ -618,3 +603,11 @@ class SmartDatalake:
     @last_error.setter
     def last_error(self, last_error: str):
         self._last_error = last_error
+
+    @property
+    def dfs(self):
+        return self._dfs
+
+    @property
+    def memory(self):
+        return self._memory

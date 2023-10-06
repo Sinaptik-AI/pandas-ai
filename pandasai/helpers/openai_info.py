@@ -10,30 +10,66 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-0613": 0.03,
     "gpt-4-32k": 0.06,
     "gpt-4-32k-0613": 0.06,
+    # GPT-4 output
+    "gpt-4-completion": 0.06,
+    "gpt-4-0613-completion": 0.06,
+    "gpt-4-32k-completion": 0.12,
+    "gpt-4-32k-0613-completion": 0.12,
     # GPT-3.5 input
     "gpt-3.5-turbo": 0.0015,
-    "gpt-3.5-turbo-instruct": 0.0015,
     "gpt-3.5-turbo-0613": 0.0015,
+    "gpt-3.5-turbo-instruct": 0.0015,
     "gpt-3.5-turbo-16k": 0.003,
     "gpt-3.5-turbo-16k-0613": 0.003,
+    # GPT-3.5 output
+    "gpt-3.5-turbo-completion": 0.002,
+    "gpt-3.5-turbo-0613-completion": 0.002,
+    "gpt-3.5-turbo-instruct-completion": 0.002,
+    "gpt-3.5-turbo-16k-completion": 0.004,
+    "gpt-3.5-turbo-16k-0613-completion": 0.004,
+    # Azure GPT-35 input
+    "gpt-35-turbo": 0.0015,  # Azure OpenAI version of ChatGPT
+    "gpt-35-turbo-0613": 0.0015,
+    "gpt-35-turbo-instruct": 0.0015,
+    "gpt-35-turbo-16k": 0.003,
+    "gpt-35-turbo-16k-0613": 0.003,
+    # Azure GPT-35 output
+    "gpt-35-turbo-completion": 0.002,  # Azure OpenAI version of ChatGPT
+    "gpt-35-turbo-0613-completion": 0.002,
+    "gpt-35-turbo-instruct-completion": 0.002,
+    "gpt-35-turbo-16k-completion": 0.004,
+    "gpt-35-turbo-16k-0613-completion": 0.004,
     # Others
-    "gpt-35-turbo": 0.002,  # Azure OpenAI version of ChatGPT
+    "text-davinci-003": 0.02,
 }
 
 
 def get_openai_token_cost_for_model(
-    model_name: str,
-    num_tokens: int,
+        model_name: str,
+        num_tokens: int,
+        is_completion: bool = False,
 ) -> float:
     """
     Get the cost in USD for a given model and number of tokens.
+
     Args:
         model_name (str): Name of the model
         num_tokens (int): Number of tokens.
+        is_completion: Whether `num_tokens` refers to completion tokens or not.
+            Defaults to False.
+
     Returns:
         float: Cost in USD.
     """
     model_name = model_name.lower()
+    if is_completion and (
+            model_name.startswith("gpt-4")
+            or model_name.startswith("gpt-3.5")
+            or model_name.startswith("gpt-35")
+    ):
+        # The cost of completion token is different from
+        # the cost of prompt tokens.
+        model_name = model_name + "-completion"
     if model_name not in MODEL_COST_PER_1K_TOKENS:
         raise ValueError(
             f"Unknown model: {model_name}. Please provide a valid OpenAI model name."
@@ -63,10 +99,16 @@ class OpenAICallbackHandler:
         usage = response.usage
         if "total_tokens" not in usage:
             return None
+
         model_name = response.model
         if model_name in MODEL_COST_PER_1K_TOKENS:
-            total_cost = get_openai_token_cost_for_model(model_name, usage.total_tokens)
-            self.total_cost += total_cost
+            prompt_cost = get_openai_token_cost_for_model(
+                model_name, usage.prompt_tokens
+            )
+            completion_cost = get_openai_token_cost_for_model(
+                model_name, usage.completion_tokens, is_completion=True
+            )
+            self.total_cost += prompt_cost + completion_cost
 
         self.total_tokens += usage.total_tokens
         self.prompt_tokens += usage.prompt_tokens

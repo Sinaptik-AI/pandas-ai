@@ -24,6 +24,12 @@ class MyCustomPrompt(AbstractPrompt):
     def template(self):
         return """This is your custom text for your prompt with custom {my_custom_value}"""
 
+    def setup(self, kwargs):
+        # This method is called before the prompt is intialized
+        # You can use it to setup your prompt and pass any additional
+        # variables to the template
+        self.set_var("my_custom_value", kwargs["my_custom_value"])
+
 
 df = SmartDataframe("data.csv", {
     "custom_prompts": {
@@ -36,9 +42,11 @@ df = SmartDataframe("data.csv", {
 You can also use `FileBasedPrompt` in case you prefer to store prompt template in a file:
 
 _my_prompt_template.tmpl:_
+
 ```
 This is your custom text for your prompt with custom {my_custom_value}
 ```
+
 _python code:_
 
 ```python

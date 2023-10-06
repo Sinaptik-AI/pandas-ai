@@ -1,5 +1,7 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Type
+
+from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
@@ -13,6 +15,7 @@ class Config(BaseModel):
     enable_cache: bool = True
     use_error_correction_framework: bool = True
     custom_prompts: Dict = Field(default_factory=dict)
+    custom_instructions: Optional[str] = None
     open_charts: bool = True
     save_charts: bool = False
     save_charts_path: str = "exports/charts"
@@ -21,6 +24,7 @@ class Config(BaseModel):
     middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
     lazy_load_connector: bool = True
+    response_parser: Type[ResponseParser] = None
     llm: Any = None
 
     class Config:

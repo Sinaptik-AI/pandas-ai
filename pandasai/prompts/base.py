@@ -14,7 +14,7 @@ class AbstractPrompt(ABC):
     Inheritors have to override `template` property.
     """
 
-    _args = {}
+    _args: dict = None
 
     def __init__(self, **kwargs):
         """
@@ -22,8 +22,14 @@ class AbstractPrompt(ABC):
         Args:
             **kwargs: Inferred Keyword Arguments
         """
-        if kwargs:
-            self._args = kwargs
+        if self._args is None:
+            self._args = {}
+
+        self._args.update(kwargs)
+        self.setup(**kwargs)
+
+    def setup(self, **kwargs) -> None:
+        pass
 
     def _generate_dataframes(self, dfs):
         """
@@ -57,6 +63,9 @@ This is the metadata of the dataframe dfs[{index-1}]:
         ...
 
     def set_var(self, var, value):
+        if self._args is None:
+            self._args = {}
+
         if var == "dfs":
             self._args["dataframes"] = self._generate_dataframes(value)
         self._args[var] = value
@@ -66,6 +75,9 @@ This is the metadata of the dataframe dfs[{index-1}]:
 
     def __str__(self):
         return self.to_string()
+
+    def validate(self, output: str) -> bool:
+        return isinstance(output, str)
 
 
 class FileBasedPrompt(AbstractPrompt):

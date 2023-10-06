@@ -102,10 +102,10 @@ class OpenAI(BaseOpenAI):
         """
         self.last_prompt = instruction.to_string() + suffix
 
-        if self.model in self._supported_completion_models:
-            response = self.completion(self.last_prompt)
-        elif self.model in self._supported_chat_models:
+        if self.model in self._supported_chat_models:
             response = self.chat_completion(self.last_prompt)
+        elif self.model in self._supported_completion_models:
+            response = self.completion(self.last_prompt)
         else:
             raise UnsupportedOpenAIModelError("Unsupported model")
 
