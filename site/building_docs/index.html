@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" /><link rel="canonical" href="https://pandasai.readthedocs.io/en/latest/building_docs/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Documents Building - PandasAI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Documents Building";
+        var mkdocs_page_input_path = "building_docs.md";
+        var mkdocs_page_url = "/en/latest/building_docs/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../connectors/">Connectors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/llms/">Large language models (LLMs)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../shortcuts/">Shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Documents Building</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">About</li>
+      <li class="breadcrumb-item active">Documents Building</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/gventuri/pandas-ai/edit/master/docs/building_docs.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>===================================</p>
+<p>This example shows a basic MkDocs project with Read the Docs. This project is using <code>mkdocs</code> with <code>readthedocs</code> 
+project template.</p>
+<p>Some useful links are given below to lear and contribute in the project.</p>
+<p>📚 <a href="https://github.com/readthedocs-examples/example-mkdocs-basic/blob/main/docs/">docs/</a><br>
+A basic MkDocs project lives in <code>docs/</code>, it was generated using MkDocs defaults. All the <code>*.md</code> make up sections in the documentation.</p>
+<p>⚙️ <a href="https://github.com/readthedocs-examples/example-mkdocs-basic/blob/main/.readthedocs.yaml">.readthedocs.yaml</a><br>
+Read the Docs Build configuration is stored in <code>.readthedocs.yaml</code>.</p>
+<p>⚙️ <a href="https://github.com/readthedocs-examples/example-mkdocs-basic/blob/main/mkdocs.yml">mkdocs.yml</a><br>
+A basic <a href="https://www.mkdocs.org/user-guide/configuration/">MkDocs configuration</a> is stored here, including a few extensions for MkDocs and Markdown. Add your own configurations here, such as extensions and themes. Remember that many extensions and themes require additional Python packages to be installed.</p>
+<p>📍 <a href="https://github.com/readthedocs-examples/example-mkdocs-basic/blob/main/docs/requirements.txt">docs/requirements.txt</a> and <a href="https://github.com/readthedocs-examples/example-mkdocs-basic/blob/main/docs/requirements.in">docs/requirements.in</a><br>
+Python dependencies are <a href="https://docs.readthedocs.io/en/latest/guides/reproducible-builds.html">pinned</a> (uses <a href="https://pip-tools.readthedocs.io/en/latest/">pip-tools</a>) here. Make sure to add your Python dependencies to <code>requirements.txt</code> or if you choose <a href="https://pip-tools.readthedocs.io/en/latest/">pip-tools</a>, edit <code>docs/requirements.in</code> and remember to run to run <code>pip-compile docs/requirements.in</code>.</p>
+<h2 id="example-project-usage">Example Project usage</h2>
+<p><code>Poetry</code> is the package manager for <code>pandasai</code>. In order to build documentation, we have to add requirements in 
+development environment. </p>
+<p>This project has a standard MkDocs layout which is built by Read the Docs almost the same way that you would build it 
+locally (on your own laptop!).</p>
+<p>You can build and view this documentation project locally - we recommend that you activate a <code>Poetry</code> environment
+and dependency management tool.</p>
+<pre><code class="language-console"># Install required Python dependencies (MkDocs etc.)
+poetry install --with docs
+# Run the mkdocs development server
+mkdocs serve
+</code></pre>
+<h2 id="project-docs-structure">Project Docs Structure</h2>
+<p>If you are new to Read the Docs, you may want to refer to the <a href="https://docs.readthedocs.io/">Read the Docs User documentation</a>.</p>
+<p>Below is the rundown of documentation structure for <code>pandasai</code>, you need to know:</p>
+<ol>
+<li>place your <code>docs/</code> folder alongside your Python project.</li>
+<li>copy <code>mkdocs.yml</code>, <code>.readthedocs.yaml</code> and the <code>docs/</code> folder into your project root.</li>
+<li><code>docs/API</code> contains the API documentation created using <code>docstring</code>. For any new module, add the links here</li>
+<li>Project is using standard Google Docstring Style.</li>
+<li>Rebuild the documenation locally to see that it works.</li>
+<li>Documentation are hosted on <a href="https://docs.readthedocs.io/en/stable/tutorial/">Read the Docs tutorial</a></li>
+</ol>
+<blockquote>
+<p>Define the release version in <code>mkdocs.yml</code> file.</p>
+</blockquote>
+<h2 id="read-the-docs-tutorial">Read the Docs tutorial</h2>
+<p>To get started with Read the Docs, you may also refer to the 
+<a href="https://docs.readthedocs.io/en/stable/tutorial/">Read the Docs tutorial</a>. I</p>
+<p>With every release, build the documentation manually. </p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../CONTRIBUTING/" class="btn btn-neutral float-left" title="Contributing"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../license/" class="btn btn-neutral float-right" title="License">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../CONTRIBUTING/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../license/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -71,8 +71,8 @@ text-generation = ["fsspec", "huggingface-hub", "text-generation"]
 yfinance = ["yfinance"]
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "1.4.0"
-mkdocstrings-python = "0.7.1"
+mkdocs = "1.5.3"
+mkdocstrings-python = "1.7.2"
 markdown-include = "^0.6.0"
 
 

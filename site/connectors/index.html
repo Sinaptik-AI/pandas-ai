@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" /><link rel="canonical" href="https://pandasai.readthedocs.io/en/latest/connectors/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Connectors - PandasAI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Connectors";
+        var mkdocs_page_input_path = "connectors.md";
+        var mkdocs_page_url = "/en/latest/connectors/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Connectors</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#sql-connectors">SQL connectors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#postgresql-connector">PostgreSQL connector</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mysql-connector">MySQL connector</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#generic-sql-connector">Generic SQL connector</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#snowflake-connector">Snowflake connector</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#databricks-connector">DataBricks connector</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#yahoo-finance-connector">Yahoo Finance connector</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/llms/">Large language models (LLMs)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../shortcuts/">Shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../building_docs/">Documents Building</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Connectors</li>
+      <li class="breadcrumb-item active">Connectors</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/gventuri/pandas-ai/edit/master/docs/connectors.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="connectors">Connectors</h1>
+<h2 id="overview">Overview</h2>
+<p>PandasAI mission is to make data analysis and manipulation more efficient and accessible to everyone. This includes making it easier to connect to data sources and to use them in your data analysis and manipulation workflow.</p>
+<p>PandasAI provides a number of connectors that allow you to connect to different data sources. These connectors are designed to be easy to use, even if you are not familiar with the data source or with PandasAI.</p>
+<p>To use a connector, you first need to install the required dependencies. You can do this by running the following command:</p>
+<pre><code class="language-console"># Using poetry (recommended)
+poetry add pandasai[connectors]
+# Using pip
+pip install pandasai[connectors]
+</code></pre>
+<p>Have a look at the video of how to use the connectors:
+<a href="https://www.loom.com/embed/db24dea5a9e0428b87ad86ff596d5f7c?sid=0593ef29-9f5c-418a-a9ef-c0537c57d2ad" title="Intro to Connectors"><img alt="Intro to Connectors" src="https://cdn.loom.com/sessions/thumbnails/db24dea5a9e0428b87ad86ff596d5f7c-00001.jpg" /></a></p>
+<h2 id="sql-connectors">SQL connectors</h2>
+<p>PandasAI provides connectors for the following SQL databases:</p>
+<ul>
+<li>PostgreSQL</li>
+<li>MySQL</li>
+<li>Generic SQL</li>
+<li>Snowflake</li>
+<li>DataBricks</li>
+<li>Yahoo Finance</li>
+</ul>
+<p>Additionally, PandasAI provides a generic SQL connector that can be used to connect to any SQL database.</p>
+<h3 id="postgresql-connector">PostgreSQL connector</h3>
+<p>The PostgreSQL connector allows you to connect to a PostgreSQL database. It is designed to be easy to use, even if you are not familiar with PostgreSQL or with PandasAI.</p>
+<p>To use the PostgreSQL connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors import PostgreSQLConnector
+
+postgres_connector = PostgreSQLConnector(
+    config={
+        &quot;host&quot;: &quot;localhost&quot;,
+        &quot;port&quot;: 5432,
+        &quot;database&quot;: &quot;mydb&quot;,
+        &quot;username&quot;: &quot;root&quot;,
+        &quot;password&quot;: &quot;root&quot;,
+        &quot;table&quot;: &quot;payments&quot;,
+        &quot;where&quot;: [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            [&quot;payment_status&quot;, &quot;=&quot;, &quot;PAIDOFF&quot;],
+        ],
+    }
+)
+
+df = SmartDataframe(postgres_connector)
+df.chat('What is the total amount of payments in the last year?')
+</code></pre>
+<h3 id="mysql-connector">MySQL connector</h3>
+<p>Similarly to the PostgreSQL connector, the MySQL connector allows you to connect to a MySQL database. It is designed to be easy to use, even if you are not familiar with MySQL or with PandasAI.</p>
+<p>To use the MySQL connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors import MySQLConnector
+
+mysql_connector = MySQLConnector(
+    config={
+        &quot;host&quot;: &quot;localhost&quot;,
+        &quot;port&quot;: 3306,
+        &quot;database&quot;: &quot;mydb&quot;,
+        &quot;username&quot;: &quot;root&quot;,
+        &quot;password&quot;: &quot;root&quot;,
+        &quot;table&quot;: &quot;loans&quot;,
+        &quot;where&quot;: [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            [&quot;loan_status&quot;, &quot;=&quot;, &quot;PAIDOFF&quot;],
+        ],
+    }
+)
+
+df = SmartDataframe(mysql_connector)
+df.chat('What is the total amount of loans in the last year?')
+</code></pre>
+<h3 id="generic-sql-connector">Generic SQL connector</h3>
+<p>The generic SQL connector allows you to connect to any SQL database that is supported by SQLAlchemy.</p>
+<p>To use the generic SQL connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors import SQLConnector
+
+sql_connector = SQLConnector(
+    config={
+        &quot;dialect&quot;: &quot;sqlite&quot;,
+        &quot;driver&quot;: &quot;pysqlite&quot;,
+        &quot;host&quot;: &quot;localhost&quot;,
+        &quot;port&quot;: 3306,
+        &quot;database&quot;: &quot;mydb&quot;,
+        &quot;username&quot;: &quot;root&quot;,
+        &quot;password&quot;: &quot;root&quot;,
+        &quot;table&quot;: &quot;loans&quot;,
+        &quot;where&quot;: [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            [&quot;loan_status&quot;, &quot;=&quot;, &quot;PAIDOFF&quot;],
+        ],
+    }
+)
+</code></pre>
+<h2 id="snowflake-connector">Snowflake connector</h2>
+<p>The Snowflake connector allows you to connect to Snowflake. It is very similar to the SQL connectors, but it has some differences.</p>
+<p>To use the Snowflake connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors import SnowFlakeConnector
+
+snowflake_connector = SnowFlakeConnector(
+    config={
+        &quot;account&quot;: &quot;ehxzojy-ue47135&quot;,
+        &quot;database&quot;: &quot;SNOWFLAKE_SAMPLE_DATA&quot;,
+        &quot;username&quot;: &quot;test&quot;,
+        &quot;password&quot;: &quot;*****&quot;,
+        &quot;table&quot;: &quot;lineitem&quot;,
+        &quot;warehouse&quot;: &quot;COMPUTE_WH&quot;,
+        &quot;dbSchema&quot;: &quot;tpch_sf1&quot;,
+        &quot;where&quot;: [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            [&quot;l_quantity&quot;, &quot;&gt;&quot;, &quot;49&quot;]
+        ],
+    }
+)
+
+df = SmartDataframe(snowflake_connector)
+df.chat(&quot;How many records has status 'F'?&quot;)
+</code></pre>
+<h2 id="databricks-connector">DataBricks connector</h2>
+<p>The DataBricks connector allows you to connect to DataBricks. It is very similar to the SQL connectors, but it has some differences.</p>
+<p>To use the DataBricks connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors import DataBricksConnector
+
+databricks_connector = DatabricksConnector(
+    config={
+        &quot;host&quot;: &quot;adb-*****.azuredatabricks.net&quot;,
+        &quot;database&quot;: &quot;default&quot;,
+        &quot;token&quot;: &quot;dapidfd412321&quot;,
+        &quot;port&quot;: 443,
+        &quot;table&quot;: &quot;loan_payments_data&quot;,
+        &quot;httpPath&quot;: &quot;/sql/1.0/warehouses/213421312&quot;,
+        &quot;where&quot;: [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            [&quot;loan_status&quot;, &quot;=&quot;, &quot;PAIDOFF&quot;],
+        ],
+    }
+)
+</code></pre>
+<h2 id="yahoo-finance-connector">Yahoo Finance connector</h2>
+<p>The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply passing the ticker symbol of the stock you want to analyze.</p>
+<p>To use the Yahoo Finance connector, you only need to import it into your Python code and pass it to a <code>SmartDataframe</code> or <code>SmartDatalake</code> object:</p>
+<pre><code class="language-python">from pandasai.connectors.yahoo_finance import YahooFinanceConnector
+
+yahoo_connector = YahooFinanceConnector(&quot;MSFT&quot;)
+
+df = SmartDataframe(yahoo_connector)
+df.chat(&quot;What is the closing price for yesterday?&quot;)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../getting-started/" class="btn btn-neutral float-left" title="Getting Started"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../LLMs/llms/" class="btn btn-neutral float-right" title="Large language models (LLMs)">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../getting-started/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../LLMs/llms/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

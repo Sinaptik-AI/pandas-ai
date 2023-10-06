@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" />
+      <link rel="shortcut icon" href="/en/latest/img/favicon.ico" />
+    <title>PandasAI</title>
+    <link rel="stylesheet" href="/en/latest/css/theme.css" />
+    <link rel="stylesheet" href="/en/latest/css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="/en/latest/assets/_mkdocstrings.css" rel="stylesheet" />
+    
+    <!--[if lt IE 9]>
+      <script src="/en/latest/js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="/en/latest/." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="/en/latest//search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="/en/latest/.">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="/en/latest/getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/connectors/">Connectors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/LLMs/llms/">Large language models (LLMs)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/LLMs/langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/shortcuts/">Shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/building_docs/">Documents Building</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="/en/latest/license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="/en/latest/.">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="/en/latest/." class="icon icon-home" aria-label="Docs"></a></li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+
+  <h1 id="404-page-not-found">404</h1>
+
+  <p><strong>Page not found</strong></p>
+
+
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="/en/latest/js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "/en/latest/";</script>
+    <script src="/en/latest/js/theme_extra.js"></script>
+    <script src="/en/latest/js/theme.js"></script>
+      <script src="/en/latest/search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" /><link rel="canonical" href="https://pandasai.readthedocs.io/en/latest/CONTRIBUTING/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Contributing - PandasAI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Contributing";
+        var mkdocs_page_input_path = "CONTRIBUTING.md";
+        var mkdocs_page_url = "/en/latest/CONTRIBUTING/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../connectors/">Connectors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/llms/">Large language models (LLMs)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../shortcuts/">Shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Contributing</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-submit-a-contribution">🤝 How to submit a contribution</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#package-manager">📦 Package manager</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pre-commit">📌 Pre-commit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#linting">🧹 Linting</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#code-format-with-black">Code Format with black</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#testing">🧪 Testing</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#release-process">🚀 Release Process</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../building_docs/">Documents Building</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">About</li>
+      <li class="breadcrumb-item active">Contributing</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/gventuri/pandas-ai/edit/master/docs/CONTRIBUTING.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="contributing-to-pandasai">🐼 Contributing to PandasAI</h1>
+<p>Hi there! We're thrilled that you'd like to contribute to this project. Your help is essential for keeping it great.</p>
+<h2 id="how-to-submit-a-contribution">🤝 How to submit a contribution</h2>
+<p>To make a contribution, follow the following steps:</p>
+<ol>
+<li>Fork and clone this repository</li>
+<li>Do the changes on your fork</li>
+<li>If you modified the code (new feature or bug-fix), please add tests for it</li>
+<li>Check the linting <a href="https://github.com/gventuri/pandas-ai/blob/main/CONTRIBUTING.md#-linting">see below</a></li>
+<li>Ensure that all tests pass <a href="https://github.com/gventuri/pandas-ai/blob/main/CONTRIBUTING.md#-testing">see below</a></li>
+<li>Submit a pull request</li>
+</ol>
+<p>For more details about pull requests, please read <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">GitHub's guides</a>.</p>
+<h3 id="package-manager">📦 Package manager</h3>
+<p>We use <code>poetry</code> as our package manager. You can install poetry by following the instructions <a href="https://python-poetry.org/docs/#installation">here</a>.</p>
+<p>Please DO NOT use pip or conda to install the dependencies. Instead, use poetry:</p>
+<pre><code class="language-bash">poetry install --all-extras
+</code></pre>
+<h3 id="pre-commit">📌 Pre-commit</h3>
+<p>To ensure our standards, make sure to install pre-commit before starting to contribute.</p>
+<pre><code class="language-bash">pre-commit install
+</code></pre>
+<h3 id="linting">🧹 Linting</h3>
+<p>We use <code>ruff</code> to lint our code. You can run the linter by running the following command:</p>
+<pre><code class="language-bash">ruff pandasai examples
+</code></pre>
+<p>Make sure that the linter does not report any errors or warnings before submitting a pull request.</p>
+<h3 id="code-format-with-black">Code Format with <code>black</code></h3>
+<p>We use <code>black</code> to reformat the code by running the following command:</p>
+<pre><code class="language-bash">black pandasai 
+</code></pre>
+<h3 id="testing">🧪 Testing</h3>
+<p>We use <code>pytest</code> to test our code. You can run the tests by running the following command:</p>
+<pre><code class="language-bash">poetry run pytest
+</code></pre>
+<p>Make sure that all tests pass before submitting a pull request.</p>
+<h2 id="release-process">🚀 Release Process</h2>
+<p>At the moment, the release process is manual. We try to make frequent releases. Usually, we release a new version when we have a new feature or bugfix. A developer with admin rights to the repository will create a new release on GitHub, and then publish the new version to PyPI.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../release-notes/" class="btn btn-neutral float-left" title="Release Notes"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../building_docs/" class="btn btn-neutral float-right" title="Documents Building">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../release-notes/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../building_docs/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

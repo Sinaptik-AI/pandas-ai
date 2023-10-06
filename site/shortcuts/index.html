@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" /><link rel="canonical" href="https://pandasai.readthedocs.io/en/latest/shortcuts/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Shortcuts - PandasAI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Shortcuts";
+        var mkdocs_page_input_path = "shortcuts.md";
+        var mkdocs_page_url = "/en/latest/shortcuts/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../connectors/">Connectors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/llms/">Large language models (LLMs)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LLMs/langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Shortcuts</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#available-shortcuts">Available shortcuts</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#clean_data">clean_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#impute_missing_values">impute_missing_values</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#generate_features">generate_features</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_pie_chart">plot_pie_chart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_bar_chart">plot_bar_chart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_histogram">plot_histogram</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_line_chart">plot_line_chart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_scatter_chart">plot_scatter_chart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_correlation_heatmap">plot_correlation_heatmap</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_confusion_matrix">plot_confusion_matrix</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#plot_roc_curve">plot_roc_curve</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#boxplot">boxplot</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#rolling_mean">rolling_mean</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#rolling_median">rolling_median</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#rolling_std">rolling_std</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#segment_customers">segment_customers</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../building_docs/">Documents Building</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Advanced usage</li>
+      <li class="breadcrumb-item active">Shortcuts</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/gventuri/pandas-ai/edit/master/docs/shortcuts.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="shortcuts">Shortcuts</h1>
+<p>Shortcuts are a way to quickly access the most common queries. At the moment, shortcuts are in beta, and only a few are available. More will be added in the future.</p>
+<h2 id="available-shortcuts">Available shortcuts</h2>
+<h3 id="clean_data">clean_data</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.clean_data()
+</code></pre>
+<p>This shortcut will do data cleaning on the data frame.</p>
+<h3 id="impute_missing_values">impute_missing_values</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.impute_missing_values()
+</code></pre>
+<p>This shortcut will impute missing values in the data frame.</p>
+<h3 id="generate_features">generate_features</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.generate_features()
+</code></pre>
+<p>This shortcut will generate features in the data frame.</p>
+<h3 id="plot_pie_chart">plot_pie_chart</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_pie_chart(labels = ['a', 'b', 'c'], values = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a pie chart of the data frame.</p>
+<h3 id="plot_bar_chart">plot_bar_chart</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_bar_chart(x = ['a', 'b', 'c'], y = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a bar chart of the data frame.</p>
+<h3 id="plot_histogram">plot_histogram</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_histogram(column = 'a')
+</code></pre>
+<p>This shortcut will plot a histogram of the data frame.</p>
+<h3 id="plot_line_chart">plot_line_chart</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_line_chart(x = ['a', 'b', 'c'], y = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a line chart of the data frame.</p>
+<h3 id="plot_scatter_chart">plot_scatter_chart</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_scatter_chart(x = ['a', 'b', 'c'], y = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a scatter chart of the data frame.</p>
+<h3 id="plot_correlation_heatmap">plot_correlation_heatmap</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_correlation_heatmap(df)
+</code></pre>
+<p>This shortcut will plot a correlation heatmap of the data frame.</p>
+<h3 id="plot_confusion_matrix">plot_confusion_matrix</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_confusion_matrix(y_true = [1, 2, 3], y_pred = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a confusion matrix of the data frame.</p>
+<h3 id="plot_roc_curve">plot_roc_curve</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.plot_roc_curve(y_true = [1, 2, 3], y_pred = [1, 2, 3])
+</code></pre>
+<p>This shortcut will plot a ROC curve of the data frame.</p>
+<h3 id="boxplot">boxplot</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.boxplot(col='A', by='B', style='Highlight outliers with a x')
+</code></pre>
+<p>This shortcut plots a box-and-whisker plot using the DataFrame <code>df</code>, focusing on the <code>'A'</code> column and grouping the data by the <code>'B'</code> column.</p>
+<p>The <code>style</code> parameter allows users to communicate their desired plot customizations to the Language Model, providing flexibility for further refinement and adaptability to specific visual requirements.</p>
+<h3 id="rolling_mean">rolling_mean</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.rolling_mean(column = 'a', window = 5)
+</code></pre>
+<p>This shortcut will calculate the rolling mean of the data frame.</p>
+<h3 id="rolling_median">rolling_median</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.rolling_median(column = 'a', window = 5)
+</code></pre>
+<p>This shortcut will calculate the rolling median of the data frame.</p>
+<h3 id="rolling_std">rolling_std</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.rolling_std(column = 'a', window = 5)
+</code></pre>
+<p>This shortcut will calculate the rolling standard deviation of the data frame.</p>
+<h3 id="segment_customers">segment_customers</h3>
+<pre><code class="language-python">df = SmartDataframe('data.csv')
+df.segment_customers(features = ['a', 'b', 'c'], n_clusters = 5)
+</code></pre>
+<p>This shortcut will segment customers in the data frame.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../LLMs/langchain/" class="btn btn-neutral float-left" title="LangChain models"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../custom-head/" class="btn btn-neutral float-right" title="Use custom head">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../LLMs/langchain/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../custom-head/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

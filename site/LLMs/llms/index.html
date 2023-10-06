@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Gabriele Venturi" /><link rel="canonical" href="https://pandasai.readthedocs.io/en/latest/LLMs/llms/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Large language models (LLMs) - PandasAI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Large language models (LLMs)";
+        var mkdocs_page_input_path = "LLMs\\llms.md";
+        var mkdocs_page_url = "/en/latest/LLMs/llms/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> PandasAI
+        </a>
+        <div class="version">
+          1.3.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Connectors</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../connectors/">Connectors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">LLMs</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Large language models (LLMs)</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#count-tokens">Count tokens</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#huggingface-models">HuggingFace models</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#google-palm">Google PaLM</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#google-vertexai">Google Vertexai</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#azure-openai">Azure OpenAI</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#huggingface-via-text-generation">HuggingFace via Text Generation</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../langchain/">LangChain models</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Advanced usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../shortcuts/">Shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../custom-head/">Use custom head</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../save-dataframes/">Save and load dataframes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cache/">Cache</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../middlewares/">Middlewares</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../custom-response/">Custom Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../callbacks/">Callbacks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../custom-instructions/">Custom instructions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../custom-prompts/">Custom prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../custom-whitelisted-dependencies/">Custom whitelisted dependencies</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../API/pandasai/">Pandasai</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../API/prompts/">Prompts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../API/llms/">Llms</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../API/helpers/">Helpers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../release-notes/">Release Notes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../building_docs/">Documents Building</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../license/">License</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">PandasAI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">LLMs</li>
+      <li class="breadcrumb-item active">Large language models (LLMs)</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/gventuri/pandas-ai/edit/master/docs/LLMs/llms.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="large-language-models-llms">Large language models (LLMs)</h1>
+<p>PandasAI supports several large language models (LLMs). LLMs are used to generate code from natural language queries. The generated code is then executed to produce the result.</p>
+<p><a href="https://www.loom.com/share/5496c9c07ee04f69bfef1bc2359cd591" title="Choose the LLM"><img alt="Choose the LLM" src="https://cdn.loom.com/sessions/thumbnails/5496c9c07ee04f69bfef1bc2359cd591-00001.jpg" /></a></p>
+<p>You can either choose a LLM by instantiating one and passing it to the <code>SmartDataFrame</code> or <code>SmartDatalake</code> constructor, or you can specify one in the <code>pandasai.json</code> file.</p>
+<p>If the model expects one or more parameters, you can pass them to the constructor or specify them in the <code>pandasai.json</code> file, in the <code>llm_options</code> param, as it follows:</p>
+<pre><code class="language-json">{
+  &quot;llm&quot;: &quot;OpenAI&quot;,
+  &quot;llm_options&quot;: {
+    &quot;api_token&quot;: &quot;API_TOKEN_GOES_HERE&quot;
+  }
+}
+</code></pre>
+<p>In order to use OpenAI models, you need to have an OpenAI API key. You can get one <a href="https://platform.openai.com/account/api-keys">here</a>.</p>
+<p>Once you have an API key, you can use it to instantiate an OpenAI object:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token=&quot;my-openai-api-key&quot;)
+pandas_ai = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<p>As an alternative, you can set the <code>OPENAI_API_KEY</code> environment variable and instantiate the <code>OpenAI</code> object without passing the API key:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI() # no need to pass the API key, it will be read from the environment variable
+pandas_ai = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<p>If you are behind an explicit proxy, you can specify <code>openai_proxy</code> when instantiating the <code>OpenAI</code> object or set the <code>OPENAI_PROXY</code> environment variable to pass through.</p>
+<h3 id="count-tokens">Count tokens</h3>
+<p>You can count the number of tokens used by a prompt as follows:</p>
+<pre><code class="language-python">&quot;&quot;&quot;Example of using PandasAI with a pandas dataframe&quot;&quot;&quot;
+
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+from pandasai.helpers.openai_info import get_openai_callback
+import pandas as pd
+
+llm = OpenAI()
+
+# conversational=False is supposed to display lower usage and cost
+df = SmartDataframe(&quot;data.csv&quot;, {&quot;llm&quot;: llm, &quot;conversational&quot;: False})
+
+with get_openai_callback() as cb:
+    response = df.chat(&quot;Calculate the sum of the gdp of north american countries&quot;)
+
+    print(response)
+    print(cb)
+#  The sum of the GDP of North American countries is 19,294,482,071,552.
+#  Tokens Used: 375
+#   Prompt Tokens: 210
+#   Completion Tokens: 165
+# Total Cost (USD): $ 0.000750
+</code></pre>
+<h2 id="huggingface-models">HuggingFace models</h2>
+<p>In order to use HuggingFace models, you need to have a HuggingFace API key. You can create a HuggingFace account <a href="https://huggingface.co/join">here</a> and get an API key <a href="https://hf.co/settings/tokens">here</a>.</p>
+<p>Once you have an API key, you can use it to instantiate one of the HuggingFace models.</p>
+<p>At the moment, PandasAI supports the following HuggingFace models:</p>
+<ul>
+<li>Starcoder: <code>bigcode/starcoder</code></li>
+<li>Falcon: <code>tiiuae/falcon-7b-instruct</code></li>
+</ul>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import Starcoder, Falcon
+
+llm = Starcoder(api_token=&quot;my-huggingface-api-key&quot;)
+# or
+llm = Falcon(api_token=&quot;my-huggingface-api-key&quot;)
+
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<p>As an alternative, you can set the <code>HUGGINGFACE_API_KEY</code> environment variable and instantiate the HuggingFace object without passing the API key:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import Starcoder, Falcon
+
+llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
+# or
+llm = Falcon() # no need to pass the API key, it will be read from the environment variable
+
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<h2 id="google-palm">Google PaLM</h2>
+<p>In order to use Google PaLM models, you need to have a Google Cloud API key. You can get one <a href="https://developers.generativeai.google/tutorials/setup">here</a>.</p>
+<p>Once you have an API key, you can use it to instantiate a Google PaLM object:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import GooglePalm
+
+llm = GooglePalm(api_key=&quot;my-google-cloud-api-key&quot;)
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<h2 id="google-vertexai">Google Vertexai</h2>
+<p>In order to use Google PaLM models through Vertexai api, you need to have</p>
+<ol>
+<li>Google Cloud Project</li>
+<li>Region of Project Set up</li>
+<li>Install optional dependency <code>google-cloud-aiplatform</code></li>
+<li>Authentication of <code>gcloud</code></li>
+</ol>
+<p>Once you have basic setup, you can use it to instantiate a Google PaLM through vertex ai:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import GoogleVertexAI
+
+llm = GoogleVertexAI(project_id=&quot;generative-ai-training&quot;,
+                     location=&quot;us-central1&quot;,
+                     model=&quot;text-bison@001&quot;)
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<h2 id="azure-openai">Azure OpenAI</h2>
+<p>In order to use Azure OpenAI models, you need to have an Azure OpenAI API key as well as an Azure OpenAI endpoint. You can get one <a href="https://azure.microsoft.com/products/cognitive-services/openai-service">here</a>.</p>
+<p>To instantiate an Azure OpenAI object you also need to specify the name of your deployed model on Azure and the API version:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import AzureOpenAI
+
+llm = AzureOpenAI(
+    api_token=&quot;my-azure-openai-api-key&quot;,
+    api_base=&quot;my-azure-openai-api-endpoint&quot;,
+    api_version=&quot;2023-05-15&quot;,
+    deployment_name=&quot;my-deployment-name&quot;
+)
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<p>As an alternative, you can set the <code>OPENAI_API_KEY</code>, <code>OPENAI_API_VERSION</code>, and <code>OPENAI_API_BASE</code> environment variables and instantiate the Azure OpenAI object without passing them:</p>
+<pre><code class="language-python">from pandasai import SmartDataframe
+from pandasai.llm import AzureOpenAI
+
+llm = AzureOpenAI(
+    deployment_name=&quot;my-deployment-name&quot;
+) # no need to pass the API key, endpoint and API version. They are read from the environment variable
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+<p>If you are behind an explicit proxy, you can specify <code>openai_proxy</code> when instantiating the <code>AzureOpenAI</code> object or set the <code>OPENAI_PROXY</code> environment variable to pass through.</p>
+<h2 id="huggingface-via-text-generation">HuggingFace via Text Generation</h2>
+<p>In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read <a href="https://huggingface.co/docs/text-generation-inference/index">text-generation docs</a> for more on how to setup an inference server.</p>
+<p>This can be used, for example, to use models like LLaMa2, CodeLLaMa, etc. You can find more information about text-generation <a href="https://huggingface.co/docs/text-generation-inference/index">here</a>.</p>
+<p>The <code>inference_server_url</code> is the only required parameter to instantiate an <code>HuggingFaceTextGen</code> model:</p>
+<pre><code class="language-python">from pandasai.llm import HuggingFaceTextGen
+from pandasai import SmartDataframe
+
+llm = HuggingFaceTextGen(
+    inference_server_url=&quot;http://127.0.0.1:8080&quot;
+)
+df = SmartDataframe(&quot;data.csv&quot;, config={&quot;llm&quot;: llm})
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../connectors/" class="btn btn-neutral float-left" title="Connectors"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../langchain/" class="btn btn-neutral float-right" title="LangChain models">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/gventuri/pandas-ai" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../connectors/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../langchain/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
