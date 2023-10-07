@@ -16,7 +16,7 @@ It fails with the following error:
 Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
 """  # noqa: E501
 
-from .base import FileBasedPrompt
+from .file_based_prompt import FileBasedPrompt
 
 
 class CorrectErrorPrompt(FileBasedPrompt):

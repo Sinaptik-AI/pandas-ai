@@ -15,7 +15,7 @@ Explain how you came up with code for non-technical people without
 mentioning technical details or mentioning the libraries used?
 
 """
-from .base import FileBasedPrompt
+from .file_based_prompt import FileBasedPrompt
 
 
 class ExplainPrompt(FileBasedPrompt):
