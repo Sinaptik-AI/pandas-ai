@@ -11,7 +11,7 @@ without any explanations.
 from typing import List
 
 import pandas as pd
-from .base import FileBasedPrompt
+from .file_based_prompt import FileBasedPrompt
 
 
 class RephraseQueryPrompt(FileBasedPrompt):

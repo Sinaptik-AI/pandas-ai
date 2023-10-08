@@ -33,7 +33,7 @@ Updated code:
 """  # noqa: E501
 
 
-from .base import FileBasedPrompt
+from .file_based_prompt import FileBasedPrompt
 
 
 class GeneratePythonCodePrompt(FileBasedPrompt):
