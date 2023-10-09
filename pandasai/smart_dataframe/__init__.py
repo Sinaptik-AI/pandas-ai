@@ -420,7 +420,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def _get_sample_head(self) -> DataFrameType:
         head = None
         rows_to_display = 0 if self.lake.config.enforce_privacy else 5
-        if not self._core._df_loaded and self.connector:
+        if self._sample_head is not None:
+            head = self.sample_head
+        elif not self._core._df_loaded and self.connector:
             head = self.connector.head()
         else:
             head = self.dataframe.head(rows_to_display)

@@ -14,6 +14,7 @@ import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.output_types import (
     DefaultOutputType,
     output_types_map,
@@ -50,6 +51,19 @@ class TestSmartDataframe:
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
         return FakeLLM(output=output)
+
+    @pytest.fixture
+    def data_sampler(self):
+        class DataSampler:
+            df = None
+
+            def __init__(self, df: DataFrameType):
+                self.df = df
+
+            def sample(self, _n: int = 5):
+                return self.df
+
+        return DataSampler
 
     @pytest.fixture
     def sample_df(self):
@@ -106,8 +120,8 @@ class TestSmartDataframe:
         ]
 
     @pytest.fixture
-    def sample_head(self, sample_df):
-        return sample_df.head(5).sample(frac=1, axis=1).reset_index(drop=True)
+    def sample_head(self, sample_df: pd.DataFrame):
+        return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
     @pytest.fixture
     def smart_dataframe(self, llm, sample_df, sample_head):
@@ -1016,3 +1030,9 @@ result = analyze_data(dfs)
         validation_result = df_object.validate(TestSchema)
 
         assert validation_result.passed is True
+
+    def test_head_csv_with_sample_head(
+        self, sample_head, data_sampler, smart_dataframe: SmartDataframe
+    ):
+        with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
+            assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
