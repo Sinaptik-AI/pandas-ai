@@ -2,7 +2,7 @@
 import openai
 import pytest
 
-from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
+from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import OpenAI
 from pandasai.prompts import AbstractPrompt
 from openai.openai_object import OpenAIObject
@@ -107,7 +107,7 @@ class TestOpenAILLM:
         assert result == expected_response
 
     def test_call_with_unsupported_model(self, prompt):
-        with pytest.raises(UnsupportedOpenAIModelError):
+        with pytest.raises(UnsupportedModelError):
             llm = OpenAI(api_token="test", model="not a model")
             llm.call(instruction=prompt)
 

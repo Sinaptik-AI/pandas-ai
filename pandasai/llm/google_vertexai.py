@@ -12,7 +12,7 @@ Example:
 """
 from typing import Optional
 from .base import BaseGoogle
-from ..exceptions import UnsupportedOpenAIModelError
+from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
 
 
@@ -127,7 +127,7 @@ class GoogleVertexAI(BaseGoogle):
                 max_output_tokens=self.max_output_tokens,
             )
         else:
-            raise UnsupportedOpenAIModelError("Unsupported model")
+            raise UnsupportedModelError("Unsupported model")
 
         return str(completion)
 

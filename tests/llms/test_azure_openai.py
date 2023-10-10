@@ -2,7 +2,7 @@
 import openai
 import pytest
 
-from pandasai.exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
+from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import AzureOpenAI
 from openai.openai_object import OpenAIObject
 
@@ -23,7 +23,7 @@ class TestAzureOpenAILLM:
             AzureOpenAI(api_token="test", api_base="test")
 
     def test_type_without_deployment(self):
-        with pytest.raises(UnsupportedOpenAIModelError):
+        with pytest.raises(UnsupportedModelError):
             AzureOpenAI(api_token="test", api_base="test", api_version="test")
 
     def test_type_with_token(self):

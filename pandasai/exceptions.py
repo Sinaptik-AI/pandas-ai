@@ -42,12 +42,12 @@ class MethodNotImplementedError(Exception):
     """
 
 
-class UnsupportedOpenAIModelError(Exception):
+class UnsupportedModelError(Exception):
     """
     Raised when an unsupported OpenAI model is used.
 
     Args:
-        Exception (Exception): UnsupportedOpenAIModelError
+        Exception (Exception): UnsupportedModelError
     """
 
 

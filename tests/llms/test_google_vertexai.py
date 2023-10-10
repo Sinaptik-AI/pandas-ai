@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.llm import GoogleVertexAI
-from pandasai.exceptions import UnsupportedOpenAIModelError
+from pandasai.exceptions import UnsupportedModelError
 
 
 class MockedCompletion:
@@ -46,7 +46,7 @@ class TestGoogleVertexAI:
 
     def test_validate_with_invalid_model(self, google_vertexai: GoogleVertexAI):
         google_vertexai.model = "invalid-model"
-        with pytest.raises(UnsupportedOpenAIModelError, match="Unsupported model"):
+        with pytest.raises(UnsupportedModelError, match="Unsupported model"):
             google_vertexai._generate_text("Test prompt")
 
     def test_validate_without_model(self, google_vertexai: GoogleVertexAI):
