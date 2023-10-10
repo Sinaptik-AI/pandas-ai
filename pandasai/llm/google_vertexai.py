@@ -129,6 +129,7 @@ class GoogleVertexAI(BaseGoogle):
         else:
             raise UnsupportedModelError(self.model)
 
+
         return str(completion)
 
     @property

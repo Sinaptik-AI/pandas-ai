@@ -48,6 +48,7 @@ class UnsupportedModelError(Exception):
 
     Args:
         model_name (str): The name of the unsupported model.
+        Exception (Exception): UnsupportedModelError
     """
 
     def __init__(self, model_name):

@@ -85,6 +85,7 @@ class AzureOpenAI(BaseOpenAI):
         if deployment_name is None:
             raise UnsupportedModelError(deployment_name)
 
+
         self.is_chat_model = is_chat_model
         self.engine = deployment_name
 
