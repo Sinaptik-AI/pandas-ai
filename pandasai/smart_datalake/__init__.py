@@ -285,7 +285,6 @@ class SmartDatalake:
             instance=self.__class__.__name__,
             output_type=output_type,
         )
-
         query_exec_tracker.add_dataframes(self._dfs)
 
         self._memory.add(query, True)

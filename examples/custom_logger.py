@@ -19,7 +19,7 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-llm = OpenAI("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")
+llm = OpenAI("Your-API-Key")
 agent = Agent(
     [employees_df, salaries_df],
     config={"llm": llm, "enable_cache": True},

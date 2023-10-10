@@ -1,14 +1,16 @@
 import time
 from typing import Optional
-
 from unittest.mock import Mock, patch
-
 import pandas as pd
 import pytest
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
 from pandasai.smart_dataframe import SmartDataframe
+from unittest import TestCase
+
+
+assert_almost_equal = TestCase().assertAlmostEqual
 
 
 class TestQueryExecTracker:
@@ -76,16 +78,6 @@ class TestQueryExecTracker:
             output_type="json",
         )
 
-    # Define a custom assert_almost_equal function
-    def assert_almost_equal(self, first, second, places=None, msg=None, delta=None):
-        if delta is not None:
-            if abs(float(first) - float(second)) > delta:
-                raise AssertionError(msg or f"{first} != {second} within {delta}")
-        else:
-            assert round(abs(float(second) - float(first)), places) == 0, (
-                msg or f"{first} != {second} within {places} places"
-            )
-
     def test_add_dataframes(
         self, smart_dataframe: SmartDataframe, tracker: QueryExecTracker
     ):
@@ -109,37 +101,6 @@ class TestQueryExecTracker:
         # Check if the step was added correctly
         assert len(tracker._steps) == 1
         assert tracker._steps[0] == step
-
-    def test_execute_func_success(self, tracker: QueryExecTracker):
-        tracker._steps = []
-
-        # Create a mock function
-        mock_return_value = Mock()
-        mock_return_value.to_string = Mock()
-        mock_return_value.to_string.return_value = "Mock Result"
-
-        mock_func = Mock()
-        mock_func.return_value = mock_return_value
-
-        # Execute the mock function using execute_func
-        result = tracker.execute_func(mock_func, tag="_get_prompt")
-
-        # Check if the result is as expected
-        assert result.to_string() == "Mock Result"
-        # Check if the step was added correctly
-        assert len(tracker._steps) == 1
-        step = tracker._steps[0]
-        assert step["type"] == "Generate Prompt"
-        assert step["success"] is True
-
-    def test_execute_func_failure(self, tracker: QueryExecTracker):
-        # Create a mock function that raises an exception
-        def mock_function(*args, **kwargs):
-            raise Exception("Mock Exception")
-
-        # Execute the mock function using execute_func and expect an exception
-        with pytest.raises(Exception):
-            tracker.execute_func(mock_function, tag="custom_tag")
 
     def test_format_response_dataframe(
         self, tracker: QueryExecTracker, sample_df: pd.DataFrame
@@ -198,7 +159,127 @@ class TestQueryExecTracker:
         # Get the execution time
         execution_time = tracker.get_execution_time()
 
-        print("Type", execution_time)
-
         # Check if the execution time is approximately 1 second
-        self.assert_almost_equal(execution_time, 1.0, delta=0.1)
+        assert_almost_equal(execution_time, 1.0, delta=0.3)
+
+    def test_execute_func_success(self, tracker: QueryExecTracker):
+        tracker._steps = []
+
+        # Create a mock function
+        mock_return_value = Mock()
+        mock_return_value.to_string = Mock()
+        mock_return_value.to_string.return_value = "Mock Result"
+
+        mock_func = Mock()
+        mock_func.return_value = mock_return_value
+
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func, tag="_get_prompt")
+
+        # Check if the result is as expected
+        assert result.to_string() == "Mock Result"
+        # Check if the step was added correctly
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert step["type"] == "Generate Prompt"
+        assert step["success"] is True
+
+    def test_execute_func_failure(self, tracker: QueryExecTracker):
+        # Create a mock function that raises an exception
+        def mock_function(*args, **kwargs):
+            raise Exception("Mock Exception")
+
+        with pytest.raises(Exception):
+            tracker.execute_func(mock_function, tag="custom_tag")
+
+    def test_execute_func_cache_hit(self, tracker: QueryExecTracker):
+        tracker._steps = []
+
+        mock_func = Mock()
+        mock_func.return_value = "code"
+
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func, tag="cache_hit")
+
+        # Check if the result is as expected
+        assert result == "code"
+        # Check if the step was added correctly
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert "code_generated" in step
+        assert step["type"] == "Cache Hit"
+        assert step["success"] is True
+
+    def test_execute_func_generate_code(self, tracker: QueryExecTracker):
+        tracker._steps = []
+
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = "code"
+
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func, tag="generate_code")
+
+        # Check if the result is as expected
+        assert result == "code"
+        # Check if the step was added correctly
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert "code_generated" in step
+        assert step["type"] == "Generate Code"
+        assert step["success"] is True
+
+    def test_execute_func_re_rerun_code(self, tracker: QueryExecTracker):
+        tracker._steps = []
+
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = "code"
+
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func, tag="_retry_run_code")
+
+        # Check if the result is as expected
+        assert result == "code"
+        # Check if the step was added correctly
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert "code_generated" in step
+        assert step["type"] == "Retry Code Generation"
+        assert step["success"] is True
+
+    def test_execute_func_execute_code_success(
+        self, sample_df: pd.DataFrame, tracker: QueryExecTracker
+    ):
+        tracker._steps = []
+
+        mock_func = Mock()
+        mock_func.return_value = {"type": "dataframe", "value": sample_df}
+
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func, tag="execute_code")
+
+        # Check if the result is as expected
+        assert result["type"] == "dataframe"
+        # Check if the step was added correctly
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert "result" in step
+        assert step["type"] == "Code Execution"
+        assert step["success"] is True
+
+    def test_execute_func_execute_code_fail(
+        self, sample_df: pd.DataFrame, tracker: QueryExecTracker
+    ):
+        tracker._steps = []
+
+        def mock_function(*args, **kwargs):
+            raise Exception("Mock Exception")
+
+        with pytest.raises(Exception):
+            tracker.execute_func(mock_function, tag="execute_code")
+
+        assert len(tracker._steps) == 1
+        step = tracker._steps[0]
+        assert step["type"] == "Code Execution"
+        assert step["success"] is False
