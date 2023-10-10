@@ -107,7 +107,7 @@ class OpenAI(BaseOpenAI):
         elif self.model in self._supported_completion_models:
             response = self.completion(self.last_prompt)
         else:
-            raise UnsupportedModelError("Unsupported model")
+            raise UnsupportedModelError(self.model)
 
         return response
 

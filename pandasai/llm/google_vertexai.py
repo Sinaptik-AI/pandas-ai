@@ -127,7 +127,7 @@ class GoogleVertexAI(BaseGoogle):
                 max_output_tokens=self.max_output_tokens,
             )
         else:
-            raise UnsupportedModelError("Unsupported model")
+            raise UnsupportedModelError(self.model)
 
         return str(completion)
 

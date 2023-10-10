@@ -44,11 +44,18 @@ class MethodNotImplementedError(Exception):
 
 class UnsupportedModelError(Exception):
     """
-    Raised when an unsupported OpenAI model is used.
+    Raised when an unsupported model is used.
 
     Args:
-        Exception (Exception): UnsupportedModelError
+        model_name (str): The name of the unsupported model.
     """
+
+    def __init__(self, model_name):
+        self.model = model_name
+        super().__init__(
+            f"Unsupported model: The model '{model_name}' doesn't exist "
+            f"or is not supported yet."
+        )
 
 
 class BadImportError(Exception):

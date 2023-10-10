@@ -46,7 +46,13 @@ class TestGoogleVertexAI:
 
     def test_validate_with_invalid_model(self, google_vertexai: GoogleVertexAI):
         google_vertexai.model = "invalid-model"
-        with pytest.raises(UnsupportedModelError, match="Unsupported model"):
+        with pytest.raises(
+            UnsupportedModelError,
+            match=(
+                "Unsupported model: The model 'invalid-model' doesn't exist "
+                "or is not supported yet."
+            ),
+        ):
             google_vertexai._generate_text("Test prompt")
 
     def test_validate_without_model(self, google_vertexai: GoogleVertexAI):

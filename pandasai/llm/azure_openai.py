@@ -83,7 +83,7 @@ class AzureOpenAI(BaseOpenAI):
         openai.api_type = self.api_type
 
         if deployment_name is None:
-            raise UnsupportedModelError("Model deployment name is required.")
+            raise UnsupportedModelError(deployment_name)
 
         self.is_chat_model = is_chat_model
         self.engine = deployment_name
