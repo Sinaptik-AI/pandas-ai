@@ -70,18 +70,19 @@ class QueryExecTracker:
         """
         start_time = time.time()
 
-        func_name = kwargs["tag"] if "tag" in kwargs else function.__name__
+        # Get the tag from kwargs if provided, or use the function name as the default
+        tag = kwargs.pop("tag", function.__name__)
 
         try:
             result = function(*args, **kwargs)
 
             execution_time = time.time() - start_time
-            if func_name not in exec_steps:
+            if tag not in exec_steps:
                 return result
 
-            step_data = self._generate_exec_step(func_name, result)
+            step_data = self._generate_exec_step(tag, result)
 
-            step_data["type"] = exec_steps[func_name]
+            step_data["type"] = exec_steps[tag]
             step_data["success"] = True
             step_data["execution_time"] = execution_time
 
@@ -93,7 +94,7 @@ class QueryExecTracker:
             execution_time = time.time() - start_time
             self._steps.append(
                 {
-                    "type": exec_steps[func_name],
+                    "type": exec_steps[tag],
                     "success": False,
                     "execution_time": execution_time,
                 }

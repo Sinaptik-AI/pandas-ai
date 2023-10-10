@@ -172,6 +172,7 @@ class TestQueryExecTracker:
 
         mock_func = Mock()
         mock_func.return_value = mock_return_value
+        mock_func.__name__ = "_get_prompt"
 
         # Execute the mock function using execute_func
         result = tracker.execute_func(mock_func, tag="_get_prompt")
@@ -197,6 +198,7 @@ class TestQueryExecTracker:
 
         mock_func = Mock()
         mock_func.return_value = "code"
+        mock_func.__name__ = "get"
 
         # Execute the mock function using execute_func
         result = tracker.execute_func(mock_func, tag="cache_hit")
@@ -216,6 +218,7 @@ class TestQueryExecTracker:
         # Create a mock function
         mock_func = Mock()
         mock_func.return_value = "code"
+        mock_func.__name__ = "generate_code"
 
         # Execute the mock function using execute_func
         result = tracker.execute_func(mock_func, tag="generate_code")
@@ -235,9 +238,10 @@ class TestQueryExecTracker:
         # Create a mock function
         mock_func = Mock()
         mock_func.return_value = "code"
+        mock_func.__name__ = "_retry_run_code"
 
         # Execute the mock function using execute_func
-        result = tracker.execute_func(mock_func, tag="_retry_run_code")
+        result = tracker.execute_func(mock_func)
 
         # Check if the result is as expected
         assert result == "code"
@@ -255,9 +259,10 @@ class TestQueryExecTracker:
 
         mock_func = Mock()
         mock_func.return_value = {"type": "dataframe", "value": sample_df}
+        mock_func.__name__ = "execute_code"
 
         # Execute the mock function using execute_func
-        result = tracker.execute_func(mock_func, tag="execute_code")
+        result = tracker.execute_func(mock_func)
 
         # Check if the result is as expected
         assert result["type"] == "dataframe"
@@ -273,11 +278,12 @@ class TestQueryExecTracker:
     ):
         tracker._steps = []
 
-        def mock_function(*args, **kwargs):
-            raise Exception("Mock Exception")
+        mock_func = Mock()
+        mock_func.side_effect = Exception("Mock Exception")
+        mock_func.__name__ = "execute_code"
 
         with pytest.raises(Exception):
-            tracker.execute_func(mock_function, tag="execute_code")
+            tracker.execute_func(mock_func)
 
         assert len(tracker._steps) == 1
         step = tracker._steps[0]
