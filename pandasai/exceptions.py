@@ -44,10 +44,27 @@ class MethodNotImplementedError(Exception):
 
 class UnsupportedModelError(Exception):
     """
-    Raised when an unsupported OpenAI model is used.
+    Raised when an unsupported model is used.
 
     Args:
+        model_name (str): The name of the unsupported model.
         Exception (Exception): UnsupportedModelError
+    """
+
+    def __init__(self, model_name):
+        self.model = model_name
+        super().__init__(
+            f"Unsupported model: The model '{model_name}' doesn't exist "
+            f"or is not supported yet."
+        )
+
+
+class MissingModelError(Exception):
+    """
+    Raised when deployment name is not passed to azure as it's a required paramter
+
+    Args:
+    Exception (Exception): MissingModelError
     """
 
 

@@ -107,7 +107,13 @@ class TestOpenAILLM:
         assert result == expected_response
 
     def test_call_with_unsupported_model(self, prompt):
-        with pytest.raises(UnsupportedModelError):
+        with pytest.raises(
+            UnsupportedModelError,
+            match=(
+                "Unsupported model: The model 'not a model' doesn't exist "
+                "or is not supported yet."
+            ),
+        ):
             llm = OpenAI(api_token="test", model="not a model")
             llm.call(instruction=prompt)
 
