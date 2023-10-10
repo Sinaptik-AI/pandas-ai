@@ -45,9 +45,9 @@ MODEL_COST_PER_1K_TOKENS = {
 
 
 def get_openai_token_cost_for_model(
-        model_name: str,
-        num_tokens: int,
-        is_completion: bool = False,
+    model_name: str,
+    num_tokens: int,
+    is_completion: bool = False,
 ) -> float:
     """
     Get the cost in USD for a given model and number of tokens.
@@ -63,9 +63,9 @@ def get_openai_token_cost_for_model(
     """
     model_name = model_name.lower()
     if is_completion and (
-            model_name.startswith("gpt-4")
-            or model_name.startswith("gpt-3.5")
-            or model_name.startswith("gpt-35")
+        model_name.startswith("gpt-4")
+        or model_name.startswith("gpt-3.5")
+        or model_name.startswith("gpt-35")
     ):
         # The cost of completion token is different from
         # the cost of prompt tokens.
