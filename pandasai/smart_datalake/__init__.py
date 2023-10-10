@@ -17,12 +17,12 @@ Example:
     # The average loan amount is $15,000.
     ```
 """
-
-import time
 import uuid
 import logging
 import os
 import traceback
+
+from pandasai.helpers.query_exec_tracker import QueryExecTracker
 
 from ..helpers.output_types import output_type_factory
 from pandasai.responses.context import Context
@@ -190,11 +190,6 @@ class SmartDatalake:
         """
         self._code_manager.add_middlewares(*middlewares)
 
-    def _start_timer(self):
-        """Start the timer"""
-
-        self._start_time = time.time()
-
     def _assign_prompt_id(self):
         """Assign a prompt ID"""
 
@@ -279,12 +274,19 @@ class SmartDatalake:
             ValueError: If the query is empty
         """
 
-        self._start_timer()
-
         self.logger.log(f"Question: {query}")
         self.logger.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._assign_prompt_id()
+
+        query_exec_tracker = QueryExecTracker(
+            conversation_id=self._last_prompt_id,
+            query=query,
+            instance=self.__class__.__name__,
+            output_type=output_type,
+        )
+
+        query_exec_tracker.add_dataframes(self._dfs)
 
         self._memory.add(query, True)
 
@@ -297,7 +299,10 @@ class SmartDatalake:
                 and self._cache.get(self._get_cache_key())
             ):
                 self.logger.log("Using cached response")
-                code = self._cache.get(self._get_cache_key())
+                code = query_exec_tracker.execute_func(
+                    self._cache.get, self._get_cache_key(), tag="cache_hit"
+                )
+
             else:
                 default_values = {
                     # TODO: find a better way to determine the engine,
@@ -305,13 +310,16 @@ class SmartDatalake:
                     "output_type_hint": output_type_helper.template_hint,
                 }
 
-                generate_python_code_instruction = self._get_prompt(
+                generate_python_code_instruction = query_exec_tracker.execute_func(
+                    self._get_prompt,
                     "generate_python_code",
                     default_prompt=GeneratePythonCodePrompt,
                     default_values=default_values,
                 )
 
-                code = self._llm.generate_code(generate_python_code_instruction)
+                code = query_exec_tracker.execute_func(
+                    self._llm.generate_code, generate_python_code_instruction
+                )
 
                 if self._config.enable_cache and self._cache:
                     self._cache.set(self._get_cache_key(), code)
@@ -334,7 +342,8 @@ class SmartDatalake:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
-                    result = self._code_manager.execute_code(
+                    result = query_exec_tracker.execute_func(
+                        self._code_manager.execute_code,
                         code=code_to_run,
                         prompt_id=self._last_prompt_id,
                     )
@@ -355,7 +364,9 @@ class SmartDatalake:
                     )
 
                     traceback_error = traceback.format_exc()
-                    code_to_run = self._retry_run_code(code, traceback_error)
+                    code_to_run = query_exec_tracker.execute_func(
+                        self._retry_run_code, code, traceback_error
+                    )
 
             if result is not None:
                 if isinstance(result, dict):
@@ -364,20 +375,40 @@ class SmartDatalake:
                         self.logger.log(
                             "\n".join(validation_logs), level=logging.WARNING
                         )
+                        query_exec_tracker.add_step(
+                            {
+                                "type": "Validating Output",
+                                "success": False,
+                                "message": "Output Validation Failed",
+                            }
+                        )
+                    else:
+                        query_exec_tracker.add_step(
+                            {
+                                "type": "Validating Output",
+                                "success": True,
+                                "message": "Output Validation Successful",
+                            }
+                        )
 
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
+
         except Exception as exception:
             self.last_error = str(exception)
+            self.logger.log(query_exec_tracker.get_summary())
+
             return (
                 "Unfortunately, I was not able to answer your question, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
 
-        self.logger.log(f"Executed in: {time.time() - self._start_time}s")
+        self.logger.log(f"Executed in: {query_exec_tracker.get_execution_time()}s")
 
         self._add_result_to_memory(result)
+
+        self.logger.log(query_exec_tracker.get_summary())
 
         return self._response_parser.parse(result)
 

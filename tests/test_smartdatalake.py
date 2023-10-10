@@ -110,6 +110,8 @@ class TestSmartDatalake:
     def test_last_result_is_saved(self, _mocked_method, smart_datalake: SmartDatalake):
         assert smart_datalake.last_result is None
 
+        _mocked_method.__name__ = "execute_code"
+
         smart_datalake.chat("How many countries are in the dataframe?")
         assert smart_datalake.last_result == {
             "type": "string",

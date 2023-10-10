@@ -147,6 +147,7 @@ print(os.listdir())
         code_manager.execute_code = Mock(
             side_effect=NoCodeFoundError("No code found in the answer.")
         )
+        code_manager.execute_code.__name__ = "execute_code"
 
         result = smart_dataframe.chat("How many countries are in the dataframe?")
         assert result == (
