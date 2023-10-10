@@ -59,6 +59,15 @@ class UnsupportedModelError(Exception):
         )
 
 
+class MissingModelError(Exception):
+    """
+    Raised when deployment name is not passed to azure as it's a required paramter
+
+    Args:
+    Exception (Exception): MissingModelError
+    """
+
+
 class BadImportError(Exception):
     """
     Raised when a library not in the whitelist is imported.

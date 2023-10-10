@@ -17,7 +17,7 @@ from typing import Any, Dict, Optional
 import openai
 from ..helpers import load_dotenv
 
-from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
+from ..exceptions import APIKeyNotFoundError, MissingModelError
 from ..prompts.base import AbstractPrompt
 from .base import BaseOpenAI
 
@@ -83,8 +83,10 @@ class AzureOpenAI(BaseOpenAI):
         openai.api_type = self.api_type
 
         if deployment_name is None:
-            raise UnsupportedModelError(deployment_name)
-
+            raise MissingModelError(
+                "No deployemnt name provided.",
+                "Please include deployemnt name from Azure dashboard.",
+            )
 
         self.is_chat_model = is_chat_model
         self.engine = deployment_name
