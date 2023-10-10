@@ -1,4 +1,3 @@
-import json
 import time
 from typing import Any, List, TypedDict
 
@@ -149,18 +148,6 @@ class QueryExecTracker:
             return result
 
     def get_summary(self) -> dict:
-        """
-        Returns the formatted summary
-        Returns:
-            dict: summary json
-        """
-        summary = self.get_summary_dict()
-        try:
-            return json.dumps(summary, indent=4)
-        except Exception:
-            return summary
-
-    def get_summary_dict(self) -> dict:
         """
         Returns the summary in json to steps involved in execution of track
         Returns:
