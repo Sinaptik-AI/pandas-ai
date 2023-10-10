@@ -55,6 +55,11 @@ class TestGoogleVertexAI:
         model = "invalid_model"
         project_id = "test-project"
         location = "northamerica-northeast1"
-        with pytest.raises(UnsupportedModelError, match="Unsupported model"):
+       with pytest.raises(
+            UnsupportedModelError,
+            match=(
+                "Unsupported model: The model 'invalid-model' doesn't exist "
+                "or is not supported yet."
+            ),
+        ):
             GoogleVertexAI(project_id, location, model)
-

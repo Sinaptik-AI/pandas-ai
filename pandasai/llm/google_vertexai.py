@@ -83,7 +83,7 @@ class GoogleVertexAI(BaseGoogle):
 
             self.client = TextGenerationModel.from_pretrained(self.model)
         else:
-            raise UnsupportedModelError("Unsupported model")
+            raise UnsupportedModelError(self.model)
         self.project_id = project_id
         self.location = location
         self._set_params(**kwargs)
