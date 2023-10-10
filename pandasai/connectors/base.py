@@ -74,6 +74,12 @@ class DatabricksConnectorConfig(SQLBaseConnectorConfig):
     token: str
     httpPath: str
 
+class AirtableConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Airtable.
+    """
+    token : str
+    baseID : str
 
 class BaseConnector(ABC):
     """
