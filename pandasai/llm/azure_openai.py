@@ -84,8 +84,8 @@ class AzureOpenAI(BaseOpenAI):
 
         if deployment_name is None:
             raise MissingModelError(
-                "No deployemnt name provided.",
-                "Please include deployemnt name from Azure dashboard.",
+                "No deployment name provided.",
+                "Please include deployment name from Azure dashboard.",
             )
 
         self.is_chat_model = is_chat_model
