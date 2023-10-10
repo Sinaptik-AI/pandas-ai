@@ -12,7 +12,11 @@ class MockedCompletion:
 
 
 class TestGoogleVertexAI:
-    def test_init_with_default_model(self):
+    def test_init_with_default_model(self, mocker):
+        mocker.patch(
+            "vertexai.preview.language_models.TextGenerationModel.from_pretrained",
+            return_value="Test",
+        )
         project_id = "your_project_id"
         location = "northamerica-northeast1"
         vertexai_instance = GoogleVertexAI(project_id, location)
@@ -21,7 +25,11 @@ class TestGoogleVertexAI:
         assert vertexai_instance.project_id == project_id
         assert vertexai_instance.location == location
 
-    def test_init_with_custom_model(self):
+    def test_init_with_custom_model(self, mocker):
+        mocker.patch(
+            "vertexai.preview.language_models.CodeGenerationModel.from_pretrained",
+            return_value="Test",
+        )
         project_id = "test-project"
         location = "northamerica-northeast1"
         custom_model = "code-bison@001"
@@ -32,24 +40,21 @@ class TestGoogleVertexAI:
         assert vertexai_instance.project_id == project_id
         assert vertexai_instance.location == location
 
-    @pytest.fixture
-    def google_vertexai(self):
-        # Create an instance of YourClass for testing
+    def test_validate_with_model(self, mocker):
+        mocker.patch(
+            "vertexai.preview.language_models.TextGenerationModel.from_pretrained",
+            return_value="Test",
+        )
+        model = "text-bison@001"
         project_id = "test-project"
         location = "northamerica-northeast1"
-        custom_model = "code-bison@001"
-        return GoogleVertexAI(project_id, location, custom_model)
+        llm = GoogleVertexAI(project_id, location, model)
+        llm._validate()  # Should not raise any errors
 
-    def test_validate_with_model(self, google_vertexai: GoogleVertexAI):
-        google_vertexai.model = "text-bison@001"
-        google_vertexai._validate()  # Should not raise any errors
-
-    def test_validate_with_invalid_model(self, google_vertexai: GoogleVertexAI):
-        google_vertexai.model = "invalid-model"
+    def test_validate_with_invalid_model(self):
+        model = "invalid_model"
+        project_id = "test-project"
+        location = "northamerica-northeast1"
         with pytest.raises(UnsupportedModelError, match="Unsupported model"):
-            google_vertexai._generate_text("Test prompt")
+            GoogleVertexAI(project_id, location, model)
 
-    def test_validate_without_model(self, google_vertexai: GoogleVertexAI):
-        google_vertexai.model = None
-        with pytest.raises(ValueError, match="model is required."):
-            google_vertexai._validate()

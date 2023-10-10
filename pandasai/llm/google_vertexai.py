@@ -7,13 +7,29 @@ https://cloud.google.com/vertex-ai/docs/generative-ai/learn/generative-ai-studio
 Example:
     Use below example to call Google VertexAI
 
-    >>> from pandasai.llm.google_palm import GoogleVertexAI
+    >>> from pandasai.llm import GoogleVertexAI
 
 """
-from typing import Optional
+from typing import Optional, Dict, Any
 from .base import BaseGoogle
 from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
+
+
+def init_vertexai(
+    project_id, location, credentials=None,
+) -> None:
+    vertexai = import_dependency(
+        "vertexai",
+        extra="Could not import VertexAI. Please, install "
+              "it with `pip install google-cloud-aiplatform`"
+    )
+    init_params = {
+        "project": project_id,
+        "location": location,
+        **({"credentials": credentials} if credentials is not None else {})
+    }
+    vertexai.init(**init_params)
 
 
 class GoogleVertexAI(BaseGoogle):
@@ -33,62 +49,64 @@ class GoogleVertexAI(BaseGoogle):
         "text-bison-32k",
         "text-bison@001",
     ]
+    model: str = "text-bison@001"
 
     def __init__(
-        self, project_id: str, location: str, model: Optional[str] = None, **kwargs
+            self,
+            project_id: str,
+            location: str,
+            model: Optional[str] = None,
+            credentials: Any = None,
+            **kwargs
     ):
         """
-        A init class to implement the Google Vertexai Models
+        An init class to implement the Google Vertexai Models
 
         Args:
-            project_id (str): GCP project
-            location (str): GCP project Location
-            model Optional (str): Model to use Default to text-bison@001
+            project_id (str): GCP project to use when making Vertex API calls
+            location (str): GCP project location to use when making Vertex API calls
+            model (str): VertexAI Large Language Model to use. Default to text-bison@001
+            credentials: The default custom credentials to use when making API calls.
+                If not provided, credentials will be ascertained from the environment.
             **kwargs: Arguments to control the Model Parameters
         """
-
-        if model is None:
-            self.model = "text-bison@001"
-        else:
+        init_vertexai(project_id, location, credentials)
+        if model:
             self.model = model
 
-        self._configure(project_id, location)
+        if self.model in self._supported_code_models:
+            from vertexai.preview.language_models import CodeGenerationModel
+
+            self.client = CodeGenerationModel.from_pretrained(self.model)
+        elif self.model in self._supported_text_models:
+            from vertexai.preview.language_models import TextGenerationModel
+
+            self.client = TextGenerationModel.from_pretrained(self.model)
+        else:
+            raise UnsupportedModelError("Unsupported model")
         self.project_id = project_id
         self.location = location
         self._set_params(**kwargs)
-
-    def _configure(self, project_id: str, location: str):
-        """
-        Configure Google VertexAi. Set value `self.vertexai` attribute.
-
-        Args:
-            project_id (str): GCP Project.
-            location (str): Location of Project.
-
-        Returns:
-            None.
-
-        """
-
-        err_msg = "Install google-cloud-aiplatform for Google Vertexai"
-        vertexai = import_dependency("vertexai", extra=err_msg)
-        vertexai.init(project=project_id, location=location)
-        self.vertexai = vertexai
+        self._validate()
 
     def _valid_params(self):
         """Returns if the Parameters are valid or Not"""
         return super()._valid_params() + ["model"]
 
-    def _validate(self):
-        """
-        A method to Validate the Model
-
-        """
-
-        super()._validate()
-
-        if not self.model:
-            raise ValueError("model is required.")
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        if "code" in self.model:
+            return {
+                "temperature": self.temperature,
+                "max_output_tokens": self.max_output_tokens,
+            }
+        else:
+            return {
+                "temperature": self.temperature,
+                "max_output_tokens": self.max_output_tokens,
+                "top_k": self.top_k,
+                "top_p": self.top_p,
+            }
 
     def _generate_text(self, prompt: str) -> str:
         """
@@ -101,34 +119,10 @@ class GoogleVertexAI(BaseGoogle):
             str: LLM response.
 
         """
-        self._validate()
-
-        from vertexai.preview.language_models import (
-            CodeGenerationModel,
-            TextGenerationModel,
+        completion = self.client.predict(
+            prompt,
+            **self._default_params
         )
-
-        if self.model in self._supported_code_models:
-            code_generation = CodeGenerationModel.from_pretrained(self.model)
-
-            completion = code_generation.predict(
-                prefix=prompt,
-                temperature=self.temperature,
-                max_output_tokens=self.max_output_tokens,
-            )
-        elif self.model in self._supported_text_models:
-            text_generation = TextGenerationModel.from_pretrained(self.model)
-
-            completion = text_generation.predict(
-                prompt=prompt,
-                temperature=self.temperature,
-                top_p=self.top_p,
-                top_k=self.top_k,
-                max_output_tokens=self.max_output_tokens,
-            )
-        else:
-            raise UnsupportedModelError("Unsupported model")
-
         return str(completion)
 
     @property
