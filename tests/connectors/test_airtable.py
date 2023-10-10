@@ -40,7 +40,6 @@ class TestAirTableConnector(unittest.TestCase):
             ],
             "offset": "itrowYGFfoBEIob3C/recsxnHUagIce7nB2",
         }
-        print(expected_data_json)
         records = [
             {"id": record["id"], **record["fields"]}
             for record in expected_data_json["records"]
