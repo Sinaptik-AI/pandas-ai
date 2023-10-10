@@ -12,6 +12,7 @@ Example:
 """
 from typing import Optional
 from .base import BaseGoogle
+from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
 
 
@@ -20,8 +21,18 @@ class GoogleVertexAI(BaseGoogle):
     BaseGoogle class is extended for Google Palm model using Vertexai.
     The default model support at the moment is text-bison-001.
     However, user can choose to use code-bison-001 too.
-
     """
+
+    _supported_code_models = [
+        "code-bison",
+        "code-bison-32k",
+        "code-bison@001",
+    ]
+    _supported_text_models = [
+        "text-bison",
+        "text-bison-32k",
+        "text-bison@001",
+    ]
 
     def __init__(
         self, project_id: str, location: str, model: Optional[str] = None, **kwargs
@@ -97,7 +108,7 @@ class GoogleVertexAI(BaseGoogle):
             TextGenerationModel,
         )
 
-        if self.model == "code-bison@001":
+        if self.model in self._supported_code_models:
             code_generation = CodeGenerationModel.from_pretrained(self.model)
 
             completion = code_generation.predict(
@@ -105,7 +116,7 @@ class GoogleVertexAI(BaseGoogle):
                 temperature=self.temperature,
                 max_output_tokens=self.max_output_tokens,
             )
-        else:
+        elif self.model in self._supported_text_models:
             text_generation = TextGenerationModel.from_pretrained(self.model)
 
             completion = text_generation.predict(
@@ -115,6 +126,8 @@ class GoogleVertexAI(BaseGoogle):
                 top_k=self.top_k,
                 max_output_tokens=self.max_output_tokens,
             )
+        else:
+            raise UnsupportedModelError("Unsupported model")
 
         return str(completion)
 
