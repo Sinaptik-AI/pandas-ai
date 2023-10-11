@@ -395,6 +395,7 @@ class SmartDatalake:
 
         except Exception as exception:
             self.last_error = str(exception)
+            query_exec_tracker.success = False
             self.logger.log(query_exec_tracker.get_summary())
 
             return (
@@ -407,9 +408,13 @@ class SmartDatalake:
 
         self._add_result_to_memory(result)
 
+        result = query_exec_tracker.execute_func(self._response_parser.parse, result)
+
+        query_exec_tracker.success = True
+
         self.logger.log(query_exec_tracker.get_summary())
 
-        return self._response_parser.parse(result)
+        return result
 
     def _add_result_to_memory(self, result: dict):
         """

@@ -13,6 +13,7 @@ exec_steps = {
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
     "_retry_run_code": "Retry Code Generation",
+    "parse": "Parse Output",
 }
 
 
@@ -22,6 +23,7 @@ class QueryExecTracker:
     _response: ResponseType = {}
     _steps: List = []
     _start_time = None
+    _success: bool = False
 
     def __init__(
         self,
@@ -31,6 +33,7 @@ class QueryExecTracker:
         output_type: str,
     ) -> None:
         self._start_time = time.time()
+        self._success = False
         self._query_info = {
             "conversation_id": str(conversation_id),
             "query": query,
@@ -123,7 +126,9 @@ class QueryExecTracker:
             }
         elif func_name == "execute_code":
             self._response = self._format_response(result)
-            return {"result": result}
+            return {"result": self._response}
+        else:
+            return {}
 
     def _format_response(self, result: ResponseType) -> ResponseType:
         """
@@ -160,7 +165,16 @@ class QueryExecTracker:
             "steps": self._steps,
             "response": self._response,
             "execution_time": execution_time,
+            "success": self._success,
         }
 
     def get_execution_time(self) -> float:
         return time.time() - self._start_time
+
+    @property
+    def success(self):
+        return self._success
+
+    @success.setter
+    def success(self, value):
+        self._success = value

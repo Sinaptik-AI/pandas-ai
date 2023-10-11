@@ -19,14 +19,18 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-llm = OpenAI("Your-API-Key")
+llm = OpenAI("OPEN-API-KEY")
 agent = Agent(
     [employees_df, salaries_df],
     config={"llm": llm, "enable_cache": True},
     memory_size=10,
-    logger=APILogger("SERVER-URL", "USER-ID", "API-KEY"),
+    logger=APILogger(
+        "SERVER-URL",
+        "API-KEY",
+    ),
 )
 
 # Chat with the agent
-response = agent.chat("Who gets paid the most?")
+response = agent.chat("Plot salary against department?")
+
 print(response)
