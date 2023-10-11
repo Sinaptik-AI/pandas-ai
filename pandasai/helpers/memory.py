@@ -31,7 +31,7 @@ class Memory:
         limit = self._memory_size if limit is None else limit
         return "\n".join(
             [
-                f"{f'User {i+1}' if message['is_user'] else f'Assistant {i}'}: "
+                f"{'User' if message['is_user'] else 'Assistant'}: "
                 f"{message['message']}"
                 for i, message in enumerate(self._messages[-limit:])
             ]

@@ -8,7 +8,6 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
 {default_import}
@@ -16,21 +15,24 @@ This is the initial python code to be updated:
 def analyze_data(dfs: list[{engine_df_name}]) -> dict:
     \"\"\"
     Analyze the data
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
     At the end, return a dictionary of:
-    - type (possible values "text", "number", "dataframe", "plot")
+    - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: {{ "type": "string", "value": f"The average loan amount is {{average_amount}}" }}
+    Examples: 
+        { "type": "string", "value": "The highest salary is $9,000." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "temp_chart.png" }
     \"\"\"
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
-{conversation}
+Use the provided dataframes (`dfs`) and update the python code to answer the last question in the conversation.
 
-Updated code:
-"""  # noqa: E501
+Return the updated code:"""  # noqa: E501
 
 
 from .file_based_prompt import FileBasedPrompt
@@ -53,9 +55,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         else:
             self._set_instructions(
                 """Analyze the data
-1. Prepare: Preprocessing and cleaning data if necessary
-2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart."""  # noqa: E501
             )
 
     def _set_instructions(self, instructions: str):

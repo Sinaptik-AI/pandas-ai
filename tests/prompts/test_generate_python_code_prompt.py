@@ -52,8 +52,7 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("save_charts_path", save_charts_path)
         prompt.set_var("output_type_hint", output_type_hint)
 
-        expected_prompt_content = f'''
-You are provided with the following pandas DataFrames:
+        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
 
 <dataframe>
 Dataframe dfs[0], with 1 rows and 2 columns.
@@ -66,7 +65,6 @@ a,b
 Question
 </conversation>
 
-This is the initial python code to be updated:
 ```python
 # TODO import all the dependencies required
 import pandas as pd
@@ -74,18 +72,15 @@ import pandas as pd
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     """
     Analyze the data
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
     At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
+Use the provided dataframes (`dfs`) and update the python code to answer the last question in the conversation.
 
-Updated code:
-'''  # noqa E501
+Return the updated code:'''  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
