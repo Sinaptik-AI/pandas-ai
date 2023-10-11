@@ -16,11 +16,11 @@ class APILogger(Logger):
         try:
             if isinstance(message, dict):
                 log_data = {
-                    "api_key_id": self._api_key,
                     "json_log": message,
                 }
+                headers = {"Authorization": f"Bearer {self._api_key}"}
                 response = requests.post(
-                    f"{self._server_url}/api/log/add", json=log_data
+                    f"{self._server_url}/api/log/add", json=log_data, headers=headers
                 )
                 if response.status_code != 200:
                     raise Exception(response.text)
