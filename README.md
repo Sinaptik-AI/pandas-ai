@@ -154,6 +154,43 @@ df.plot_histogram(column="gdp")
 
 Learn more about the shortcuts [here](https://pandas-ai.readthedocs.io/en/latest/shortcuts/).
 
+## Use Anthropic,Huggingface,Palm,Ollama, etc.[Full List](https://docs.litellm.ai/docs/providers)
+
+### Create OpenAI-proxy
+We'll use [LiteLLM](https://docs.litellm.ai/docs/) to create an OpenAI-compatible endpoint, that translates OpenAI calls to any of the [supported providers](https://docs.litellm.ai/docs/providers).
+
+```python
+pip install litellm
+```
+```python
+$ litellm --model ollama/codellama
+
+#INFO: Ollama running on http://0.0.0.0:8000
+```
+
+[Docs](https://docs.litellm.ai/docs/proxy_server)
+
+### Update PandasAI
+
+```python
+import pandas as pd
+from pandasai import SmartDataframe
+
+# Sample DataFrame
+df = pd.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
+    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+})
+
+# Instantiate a LLM
+from pandasai.llm import OpenAI
+llm = OpenAI(api_token="my-fake-key", openai_proxy="http://0.0.0.0:8000")
+
+df = SmartDataframe(df, config={"llm": llm})
+df.chat('Which are the 5 happiest countries?')
+```
+
 ## 🔒 Privacy & Security
 
 In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
