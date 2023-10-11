@@ -1,83 +1,103 @@
 import unittest
-import pandas as pd
-from unittest.mock import Mock, patch
-from pandasai.connectors.base import AirtableConnectorConfig
 from pandasai.connectors import AirtableConnector
+from pandasai.connectors.base import AirtableConnectorConfig
+import pandas as pd
+from unittest.mock import patch
+import json
 
 
 class TestAirTableConnector(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # Define your ConnectorConfig instance here
         self.config = AirtableConnectorConfig(
-            token="your_token", baseID="your_baseid", table="your_table_name"
+            api_key="your_token",
+            base_id="your_baseid",
+            table="your_table_name",
         ).dict()
         self.root_url = "https://api.airtable.com/v0/"
+        self.expected_data_json = """
+            {
+                "records": [
+                    {
+                        "id": "recnAIoHRTmpecLgY",
+                        "createdTime": "2023-10-09T13:04:58.000Z",
+                        "fields": {
+                            "Name": "Quarterly launch",
+                            "Status": "Done"
+                        }
+                    },
+                    {
+                        "id": "recmRf57B2p3F9j8o",
+                        "createdTime": "2023-10-09T13:04:58.000Z",
+                        "fields": {
+                            "Name": "Customer research",
+                            "Status": "In progress"
+                        }
+                    },
+                    {
+                        "id": "recsxnHUagIce7nB2",
+                        "createdTime": "2023-10-09T13:04:58.000Z",
+                        "fields": {
+                            "Name": "Campaign analysis",
+                            "Status": "To do"
+                        }
+                    }
+                ],
+                "offset": "itrowYGFfoBEIob3C/recsxnHUagIce7nB2"
+            }
+            """
         # Create an instance of Connector
         self.connector = AirtableConnector(config=self.config)
 
     def test_constructor_and_properties(self):
         self.assertEqual(self.connector._config, self.config)
         self.assertEqual(self.connector._root_url, self.root_url)
+        self.assertEqual(self.connector._cache_interval, 600)
 
-    def test_execute(self):
-        expected_data_json = {
-            "records": [
-                {
-                    "id": "recnAIoHRTmpecLgY",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Quarterly launch", "Status": "Done"},
-                },
-                {
-                    "id": "recmRf57B2p3F9j8o",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Customer research", "Status": "In progress"},
-                },
-                {
-                    "id": "recsxnHUagIce7nB2",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Campaign analysis", "Status": "To do"},
-                },
-            ],
-            "offset": "itrowYGFfoBEIob3C/recsxnHUagIce7nB2",
-        }
-        records = [
-            {"id": record["id"], **record["fields"]}
-            for record in expected_data_json["records"]
-        ]
-        expected_data = pd.DataFrame(records)
-        self.connector.execute = Mock(return_value=expected_data)
+    def test_fallback_name(self):
+        self.assertEqual(self.connector.fallback_name, self.config["table"])
+
+    @patch("requests.get")
+    def test_execute(self, mock_request_get):
+        mock_request_get.return_value.json.return_value = json.loads(
+            self.expected_data_json
+        )
+        mock_request_get.return_value.status_code = 200
         execute_data = self.connector.execute()
-        self.assertEqual(execute_data.equals(expected_data), True)
+        self.assertEqual(type(execute_data), pd.DataFrame)
+        self.assertEqual(len(execute_data), 3)
 
-    def test_head(self):
-        expected_data_json = {
-            "records": [
-                {
-                    "id": "recnAIoHRTmpecLgY",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Quarterly launch", "Status": "Done"},
-                },
-                {
-                    "id": "recmRf57B2p3F9j8o",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Customer research", "Status": "In progress"},
-                },
-                {
-                    "id": "recsxnHUagIce7nB2",
-                    "createdTime": "2023-10-09T13:04:58.000Z",
-                    "fields": {"Name": "Campaign analysis", "Status": "To do"},
-                },
-            ],
-            "offset": "itrowYGFfoBEIob3C/recsxnHUagIce7nB2",
-        }
+    @patch("requests.get")
+    def test_head(self, mock_request_get):
+        mock_request_get.return_value.json.return_value = json.loads(
+            self.expected_data_json
+        )
+        mock_request_get.return_value.status_code = 200
+        execute_data = self.connector.head()
+        self.assertEqual(type(execute_data), pd.DataFrame)
+        self.assertLessEqual(len(execute_data), 5)
 
-        records = [
-            {"id": record["id"], **record["fields"]}
-            for record in expected_data_json["records"]
-        ]
-        expected_data = pd.DataFrame(records)
-        self.connector.head = Mock(return_value=expected_data)
-        head_data = self.connector.head()
+    def test_fallback_name_property(self):
+        # Test fallback_name property
+        fallback_name = self.connector.fallback_name
+        self.assertEqual(fallback_name, self.config["table"])
 
-        self.assertEqual(head_data.equals(expected_data), True)
-        self.assertLessEqual(len(head_data), 5)
+    @patch("requests.get")
+    def test_rows_count_property(self, mock_request_get):
+        # Test rows_count property
+        mock_request_get.return_value.json.return_value = json.loads(
+            self.expected_data_json
+        )
+        mock_request_get.return_value.status_code = 200
+        rows_count = self.connector.rows_count
+        self.assertEqual(rows_count, 3)
+
+    @patch("requests.get")
+    def test_columns_count_property(self, mock_request_get):
+        # Test columns_count property
+        mock_request_get.return_value.json.return_value = json.loads(
+            self.expected_data_json
+        )
+        mock_request_get.return_value.status_code = 200
+        rows_count = self.connector.columns_count
+        self.assertEqual(rows_count, 3)
