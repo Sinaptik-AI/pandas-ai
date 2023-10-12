@@ -39,3 +39,7 @@ class Memory:
 
     def clear(self):
         self._messages = []
+
+    @property
+    def size(self):
+        return self._memory_size

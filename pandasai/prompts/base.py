@@ -66,8 +66,21 @@ This is the metadata of the dataframe dfs[{index-1}]:
             self._args["dataframes"] = self._generate_dataframes(value)
         self._args[var] = value
 
+    def set_vars(self, vars):
+        if self._args is None:
+            self._args = {}
+        self._args.update(vars)
+
     def to_string(self):
-        return self.template.format(**self._args)
+        prompt_args = {}
+        for key, value in self._args.items():
+            if isinstance(value, AbstractPrompt):
+                value.set_vars({k: v for k, v in self._args.items() if k != key})
+                prompt_args[key] = value.to_string()
+            else:
+                prompt_args[key] = value
+
+        return self.template.format_map(prompt_args)
 
     def __str__(self):
         return self.to_string()

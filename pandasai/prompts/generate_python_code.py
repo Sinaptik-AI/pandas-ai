@@ -8,34 +8,23 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-```python
-# TODO import all the dependencies required
-{default_import}
+This is the initial python code:
+{current_code}
 
-def analyze_data(dfs: list[{engine_df_name}]) -> dict:
-    \"\"\"
-    Analyze the data
-    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
-    At the end, return a dictionary of:
-    - type (possible values "string", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Examples: 
-        { "type": "string", "value": "The highest salary is $9,000." }
-        or
-        { "type": "number", "value": 125 }
-        or
-        { "type": "dataframe", "value": pd.DataFrame({...}) }
-        or
-        { "type": "plot", "value": "temp_chart.png" }
-    \"\"\"
-```
-
-Use the provided dataframes (`dfs`) and update the python code to answer the last question in the conversation.
+Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
+It is very important that you do not change the params that are passed to `analyze_data`.
 
 Return the updated code:"""  # noqa: E501
 
 
 from .file_based_prompt import FileBasedPrompt
+
+
+class CurrentCodePrompt(FileBasedPrompt):
+    """The current code"""
+
+    _path_to_template = "assets/prompt_templates/current_code.tmpl"
 
 
 class GeneratePythonCodePrompt(FileBasedPrompt):
@@ -54,9 +43,14 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
             self._set_instructions(kwargs["custom_instructions"])
         else:
             self._set_instructions(
-                """Analyze the data
+                """Analyze the data.
 If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart."""  # noqa: E501
             )
+
+        if "current_code" in kwargs:
+            self.set_var("current_code", kwargs["current_code"])
+        else:
+            self.set_var("current_code", CurrentCodePrompt())
 
     def _set_instructions(self, instructions: str):
         lines = instructions.split("\n")

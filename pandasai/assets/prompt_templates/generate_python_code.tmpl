@@ -6,18 +6,13 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
+This is the initial python code:
 ```python
-# TODO import all the dependencies required
-{default_import}
-
-def analyze_data(dfs: list[{engine_df_name}]) -> dict:
-    """
-    {instructions}
-    At the end, return a dictionary of:
-    {output_type_hint}
-    """
+{current_code}
 ```
 
-Use the provided dataframes (`dfs`) and update the python code to answer the last question in the conversation.
+Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
+It is very important that you do not change the params that are passed to `analyze_data`.
 
 Return the updated code:
