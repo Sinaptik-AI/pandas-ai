@@ -10,6 +10,7 @@ import os
 from ..helpers.path import find_project_root
 import time
 import hashlib
+from ..exceptions import InvalidRequestError
 
 
 class AirtableConnector(BaseConnector):
@@ -23,8 +24,12 @@ class AirtableConnector(BaseConnector):
         cache_interval: int = 600,
     ):
         if isinstance(config, dict):
-            if config["api_key"] and config["base_id"] and config["table"]:
+            if "api_key" in config and "base_id" in config and "table" in config:
                 config = AirtableConnectorConfig(**config)
+            else:
+                raise KeyError(
+                    "Please specify all api_key,table,base_id properly in config ."
+                )
 
         elif not config:
             airtable_env_vars = {
@@ -57,13 +62,13 @@ class AirtableConnector(BaseConnector):
             """
             )
         else:
-            raise ValueError(
+            raise InvalidRequestError(
                 f"""Failed to connect to Airtable. 
                     Status code: {response.status_code}, 
                     message: {response.text}"""
             )
 
-    def _get_cache_path(self, include_additional_filters: bool):
+    def _get_cache_path(self, include_additional_filters: bool = False):
         """
         Return the path of the cache file.
 
@@ -133,16 +138,25 @@ class AirtableConnector(BaseConnector):
         Returns:
             DataFrameType: The result of the connector.
         """
+        return self.fetch_data()
+
+    def fetch_data(self):
+        """
+        Feteches data from airtable server through
+            API and converts it to DataFrame.
+        """
         url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
         response = requests.get(
-            url=url, headers={"Authorization": f"Bearer {self._config.api_key}"}
+            url=url,
+            headers={"Authorization": f"Bearer {self._config.api_key}"},
+            params={"maxRecords": self._config.max_records},
         )
         if response.status_code == 200:
             data = response.json()
             data = self.preprocess(data=data)
             self._save_cache(data)
         else:
-            raise ValueError(
+            raise InvalidRequestError(
                 f"""Failed to connect to Airtable. 
                     Status code: {response.status_code}, 
                     message: {response.text}"""
@@ -157,7 +171,15 @@ class AirtableConnector(BaseConnector):
         records = [
             {"id": record["id"], **record["fields"]} for record in data["records"]
         ]
-        return pd.DataFrame(records)
+
+        df = pd.DataFrame(records)
+
+        if self._config.where:
+            for i in self._config.where:
+                filter_string = f"{i[0]} {i[1]} '{i[2]}'"
+                df = df.query(filter_string)
+
+        return df
 
     def head(self):
         """
@@ -168,21 +190,7 @@ class AirtableConnector(BaseConnector):
             DatFrameType: The head of the data source
                  that the conector is connected to .
         """
-        url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
-        response = requests.get(
-            url=url, headers={"Authorization": f"Bearer {self._config.api_key}"}
-        )
-        if response.status_code == 200:
-            data = response.json()
-            data = self.preprocess(data=data)
-        else:
-            raise ValueError(
-                f"""Failed to connect to Airtable. 
-                    Status code: {response.status_code}, 
-                    message: {response.text}"""
-            )
-
-        return data.head()
+        return self.fetch_data().head()
 
     @property
     def rows_count(self):
