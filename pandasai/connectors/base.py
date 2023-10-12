@@ -28,7 +28,6 @@ class AirtableConnectorConfig(BaseConnectorConfig):
     api_key: str
     base_id: str
     database: str = "airtable_data"
-    max_records: Optional[int] = 100
 
 
 class SQLBaseConnectorConfig(BaseConnectorConfig):

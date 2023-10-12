@@ -149,7 +149,6 @@ class AirtableConnector(BaseConnector):
         response = requests.get(
             url=url,
             headers={"Authorization": f"Bearer {self._config.api_key}"},
-            params={"maxRecords": self._config.max_records},
         )
         if response.status_code == 200:
             data = response.json()
