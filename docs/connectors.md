@@ -207,7 +207,7 @@ airtable_connectors = AirtableConnector(
         "where" : [
             # this is optional and filters the data to
             # reduce the size of the dataframe
-            ["Status" ,"==","In progress"]
+            ["Status" ,"=","In progress"]
         ]
     }
 )
