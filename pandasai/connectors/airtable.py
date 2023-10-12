@@ -140,15 +140,32 @@ class AirtableConnector(BaseConnector):
         """
         return self.fetch_data()
 
+    def build_formula(self):
+        """
+        Build Airtable query formula for filtering.
+        """
+
+        condition_strings = []
+        for i in self._config.where:
+            filter_query = f"{i[0]}{i[1]}'{i[2]}'"
+            condition_strings.append(filter_query)
+        filter_formula = f'AND({",".join(condition_strings)})'
+        return filter_formula
+
     def fetch_data(self):
         """
         Feteches data from airtable server through
             API and converts it to DataFrame.
         """
         url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
+        params = {}
+
+        if self._config.where:
+            params["filterByFormula"] = self.build_formula()
         response = requests.get(
             url=url,
             headers={"Authorization": f"Bearer {self._config.api_key}"},
+            params=params,
         )
         if response.status_code == 200:
             data = response.json()
@@ -172,12 +189,6 @@ class AirtableConnector(BaseConnector):
         ]
 
         df = pd.DataFrame(records)
-
-        if self._config.where:
-            for i in self._config.where:
-                filter_string = f"{i[0]} {i[1]} '{i[2]}'"
-                df = df.query(filter_string)
-
         return df
 
     def head(self):
