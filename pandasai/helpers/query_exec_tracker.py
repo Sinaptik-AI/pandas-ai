@@ -1,5 +1,8 @@
+import os
 import time
-from typing import Any, List, TypedDict
+from typing import Any, List, TypedDict, Union
+
+import requests
 
 
 class ResponseType(TypedDict):
@@ -24,6 +27,7 @@ class QueryExecTracker:
     _steps: List = []
     _start_time = None
     _success: bool = False
+    _server_config: dict = None
 
     def __init__(
         self,
@@ -31,9 +35,11 @@ class QueryExecTracker:
         query: str,
         instance: str,
         output_type: str,
+        server_config: Union[dict, None] = None,
     ) -> None:
         self._start_time = time.time()
         self._success = False
+        self._server_config = server_config
         self._query_info = {
             "conversation_id": str(conversation_id),
             "query": query,
@@ -170,6 +176,41 @@ class QueryExecTracker:
 
     def get_execution_time(self) -> float:
         return time.time() - self._start_time
+
+    def publish(self) -> None:
+        """
+        Publish Query Summary to remote logging server
+        """
+        api_key = None
+        server_url = None
+
+        if self._server_config is None:
+            server_url = os.environ.get("LOGGING_SERVER_URL")
+            api_key = os.environ.get("LOGGING_SERVER_API_KEY")
+        else:
+            server_url = self._server_config.get(
+                "server_url", os.environ.get("LOGGING_SERVER_URL")
+            )
+            api_key = self._server_config.get(
+                "api_key", os.environ.get("LOGGING_SERVER_API_KEY")
+            )
+
+        if api_key is None or server_url is None:
+            return
+
+        try:
+            log_data = {
+                "json_log": self.get_summary(),
+            }
+            headers = {"Authorization": f"Bearer {api_key}"}
+            response = requests.post(
+                f"{server_url}/api/log/add", json=log_data, headers=headers
+            )
+            if response.status_code != 200:
+                raise Exception(response.text)
+
+        except Exception as e:
+            print(f"Exception in APILogger: {e}")
 
     @property
     def success(self):

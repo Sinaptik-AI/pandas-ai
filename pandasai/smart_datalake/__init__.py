@@ -284,7 +284,9 @@ class SmartDatalake:
             query=query,
             instance=self.__class__.__name__,
             output_type=output_type,
+            server_config=self._config.log_server,
         )
+
         query_exec_tracker.add_dataframes(self._dfs)
 
         self._memory.add(query, True)
@@ -396,7 +398,7 @@ class SmartDatalake:
         except Exception as exception:
             self.last_error = str(exception)
             query_exec_tracker.success = False
-            self.logger.log(query_exec_tracker.get_summary())
+            query_exec_tracker.publish()
 
             return (
                 "Unfortunately, I was not able to answer your question, "
@@ -412,7 +414,7 @@ class SmartDatalake:
 
         query_exec_tracker.success = True
 
-        self.logger.log(query_exec_tracker.get_summary())
+        query_exec_tracker.publish()
 
         return result
 

@@ -1,6 +1,7 @@
+import os
 import time
 from typing import Optional
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
 
@@ -289,3 +290,92 @@ class TestQueryExecTracker:
         step = tracker._steps[0]
         assert step["type"] == "Code Execution"
         assert step["success"] is False
+
+    def test_publish_method_with_server_key(self, tracker: QueryExecTracker):
+        # Define a mock summary function
+        def mock_get_summary():
+            return "Test summary data"
+
+        # Mock the server_config
+        tracker._server_config = {
+            "server_url": "http://custom-server",
+            "api_key": "custom-api-key",
+        }
+
+        # Set the get_summary method to your mock
+        tracker.get_summary = mock_get_summary
+
+        # Mock the requests.post method
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        type(mock_response).text = "Response text"
+        # Mock the requests.post method
+        with patch("requests.post", return_value=mock_response) as mock_post:
+            # Call the publish method
+            result = tracker.publish()
+
+        # Check that requests.post was called with the expected parameters
+        mock_post.assert_called_with(
+            "http://custom-server/api/log/add",
+            json={"json_log": "Test summary data"},
+            headers={"Authorization": "Bearer custom-api-key"},
+        )
+
+        # Check the result
+        assert result is None  # The function should return None
+
+    def test_publish_method_with_no_config(self, tracker: QueryExecTracker):
+        # Define a mock summary function
+        def mock_get_summary():
+            return "Test summary data"
+
+        tracker._server_config = None
+
+        # Set the get_summary method to your mock
+        tracker.get_summary = mock_get_summary
+
+        # Mock the requests.post method
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        type(mock_response).text = "Response text"
+        # Mock the requests.post method
+        with patch("requests.post", return_value=mock_response) as mock_post:
+            # Call the publish method
+            result = tracker.publish()
+
+        # Check that requests.post was called with the expected parameters
+        mock_post.assert_not_called()
+
+        # Check the result
+        assert result is None  # The function should return None
+
+    def test_publish_method_with_os_env(self, tracker: QueryExecTracker):
+        # Define a mock summary function
+        def mock_get_summary():
+            return "Test summary data"
+
+        # Define a mock environment for testing
+        os.environ["LOGGING_SERVER_URL"] = "http://test-server"
+        os.environ["LOGGING_SERVER_API_KEY"] = "test-api-key"
+
+        # Set the get_summary method to your mock
+        tracker.get_summary = mock_get_summary
+
+        # Mock the requests.post method
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        type(mock_response).text = "Response text"
+        # Mock the requests.post method
+        with patch("requests.post", return_value=mock_response) as mock_post:
+            # Call the publish method
+            result = tracker.publish()
+
+        # Check that requests.post was called with the expected parameters
+        mock_post.assert_called_with(
+            "http://test-server/api/log/add",
+            json={"json_log": "Test summary data"},
+            headers={"Authorization": "Bearer test-api-key"},
+        )
+
+        # Check the result
+        assert result is None  # The function should return None
