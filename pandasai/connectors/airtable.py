@@ -21,7 +21,7 @@ class AirtableConnector(BaseConnector):
 
     _rows_count: int = None
     _columns_count: int = None
-    instance = None
+    _instance = None
 
     def __init__(
         self,
@@ -147,60 +147,86 @@ class AirtableConnector(BaseConnector):
         if cached:
             return pd.read_parquet(cached)
 
-        if isinstance(self.instance, pd.DataFrame):
-            return self.instance
+        if isinstance(self._instance, pd.DataFrame):
+            return self._instance
         else:
-            self.instance = self.fetch_data()
-        return self.instance
+            self._instance = self._fetch_data()
 
-    def build_formula(self):
+        return self._instance
+
+    def _build_formula(self):
         """
         Build Airtable query formula for filtering.
         """
 
         condition_strings = []
-        for i in self._config.where:
-            filter_query = f"{i[0]}{i[1]}'{i[2]}'"
-            condition_strings.append(filter_query)
+        if self._config.where is not None:
+            for i in self._config.where:
+                filter_query = f"{i[0]}{i[1]}'{i[2]}'"
+                condition_strings.append(filter_query)
         filter_formula = f'AND({",".join(condition_strings)})'
         return filter_formula
 
-    def fetch_data(self):
-        """
-        Feteches data from airtable server through
-            API and converts it to DataFrame.
-        """
+    def _request_api(self, params):
         url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
-        params = {}
-        if self._config.where:
-            params["filterByFormula"] = self.build_formula()
         response = requests.get(
             url=url,
             headers={"Authorization": f"Bearer {self._config.api_key}"},
             params=params,
         )
-        if response.status_code == 200:
-            data = response.json()
-            data = self.preprocess(data=data)
-            self._save_cache(data)
-        else:
-            raise InvalidRequestError(
-                f"""Failed to connect to Airtable. 
-                    Status code: {response.status_code}, 
-                    message: {response.text}"""
-            )
+        return response
+
+    def _fetch_data(self):
+        """
+        Feteches data from airtable server through
+            API and converts it to DataFrame.
+        """
+
+        params = {}
+        if self._config.where is not None:
+            params["filterByFormula"] = self._build_formula()
+
+        params["pageSize"] = 100
+        params["offset"] = "0"
+
+        data = []
+        while True:
+            response = self._request_api(params=params)
+
+            if response.status_code == 200:
+                res = response.json()
+                data.append(res)
+                if len(res["records"]) < 100:
+                    break
+            else:
+                raise InvalidRequestError(
+                    f"""Failed to connect to Airtable. 
+                        Status code: {response.status_code}, 
+                        message: {response.text}"""
+                )
+
+            if "offset" in res:
+                params["offset"] = res["offset"]
+
+        data = self._preprocess(data=data)
         return data
 
-    def preprocess(self, data):
+    def _preprocess(self, data):
         """
         Preprocesses Json response data
         To prepare dataframe correctly.
         """
-        records = [
-            {"id": record["id"], **record["fields"]} for record in data["records"]
-        ]
+        columns = set()
+        data_dict_list = []
+        for item in data:
+            for entry in item["records"]:
+                data_dict = {"id": entry["id"], "createdTime": entry["createdTime"]}
+                for field_name, field_value in entry["fields"].items():
+                    data_dict[field_name] = field_value
+                    columns.add(field_name)
+                data_dict_list.append(data_dict)
 
-        df = pd.DataFrame(records)
+        df = pd.DataFrame(data_dict_list)
         return df
 
     @cache
@@ -213,12 +239,9 @@ class AirtableConnector(BaseConnector):
             DatFrameType: The head of the data source
                  that the conector is connected to .
         """
-        # return self.fetch_data().head()
-        if isinstance(self.instance, pd.DataFrame):
-            return self.instance.head()
-        else:
-            self.instance = self.fetch_data()
-        return self.instance.head()
+        data = self._request_api(params={"maxRecords": 5})
+        data = self._preprocess([data.json()])
+        return data
 
     @cached_property
     def rows_count(self):
@@ -248,7 +271,7 @@ class AirtableConnector(BaseConnector):
         """
         if self._columns_count is not None:
             return self._columns_count
-        data = self.execute()
+        data = self.head()
         self._columns_count = len(data.columns)
         return self._columns_count
 
@@ -262,8 +285,8 @@ class AirtableConnector(BaseConnector):
             int: The hash code that is unique to the columns of the data source
             that the connector is connected to.
         """
-        if not isinstance(self.instance, pd.DataFrame):
-            self.instance = self.execute()
-        columns_str = "|".join(self.instance.columns)
-        columns_str += "WHERE" + self.build_formula()
+        if not isinstance(self._instance, pd.DataFrame):
+            self._instance = self.execute()
+        columns_str = "|".join(self._instance.columns)
+        columns_str += "WHERE" + self._build_formula()
         return hashlib.sha256(columns_str.encode("utf-8")).hexdigest()

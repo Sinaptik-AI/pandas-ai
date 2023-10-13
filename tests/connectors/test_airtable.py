@@ -100,4 +100,4 @@ class TestAirTableConnector(unittest.TestCase):
         )
         mock_request_get.return_value.status_code = 200
         rows_count = self.connector.columns_count
-        self.assertEqual(rows_count, 3)
+        self.assertEqual(rows_count, 4)
