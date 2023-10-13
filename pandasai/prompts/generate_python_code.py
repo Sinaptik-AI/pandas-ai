@@ -8,32 +8,23 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-This is the initial python code to be updated:
-```python
-# TODO import all the dependencies required
-{default_import}
+This is the initial python code:
+{current_code}
 
-def analyze_data(dfs: list[{engine_df_name}]) -> dict:
-    \"\"\"
-    Analyze the data
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
-    At the end, return a dictionary of:
-    - type (possible values "text", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Example output: {{ "type": "string", "value": f"The average loan amount is {{average_amount}}" }}
-    \"\"\"
-```
+Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
+It is very important that you do not change the params that are passed to `analyze_data`.
 
-Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
-{conversation}
-
-Updated code:
-"""  # noqa: E501
+Return the updated code:"""  # noqa: E501
 
 
 from .file_based_prompt import FileBasedPrompt
+
+
+class CurrentCodePrompt(FileBasedPrompt):
+    """The current code"""
+
+    _path_to_template = "assets/prompt_templates/current_code.tmpl"
 
 
 class GeneratePythonCodePrompt(FileBasedPrompt):
@@ -52,11 +43,14 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
             self._set_instructions(kwargs["custom_instructions"])
         else:
             self._set_instructions(
-                """Analyze the data
-1. Prepare: Preprocessing and cleaning data if necessary
-2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+                """Analyze the data.
+If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart."""  # noqa: E501
             )
+
+        if "current_code" in kwargs:
+            self.set_var("current_code", kwargs["current_code"])
+        else:
+            self.set_var("current_code", CurrentCodePrompt())
 
     def _set_instructions(self, instructions: str):
         lines = instructions.split("\n")

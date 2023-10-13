@@ -1,5 +1,4 @@
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 import re
 
@@ -14,6 +13,14 @@ def get_google_sheet(src) -> list:
     Returns:
         list: A 2D array representing content of the Google Sheet.
     """
+
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        raise ImportError(
+            "Could not import beautifulsoup4 python package. "
+            "Please install it with `pip install beautifulsoup4`."
+        )
 
     # The size of the Google sheet that can be read is limited
     raw_html = requests.get(src).text

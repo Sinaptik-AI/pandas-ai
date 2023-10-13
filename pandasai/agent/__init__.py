@@ -1,14 +1,17 @@
 import json
 from typing import Union, List, Optional
-from pandasai.helpers.df_info import DataFrameType
-from pandasai.helpers.logger import Logger
-from pandasai.helpers.memory import Memory
-from pandasai.prompts.base import AbstractPrompt
-from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
-from pandasai.prompts.explain_prompt import ExplainPrompt
-from pandasai.prompts.rephase_query_prompt import RephraseQueryPrompt
-from pandasai.schemas.df_config import Config
-from pandasai.smart_datalake import SmartDatalake
+from ..helpers.df_info import DataFrameType
+from ..helpers.logger import Logger
+from ..helpers.memory import Memory
+from ..prompts.base import AbstractPrompt
+from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
+from ..prompts.explain_prompt import ExplainPrompt
+from ..prompts.rephase_query_prompt import RephraseQueryPrompt
+from ..prompts.check_if_relevant_to_conversation import (
+    CheckIfRelevantToConversationPrompt,
+)
+from ..schemas.df_config import Config
+from ..smart_datalake import SmartDatalake
 
 
 class Agent:
@@ -67,6 +70,7 @@ class Agent:
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
+            self.check_if_related_to_conversation(query)
             result = self._lake.chat(query, output_type=output_type)
             return result
         except Exception as exception:
@@ -75,6 +79,31 @@ class Agent:
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    def check_if_related_to_conversation(self, query: str):
+        """
+        Check if the query is related to the previous conversation
+        """
+        if self._lake._memory.count() == 0:
+            return
+
+        prompt = CheckIfRelevantToConversationPrompt(
+            conversation=self._lake._memory.get_conversation(),
+            query=query,
+        )
+
+        result = self._call_llm_with_prompt(prompt)
+
+        related = False
+        if "true" in result:
+            related = True
+
+        self._logger.log(
+            f"""Check if the new message is related to the conversation: {related}"""
+        )
+
+        if not related:
+            self._lake.clear_memory()
 
     def clarification_questions(self, query: str) -> List[str]:
         """
