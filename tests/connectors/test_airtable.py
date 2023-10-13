@@ -99,5 +99,5 @@ class TestAirTableConnector(unittest.TestCase):
             self.expected_data_json
         )
         mock_request_get.return_value.status_code = 200
-        rows_count = self.connector.columns_count
-        self.assertEqual(rows_count, 4)
+        columns_count = self.connector.columns_count
+        self.assertEqual(columns_count, 3)

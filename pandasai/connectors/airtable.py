@@ -195,7 +195,12 @@ class AirtableConnector(BaseConnector):
 
             if response.status_code == 200:
                 res = response.json()
-                data.append(res)
+                data.extend(
+                    [
+                        {"id": record["id"], **record["fields"]}
+                        for record in res["records"]
+                    ]
+                )
                 if len(res["records"]) < 100:
                     break
             else:
@@ -208,26 +213,7 @@ class AirtableConnector(BaseConnector):
             if "offset" in res:
                 params["offset"] = res["offset"]
 
-        data = self._preprocess(data=data)
-        return data
-
-    def _preprocess(self, data):
-        """
-        Preprocesses Json response data
-        To prepare dataframe correctly.
-        """
-        columns = set()
-        data_dict_list = []
-        for item in data:
-            for entry in item["records"]:
-                data_dict = {"id": entry["id"], "createdTime": entry["createdTime"]}
-                for field_name, field_value in entry["fields"].items():
-                    data_dict[field_name] = field_value
-                    columns.add(field_name)
-                data_dict_list.append(data_dict)
-
-        df = pd.DataFrame(data_dict_list)
-        return df
+        return pd.DataFrame(data)
 
     @cache
     def head(self):
@@ -240,8 +226,12 @@ class AirtableConnector(BaseConnector):
                  that the conector is connected to .
         """
         data = self._request_api(params={"maxRecords": 5})
-        data = self._preprocess([data.json()])
-        return data
+        return pd.DataFrame(
+            [
+                {"id": record["id"], **record["fields"]}
+                for record in data.json()["records"]
+            ]
+        )
 
     @cached_property
     def rows_count(self):
