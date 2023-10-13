@@ -86,4 +86,5 @@ WHITELISTED_LIBRARIES = [
     "base64",
     "scipy",
     "streamlit",
+    "pandasai.skills",
 ]

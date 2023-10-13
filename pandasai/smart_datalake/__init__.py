@@ -23,6 +23,7 @@ import uuid
 import logging
 import os
 import traceback
+from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.skills import skill
 
@@ -56,7 +57,7 @@ class SmartDatalake:
     _last_prompt_id: uuid.UUID
     _code_manager: CodeManager
     _memory: Memory
-    _skills: List[skill] = []
+    _skills: SkillsManager
 
     _last_code_generated: str = None
     _last_result: str = None
@@ -100,6 +101,8 @@ class SmartDatalake:
             config=self._config,
             logger=self.logger,
         )
+
+        self._skills = SkillsManager()
 
         if cache:
             self._cache = cache
@@ -197,7 +200,7 @@ class SmartDatalake:
         """
         Add Skills to PandasAI
         """
-        self._skills.extend(skills)
+        self._skills.add_skills(*skills)
 
     def _start_timer(self):
         """Start the timer"""
@@ -241,10 +244,17 @@ class SmartDatalake:
             prompt.set_var("dfs", self._dfs)
         if "conversation" not in default_values:
             prompt.set_var("conversation", self._memory.get_conversation())
+
+        # Adds the skills to prompt if exist else display nothing
+        skills_prompt = self._skills.prompt_display()
+        prompt.set_var("skills", skills_prompt if skills_prompt is not None else "")
+
         for key, value in default_values.items():
             prompt.set_var(key, value)
 
         self.logger.log(f"Using prompt: {prompt}")
+
+        print("Prompt:::", prompt)
 
         return prompt
 
@@ -327,7 +337,15 @@ class SmartDatalake:
                     default_values=default_values,
                 )
 
-                code = self._llm.generate_code(generate_python_code_instruction)
+                code = """
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    pandasai.skills.forecast_sales("x", "y")
+"""
+
+                # self._llm.generate_code(generate_python_code_instruction)
 
                 if self._config.enable_cache and self._cache:
                     self._cache.set(self._get_cache_key(), code)

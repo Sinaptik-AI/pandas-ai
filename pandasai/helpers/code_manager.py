@@ -287,15 +287,24 @@ Code running:
 
         return original_dfs
 
-    def _get_environment(self) -> dict:
+    def forecast_sales(self, df: pd.DataFrame, query: str) -> str:
+        print(df)
+        print(query)
+        print("Hello World!")
+
+    def _get_environment(self, skills: List = []) -> dict:
         """
         Returns the environment for the code to be executed.
 
         Returns (dict): A dictionary of environment variables
         """
+        # if len(skills) > 0:
+        skill_module = import_dependency("pandasai.skills")
+        skill_module.forecast_sales = self.forecast_sales
 
         return {
             "pd": pd,
+            "pandasai.skills": skill_module,
             **{
                 lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
                 if hasattr(import_dependency(lib["module"]), lib["name"])

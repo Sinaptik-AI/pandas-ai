@@ -1,6 +1,8 @@
 import inspect
 import pandas as pd
 
+from pandasai.helpers.skills_manager import SkillsManager
+
 
 # The @skill decorator to define and register a skill
 def skill(name, description, usage):
@@ -19,18 +21,22 @@ def skill(name, description, usage):
                 signature=str(inspect.signature(skill_function)),
             )
         )
+        wrapped_function.print = (
+            """
+<function>
+Name: {name}
+Description: {description}
+Usage: {usage}
+{signature}
+</function
+"""
+        ).format(
+            name=name,
+            description=description,
+            usage=usage,
+            signature=wrapped_function.func_def,
+        )
 
         return wrapped_function
 
     return decorator
-
-
-@skill(
-    name="Sales Forecast",
-    description="Forecasts sales using time series models",
-    usage="forecast sales for next month",
-)
-def forecast_sales(df: pd.DataFrame, query: str) -> str:
-    print(df)
-    print(query)
-    return "Hello World!"

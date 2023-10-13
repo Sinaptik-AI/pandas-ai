@@ -49,7 +49,7 @@ class Agent:
         """
         Add Skills to PandasAI
         """
-        self._lake.add_skills(skills)
+        self._lake.add_skills(*skills)
 
     def _call_llm_with_prompt(self, prompt: AbstractPrompt):
         """
