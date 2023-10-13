@@ -24,6 +24,8 @@ import logging
 import os
 import traceback
 
+from pandasai.skills import skill
+
 from ..helpers.output_types import output_type_factory
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import ResponseParser
@@ -54,6 +56,7 @@ class SmartDatalake:
     _last_prompt_id: uuid.UUID
     _code_manager: CodeManager
     _memory: Memory
+    _skills: List[skill] = []
 
     _last_code_generated: str
     _last_result: str = None
@@ -189,6 +192,12 @@ class SmartDatalake:
             *middlewares: Middlewares to be added
         """
         self._code_manager.add_middlewares(*middlewares)
+
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self._skills.extend(skills)
 
     def _start_timer(self):
         """Start the timer"""
