@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 import openai
 from ..helpers import load_dotenv
 
-from ..exceptions import APIKeyNotFoundError, UnsupportedOpenAIModelError
+from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
 from ..prompts.base import AbstractPrompt
 from .base import BaseOpenAI
 
@@ -95,7 +95,7 @@ class OpenAI(BaseOpenAI):
             suffix (str): Suffix to pass.
 
         Raises:
-            UnsupportedOpenAIModelError: Unsupported model
+            UnsupportedModelError: Unsupported model
 
         Returns:
             str: Response
@@ -107,7 +107,8 @@ class OpenAI(BaseOpenAI):
         elif self.model in self._supported_completion_models:
             response = self.completion(self.last_prompt)
         else:
-            raise UnsupportedOpenAIModelError("Unsupported model")
+            raise UnsupportedModelError(self.model)
+
 
         return response
 

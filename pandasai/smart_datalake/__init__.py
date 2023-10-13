@@ -55,7 +55,7 @@ class SmartDatalake:
     _code_manager: CodeManager
     _memory: Memory
 
-    _last_code_generated: str
+    _last_code_generated: str = None
     _last_result: str = None
     _last_error: str = None
 
@@ -310,6 +310,13 @@ class SmartDatalake:
                     "engine": self._dfs[0].engine,
                     "output_type_hint": output_type_helper.template_hint,
                 }
+
+                if (
+                    self.memory.size > 1
+                    and self.memory.count() > 1
+                    and self._last_code_generated
+                ):
+                    default_values["current_code"] = self._last_code_generated
 
                 generate_python_code_instruction = query_exec_tracker.execute_func(
                     self._get_prompt,

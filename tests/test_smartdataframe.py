@@ -14,6 +14,7 @@ import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.output_types import (
     DefaultOutputType,
     output_types_map,
@@ -50,6 +51,19 @@ class TestSmartDataframe:
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
         return FakeLLM(output=output)
+
+    @pytest.fixture
+    def data_sampler(self):
+        class DataSampler:
+            df = None
+
+            def __init__(self, df: DataFrameType):
+                self.df = df
+
+            def sample(self, _n: int = 5):
+                return self.df
+
+        return DataSampler
 
     @pytest.fixture
     def sample_df(self):
@@ -106,8 +120,8 @@ class TestSmartDataframe:
         ]
 
     @pytest.fixture
-    def sample_head(self, sample_df):
-        return sample_df.head(5).sample(frac=1, axis=1).reset_index(drop=True)
+    def sample_head(self, sample_df: pd.DataFrame):
+        return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
     @pytest.fixture
     def smart_dataframe(self, llm, sample_df, sample_head):
@@ -189,8 +203,7 @@ def analyze_data(dfs):
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
         df.enforce_privacy = True
 
-        expected_prompt = """
-You are provided with the following pandas DataFrames:
+        expected_prompt = """You are provided with the following pandas DataFrames:
 
 <dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
@@ -199,20 +212,18 @@ country
 </dataframe>
 
 <conversation>
-User 1: How many countries are in the dataframe?
+User: How many countries are in the dataframe?
 </conversation>
 
-This is the initial python code to be updated:
+This is the initial python code:
 ```python
 # TODO import all the dependencies required
 import pandas as pd
 
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     \"\"\"
-    Analyze the data
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    Analyze the data.
+    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
     At the end, return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -227,10 +238,11 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     \"\"\"
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
+Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
+It is very important that you do not change the params that are passed to `analyze_data`.
 
-Updated code:
-"""  # noqa: E501
+Return the updated code:"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
@@ -251,8 +263,7 @@ Updated code:
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
-        expected_prompt = f'''
-You are provided with the following pandas DataFrames:
+        expected_prompt = f'''You are provided with the following pandas DataFrames:
 
 <dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
@@ -261,29 +272,28 @@ country
 </dataframe>
 
 <conversation>
-User 1: How many countries are in the dataframe?
+User: How many countries are in the dataframe?
 </conversation>
 
-This is the initial python code to be updated:
+This is the initial python code:
 ```python
 # TODO import all the dependencies required
 import pandas as pd
 
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     """
-    Analyze the data
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    Analyze the data.
+    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
     At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
 
-Using the provided dataframes (`dfs`), update the python code based on the last question in the conversation.
+Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
+It is very important that you do not change the params that are passed to `analyze_data`.
 
-Updated code:
-'''  # noqa: E501
+Return the updated code:'''  # noqa: E501
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
@@ -1016,3 +1026,9 @@ result = analyze_data(dfs)
         validation_result = df_object.validate(TestSchema)
 
         assert validation_result.passed is True
+
+    def test_head_csv_with_sample_head(
+        self, sample_head, data_sampler, smart_dataframe: SmartDataframe
+    ):
+        with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
+            assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
