@@ -27,6 +27,7 @@ from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
     NoCodeFoundError,
+    LLMResponseHTTPError,
 )
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import AbstractPrompt
@@ -324,6 +325,10 @@ class HuggingFaceLLM(LLM):
             str: Value of the field "generated_text" in response JSON
                 given by the remote server.
 
+        Raises:
+            LLMResponseHTTPError: If api-inference.huggingface.co responses
+                with any error HTTP code (>= 400).
+
         """
 
         headers = {"Authorization": f"Bearer {self.api_token}"}
@@ -331,6 +336,16 @@ class HuggingFaceLLM(LLM):
         response = requests.post(
             self._api_url, headers=headers, json=payload, timeout=60
         )
+
+        if response.status_code >= 400:
+            try:
+                error_msg = response.json().get("error")
+            except (requests.exceptions.JSONDecodeError, TypeError):
+                error_msg = None
+
+            raise LLMResponseHTTPError(
+                status_code=response.status_code, error_msg=error_msg
+            )
 
         return response.json()[0]["generated_text"]
 
