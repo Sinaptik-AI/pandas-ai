@@ -178,37 +178,34 @@ class AirtableConnector(BaseConnector):
 
     def _fetch_data(self):
         """
-        Feteches data from airtable server through
-            API and converts it to DataFrame.
+        Fetches data from the Airtable server via API and converts it to a DataFrame.
         """
 
-        params = {}
+        params = {
+            "pageSize": 100,
+            "offset": "0"
+        }
+
         if self._config.where is not None:
             params["filterByFormula"] = self._build_formula()
-
-        params["pageSize"] = 100
-        params["offset"] = "0"
 
         data = []
         while True:
             response = self._request_api(params=params)
 
-            if response.status_code == 200:
-                res = response.json()
-                data.extend(
-                    [
-                        {"id": record["id"], **record["fields"]}
-                        for record in res["records"]
-                    ]
-                )
-                if len(res["records"]) < 100:
-                    break
-            else:
+            if response.status_code != 200:
                 raise InvalidRequestError(
-                    f"""Failed to connect to Airtable. 
-                        Status code: {response.status_code}, 
-                        message: {response.text}"""
+                    f"Failed to connect to Airtable. "
+                    f"Status code: {response.status_code}, "
+                    f"message: {response.text}"
                 )
+
+            res = response.json()
+            records = res.get("records", [])
+            data.extend({"id": record["id"], **record["fields"]} for record in records)
+
+            if len(records) < 100 or "offset" not in res:
+                break
 
             if "offset" in res:
                 params["offset"] = res["offset"]
