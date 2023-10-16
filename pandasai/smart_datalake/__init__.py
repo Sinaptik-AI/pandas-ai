@@ -41,7 +41,7 @@ from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
-from ..helpers.code_manager import CodeManager
+from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
@@ -254,8 +254,6 @@ class SmartDatalake:
 
         self.logger.log(f"Using prompt: {prompt}")
 
-        print("Prompt:::", prompt)
-
         return prompt
 
     def _get_cache_key(self) -> str:
@@ -337,15 +335,7 @@ class SmartDatalake:
                     default_values=default_values,
                 )
 
-                code = """
-# TODO import all the dependencies required
-import pandas as pd
-
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    pandasai.skills.forecast_sales("x", "y")
-"""
-
-                # self._llm.generate_code(generate_python_code_instruction)
+                code = self._llm.generate_code(generate_python_code_instruction)
 
                 if self._config.enable_cache and self._cache:
                     self._cache.set(self._get_cache_key(), code)
@@ -368,9 +358,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
+                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
                     result = self._code_manager.execute_code(
                         code=code_to_run,
-                        prompt_id=self._last_prompt_id,
+                        context=context,
                     )
                     break
                 except Exception as e:
