@@ -65,23 +65,23 @@ a,b
 Question
 </conversation>
 
-This is the initial python code:
+This is the initial python function. Do not change the params.
 ```python
 # TODO import all the dependencies required
 import pandas as pd
 
 def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     """
-    Analyze the data.
-    If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.
+    Analyze the data, using the provided dataframes (`dfs`).
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
 
 Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
-If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
-It is very important that you do not change the params that are passed to `analyze_data`.
 
 Return the updated code:'''  # noqa E501
         actual_prompt_content = prompt.to_string()

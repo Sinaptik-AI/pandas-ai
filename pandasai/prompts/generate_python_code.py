@@ -8,12 +8,10 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-This is the initial python code:
+This is the initial python function. Do not change the params.
 {current_code}
 
 Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
-If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
-It is very important that you do not change the params that are passed to `analyze_data`.
 
 Return the updated code:"""  # noqa: E501
 
@@ -43,8 +41,10 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
             self._set_instructions(kwargs["custom_instructions"])
         else:
             self._set_instructions(
-                """Analyze the data.
-If the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart."""  # noqa: E501
+                """Analyze the data, using the provided dataframes (`dfs`).
+1. Prepare: Preprocessing and cleaning data if necessary
+2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
             )
 
         if "current_code" in kwargs:
