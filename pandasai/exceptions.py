@@ -68,6 +68,24 @@ class MissingModelError(Exception):
     """
 
 
+class LLMResponseHTTPError(Exception):
+    """
+    Raised when a remote LLM service responses with error HTTP code.
+
+    Args:
+        Exception (Exception): LLMResponseHTTPError
+    """
+
+    def __init__(self, status_code, error_msg=None):
+        self.status_code = status_code
+        self.error_msg = error_msg
+
+        super().__init__(
+            f"The remote server has responded with an error HTTP "
+            f"code: {status_code}; {error_msg or ''}"
+        )
+
+
 class BadImportError(Exception):
     """
     Raised when a library not in the whitelist is imported.
