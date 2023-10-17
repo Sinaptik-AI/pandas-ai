@@ -37,6 +37,9 @@ class SkillsManager:
         Returns:
             bool: True if a skill with the given name exists, False otherwise.
         """
+        for skill in self._skills:
+            print(skill)
+
         return any(skill.name == name for skill in self._skills)
 
     def get_skill_by_func_name(self, name: str):

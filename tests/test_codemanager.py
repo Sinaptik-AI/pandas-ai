@@ -1,7 +1,6 @@
 """Unit tests for the CodeManager class"""
-import uuid
 from typing import Optional
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
@@ -11,7 +10,7 @@ from pandasai.llm.fake import FakeLLM
 
 from pandasai.smart_dataframe import SmartDataframe
 
-from pandasai.helpers.code_manager import CodeManager
+from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 
 
 class TestCodeManager:
@@ -72,23 +71,33 @@ class TestCodeManager:
     def code_manager(self, smart_dataframe: SmartDataframe):
         return smart_dataframe.lake._code_manager
 
-    def test_run_code_for_calculations(self, code_manager: CodeManager):
+    @pytest.fixture
+    def exec_context(self) -> MagicMock:
+        context = MagicMock(spec=CodeExecutionContext)
+        return context
+
+    def test_run_code_for_calculations(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         code = """def analyze_data(dfs):
     return {'type': 'number', 'value': 1 + 1}"""
-
-        assert code_manager.execute_code(code, uuid.uuid4())["value"] == 2
+        assert code_manager.execute_code(code, exec_context)["value"] == 2
         assert code_manager.last_code_executed == code
 
-    def test_run_code_invalid_code(self, code_manager: CodeManager):
+    def test_run_code_invalid_code(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         with pytest.raises(Exception):
             # noinspection PyStatementEffect
-            code_manager.execute_code("1+ ", uuid.uuid4())["value"]
+            code_manager.execute_code("1+ ", exec_context)["value"]
 
-    def test_clean_code_remove_builtins(self, code_manager: CodeManager):
+    def test_clean_code_remove_builtins(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         builtins_code = """import set
 def analyze_data(dfs):
     return {'type': 'number', 'value': set([1, 2, 3])}"""
-        assert code_manager.execute_code(builtins_code, uuid.uuid4())["value"] == {
+        assert code_manager.execute_code(builtins_code, exec_context)["value"] == {
             1,
             2,
             3,
@@ -99,44 +108,57 @@ def analyze_data(dfs):
     return {'type': 'number', 'value': set([1, 2, 3])}"""
         )
 
-    def test_clean_code_removes_jailbreak_code(self, code_manager: CodeManager):
+    def test_clean_code_removes_jailbreak_code(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         malicious_code = """def analyze_data(dfs):
     __builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
     print('hello world')"""
         assert (
-            code_manager._clean_code(malicious_code)
+            code_manager._clean_code(malicious_code, exec_context)
             == """def analyze_data(dfs):
     print('hello world')"""
         )
 
-    def test_clean_code_remove_environment_defaults(self, code_manager: CodeManager):
+    def test_clean_code_remove_environment_defaults(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         pandas_code = """import pandas as pd
 print('hello world')
 """
-        assert code_manager._clean_code(pandas_code) == "print('hello world')"
+        assert (
+            code_manager._clean_code(pandas_code, exec_context)
+            == "print('hello world')"
+        )
 
-    def test_clean_code_whitelist_import(self, code_manager: CodeManager):
+    def test_clean_code_whitelist_import(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         """Test that an installed whitelisted library is added to the environment."""
         safe_code = """
 import numpy as np
 np.array()
 """
-        assert code_manager._clean_code(safe_code) == "np.array()"
+        assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
 
-    def test_clean_code_raise_bad_import_error(self, code_manager: CodeManager):
+    def test_clean_code_raise_bad_import_error(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         malicious_code = """
 import os
 print(os.listdir())
 """
         with pytest.raises(BadImportError):
-            code_manager.execute_code(malicious_code, uuid.uuid4())
+            code_manager.execute_code(malicious_code, exec_context)
 
-    def test_remove_dfs_overwrites(self, code_manager: CodeManager):
+    def test_remove_dfs_overwrites(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
         hallucinated_code = """def analyze_data(dfs):
     dfs = [pd.DataFrame([1,2,3])]
     print(dfs)"""
         assert (
-            code_manager._clean_code(hallucinated_code)
+            code_manager._clean_code(hallucinated_code, exec_context)
             == """def analyze_data(dfs):
     print(dfs)"""
         )
@@ -156,7 +178,9 @@ print(os.listdir())
         )
         assert smart_dataframe.last_error == "No code found in the answer."
 
-    def test_custom_whitelisted_dependencies(self, code_manager: CodeManager, llm):
+    def test_custom_whitelisted_dependencies(
+        self, code_manager: CodeManager, llm, exec_context: MagicMock
+    ):
         code = """
 import my_custom_library
 def analyze_data(dfs: list):
@@ -165,11 +189,11 @@ def analyze_data(dfs: list):
         llm._output = code
 
         with pytest.raises(BadImportError):
-            code_manager._clean_code(code)
+            code_manager._clean_code(code, exec_context)
 
         code_manager._config.custom_whitelisted_dependencies = ["my_custom_library"]
         assert (
-            code_manager._clean_code(code)
+            code_manager._clean_code(code, exec_context)
             == """def analyze_data(dfs: list):
     my_custom_library.do_something()"""
         )

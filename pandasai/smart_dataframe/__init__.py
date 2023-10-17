@@ -324,7 +324,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         Add Skills to PandasAI
         """
-        self.lake.add_skills(skills)
+        self.lake.add_skills(*skills)
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
