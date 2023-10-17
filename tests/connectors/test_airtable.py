@@ -13,6 +13,9 @@ class TestAirTableConnector(unittest.TestCase):
             api_key="your_token",
             base_id="your_baseid",
             table="your_table_name",
+            where= [
+                ["Status", "=", "In progress"]
+            ]
         ).dict()
         self.root_url = "https://api.airtable.com/v0/"
         self.expected_data_json = """
@@ -101,3 +104,20 @@ class TestAirTableConnector(unittest.TestCase):
         mock_request_get.return_value.status_code = 200
         columns_count = self.connector.columns_count
         self.assertEqual(columns_count, 3)
+    
+    def test_build_formula_method(self):
+        formula = self.connector._build_formula()
+        expected_formula = "AND(Status='In progress')"
+        self.assertEqual(formula,expected_formula)
+    
+    @patch("requests.get")
+    def test_column_hash(self,mock_request_get):
+        mock_request_get.return_value.json.return_value = json.loads(
+            self.expected_data_json
+        )
+        mock_request_get.return_value.status_code = 200
+        returned_hash = self.connector.column_hash
+        self.assertEqual(
+            returned_hash,
+            "e4cdc9402a0831fb549d7fdeaaa089b61aeaf61e14b8a044bc027219b2db941e"
+        )
