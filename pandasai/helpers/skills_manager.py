@@ -4,6 +4,10 @@ from typing import List
 
 
 class SkillsManager:
+    """
+    Manages Custom added Skills and tracks used skills for the query
+    """
+
     _skills: List
     _used_skills: List[str]
 
