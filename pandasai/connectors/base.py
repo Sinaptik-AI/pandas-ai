@@ -20,6 +20,16 @@ class BaseConnectorConfig(BaseModel):
     where: list[list[str]] = None
 
 
+class AirtableConnectorConfig(BaseConnectorConfig):
+    """
+    Connecter configuration for Airtable data.
+    """
+
+    api_key: str
+    base_id: str
+    database: str = "airtable_data"
+
+
 class SQLBaseConnectorConfig(BaseConnectorConfig):
     """
     Base Connector configuration.
