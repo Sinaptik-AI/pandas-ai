@@ -1,11 +1,16 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict, Type
+from typing import Optional, List, Any, Dict, Type, TypedDict
 
 from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
+
+
+class LogServerConfig(TypedDict):
+    server_url: str
+    api_key: str
 
 
 class Config(BaseModel):
@@ -27,6 +32,7 @@ class Config(BaseModel):
     lazy_load_connector: bool = True
     response_parser: Type[ResponseParser] = None
     llm: Any = None
+    log_server: LogServerConfig = None
 
     class Config:
         arbitrary_types_allowed = True
