@@ -12,8 +12,8 @@ This is the initial python function. Do not change the params. Given the context
 {current_code}
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-
 - return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
 
 
@@ -32,6 +32,12 @@ class AdvancedReasoningPrompt(FileBasedPrompt):
     _path_to_template = "assets/prompt_templates/advanced_reasoning.tmpl"
 
 
+class SimpleReasoningPrompt(FileBasedPrompt):
+    """The current code"""
+
+    _path_to_template = "assets/prompt_templates/simple_reasoning.tmpl"
+
+
 class GeneratePythonCodePrompt(FileBasedPrompt):
     """Prompt to generate Python code"""
 
@@ -45,7 +51,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
                 """Analyze the data, using the provided dataframes (`dfs`).
 1. Prepare: Preprocessing and cleaning data if necessary
 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
             )
 
         if "current_code" in kwargs:
@@ -60,9 +66,9 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         self.set_var("default_import", default_import)
         self.set_var("engine_df_name", engine_df_name)
         if self.get_config("use_advanced_reasoning_framework"):
-            self.set_var("advanced_reasoning", AdvancedReasoningPrompt())
+            self.set_var("reasoning", AdvancedReasoningPrompt())
         else:
-            self.set_var("advanced_reasoning", "")
+            self.set_var("reasoning", SimpleReasoningPrompt())
 
     def _set_instructions(self, instructions: str):
         lines = instructions.split("\n")

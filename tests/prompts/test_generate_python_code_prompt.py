@@ -75,15 +75,15 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-
 - return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
@@ -132,16 +132,17 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     
     """
 ```
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-- explain your reasoning to implement the last step to the user that asked for it; it should be wrapped between <reasoning></reasoning> tags;
-- answer to the user as you would do as a data analyst; wrap it between <answer></answer> tags; do not include the value or the chart itself (it will be calculated later);
+- explain your reasoning to implement the last step to the user that asked for it; it should be wrapped between <reasoning> tags.
+- answer to the user as you would do as a data analyst; wrap it between <answer> tags; do not include the value or the chart itself (it will be calculated later).
 - return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
@@ -153,7 +154,7 @@ Based on the last message in the conversation:
 1. Load: Load the data from a file or database
 2. Prepare: Preprocessing and cleaning data if necessary
 3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
 
         prompt = GeneratePythonCodePrompt(custom_instructions=custom_instructions)
         actual_instructions = prompt._args["instructions"]
@@ -164,5 +165,5 @@ Based on the last message in the conversation:
     1. Load: Load the data from a file or database
     2. Prepare: Preprocessing and cleaning data if necessary
     3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
         )

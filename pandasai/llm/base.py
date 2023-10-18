@@ -165,7 +165,14 @@ class LLM:
             (str or None): Extracted answer from the response
         """
 
-        return self._extract_tag_text(response, "answer")
+        sentences = [
+            sentence
+            for sentence in response.split(". ")
+            if "temp_chart.png" not in sentence
+        ]
+        answer = ". ".join(sentences)
+
+        return self._extract_tag_text(answer, "answer")
 
     @abstractmethod
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
