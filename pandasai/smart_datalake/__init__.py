@@ -42,6 +42,7 @@ from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
+from ..exceptions import AdvancedReasoningDisabledError
 
 
 class SmartDatalake:
@@ -56,6 +57,8 @@ class SmartDatalake:
     _memory: Memory
 
     _last_code_generated: str = None
+    _last_reasoning: str = None
+    _last_answer: str = None
     _last_result: str = None
     _last_error: str = None
 
@@ -228,6 +231,7 @@ class SmartDatalake:
         prompt = custom_prompt if custom_prompt else default_prompt()
 
         # set default values for the prompt
+        prompt.set_config(self._config)
         if "dfs" not in default_values:
             prompt.set_var("dfs", self._dfs)
         if "conversation" not in default_values:
@@ -318,7 +322,12 @@ class SmartDatalake:
                     default_values=default_values,
                 )
 
-                code = self._llm.generate_code(generate_python_code_instruction)
+                [code, reasoning, answer] = self._llm.generate_code(
+                    generate_python_code_instruction
+                )
+
+                self.last_reasoning = reasoning
+                self.last_answer = answer
 
                 if self._config.enable_cache and self._cache:
                     self._cache.set(self._get_cache_key(), code)
@@ -428,7 +437,9 @@ class SmartDatalake:
             default_values=default_values,
         )
 
-        code = self._llm.generate_code(error_correcting_instruction)
+        [code, _reasoning, _answer] = self._llm.generate_code(
+            error_correcting_instruction
+        )
         if self._config.callback is not None:
             self._config.callback.on_code(code)
         return code
@@ -594,6 +605,30 @@ class SmartDatalake:
     @property
     def last_code_executed(self):
         return self._code_manager.last_code_executed
+
+    @property
+    def last_reasoning(self):
+        if not self._config.use_advanced_reasoning_framework:
+            raise AdvancedReasoningDisabledError(
+                "You need to enable the advanced reasoning framework"
+            )
+        return self._last_reasoning
+
+    @last_reasoning.setter
+    def last_reasoning(self, last_reasoning: str):
+        self._last_reasoning = last_reasoning
+
+    @property
+    def last_answer(self):
+        if not self._config.use_advanced_reasoning_framework:
+            raise AdvancedReasoningDisabledError(
+                "You need to enable the advanced reasoning framework"
+            )
+        return self._last_answer
+
+    @last_answer.setter
+    def last_answer(self, last_answer: str):
+        self._last_answer = last_answer
 
     @property
     def last_result(self):

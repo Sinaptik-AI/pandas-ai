@@ -126,3 +126,13 @@ class TemplateFileNotFoundError(FileNotFoundError):
             f"Unable to find a file with template at '{template_path}' "
             f"for '{prompt_name}' prompt."
         )
+
+
+class AdvancedReasoningDisabledError(Exception):
+    """
+    Raised when one tries to have access to the answer or reasoning without
+    having use_advanced_reasoning_framework enabled.
+
+    Args:
+        Exception (Exception): AdvancedReasoningDisabledError
+    """

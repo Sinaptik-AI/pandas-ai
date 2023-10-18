@@ -11,6 +11,7 @@ class AbstractPrompt(ABC):
     """
 
     _args: dict = None
+    _config: dict = None
 
     def __init__(self, **kwargs):
         """
@@ -25,6 +26,9 @@ class AbstractPrompt(ABC):
         self.setup(**kwargs)
 
     def setup(self, **kwargs) -> None:
+        pass
+
+    def on_prompt_generation(self) -> None:
         pass
 
     def _generate_dataframes(self, dfs):
@@ -58,6 +62,17 @@ This is the metadata of the dataframe dfs[{index-1}]:
     def template(self) -> str:
         ...
 
+    def set_config(self, config):
+        self._config = config
+
+    def get_config(self, key=None):
+        if self._config is None:
+            return None
+        if key is None:
+            return self._config
+        if hasattr(self._config, key):
+            return getattr(self._config, key)
+
     def set_var(self, var, value):
         if self._args is None:
             self._args = {}
@@ -72,10 +87,18 @@ This is the metadata of the dataframe dfs[{index-1}]:
         self._args.update(vars)
 
     def to_string(self):
+        self.on_prompt_generation()
+
         prompt_args = {}
         for key, value in self._args.items():
             if isinstance(value, AbstractPrompt):
-                value.set_vars({k: v for k, v in self._args.items() if k != key})
+                value.set_vars(
+                    {
+                        k: v
+                        for k, v in self._args.items()
+                        if k != key and not isinstance(v, AbstractPrompt)
+                    }
+                )
                 prompt_args[key] = value.to_string()
             else:
                 prompt_args[key] = value

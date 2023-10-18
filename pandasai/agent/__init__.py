@@ -170,3 +170,23 @@ class Agent:
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    @property
+    def last_code_generated(self):
+        return self._lake.last_code_generated
+
+    @property
+    def last_code_executed(self):
+        return self._lake.last_code_executed
+
+    @property
+    def last_prompt(self):
+        return self._lake.last_prompt
+
+    @property
+    def last_reasoning(self):
+        return self._lake.last_reasoning
+
+    @property
+    def last_answer(self):
+        return self._lake.last_answer

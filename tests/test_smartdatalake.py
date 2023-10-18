@@ -188,3 +188,22 @@ Correct the python code and return a new python code that fixes the above mentio
 
         cache_dir = os.path.join(os.getcwd(), "cache")
         mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
+
+    def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
+        llm = FakeLLM(
+            """
+            <reasoning>Custom reasoning</reasoning>
+            <answer>Custom answer</answer>
+            ```python
+def analyze_data(dfs):
+    return { 'type': 'text', 'value': "Hello World" }
+```"""
+        )
+        smart_datalake._llm = llm
+        smart_datalake.config.use_advanced_reasoning_framework = True
+        assert smart_datalake.last_answer is None
+        assert smart_datalake.last_reasoning is None
+
+        smart_datalake.chat("How many countries are in the dataframe?")
+        assert smart_datalake.last_answer == "Custom answer"
+        assert smart_datalake.last_reasoning == "Custom reasoning"

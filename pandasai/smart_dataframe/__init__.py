@@ -679,6 +679,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         data = StringIO(self._sample_head)
         return pd.read_csv(data)
 
+    @property
+    def last_reasoning(self):
+        return self.lake.last_reasoning
+
+    @property
+    def last_answer(self):
+        return self.lake.last_answer
+
     @sample_head.setter
     def sample_head(self, sample_head: pd.DataFrame):
         self._sample_head = sample_head.to_csv(index=False)

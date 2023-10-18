@@ -215,7 +215,7 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-This is the initial python function. Do not change the params.
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
 import pandas as pd
@@ -240,9 +240,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     \"\"\"
 ```
 
-Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+Based on the last message in the conversation:
 
-Return the updated code:"""  # noqa: E501
+- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
@@ -275,7 +276,7 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-This is the initial python function. Do not change the params.
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
 import pandas as pd
@@ -291,9 +292,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     """
 ```
 
-Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+Based on the last message in the conversation:
 
-Return the updated code:'''  # noqa: E501
+- return the updated analyze_data function wrapped within ```python ```'''  # noqa: E501
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
