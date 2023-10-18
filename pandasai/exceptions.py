@@ -5,6 +5,16 @@ This module contains the implementation of Custom Exceptions.
 """
 
 
+class InvalidRequestError(Exception):
+
+    """
+    Raised when the request is not succesfull.
+
+    Args :
+        Exception (Exception): InvalidRequestError
+    """
+
+
 class APIKeyNotFoundError(Exception):
 
     """
