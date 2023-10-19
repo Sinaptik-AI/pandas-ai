@@ -41,6 +41,10 @@ class Agent:
             dfs = [dfs]
 
         self._lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
+
+        # set instance type in SmartDataLake
+        self._lake.set_instance_type(self.__class__.__name__)
+
         self._logger = self._lake.logger
 
     def _call_llm_with_prompt(self, prompt: AbstractPrompt):
@@ -70,7 +74,8 @@ class Agent:
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            self.check_if_related_to_conversation(query)
+            is_related = self.check_if_related_to_conversation(query)
+            self._lake.is_related_query(is_related)
             result = self._lake.chat(query, output_type=output_type)
             return result
         except Exception as exception:
@@ -80,7 +85,7 @@ class Agent:
                 f"\n{exception}\n"
             )
 
-    def check_if_related_to_conversation(self, query: str):
+    def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation
         """
@@ -104,6 +109,8 @@ class Agent:
 
         if not related:
             self._lake.clear_memory()
+
+        return related
 
     def clarification_questions(self, query: str) -> List[str]:
         """
