@@ -14,6 +14,7 @@ Example:
 import os
 from typing import Any, Dict, Optional
 
+from litellm import Router
 import openai
 from ..helpers import load_dotenv
 
@@ -59,9 +60,17 @@ class AzureOpenAI(BaseOpenAI):
             **kwargs: Inference Parameters.
         """
 
-        self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
-        self.api_base = api_base or os.getenv("OPENAI_API_BASE") or None
-        self.api_version = api_version or os.getenv("OPENAI_API_VERSION")
+        model_list = [{ # list of model deployments 
+            "model_name": "gpt-3.5-turbo", # openai model name 
+            "litellm_params": { # params for litellm completion/embedding call 
+                "model": f"azure/{deployment_name}", 
+                "api_key": api_token,
+                "api_version": api_version,
+                "api_base": api_base
+            },
+            "tpm": 240000,
+            "rpm": 1800
+        }]
         if self.api_token is None:
             raise APIKeyNotFoundError(
                 "Azure OpenAI key is required. Please add an environment variable "
@@ -77,16 +86,13 @@ class AzureOpenAI(BaseOpenAI):
                 "Azure OpenAI version is required. Please add an environment variable "
                 "`OPENAI_API_VERSION` or pass `api_version` as a named parameter"
             )
-        openai.api_key = self.api_token
-        openai.api_base = self.api_base
-        openai.api_version = self.api_version
-        openai.api_type = self.api_type
-
         if deployment_name is None:
             raise MissingModelError(
                 "No deployment name provided.",
                 "Please include deployment name from Azure dashboard.",
             )
+
+        self.router = Router(model_list=model_list)
 
         self.is_chat_model = is_chat_model
         self.engine = deployment_name
@@ -123,9 +129,9 @@ class AzureOpenAI(BaseOpenAI):
         self.last_prompt = instruction.to_string() + suffix
 
         if self.is_chat_model:
-            response = self.chat_completion(self.last_prompt)
+            response = self.router.completion(self.last_prompt)
         else:
-            response = self.completion(self.last_prompt)
+            response = self.router.text_completion(self.last_prompt)
 
         return response
 
