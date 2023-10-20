@@ -196,11 +196,11 @@ class TestSkills:
 
         assert (
             skill_a.print
-            == """\n<function>\nName: SkillA\nDescription: Description A\nUsage: Usage A\ndef pandasai.skills.skill_a(a, b, c)\n</function\n"""  # noqa: E501
+            == """\n<function>\nName: SkillA\nDescription: Description A\nUsage: Usage A\ndef pandasai.skills.skill_a(a, b, c)\n</function>\n"""  # noqa: E501
         )
         assert (
             skill_b.print
-            == """\n<function>\nName: SkillB\nDescription: Description B\nUsage: Usage B\ndef pandasai.skills.skill_b(a, b, c)\n</function\n"""  # noqa: E501
+            == """\n<function>\nName: SkillB\nDescription: Description B\nUsage: Usage B\ndef pandasai.skills.skill_b(a, b, c)\n</function>\n"""  # noqa: E501
         )
 
     def test_add_skills_with_agent(self, agent: Agent):
@@ -247,7 +247,7 @@ Name: Display employee salary
 Description: Plots the employee salaries against names
 Usage: Displays the plot having name on x axis and salaries on y axis
 def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
-</function
+</function>
 """  # noqa: E501
 
         @skill(
@@ -279,7 +279,7 @@ Name: Display employee salary
 Description: Plots the employee salaries against names
 Usage: Displays the plot having name on x axis and salaries on y axis
 def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
-</function
+</function>
 """  # noqa: E501
 
         @skill(

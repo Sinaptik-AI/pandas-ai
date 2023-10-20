@@ -24,10 +24,10 @@ salaries_df = pd.DataFrame(salaries_data)
     description="Plots the employee salaries against names",
     usage="Displays the plot having name on x axis and salaries on y axis",
 )
-def plot_salaries(merged_df: pd.DataFrame) -> str:
+def plot_salaries(name: list[str], salary: list[int]) -> str:
     import matplotlib.pyplot as plt
 
-    plt.bar(merged_df["Name"], merged_df["Salary"])
+    plt.bar(name, salary)
     plt.xlabel("Employee Name")
     plt.ylabel("Salary")
     plt.title("Employee Salaries")
@@ -36,7 +36,7 @@ def plot_salaries(merged_df: pd.DataFrame) -> str:
     plt.close()
 
 
-llm = OpenAI("YOUR_API_KEY")
+llm = OpenAI("YOUR-API-KEY")
 agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
 
 agent.add_skills(plot_salaries)

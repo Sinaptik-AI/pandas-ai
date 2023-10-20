@@ -27,7 +27,7 @@ Name: {name}
 Description: {description}
 Usage: {usage}
 {signature}
-</function
+</function>
 """
         ).format(
             name=name,
