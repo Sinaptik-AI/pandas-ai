@@ -29,8 +29,8 @@ jobs:
         run:
           poetry run pytest
       - name: Run code coverage
-        run:
-          poetry run coverage run --source=pandasai -m pytest 
+        run: |
+          poetry run coverage run --source=pandasai -m pytest
           poetry run coverage xml
       - name: Report coverage
         run: poetry run coverage report
