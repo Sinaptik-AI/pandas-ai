@@ -397,7 +397,11 @@ class SmartDatalake:
                     )
 
                     traceback_error = traceback.format_exc()
-                    code_to_run = self._query_exec_tracker.execute_func(
+                    [
+                        code_to_run,
+                        reasoning,
+                        answer,
+                    ] = self._query_exec_tracker.execute_func(
                         self._retry_run_code, code, traceback_error
                     )
 
@@ -469,7 +473,7 @@ class SmartDatalake:
         elif result["type"] == "dataframe" or result["type"] == "plot":
             self._memory.add("Ok here it is", False)
 
-    def _retry_run_code(self, code: str, e: Exception):
+    def _retry_run_code(self, code: str, e: Exception) -> List:
         """
         A method to retry the code execution with error correction framework.
 
@@ -494,12 +498,11 @@ class SmartDatalake:
             default_values=default_values,
         )
 
-        [code, _reasoning, _answer] = self._llm.generate_code(
-            error_correcting_instruction
-        )
+        result = self._llm.generate_code(error_correcting_instruction)
         if self._config.callback is not None:
-            self._config.callback.on_code(code)
-        return code
+            self._config.callback.on_code(result[0])
+
+        return result
 
     def clear_memory(self):
         """

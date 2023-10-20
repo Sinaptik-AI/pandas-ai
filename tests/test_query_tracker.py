@@ -504,3 +504,38 @@ class TestQueryExecTracker:
             == summary2["query_info"]["conversation_id"]
         )
         assert len(tracker._steps) == 1
+
+    def test_reasoning_answer_in_code_section(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = ["code", "reason", "answer"]
+        mock_func.__name__ = "generate_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="generate_code")
+
+        summary = tracker.get_summary()
+
+        step = summary["steps"][0]
+
+        assert "reasoning" in step
+        assert "answer" in step
+        assert step["reasoning"] == "reason"
+        assert step["answer"] == "answer"
+
+    def test_reasoning_answer_in_rerun_code(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = ["code", "reason", "answer"]
+        mock_func.__name__ = "_retry_run_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="_retry_run_code")
+
+        summary = tracker.get_summary()
+
+        step = summary["steps"][0]
+        assert "reasoning" in step
+        assert "answer" in step
+        assert step["reasoning"] == "reason"
+        assert step["answer"] == "answer"

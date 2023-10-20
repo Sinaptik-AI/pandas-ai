@@ -153,16 +153,23 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "cache_hit" or func_name == "generate_code":
+        if func_name == "cache_hit":
             step["code_generated"] = result
+
+        elif func_name == "generate_code":
+            step["code_generated"] = result[0]
+            step["reasoning"] = result[1]
+            step["answer"] = result[2]
+
         elif func_name == "_retry_run_code":
             self._func_exec_count["_retry_run_code"] += 1
 
             step[
                 "type"
             ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
-
-            step["code_generated"] = result
+            step["code_generated"] = result[0]
+            step["reasoning"] = result[1]
+            step["answer"] = result[2]
 
         elif func_name == "_get_prompt":
             step["prompt_class"] = result.__class__.__name__
