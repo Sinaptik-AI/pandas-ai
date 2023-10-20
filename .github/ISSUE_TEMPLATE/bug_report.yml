@@ -7,6 +7,20 @@ body:
     value: >
       #### Before submitting a bug, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/gventuri/pandas-ai/issues?q=is%3Aissue+sort%3Acreated-desc+).
 - type: textarea
+  id: system-info
+  attributes:
+    label: System Info
+    description: | 
+      Please share your system info with us.
+      OS version:
+      Python version:
+      The current version of `pandasai` being used:
+
+    placeholder: pandasai version, platform, python version, ...
+  validations:
+    required: true
+
+- type: textarea
   attributes:
     label: 🐛 Describe the bug
     description: |
@@ -17,21 +31,21 @@ body:
       ```python
       # All necessary imports at the beginning
       import pandas as pd
-      from pandasai import PandasAI
-
+      from pandasai import SmartDataframe
+      
       # Sample DataFrame
       df = pd.DataFrame({
           "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
           "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
           "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
       })
-
+      
       # Instantiate a LLM
-      from pandasai.llm.openai import OpenAI
-      llm = OpenAI()
-
-      pandas_ai = PandasAI(llm)
-      pandas_ai.run(df, prompt='Which are the 5 happiest countries?')
+      from pandasai.llm import OpenAI
+      llm = OpenAI(api_token="YOUR_API_TOKEN")
+      
+      df = SmartDataframe(df, config={"llm": llm})
+      df.chat('Which are the 5 happiest countries?')
       ```
 
       Please also paste or describe the results you observe instead of the expected results. If you observe an error, please paste the error message including the **full** traceback of the exception. It may be relevant to wrap error messages in ```` ```triple quotes blocks``` ````.

@@ -5,6 +5,16 @@ This module contains the implementation of Custom Exceptions.
 """
 
 
+class InvalidRequestError(Exception):
+
+    """
+    Raised when the request is not succesfull.
+
+    Args :
+        Exception (Exception): InvalidRequestError
+    """
+
+
 class APIKeyNotFoundError(Exception):
 
     """
@@ -68,6 +78,24 @@ class MissingModelError(Exception):
     """
 
 
+class LLMResponseHTTPError(Exception):
+    """
+    Raised when a remote LLM service responses with error HTTP code.
+
+    Args:
+        Exception (Exception): LLMResponseHTTPError
+    """
+
+    def __init__(self, status_code, error_msg=None):
+        self.status_code = status_code
+        self.error_msg = error_msg
+
+        super().__init__(
+            f"The remote server has responded with an error HTTP "
+            f"code: {status_code}; {error_msg or ''}"
+        )
+
+
 class BadImportError(Exception):
     """
     Raised when a library not in the whitelist is imported.
@@ -108,3 +136,13 @@ class TemplateFileNotFoundError(FileNotFoundError):
             f"Unable to find a file with template at '{template_path}' "
             f"for '{prompt_name}' prompt."
         )
+
+
+class AdvancedReasoningDisabledError(Exception):
+    """
+    Raised when one tries to have access to the answer or reasoning without
+    having use_advanced_reasoning_framework enabled.
+
+    Args:
+        Exception (Exception): AdvancedReasoningDisabledError
+    """

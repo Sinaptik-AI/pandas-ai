@@ -303,6 +303,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._table_description = description
         self._lake = SmartDatalake([self], config, logger)
 
+        # set instance type in SmartDataLake
+        self._lake.set_instance_type(self.__class__.__name__)
+
         # If no name is provided, use the fallback name provided the connector
         if self._table_name is None and self.connector:
             self._table_name = self.connector.fallback_name
@@ -685,6 +688,14 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def sample_head(self):
         data = StringIO(self._sample_head)
         return pd.read_csv(data)
+
+    @property
+    def last_reasoning(self):
+        return self.lake.last_reasoning
+
+    @property
+    def last_answer(self):
+        return self.lake.last_answer
 
     @sample_head.setter
     def sample_head(self, sample_head: pd.DataFrame):

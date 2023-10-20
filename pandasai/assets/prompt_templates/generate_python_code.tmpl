@@ -6,13 +6,12 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-This is the initial python code:
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 {current_code}
 ```
 {skills}
-Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
-If the new query from the user is not relevant with the code, rewrite the content of the `analyze_data` function from scratch.
-It is very important that you do not change the params that are passed to `analyze_data`.
-
-Return the updated code:
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+{reasoning}

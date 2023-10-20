@@ -27,6 +27,7 @@ from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
     NoCodeFoundError,
+    LLMResponseHTTPError,
 )
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import AbstractPrompt
@@ -119,6 +120,60 @@ class LLM:
 
         return code
 
+    def _extract_tag_text(self, response: str, tag: str) -> str:
+        """
+        Extracts the text between two tags in the response.
+
+        Args:
+            response (str): Response
+            tag (str): Tag name
+
+        Returns:
+            (str or None): Extracted text from the response
+        """
+
+        match = re.search(
+            f"(<{tag}>)(.*)(</{tag}>)",
+            response,
+            re.DOTALL | re.MULTILINE,
+        )
+        if match:
+            return match.group(2)
+        return None
+
+    def _extract_reasoning(self, response: str) -> str:
+        """
+        Extracts the reasoning from the response (wrapped in <reasoning> tags).
+
+        Args:
+            response (str): Response
+
+        Returns:
+            (str or None): Extracted reasoning from the response
+        """
+
+        return self._extract_tag_text(response, "reasoning")
+
+    def _extract_answer(self, response: str) -> str:
+        """
+        Extracts the answer from the response (wrapped in <answer> tags).
+
+        Args:
+            response (str): Response
+
+        Returns:
+            (str or None): Extracted answer from the response
+        """
+
+        sentences = [
+            sentence
+            for sentence in response.split(". ")
+            if "temp_chart.png" not in sentence
+        ]
+        answer = ". ".join(sentences)
+
+        return self._extract_tag_text(answer, "answer")
+
     @abstractmethod
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
@@ -134,7 +189,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: AbstractPrompt) -> str:
+    def generate_code(self, instruction: AbstractPrompt) -> [str, str, str]:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -145,8 +200,12 @@ class LLM:
             str: A string of Python code.
 
         """
-        code = self.call(instruction, suffix="")
-        return self._extract_code(code)
+        response = self.call(instruction, suffix="")
+        return [
+            self._extract_code(response),
+            self._extract_reasoning(response),
+            self._extract_answer(response),
+        ]
 
 
 class BaseOpenAI(LLM, ABC):
@@ -324,6 +383,10 @@ class HuggingFaceLLM(LLM):
             str: Value of the field "generated_text" in response JSON
                 given by the remote server.
 
+        Raises:
+            LLMResponseHTTPError: If api-inference.huggingface.co responses
+                with any error HTTP code (>= 400).
+
         """
 
         headers = {"Authorization": f"Bearer {self.api_token}"}
@@ -331,6 +394,16 @@ class HuggingFaceLLM(LLM):
         response = requests.post(
             self._api_url, headers=headers, json=payload, timeout=60
         )
+
+        if response.status_code >= 400:
+            try:
+                error_msg = response.json().get("error")
+            except (requests.exceptions.JSONDecodeError, TypeError):
+                error_msg = None
+
+            raise LLMResponseHTTPError(
+                status_code=response.status_code, error_msg=error_msg
+            )
 
         return response.json()[0]["generated_text"]
 

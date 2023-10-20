@@ -32,5 +32,6 @@ class StreamlitResponse(ResponseParser):
 
         # Display the image
         plt.imshow(image)
+        plt.axis("off")
         fig = plt.gcf()
         st.pyplot(fig)
