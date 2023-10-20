@@ -19,12 +19,15 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-@skill(
-    name="Display employee salary",
-    description="Plots the employee salaries against names",
-    usage="Displays the plot having name on x axis and salaries on y axis",
-)
+# Add function docstring to give more context to model
+@skill
 def plot_salaries(name: list[str], salary: list[int]) -> str:
+    """
+    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Args:
+        name (list[str]): Employee name
+        salaries (list[int]): Salaries
+    """
     import matplotlib.pyplot as plt
 
     plt.bar(name, salary)
@@ -32,8 +35,6 @@ def plot_salaries(name: list[str], salary: list[int]) -> str:
     plt.ylabel("Salary")
     plt.title("Employee Salaries")
     plt.xticks(rotation=45)
-    plt.savefig("temp_chart.png")
-    plt.close()
 
 
 llm = OpenAI("YOUR-API-KEY")

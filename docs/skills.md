@@ -26,22 +26,23 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-
-@skill(
-    name="Display employee salary",
-    description="Plots the employee salaries against names",
-    usage="Displays the plot having name on x axis and salaries on y axis",
-)
-def plot_salaries(name: list[str], salary: list[int]) -> str:
+# Function doc string to give more context to the model for use this skill
+@skill
+def plot_salaries(name: list[str], salaries: list[int]):
+    """
+    Displays the bar chart  having name on x axis and salaries on y axis
+    Args:
+        name (list[str]): Employee name
+        salaries (list[int]): Salaries
+    """
+    # plot bars
     import matplotlib.pyplot as plt
 
-    plt.bar(name, salary)
+    plt.bar(name, salaries)
     plt.xlabel("Employee Name")
     plt.ylabel("Salary")
     plt.title("Employee Salaries")
     plt.xticks(rotation=45)
-    plt.savefig("temp_chart.png")
-    plt.close()
 
 
 
@@ -80,13 +81,15 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-
-@skill(
-    name="Display employee salary",
-    description="Plots the employee salaries against names",
-    usage="Displays the plot having name on x axis and salaries on y axis",
-)
-def plot_salaries(name: list[str], salary: list[int]) -> str:
+# Function doc string to give more context to the model for use this skill
+@skill
+def plot_salaries(name: list[str], salary: list[int]):
+    """
+    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Args:
+        name (list[str]): Employee name
+        salaries (list[int]): Salaries
+    """
     import matplotlib.pyplot as plt
 
     plt.bar(name, salary)

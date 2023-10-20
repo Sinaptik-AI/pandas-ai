@@ -164,11 +164,11 @@ class TestSkills:
     @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
     def test_skill_decorator(self, mock_inspect_signature):
         # Define skills using the decorator
-        @skill("SkillA", "Description A", "Usage A")
+        @skill
         def skill_a(*args, **kwargs):
             return "SkillA Result"
 
-        @skill("SkillB", "Description B", "Usage B")
+        @skill
         def skill_b(*args, **kwargs):
             return "SkillB Result"
 
@@ -180,36 +180,51 @@ class TestSkills:
         assert skill_a.name == "skill_a"
         assert skill_b.name == "skill_b"
 
-        assert skill_a.skill_info == {
-            "name": "SkillA",
-            "description": "Description A",
-            "usage": "Usage A",
-        }
-        assert skill_b.skill_info == {
-            "name": "SkillB",
-            "description": "Description B",
-            "usage": "Usage B",
-        }
-
         assert skill_a.func_def == "def pandasai.skills.skill_a(a, b, c)"
         assert skill_b.func_def == "def pandasai.skills.skill_b(a, b, c)"
 
         assert (
             skill_a.print
-            == """\n<function>\nName: SkillA\nDescription: Description A\nUsage: Usage A\ndef pandasai.skills.skill_a(a, b, c)\n</function>\n"""  # noqa: E501
+            == """\n<function>\ndef pandasai.skills.skill_a(a, b, c)\n\n</function>\n"""  # noqa: E501
         )
         assert (
             skill_b.print
-            == """\n<function>\nName: SkillB\nDescription: Description B\nUsage: Usage B\ndef pandasai.skills.skill_b(a, b, c)\n</function>\n"""  # noqa: E501
+            == """\n<function>\ndef pandasai.skills.skill_b(a, b, c)\n\n</function>\n"""  # noqa: E501
         )
+
+    @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
+    def test_skill_decorator_test_codc(self, llm):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+
+        # Define skills using the decorator
+        @skill
+        def plot_salaries(*args, **kwargs):
+            """
+            Test skill A
+            Args:
+                arg(str)
+            """
+            return "SkillA Result"
+
+        function_def = """
+            Test skill A
+            Args:
+                arg(str)
+"""  # noqa: E501
+
+        print(plot_salaries.print)
+        print(function_def)
+
+        assert function_def in plot_salaries.print
 
     def test_add_skills_with_agent(self, agent: Agent):
         # Define skills using the decorator
-        @skill("SkillA", "Description A", "Usage A")
+        @skill
         def skill_a(*args, **kwargs):
             return "SkillA Result"
 
-        @skill("SkillB", "Description B", "Usage B")
+        @skill
         def skill_b(*args, **kwargs):
             return "SkillB Result"
 
@@ -222,11 +237,11 @@ class TestSkills:
 
     def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
         # Define skills using the decorator
-        @skill("SkillA", "Description A", "Usage A")
+        @skill
         def skill_a(*args, **kwargs):
             return "SkillA Result"
 
-        @skill("SkillB", "Description B", "Usage B")
+        @skill
         def skill_b(*args, **kwargs):
             return "SkillB Result"
 
@@ -243,18 +258,12 @@ class TestSkills:
 
         function_def = """
 <function>
-Name: Display employee salary
-Description: Plots the employee salaries against names
-Usage: Displays the plot having name on x axis and salaries on y axis
 def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
+
 </function>
 """  # noqa: E501
 
-        @skill(
-            name="Display employee salary",
-            description="Plots the employee salaries against names",
-            usage="Displays the plot having name on x axis and salaries on y axis",
-        )
+        @skill
         def plot_salaries(merged_df: pd.DataFrame) -> str:
             import matplotlib.pyplot as plt
 
@@ -275,18 +284,12 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
     def test_run_prompt_agent(self, agent):
         function_def = """
 <function>
-Name: Display employee salary
-Description: Plots the employee salaries against names
-Usage: Displays the plot having name on x axis and salaries on y axis
 def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
+
 </function>
 """  # noqa: E501
 
-        @skill(
-            name="Display employee salary",
-            description="Plots the employee salaries against names",
-            usage="Displays the plot having name on x axis and salaries on y axis",
-        )
+        @skill
         def plot_salaries(merged_df: pd.DataFrame) -> str:
             import matplotlib.pyplot as plt
 
@@ -302,6 +305,8 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
 
         agent.chat("How many countries are in the dataframe?")
         last_prompt = agent._lake.last_prompt
+
+        print(last_prompt)
         assert function_def in last_prompt
 
     def test_run_prompt_without_skills(self, agent):
@@ -331,11 +336,7 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
     plot_salaries()
     return {'type': 'number', 'value': 1 + 1}"""
 
-        @skill(
-            name="Display employee salary",
-            description="Plots the employee salaries against names",
-            usage="Displays the plot having name on x axis and salaries on y axis",
-        )
+        @skill
         def plot_salaries() -> str:
             return "plot_salaries"
 
