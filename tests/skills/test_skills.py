@@ -213,9 +213,6 @@ class TestSkills:
                 arg(str)
 """  # noqa: E501
 
-        print(plot_salaries.print)
-        print(function_def)
-
         assert function_def in plot_salaries.print
 
     def test_add_skills_with_agent(self, agent: Agent):
@@ -306,7 +303,6 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         agent.chat("How many countries are in the dataframe?")
         last_prompt = agent._lake.last_prompt
 
-        print(last_prompt)
         assert function_def in last_prompt
 
     def test_run_prompt_without_skills(self, agent):
