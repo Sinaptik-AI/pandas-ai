@@ -1,5 +1,7 @@
 import json
 from typing import Union, List, Optional
+
+from pandasai.skills import skill
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
@@ -46,6 +48,12 @@ class Agent:
         self._lake.set_instance_type(self.__class__.__name__)
 
         self._logger = self._lake.logger
+
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self._lake.add_skills(*skills)
 
     def _call_llm_with_prompt(self, prompt: AbstractPrompt):
         """

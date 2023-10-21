@@ -26,6 +26,7 @@ from functools import cached_property
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
+from pandasai.skills import skill
 
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
@@ -321,6 +322,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         """
         self.lake.add_middlewares(*middlewares)
+
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self.lake.add_skills(*skills)
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """

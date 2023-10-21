@@ -21,6 +21,9 @@ import uuid
 import logging
 import os
 import traceback
+from pandasai.helpers.skills_manager import SkillsManager
+
+from pandasai.skills import skill
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 
@@ -38,7 +41,7 @@ from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
-from ..helpers.code_manager import CodeManager
+from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
@@ -51,11 +54,11 @@ class SmartDatalake:
     _llm: LLM
     _cache: Cache = None
     _logger: Logger
-    _start_time: float
     _last_prompt_id: uuid.UUID
     _conversation_id: uuid.UUID
     _code_manager: CodeManager
     _memory: Memory
+    _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
 
@@ -103,6 +106,8 @@ class SmartDatalake:
             config=self._config,
             logger=self.logger,
         )
+
+        self._skills = SkillsManager()
 
         if cache:
             self._cache = cache
@@ -210,6 +215,12 @@ class SmartDatalake:
         """
         self._code_manager.add_middlewares(*middlewares)
 
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self._skills.add_skills(*skills)
+
     def _assign_prompt_id(self):
         """Assign a prompt ID"""
 
@@ -248,6 +259,11 @@ class SmartDatalake:
             prompt.set_var("dfs", self._dfs)
         if "conversation" not in default_values:
             prompt.set_var("conversation", self._memory.get_conversation())
+
+        # Adds the skills to prompt if exist else display nothing
+        skills_prompt = self._skills.prompt_display()
+        prompt.set_var("skills", skills_prompt if skills_prompt is not None else "")
+
         for key, value in default_values.items():
             prompt.set_var(key, value)
 
@@ -374,10 +390,10 @@ class SmartDatalake:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
-                    result = self._query_exec_tracker.execute_func(
-                        self._code_manager.execute_code,
+                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
+                    result = self._code_manager.execute_code(
                         code=code_to_run,
-                        prompt_id=self._last_prompt_id,
+                        context=context,
                     )
 
                     break
