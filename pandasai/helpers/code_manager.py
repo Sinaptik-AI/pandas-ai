@@ -681,7 +681,7 @@ Code running:
 
         return filters
     
-    def _extract_joints(self,code)-> dict[str,list]:
+    def _extract_joints(self,code)-> list:
         """
         Extract filters to be applied to the dataframe from passed code.
 
@@ -691,11 +691,14 @@ Code running:
         Returns:
             dict : dictionary containing all joints parsed from 
                 the passed code. The dictionary has the following structure:
-                {
-                    "<df_number>":[
-                    
-                    ]
-                }
+                [
+                    {
+                        "left_table": "table1",
+                        "right_table": "table2",
+                        "left_operand": "column_name_1",
+                        "right_operand": "column_name_2"
+                    },
+                ]
         Raises :
             SyntaxError : If the code is unable to parsed by `ast.parse()`.
             Exception : If any exception is raised during working with nodes
