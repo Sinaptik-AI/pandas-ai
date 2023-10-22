@@ -109,7 +109,6 @@ class OpenAI(BaseOpenAI):
         else:
             raise UnsupportedModelError(self.model)
 
-
         return response
 
     @property
