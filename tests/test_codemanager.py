@@ -507,4 +507,59 @@ result = analyze_data(dfs)
         assert filters["dfs[1]"][1] == ("Gender", "=", "male")
 
         assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "=", "female")
+        assert filters["dfs[2]"][1] == ("Gender", "=", "female")    
+
+    def test_extract_joints_merge(self,code_manager: CodeManager):
+        code = """
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    # Merge the two dataframes based on the appropriate column names
+    merged_df = pd.merge(dfs[0], dfs[1], on='Customer ID', how='inner')
+    
+    # Group customers based on order history (e.g., frequency, total orders)
+    # You can define your segmentation criteria here
+
+    # Analyze customer preferences for different "Product Lines"
+    customer_preferences = merged_df.groupby('Customer ID')['Product Line'].value_counts().unstack(fill_value=0)
+
+    # Your segmentation and preference analysis logic goes here
+    return {"type": "dataframe", "value": customer_preferences}
+
+"""
+        expected_joints = [{'left_table': 'dfs[0]', 'right_table': 'dfs[1]', 'right_operand': 'Customer ID', 'left_operand': 'Customer ID', 'joint_type': 'inner'}]
+        joints = code_manager._extract_joints(code=code)
+        assert joints == expected_joints
+
+    def test_extract_joins_join(self,code_manager: CodeManager):
+        code = """
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    # Merge the two dataframes based on the appropriate column names
+    merged_df = dfs[0].join(dfs[1], how='inner')
+    
+    # Group customers based on order history (e.g., frequency, total orders)
+    # You can define your segmentation criteria here
+
+    # Analyze customer preferences for different "Product Lines"
+    customer_preferences = merged_df.groupby('Customer ID')['Product Line'].value_counts().unstack(fill_value=0)
+
+    # Your segmentation and preference analysis logic goes here
+
+    return {"type": "dataframe", "value": customer_preferences}
+
+"""
+        expected_joints = [
+            {
+                'left_table':"dfs[0]",
+                'right_table' : 'dfs[1]',
+                'right_operand' : None,
+                'left_operand' : None,
+                'joint_type' : 'inner'
+            }
+        ]
+        joints = code_manager._extract_joints(code=code)
+        assert joints == expected_joints

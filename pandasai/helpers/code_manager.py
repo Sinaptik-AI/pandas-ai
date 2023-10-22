@@ -680,7 +680,100 @@ Code running:
             raise
 
         return filters
+    
+    def _extract_joints(self,code)-> dict[str,list]:
+        """
+        Extract filters to be applied to the dataframe from passed code.
 
+        Args :
+            code (str): A snippet of code to be parsed.
+        
+        Returns:
+            dict : dictionary containing all joints parsed from 
+                the passed code. The dictionary has the following structure:
+                {
+                    "<df_number>":[
+                    
+                    ]
+                }
+        Raises :
+            SyntaxError : If the code is unable to parsed by `ast.parse()`.
+            Exception : If any exception is raised during working with nodes
+                of the code tree.
+        """
+        try :
+            parsed_tree = ast.parse(code)
+        except SyntaxError :
+            self._logger.log(
+                "Invalid code passed for extracting joints", level=logging.ERROR
+            )
+            self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+            raise
+        try:
+            joins = list()
+            for node in ast.walk(parsed_tree):
+                if isinstance(node,ast.Assign):
+                    is_name = isinstance(node.value.func.value,ast.Name)
+                    if is_name:
+                        alias = node.value.func.value.id
+                        is_pd = alias == "pd" or alias == "pandas"
+
+                    if is_name and is_pd:
+                        if node.value.func.attr == "merge":
+                            left_table_name = node.value.args[0].value.id
+                            right_table_name = node.value.args[1].value.id
+
+                            left_table_id = node.value.args[0].slice.value
+                            right_table_id = node.value.args[1].slice.value
+                            left_table = f"{left_table_name}[{left_table_id}]"
+                            right_table = f"{right_table_name}[{right_table_id}]"
+                            
+                            for args in node.value.keywords:
+                                
+                                if args.arg == "on":
+                                    column_name = args.value.value
+                                    
+                                if args.arg == "how":
+                                    joint_type = args.value.value
+                        info = {
+                            "left_table" : left_table,
+                            "right_table" : right_table,
+                            "right_operand" : column_name,
+                            "left_operand" : column_name,
+                            "joint_type" : joint_type
+                        }
+                        joins.append(info)
+                    
+                    if node.value.func.attr == "join":
+                        left_table_name = node.value.func.value.value.id
+                        left_table_id = node.value.func.value.slice.value
+
+                        right_table_name = node.value.args[0].value.id
+                        right_table_id = node.value.args[0].slice.value
+                        left_table = f"{left_table_name}[{left_table_id}]"
+                        right_table = f"{right_table_name}[{right_table_id}]"
+                        if len(node.value.keywords) >= 1:
+                            joint_type = node.value.keywords[0].value.value
+                        else :
+                            joint_type = None
+                        info = {
+                                "left_table" : left_table,
+                                "right_table" : right_table,
+                                "right_operand" : None,
+                                "left_operand" : None,
+                                "joint_type" : joint_type
+                            }
+                        joins.append(info)
+
+        except Exception:
+            self._logger.log(
+                "Unable to extract joints for passed code", level=logging.ERROR
+            )
+            self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+            raise
+
+        return joins
+    
     @property
     def middlewares(self):
         return self._middlewares
