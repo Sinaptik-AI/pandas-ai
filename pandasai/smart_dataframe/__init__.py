@@ -433,7 +433,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         sampler = DataSampler(head)
         sampled_head = sampler.sample(rows_to_display)
 
-        return self._truncate_head_columns(sampled_head)
+        if self.lake.config.enforce_privacy:
+            return sampled_head
+        else:
+            return self._truncate_head_columns(sampled_head)
 
     def _load_from_config(self, name: str):
         """
