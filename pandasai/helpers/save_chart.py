@@ -1,13 +1,13 @@
 """Helper functions to save charts to a file, if plt.show() is called."""
+from pathlib import Path
 from .logger import Logger
-from os import makedirs, path
 
 
 def add_save_chart(
     code: str,
     logger: Logger,
     file_name: str,
-    save_charts_path: str = None,
+    save_charts_path_str: str = None,
 ) -> str:
     """
     Add line to code that save charts to a file, if plt.show() is called.
@@ -22,12 +22,15 @@ def add_save_chart(
         str: Code with line added.
 
     """
-    if save_charts_path is not None:
-        if not path.exists(save_charts_path):
-            makedirs(save_charts_path)
 
-        save_charts_file = path.join(save_charts_path, file_name + ".png")
-        code = code.replace("temp_chart.png", save_charts_file)
+    save_charts_path = Path(save_charts_path_str) if save_charts_path_str else None
+
+    if save_charts_path is not None:
+        save_charts_path.mkdir(parents=True, exist_ok=True)
+
+        save_charts_file = save_charts_path / f"{file_name}.png"
+
+        code = code.replace("temp_chart.png", save_charts_file.as_posix())
         logger.log(f"Saving charts to {save_charts_file}")
 
     return code

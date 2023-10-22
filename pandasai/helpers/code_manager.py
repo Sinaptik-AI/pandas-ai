@@ -210,7 +210,7 @@ class CodeManager:
                 code,
                 logger=self._logger,
                 file_name=str(prompt_id),
-                save_charts_path=self._config.save_charts_path,
+                save_charts_path_str=self._config.save_charts_path,
             )
 
         # Get the code to run removing unsafe imports and df overwrites
