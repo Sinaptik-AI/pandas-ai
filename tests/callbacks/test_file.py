@@ -10,6 +10,7 @@ class TestFileCallback(unittest.TestCase):
 
     def tearDown(self):
         if os.path.exists(self.filename):
+            self.callback.file.close()
             os.remove(self.filename)
 
     def test_on_code(self):
