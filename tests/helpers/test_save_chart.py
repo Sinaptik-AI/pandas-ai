@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import tempfile
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.save_chart import add_save_chart
@@ -34,13 +35,14 @@ plt.show()
         file_name = "temp_chart"
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            save_charts_path = os.path.join(temp_dir, "charts")
-            assert not os.path.exists(save_charts_path)
+            save_charts_path = Path(temp_dir) / "charts"
+            assert not save_charts_path.exists()
+            full_path_to_file = save_charts_path / f"{file_name}.png"
 
             expected_code = f"""
 import matplotlib.pyplot as plt
 plt.plot([1, 2, 3], [4, 5, 6])
-plt.savefig("{os.path.join(save_charts_path, file_name)}.png")
+plt.savefig("{full_path_to_file.as_posix()}")
 plt.show()
 """
             result = add_save_chart(code, logger, file_name, save_charts_path)

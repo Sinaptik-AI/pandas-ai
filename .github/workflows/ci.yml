@@ -25,7 +25,10 @@ jobs:
         run: poetry install --all-extras
       - name: Lint with ruff
         run: poetry run ruff pandasai examples
-      - name: Run tests with coverage
+      - name: Run tests
+        run:
+          poetry run pytest
+      - name: Run code coverage
         run: |
           poetry run coverage run --source=pandasai -m pytest
           poetry run coverage xml

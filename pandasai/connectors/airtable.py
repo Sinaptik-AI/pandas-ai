@@ -181,10 +181,7 @@ class AirtableConnector(BaseConnector):
         Fetches data from the Airtable server via API and converts it to a DataFrame.
         """
 
-        params = {
-            "pageSize": 100,
-            "offset": "0"
-        }
+        params = {"pageSize": 100, "offset": "0"}
 
         if self._config.where is not None:
             params["filterByFormula"] = self._build_formula()
