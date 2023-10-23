@@ -1,6 +1,7 @@
 site_name: PandasAI
 site_url: https://pandasai.readthedocs.io/en/latest/
 repo_url: https://github.com/gventuri/pandas-ai
+edit_uri: https://github.com/gventuri/pandas-ai/blob/main/docs/
 site_description: PandasAI is a Python library that integrates generative artificial intelligence capabilities into pandas, making dataframes conversational
 site_author: Gabriele Venturi
 
