@@ -11,8 +11,8 @@ class BaseLogic(ABC):
     Logic units for pipeline.
     """
 
-    def __init__(self, input_):
-        self.input_ = input_
+    def __init__(self):
+        pass
 
     @abstractmethod
     def call(self, input_):
@@ -27,11 +27,10 @@ class PromptRequestLogic(BaseLogic):
     Logic units for pipeline.
     """
 
-    def __init__(self, input_):
-        self.input_ = input_
-        super().__init__(input_)
+    def __init__(self):
+        pass
 
-    def call(self):
+    def call(self,input_):
         """
         This method will return output according to
         implementation.
