@@ -21,6 +21,9 @@ import uuid
 import logging
 import os
 import traceback
+from pandasai.helpers.skills_manager import SkillsManager
+
+from pandasai.skills import skill
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 
@@ -38,7 +41,7 @@ from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from typing import Union, List, Any, Type, Optional
-from ..helpers.code_manager import CodeManager
+from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
@@ -51,10 +54,13 @@ class SmartDatalake:
     _llm: LLM
     _cache: Cache = None
     _logger: Logger
-    _start_time: float
     _last_prompt_id: uuid.UUID
+    _conversation_id: uuid.UUID
     _code_manager: CodeManager
     _memory: Memory
+    _skills: SkillsManager
+    _instance: str
+    _query_exec_tracker: QueryExecTracker
 
     _last_code_generated: str = None
     _last_reasoning: str = None
@@ -101,6 +107,8 @@ class SmartDatalake:
             logger=self.logger,
         )
 
+        self._skills = SkillsManager()
+
         if cache:
             self._cache = cache
         elif self._config.enable_cache:
@@ -112,6 +120,20 @@ class SmartDatalake:
             self._response_parser = self._config.response_parser(context)
         else:
             self._response_parser = ResponseParser(context)
+
+        self._conversation_id = uuid.uuid4()
+
+        self._instance = self.__class__.__name__
+
+        self._query_exec_tracker = QueryExecTracker(
+            server_config=self._config.log_server,
+        )
+
+    def set_instance_type(self, type: str):
+        self._instance = type
+
+    def is_related_query(self, flag: bool):
+        self._query_exec_tracker.set_related_query(flag)
 
     def initialize(self):
         """Initialize the SmartDatalake"""
@@ -193,6 +215,12 @@ class SmartDatalake:
         """
         self._code_manager.add_middlewares(*middlewares)
 
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self._skills.add_skills(*skills)
+
     def _assign_prompt_id(self):
         """Assign a prompt ID"""
 
@@ -231,6 +259,11 @@ class SmartDatalake:
             prompt.set_var("dfs", self._dfs)
         if "conversation" not in default_values:
             prompt.set_var("conversation", self._memory.get_conversation())
+
+        # Adds the skills to prompt if exist else display nothing
+        skills_prompt = self._skills.prompt_display()
+        prompt.set_var("skills", skills_prompt if skills_prompt is not None else "")
+
         for key, value in default_values.items():
             prompt.set_var(key, value)
 
@@ -278,20 +311,18 @@ class SmartDatalake:
             ValueError: If the query is empty
         """
 
+        self._query_exec_tracker.start_new_track()
+
         self.logger.log(f"Question: {query}")
         self.logger.log(f"Running PandasAI with {self._llm.type} LLM...")
 
         self._assign_prompt_id()
 
-        query_exec_tracker = QueryExecTracker(
-            conversation_id=self._last_prompt_id,
-            query=query,
-            instance=self.__class__.__name__,
-            output_type=output_type,
-            server_config=self._config.log_server,
+        self._query_exec_tracker.add_query_info(
+            self._conversation_id, self._instance, query, output_type
         )
 
-        query_exec_tracker.add_dataframes(self._dfs)
+        self._query_exec_tracker.add_dataframes(self._dfs)
 
         self._memory.add(query, True)
 
@@ -304,7 +335,7 @@ class SmartDatalake:
                 and self._cache.get(self._get_cache_key())
             ):
                 self.logger.log("Using cached response")
-                code = query_exec_tracker.execute_func(
+                code = self._query_exec_tracker.execute_func(
                     self._cache.get, self._get_cache_key(), tag="cache_hit"
                 )
 
@@ -322,14 +353,16 @@ class SmartDatalake:
                 ):
                     default_values["current_code"] = self._last_code_generated
 
-                generate_python_code_instruction = query_exec_tracker.execute_func(
-                    self._get_prompt,
-                    "generate_python_code",
-                    default_prompt=GeneratePythonCodePrompt,
-                    default_values=default_values,
+                generate_python_code_instruction = (
+                    self._query_exec_tracker.execute_func(
+                        self._get_prompt,
+                        "generate_python_code",
+                        default_prompt=GeneratePythonCodePrompt,
+                        default_values=default_values,
+                    )
                 )
 
-                [code, reasoning, answer] = query_exec_tracker.execute_func(
+                [code, reasoning, answer] = self._query_exec_tracker.execute_func(
                     self._llm.generate_code, generate_python_code_instruction
                 )
 
@@ -357,11 +390,12 @@ class SmartDatalake:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
-                    result = query_exec_tracker.execute_func(
-                        self._code_manager.execute_code,
+                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
+                    result = self._code_manager.execute_code(
                         code=code_to_run,
-                        prompt_id=self._last_prompt_id,
+                        context=context,
                     )
+
                     break
                 except Exception as e:
                     if (
@@ -379,7 +413,11 @@ class SmartDatalake:
                     )
 
                     traceback_error = traceback.format_exc()
-                    code_to_run = query_exec_tracker.execute_func(
+                    [
+                        code_to_run,
+                        reasoning,
+                        answer,
+                    ] = self._query_exec_tracker.execute_func(
                         self._retry_run_code, code, traceback_error
                     )
 
@@ -390,7 +428,7 @@ class SmartDatalake:
                         self.logger.log(
                             "\n".join(validation_logs), level=logging.WARNING
                         )
-                        query_exec_tracker.add_step(
+                        self._query_exec_tracker.add_step(
                             {
                                 "type": "Validating Output",
                                 "success": False,
@@ -398,7 +436,7 @@ class SmartDatalake:
                             }
                         )
                     else:
-                        query_exec_tracker.add_step(
+                        self._query_exec_tracker.add_step(
                             {
                                 "type": "Validating Output",
                                 "success": True,
@@ -411,8 +449,8 @@ class SmartDatalake:
 
         except Exception as exception:
             self.last_error = str(exception)
-            query_exec_tracker.success = False
-            query_exec_tracker.publish()
+            self._query_exec_tracker.success = False
+            self._query_exec_tracker.publish()
 
             return (
                 "Unfortunately, I was not able to answer your question, "
@@ -420,15 +458,19 @@ class SmartDatalake:
                 f"\n{exception}\n"
             )
 
-        self.logger.log(f"Executed in: {query_exec_tracker.get_execution_time()}s")
+        self.logger.log(
+            f"Executed in: {self._query_exec_tracker.get_execution_time()}s"
+        )
 
         self._add_result_to_memory(result)
 
-        result = query_exec_tracker.execute_func(self._response_parser.parse, result)
+        result = self._query_exec_tracker.execute_func(
+            self._response_parser.parse, result
+        )
 
-        query_exec_tracker.success = True
+        self._query_exec_tracker.success = True
 
-        query_exec_tracker.publish()
+        self._query_exec_tracker.publish()
 
         return result
 
@@ -447,7 +489,7 @@ class SmartDatalake:
         elif result["type"] == "dataframe" or result["type"] == "plot":
             self._memory.add("Ok here it is", False)
 
-    def _retry_run_code(self, code: str, e: Exception):
+    def _retry_run_code(self, code: str, e: Exception) -> List:
         """
         A method to retry the code execution with error correction framework.
 
@@ -472,18 +514,18 @@ class SmartDatalake:
             default_values=default_values,
         )
 
-        [code, _reasoning, _answer] = self._llm.generate_code(
-            error_correcting_instruction
-        )
+        result = self._llm.generate_code(error_correcting_instruction)
         if self._config.callback is not None:
-            self._config.callback.on_code(code)
-        return code
+            self._config.callback.on_code(result[0])
+
+        return result
 
     def clear_memory(self):
         """
         Clears the memory
         """
         self._memory.clear()
+        self._conversation_id = uuid.uuid4()
 
     @property
     def engine(self):
@@ -688,3 +730,7 @@ class SmartDatalake:
     @property
     def memory(self):
         return self._memory
+
+    @property
+    def instance(self):
+        return self._instance

@@ -51,6 +51,7 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
         prompt.set_var("output_type_hint", output_type_hint)
+        prompt.set_var("skills", "")
 
         expected_prompt_content = f'''You are provided with the following pandas DataFrames:
 
@@ -108,6 +109,7 @@ Based on the last message in the conversation:
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", "")
         prompt.set_var("output_type_hint", "")
+        prompt.set_var("skills", "")
 
         expected_prompt_content = f'''You are provided with the following pandas DataFrames:
 

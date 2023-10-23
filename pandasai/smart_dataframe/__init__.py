@@ -26,6 +26,7 @@ from functools import cached_property
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
+from pandasai.skills import skill
 
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
@@ -302,6 +303,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._table_description = description
         self._lake = SmartDatalake([self], config, logger)
 
+        # set instance type in SmartDataLake
+        self._lake.set_instance_type(self.__class__.__name__)
+
         # If no name is provided, use the fallback name provided the connector
         if self._table_name is None and self.connector:
             self._table_name = self.connector.fallback_name
@@ -318,6 +322,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         """
         self.lake.add_middlewares(*middlewares)
+
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self.lake.add_skills(*skills)
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """

@@ -72,12 +72,15 @@ class TestQueryExecTracker:
 
     @pytest.fixture
     def tracker(self):
-        return QueryExecTracker(
+        tracker = QueryExecTracker()
+        tracker.start_new_track()
+        tracker.add_query_info(
             conversation_id="123",
-            query="which country has the highest GDP?",
             instance="SmartDatalake",
+            query="which country has the highest GDP?",
             output_type="json",
         )
+        return tracker
 
     def test_add_dataframes(
         self, smart_dataframe: SmartDataframe, tracker: QueryExecTracker
@@ -131,15 +134,26 @@ class TestQueryExecTracker:
         assert formatted_response["type"] == "other_type"
         assert formatted_response["value"] == "SomeValue"
 
-    def test_get_summary(self, tracker: QueryExecTracker):
+    def test_get_summary(self):
         # Execute a mock function to generate some steps and response
         def mock_function(*args, **kwargs):
             return "Mock Result"
 
-        tracker.execute_func(mock_function, tag="custom_tag")
+        tracker = QueryExecTracker()
+
+        tracker.start_new_track()
+
+        tracker.add_query_info(
+            conversation_id="123",
+            instance="SmartDatalake",
+            query="which country has the highest GDP?",
+            output_type="json",
+        )
 
         # Get the summary
         summary = tracker.get_summary()
+
+        tracker.execute_func(mock_function, tag="custom_tag")
 
         # Check if the summary contains the expected keys
         assert "query_info" in summary
@@ -147,6 +161,34 @@ class TestQueryExecTracker:
         assert "steps" in summary
         assert "response" in summary
         assert "execution_time" in summary
+        assert "is_related_query" in summary["query_info"]
+
+    def test_related_query_in_summary(self):
+        # Execute a mock function to generate some steps and response
+        def mock_function(*args, **kwargs):
+            return "Mock Result"
+
+        tracker = QueryExecTracker()
+
+        tracker.set_related_query(False)
+
+        tracker.start_new_track()
+
+        tracker.add_query_info(
+            conversation_id="123",
+            instance="SmartDatalake",
+            query="which country has the highest GDP?",
+            output_type="json",
+        )
+
+        # Get the summary
+        summary = tracker.get_summary()
+
+        tracker.execute_func(mock_function, tag="custom_tag")
+
+        # Check if the summary contains the expected keys
+        assert "is_related_query" in summary["query_info"]
+        assert not summary["query_info"]["is_related_query"]
 
     def test_get_execution_time(self, tracker: QueryExecTracker):
         def mock_function(*args, **kwargs):
@@ -244,14 +286,23 @@ class TestQueryExecTracker:
         # Execute the mock function using execute_func
         result = tracker.execute_func(mock_func)
 
+        # Execute the mock function using execute_func
+        result = tracker.execute_func(mock_func)
+
         # Check if the result is as expected
         assert result == "code"
         # Check if the step was added correctly
-        assert len(tracker._steps) == 1
+        assert len(tracker._steps) == 2
         step = tracker._steps[0]
         assert "code_generated" in step
-        assert step["type"] == "Retry Code Generation"
+        assert step["type"] == "Retry Code Generation (1)"
         assert step["success"] is True
+
+        # Check second step as well
+        step2 = tracker._steps[1]
+        assert "code_generated" in step2
+        assert step2["type"] == "Retry Code Generation (2)"
+        assert step2["success"] is True
 
     def test_execute_func_execute_code_success(
         self, sample_df: pd.DataFrame, tracker: QueryExecTracker
@@ -379,3 +430,112 @@ class TestQueryExecTracker:
 
         # Check the result
         assert result is None  # The function should return None
+
+    def test_multiple_instance_of_tracker(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = "code"
+        mock_func.__name__ = "generate_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="generate_code")
+
+        tracker2 = QueryExecTracker()
+        tracker2.start_new_track()
+        tracker2.add_query_info(
+            conversation_id="12345",
+            instance="SmartDatalake",
+            query="which country has the highest GDP?",
+            output_type="json",
+        )
+
+        assert len(tracker._steps) == 1
+        assert len(tracker2._steps) == 0
+
+        # Execute code with tracker 2
+        tracker2.execute_func(mock_func, tag="generate_code")
+        assert len(tracker._steps) == 1
+        assert len(tracker2._steps) == 1
+
+        # Create a mock function
+        mock_func2 = Mock()
+        mock_func2.return_value = "code"
+        mock_func2.__name__ = "_retry_run_code"
+        tracker2.execute_func(mock_func2, tag="_retry_run_code")
+        assert len(tracker._steps) == 1
+        assert len(tracker2._steps) == 2
+
+        assert (
+            tracker._query_info["conversation_id"]
+            != tracker2._query_info["conversation_id"]
+        )
+
+    def test_conversation_id_in_different_tracks(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = "code"
+        mock_func.__name__ = "generate_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="generate_code")
+
+        summary = tracker.get_summary()
+
+        tracker.start_new_track()
+
+        tracker.add_query_info(
+            conversation_id="123",
+            instance="SmartDatalake",
+            query="Plot the GDP's?",
+            output_type="json",
+        )
+
+        # Create a mock function
+        mock_func2 = Mock()
+        mock_func2.return_value = "code"
+        mock_func2.__name__ = "_retry_run_code"
+
+        tracker.execute_func(mock_func2, tag="_retry_run_code")
+
+        summary2 = tracker.get_summary()
+
+        assert (
+            summary["query_info"]["conversation_id"]
+            == summary2["query_info"]["conversation_id"]
+        )
+        assert len(tracker._steps) == 1
+
+    def test_reasoning_answer_in_code_section(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = ["code", "reason", "answer"]
+        mock_func.__name__ = "generate_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="generate_code")
+
+        summary = tracker.get_summary()
+
+        step = summary["steps"][0]
+
+        assert "reasoning" in step
+        assert "answer" in step
+        assert step["reasoning"] == "reason"
+        assert step["answer"] == "answer"
+
+    def test_reasoning_answer_in_rerun_code(self, tracker: QueryExecTracker):
+        # Create a mock function
+        mock_func = Mock()
+        mock_func.return_value = ["code", "reason", "answer"]
+        mock_func.__name__ = "_retry_run_code"
+
+        # Execute the mock function using execute_func
+        tracker.execute_func(mock_func, tag="_retry_run_code")
+
+        summary = tracker.get_summary()
+
+        step = summary["steps"][0]
+        assert "reasoning" in step
+        assert "answer" in step
+        assert step["reasoning"] == "reason"
+        assert step["answer"] == "answer"

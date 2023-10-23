@@ -1,8 +1,10 @@
+import base64
 import os
 import time
 from typing import Any, List, TypedDict, Union
 
 import requests
+from collections import defaultdict
 
 
 class ResponseType(TypedDict):
@@ -21,31 +23,62 @@ exec_steps = {
 
 
 class QueryExecTracker:
-    _query_info: str = {}
-    _dataframes: List = []
-    _response: ResponseType = {}
-    _steps: List = []
-    _start_time = None
-    _success: bool = False
-    _server_config: dict = None
+    _query_info: dict
+    _dataframes: List
+    _response: ResponseType
+    _steps: List
+    _func_exec_count: dict
+    _success: bool
+    _server_config: dict
 
     def __init__(
         self,
-        conversation_id: str,
-        query: str,
-        instance: str,
-        output_type: str,
         server_config: Union[dict, None] = None,
     ) -> None:
-        self._start_time = time.time()
         self._success = False
+        self._start_time = None
         self._server_config = server_config
+        self._query_info = {}
+        self._is_related_query = True
+
+    def set_related_query(self, flag: bool):
+        """
+        Set Related Query Parameter whether new query is related to the conversation
+        or not
+        Args:
+            flag (bool): boolean to set true if related else false
+        """
+        self._is_related_query = flag
+
+    def add_query_info(
+        self, conversation_id: str, instance: str, query: str, output_type: str
+    ):
+        """
+        Adds query information for new track
+        Args:
+            conversation_id (str): conversation id
+            instance (str): instance like Agent or SmartDataframe
+            query (str): chat query given by user
+            output_type (str): output type expected by user
+        """
         self._query_info = {
             "conversation_id": str(conversation_id),
-            "query": query,
             "instance": instance,
+            "query": query,
             "output_type": output_type,
+            "is_related_query": self._is_related_query,
         }
+
+    def start_new_track(self):
+        """
+        Resets tracking variables to start new track
+        """
+        self._start_time = time.time()
+        self._dataframes: List = []
+        self._response: ResponseType = {}
+        self._steps: List = []
+        self._query_info = {}
+        self._func_exec_count: dict = defaultdict(int)
 
     def add_dataframes(self, dfs: List) -> None:
         """
@@ -90,7 +123,6 @@ class QueryExecTracker:
 
             step_data = self._generate_exec_step(tag, result)
 
-            step_data["type"] = exec_steps[tag]
             step_data["success"] = True
             step_data["execution_time"] = execution_time
 
@@ -119,22 +151,36 @@ class QueryExecTracker:
         Returns:
             dict: dictionary with information about the function execution
         """
-        if (
-            func_name == "cache_hit"
-            or func_name == "generate_code"
-            or func_name == "_retry_run_code"
-        ):
-            return {"code_generated": result}
+
+        step = {"type": exec_steps[func_name]}
+
+        if func_name == "cache_hit":
+            step["code_generated"] = result
+
+        elif func_name == "generate_code":
+            step["code_generated"] = result[0]
+            step["reasoning"] = result[1]
+            step["answer"] = result[2]
+
+        elif func_name == "_retry_run_code":
+            self._func_exec_count["_retry_run_code"] += 1
+
+            step[
+                "type"
+            ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
+            step["code_generated"] = result[0]
+            step["reasoning"] = result[1]
+            step["answer"] = result[2]
+
         elif func_name == "_get_prompt":
-            return {
-                "prompt_class": result.__class__.__name__,
-                "generated_prompt": result.to_string(),
-            }
+            step["prompt_class"] = result.__class__.__name__
+            step["generated_prompt"] = result.to_string()
+
         elif func_name == "execute_code":
             self._response = self._format_response(result)
-            return {"result": self._response}
-        else:
-            return {}
+            step["result"] = self._response
+
+        return step
 
     def _format_response(self, result: ResponseType) -> ResponseType:
         """
@@ -155,6 +201,19 @@ class QueryExecTracker:
                 },
             }
             return formatted_result
+        elif result["type"] == "plot":
+            with open(result["value"], "rb") as image_file:
+                image_data = image_file.read()
+            # Encode the image data to Base64
+            base64_image = (
+                f"data:image/png;base64,{base64.b64encode(image_data).decode()}"
+            )
+            formatted_result = {
+                "type": result["type"],
+                "value": base64_image,
+            }
+
+            return formatted_result
         else:
             return result
 
@@ -164,6 +223,9 @@ class QueryExecTracker:
         Returns:
             dict: summary json
         """
+        if self._start_time is None:
+            raise RuntimeError("[QueryExecTracker]: Tracking not started")
+
         execution_time = time.time() - self._start_time
         return {
             "query_info": self._query_info,
@@ -213,9 +275,9 @@ class QueryExecTracker:
             print(f"Exception in APILogger: {e}")
 
     @property
-    def success(self):
+    def success(self) -> bool:
         return self._success
 
     @success.setter
-    def success(self, value):
+    def success(self, value: bool):
         self._success = value
