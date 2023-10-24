@@ -102,9 +102,15 @@ class OpenAI(BaseOpenAI):
         """
         self.last_prompt = instruction.to_string() + suffix
 
-        if self.model in self._supported_chat_models:
+        if "ft:" in self.model:
+            # extract "standard" model name from fine-tuned model
+            model_name = self.model.split(":")[1]
+        else:
+            model_name = self.model
+
+        if model_name in self._supported_chat_models:
             response = self.chat_completion(self.last_prompt)
-        elif self.model in self._supported_completion_models:
+        elif model_name in self._supported_completion_models:
             response = self.completion(self.last_prompt)
         else:
             raise UnsupportedModelError(self.model)
