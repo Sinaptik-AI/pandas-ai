@@ -41,6 +41,10 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-35-turbo-16k-0613-completion": 0.004,
     # Others
     "text-davinci-003": 0.02,
+    # Fine-tuned input
+    "gpt-3.5-turbo-0613-finetuned": 0.012,
+    # Fine-tuned output
+    "gpt-3.5-turbo-0613-finetuned-completion": 0.016,
 }
 
 
@@ -62,10 +66,13 @@ def get_openai_token_cost_for_model(
         float: Cost in USD.
     """
     model_name = model_name.lower()
+    if "ft:" in model_name:
+        model_name = model_name.split(":")[1] + "-finetuned"
     if is_completion and (
         model_name.startswith("gpt-4")
         or model_name.startswith("gpt-3.5")
         or model_name.startswith("gpt-35")
+        or "finetuned" in model_name
     ):
         # The cost of completion token is different from
         # the cost of prompt tokens.
