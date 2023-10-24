@@ -89,6 +89,28 @@ df = SmartDataframe(mysql_connector)
 df.chat('What is the total amount of loans in the last year?')
 ```
 
+### Sqlite connector
+
+Similarly to the PostgreSQL and MySQL connectors, the Sqlite connector allows you to connect to a local Sqlite database file. It is designed to be easy to use, even if you are not familiar with Sqlite or with PandasAI.
+
+To use the Sqlite connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import SqliteConnector
+
+connector = SqliteConnector(config={
+    "database" : "PATH_TO_DB",
+    "table" : "actor",
+    "where" :[
+        ["first_name","=","PENELOPE"]
+    ]
+})
+
+df = SmartDataframe(connector)
+df.chat('How many records are there ?')
+```
+
+
 ### Generic SQL connector
 
 The generic SQL connector allows you to connect to any SQL database that is supported by SQLAlchemy.

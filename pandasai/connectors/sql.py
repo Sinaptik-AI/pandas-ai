@@ -5,7 +5,7 @@ SQL connectors are used to connect to SQL databases in different dialects.
 import re
 import os
 import pandas as pd
-from .base import BaseConnector, SQLConnectorConfig
+from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
 from .base import BaseConnectorConfig
 from sqlalchemy import create_engine, text, select, asc
 from sqlalchemy.engine import Connection
@@ -362,6 +362,90 @@ class SQLConnector(BaseConnector):
     @property
     def fallback_name(self):
         return self._config.table
+
+
+class SqliteConnector(SQLConnector):
+    """
+    Sqlite connector are used to connect to Sqlite databases.
+    """
+
+    def __init__(self, config: Union[SqliteConnectorConfig, dict]):
+        """
+        Intialize the Sqlite connector with the given configuration.
+
+        Args:
+            config (ConnectorConfig) : The configuration for the MySQL connector.
+        """
+        config["dialect"] = "sqlite"
+        if isinstance(config, dict):
+            sqlite_env_vars = {"database": "SQLITE_DB_PATH", "table": "TABLENAME"}
+            config = self._populate_config_from_env(config, sqlite_env_vars)
+
+        super().__init__(config)
+
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
+        """
+        Loads passed Configuration to object
+
+        Args:
+            config (BaseConnectorConfig): Construct config in structure
+
+        Returns:
+            config: BaseConenctorConfig
+        """
+        return SqliteConnectorConfig(**config)
+
+    def _init_connection(self, config: SqliteConnectorConfig):
+        """
+        Initialize Database Connection
+
+        Args:
+            config (SQLConnectorConfig): Configurations to load database
+
+        """
+        self._engine = create_engine(f"{config.dialect}:///{config.database}")
+        self._connection = self._engine.connect()
+
+    def __del__(self):
+        """
+        Close the connection to the SQL database.
+        """
+        self._connection.close()
+
+    @cache
+    def head(self):
+        """
+        Return the head of the data source that the connector is connected to.
+        This information is passed to the LLM to provide the schema of the data source.
+
+        Returns:
+            DataFrame: The head of the data source.
+        """
+
+        if self.logger:
+            self.logger.log(
+                f"Getting head of {self._config.table} "
+                f"using dialect {self._config.dialect}"
+            )
+
+        # Run a SQL query to get all the columns names and 5 random rows
+        query = self._build_query(limit=5, order="RANDOM()")
+
+        # Return the head of the data source
+        return pd.read_sql(query, self._connection)
+
+    def __repr__(self):
+        """
+        Return the string representation of the SQL connector.
+
+        Returns:
+            str: The string representation of the SQL connector.
+        """
+        return (
+            f"<{self.__class__.__name__} dialect={self._config.dialect}"
+            f"database={self._config.database} "
+            f"table={self._config.table}>"
+        )
 
 
 class MySQLConnector(SQLConnector):

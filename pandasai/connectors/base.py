@@ -39,6 +39,15 @@ class SQLBaseConnectorConfig(BaseConnectorConfig):
     dialect: Optional[str] = None
 
 
+class SqliteConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configurations for sqlite db.
+    """
+
+    table: str
+    database: str = "sqlite"
+
+
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
     """
     Connector configuration for Yahoo Finance.
