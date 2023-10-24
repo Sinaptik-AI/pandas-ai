@@ -442,7 +442,7 @@ class SqliteConnector(SQLConnector):
             str: The string representation of the SQL connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect}"
+            f"<{self.__class__.__name__} dialect={self._config.dialect} "
             f"database={self._config.database} "
             f"table={self._config.table}>"
         )

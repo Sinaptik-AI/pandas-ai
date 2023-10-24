@@ -45,7 +45,7 @@ class SqliteConnectorConfig(SQLBaseConnectorConfig):
     """
 
     table: str
-    database: str = "sqlite"
+    database: str
 
 
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
