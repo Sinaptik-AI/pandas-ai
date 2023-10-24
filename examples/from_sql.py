@@ -50,7 +50,10 @@ invoice_connector = SqliteConnector(
     }
 )
 llm = OpenAI()
-df = SmartDatalake([loan_connector, payment_connector,invoice_connector], config={"llm": llm})
+df = SmartDatalake(
+        [loan_connector, payment_connector,invoice_connector], 
+        config={"llm": llm}
+    )
 response = df.chat("How many people from the United states?")
 print(response)
 # Output: 247 loans have been paid off by men.
