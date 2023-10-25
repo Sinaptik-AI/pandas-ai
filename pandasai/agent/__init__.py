@@ -1,5 +1,7 @@
 import json
 from typing import Union, List, Optional
+
+from pandasai.skills import skill
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
@@ -41,7 +43,17 @@ class Agent:
             dfs = [dfs]
 
         self._lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
+
+        # set instance type in SmartDataLake
+        self._lake.set_instance_type(self.__class__.__name__)
+
         self._logger = self._lake.logger
+
+    def add_skills(self, *skills: List[skill]):
+        """
+        Add Skills to PandasAI
+        """
+        self._lake.add_skills(*skills)
 
     def _call_llm_with_prompt(self, prompt: AbstractPrompt):
         """
@@ -70,7 +82,8 @@ class Agent:
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            self.check_if_related_to_conversation(query)
+            is_related = self.check_if_related_to_conversation(query)
+            self._lake.is_related_query(is_related)
             result = self._lake.chat(query, output_type=output_type)
             return result
         except Exception as exception:
@@ -80,7 +93,7 @@ class Agent:
                 f"\n{exception}\n"
             )
 
-    def check_if_related_to_conversation(self, query: str):
+    def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation
         """
@@ -104,6 +117,8 @@ class Agent:
 
         if not related:
             self._lake.clear_memory()
+
+        return related
 
     def clarification_questions(self, query: str) -> List[str]:
         """
@@ -170,3 +185,23 @@ class Agent:
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    @property
+    def last_code_generated(self):
+        return self._lake.last_code_generated
+
+    @property
+    def last_code_executed(self):
+        return self._lake.last_code_executed
+
+    @property
+    def last_prompt(self):
+        return self._lake.last_prompt
+
+    @property
+    def last_reasoning(self):
+        return self._lake.last_reasoning
+
+    @property
+    def last_answer(self):
+        return self._lake.last_answer

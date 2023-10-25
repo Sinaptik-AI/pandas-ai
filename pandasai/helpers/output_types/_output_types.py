@@ -140,7 +140,7 @@ class DefaultOutputType(BaseOutputType):
         return """- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
-        { "type": "string", "value": "The highest salary is $9,000." }
+        { "type": "string", "value": f"The highest salary is {highest_salary}." }
         or
         { "type": "number", "value": 125 }
         or

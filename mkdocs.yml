@@ -27,6 +27,7 @@ nav:
       - callbacks.md
       - custom-instructions.md
       - custom-prompts.md
+      - skills.md
       - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md

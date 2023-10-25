@@ -10,6 +10,7 @@ from .snowflake import SnowFlakeConnector
 from .databricks import DatabricksConnector
 from .yahoo_finance import YahooFinanceConnector
 from .airtable import AirtableConnector
+from .sql import SqliteConnector
 
 __all__ = [
     "BaseConnector",
@@ -20,4 +21,5 @@ __all__ = [
     "SnowFlakeConnector",
     "DatabricksConnector",
     "AirtableConnector",
+    "SqliteConnector",
 ]

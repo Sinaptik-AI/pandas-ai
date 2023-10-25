@@ -2,7 +2,7 @@
 
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
-from pandasai.connectors import MySQLConnector, PostgreSQLConnector
+from pandasai.connectors import MySQLConnector, PostgreSQLConnector, SqliteConnector
 
 # With a MySQL database
 loan_connector = MySQLConnector(
@@ -38,8 +38,19 @@ payment_connector = PostgreSQLConnector(
     }
 )
 
+# With a Sqlite databse
+
+invoice_connector = SqliteConnector(
+    config={
+        "database": "local_path_to_db",
+        "table": "invoices",
+        "where": [["status", "=", "pending"]],
+    }
+)
 llm = OpenAI()
-df = SmartDatalake([loan_connector, payment_connector], config={"llm": llm})
+df = SmartDatalake(
+    [loan_connector, payment_connector, invoice_connector], config={"llm": llm}
+)
 response = df.chat("How many people from the United states?")
 print(response)
 # Output: 247 loans have been paid off by men.
