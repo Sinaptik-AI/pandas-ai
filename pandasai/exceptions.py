@@ -146,3 +146,11 @@ class AdvancedReasoningDisabledError(Exception):
     Args:
         Exception (Exception): AdvancedReasoningDisabledError
     """
+
+
+class UnSupportedLogicUnit(Exception):
+    """
+    Raised when unsupported logic unit is added in the pipeline
+    Args:
+        Exception (Exception): UnSupportedLogicUnit
+    """
