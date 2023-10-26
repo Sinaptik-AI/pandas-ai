@@ -52,6 +52,7 @@ coverage = "^7.2.7"
 
 [tool.poetry.group.extras.dependencies]
 google-cloud-aiplatform = "^1.26.1"
+anthropic = "^0.5.0"
 
 [tool.poetry.extras]
 connectors = [ "pymysql", "psycopg2",  "sqlalchemy-databricks", "snowflake-sqlalchemy"]
