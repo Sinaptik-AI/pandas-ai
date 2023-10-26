@@ -7,6 +7,10 @@ from pandasai.smart_dataframe import SmartDataframe
 
 
 class PipelineContext:
+    """
+    Pass Context to the pipeline which is accessible to each step via kwargs
+    """
+
     _dfs: List[Union[DataFrameType, SmartDataframe]]
     _memory: Memory
     _skills: SkillsManager

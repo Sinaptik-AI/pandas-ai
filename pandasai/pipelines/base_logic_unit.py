@@ -4,11 +4,8 @@ from typing import Any
 
 class BaseLogicUnit(ABC):
     """
-    Logic units for pipeline.
+    Logic units for pipeline each logic unit should be inherited from this Logic unit
     """
-
-    def __init__(self):
-        pass
 
     @abstractmethod
     def execute(self, input: Any, **kwargs) -> Any:

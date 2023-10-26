@@ -10,7 +10,7 @@ from .abstract_pipeline import AbstractPipeline
 
 class Pipeline(AbstractPipeline):
     """
-    Base Pipeline class to be extended for other pipelines.
+    Base Pipeline class to be used to create custom pipelines
     """
 
     _config: Config
@@ -68,7 +68,7 @@ class Pipeline(AbstractPipeline):
             data (Any, optional): Input Data to run the pipeline. Defaults to None.
 
         Returns:
-            Any: _description_
+            Any: Depends on the type can return anything
         """
         try:
             for index, logic in enumerate(self._steps):
