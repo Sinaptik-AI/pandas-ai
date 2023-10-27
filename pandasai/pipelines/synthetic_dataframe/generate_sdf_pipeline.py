@@ -18,6 +18,7 @@ class GenerateSDFPipeline:
 
     def __init__(
         self,
+        amount: int = 100,
         config: Union[Config, dict] = None,
         context: Optional[PipelineContext] = None,
         logger: Optional[Logger] = None,
@@ -26,7 +27,11 @@ class GenerateSDFPipeline:
             config=config,
             context=context,
             logger=logger,
-            steps=[SyntheticDataframePrompt(), PromptExecution(), SDFCodeExecutor()],
+            steps=[
+                SyntheticDataframePrompt(amount=amount),
+                PromptExecution(),
+                SDFCodeExecutor(),
+            ],
         )
 
     def run(self):

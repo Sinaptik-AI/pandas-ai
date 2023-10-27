@@ -9,15 +9,25 @@ class SyntheticDataframePrompt(BaseLogicUnit):
     Generates the prompt for generating synthetic dataframe
     """
 
+    _amount: int = 100
+
+    def __init__(self, amount: int = 100):
+        """
+        Initialize the logic unit with the given parameters
+        Args:
+            amount (int): Amount of rows to generate
+        """
+        self._amount = amount
+        print("SyntheticDataframePrompt", amount)
+
     def execute(self, input: Any, **kwargs) -> Any:
         context: PipelineContext = kwargs.get("context")
 
         if context is None or len(context.dfs) == 0:
             raise ValueError("Dataframe not found")
 
-        prompt = GenerateSyntheticDfPrompt()
-
-        dataframe_index = kwargs.get("dataframe_index", 0)
-        prompt.set_var("dataframe", context.dfs[dataframe_index])
+        prompt = GenerateSyntheticDfPrompt(
+            amount=self._amount, dataframe=context.dfs[kwargs.get("dataframe_index", 0)]
+        )
 
         return prompt

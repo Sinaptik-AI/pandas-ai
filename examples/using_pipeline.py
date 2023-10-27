@@ -38,7 +38,7 @@ context = PipelineContext([salaries_df], config)
 pipeline = Pipeline(
     config=config,
     context=context,
-    steps=[SyntheticDataframePrompt(), PromptExecution(), SDFCodeExecutor()],
+    steps=[SyntheticDataframePrompt(amount=15), PromptExecution(), SDFCodeExecutor()],
 )
 
 data_frame = pipeline.run()
@@ -50,6 +50,7 @@ print(data_frame)
 context = PipelineContext([employees_df], config)
 
 pipeline = GenerateSDFPipeline(
+    amount=10,
     config={"llm": llm, "verbose": True},
     context=context,
 )
