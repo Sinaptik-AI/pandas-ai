@@ -26,5 +26,7 @@ class SDFCodeExecutor(BaseLogicUnit):
             return data
 
         except Exception:
-            logging.exception("Error in executing code")
+            logger = kwargs.get("logger")
+            if logger is not None:
+                logger.log("Error in executing code")
             raise
