@@ -4,7 +4,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from ..schemas.df_config import Config
-from typing import Any, Union, Optional, List
+from typing import Any, Optional, List
 from .abstract_pipeline import AbstractPipeline
 
 
@@ -20,8 +20,8 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        config: Union[Config, dict] = None,
-        context: Optional[PipelineContext] = None,
+        config: Config,
+        context: PipelineContext,
         steps: Optional[List] = [],
         logger: Optional[Logger] = None,
     ):
@@ -35,6 +35,9 @@ class Pipeline(AbstractPipeline):
 
         if isinstance(config, dict):
             config = Config(**config)
+
+        if not isinstance(context, PipelineContext):
+            raise ValueError("Unknown context for the pipeline")
 
         self._config = config
 

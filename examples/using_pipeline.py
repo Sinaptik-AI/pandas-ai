@@ -28,14 +28,15 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("Your-Api-Key")
+llm = OpenAI("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")
 
-context = PipelineContext([salaries_df])
+config = {"llm": llm, "verbose": True}
 
-# Create you
+context = PipelineContext([salaries_df], config)
 
+# Create your own pipeline
 pipeline = Pipeline(
-    config={"llm": llm, "verbose": True},
+    config=config,
     context=context,
     steps=[SyntheticDataframePrompt(), PromptExecution(), SDFCodeExecutor()],
 )
@@ -46,7 +47,7 @@ print(data_frame)
 
 
 # Using defined Pipelines
-context = PipelineContext([employees_df])
+context = PipelineContext([employees_df], config)
 
 pipeline = GenerateSDFPipeline(
     config={"llm": llm, "verbose": True},
