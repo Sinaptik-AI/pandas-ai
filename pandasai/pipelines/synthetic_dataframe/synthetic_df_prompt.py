@@ -1,7 +1,7 @@
 from typing import Any
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.prompts.generate_synthetic_df_prompt import GenerateSyntheicDfPrompt
+from pandasai.prompts.generate_synthetic_df_prompt import GenerateSyntheticDfPrompt
 
 
 class SyntheticDataframePrompt(BaseLogicUnit):
@@ -15,7 +15,7 @@ class SyntheticDataframePrompt(BaseLogicUnit):
         if context is None or len(context.dfs) == 0:
             raise ValueError("Dataframe not found")
 
-        prompt = GenerateSyntheicDfPrompt()
+        prompt = GenerateSyntheticDfPrompt()
 
         prompt.set_var("dataframe", context.dfs[0])
 

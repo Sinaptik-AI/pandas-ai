@@ -28,7 +28,7 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("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")
+llm = OpenAI("your-api-key")
 
 config = {"llm": llm, "verbose": True}
 
