@@ -19,7 +19,7 @@ class SDFCodeExecutor(BaseLogicUnit):
             namespace = code_exec.execute(input, **kwargs)
 
             if "df" not in namespace:
-                raise ValueError("Unable to execute code: {input}")
+                raise ValueError(f"Unable to execute code: {input}")
 
             data = namespace["df"]
 

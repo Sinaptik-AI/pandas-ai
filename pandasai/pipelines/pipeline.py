@@ -48,7 +48,7 @@ class Pipeline(AbstractPipeline):
         )
 
         self._context = context
-        self._steps = steps
+        self._steps = steps if steps is not None else []
 
     def add_step(self, logic: BaseLogicUnit):
         """
@@ -59,7 +59,7 @@ class Pipeline(AbstractPipeline):
         if not isinstance(logic, BaseLogicUnit):
             raise UnSupportedLogicUnit(
                 "Logic unit must be inherited from BaseLogicUnit and "
-                "must implement execute methid"
+                "must implement execute method"
             )
 
         self._steps.append(logic)

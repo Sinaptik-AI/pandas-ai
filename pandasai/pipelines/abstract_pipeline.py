@@ -11,4 +11,4 @@ class AbstractPipeline(ABC):
         """
         This method will return output according to
         Implementation."""
-        raise NotImplementedError("Run ethod must be implemented")
+        raise NotImplementedError("Run method must be implemented")

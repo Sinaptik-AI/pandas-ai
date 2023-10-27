@@ -13,7 +13,7 @@ class SyntheticDataframePrompt(BaseLogicUnit):
         context: PipelineContext = kwargs["context"]
 
         if context is None or len(context.dfs) == 0:
-            raise Exception("Dataframe not found")
+            raise ValueError("Dataframe not found")
 
         prompt = GenerateSyntheicDfPrompt()
 
