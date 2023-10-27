@@ -22,9 +22,11 @@ class Pipeline(AbstractPipeline):
         self,
         config: Config,
         context: PipelineContext,
-        steps: Optional[List] = [],
+        steps: Optional[List] = None,
         logger: Optional[Logger] = None,
     ):
+        if steps is None:
+            steps = []
         """
         Intialize the pipeline with given context and configuration
             parameters.

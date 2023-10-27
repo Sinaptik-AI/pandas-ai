@@ -25,5 +25,6 @@ class SDFCodeExecutor(BaseLogicUnit):
 
             return data
 
-        except Exception as e:
-            raise Exception(f"Error in executing code: { e } ")
+        except Exception:
+            logging.exception("Error in executing code")
+            raise

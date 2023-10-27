@@ -16,6 +16,7 @@ class PipelineContext:
     _dfs: List[Union[DataFrameType, SmartDataframe]]
     _memory: Memory
     _skills: SkillsManager
+_cache: Cache
 
     def __init__(
         self,
