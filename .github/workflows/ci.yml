@@ -26,8 +26,7 @@ jobs:
       - name: Lint with ruff
         run: poetry run ruff pandasai examples
       - name: Run tests
-        run:
-          poetry run pytest
+        run: poetry run pytest
       - name: Run code coverage
         run: |
           poetry run coverage run --source=pandasai -m pytest
@@ -42,3 +41,17 @@ jobs:
           fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  review-with-sourcery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Sourcery in entire codebase
+        uses: sourcery-ai/action@v1
+        with:
+          token: ${{ secrets.SOURCERY_TOKEN }}
