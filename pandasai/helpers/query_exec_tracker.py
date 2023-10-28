@@ -191,7 +191,6 @@ class QueryExecTracker:
         Returns:
             ResponseType: formatted response output
         """
-        formatted_result = {}
         if result["type"] == "dataframe":
             return {
                 "type": result["type"],
