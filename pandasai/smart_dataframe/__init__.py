@@ -85,10 +85,10 @@ class SmartDataframeCore:
             # otherwise, raise an error
             try:
                 self.dataframe = pd.DataFrame(df)
-            except ValueError:
+            except ValueError as e:
                 raise ValueError(
                     "Invalid input data. We cannot convert it to a dataframe."
-                )
+                ) from e
         else:
             self.dataframe = df
 
@@ -144,10 +144,10 @@ class SmartDataframeCore:
             # otherwise, raise an error
             try:
                 return pd.DataFrame(df)
-            except ValueError:
+            except ValueError as e:
                 raise ValueError(
                     "Invalid input data. We cannot convert it to a dataframe."
-                )
+                ) from e
         else:
             return df
 
@@ -252,55 +252,53 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         """
         self._original_import = df
 
-        if isinstance(df, str):
-            if not (
-                df.endswith(".csv")
-                or df.endswith(".parquet")
-                or df.endswith(".xlsx")
-                or df.startswith("https://docs.google.com/spreadsheets/")
-            ):
-                df_config = self._load_from_config(df)
-                if df_config:
-                    if "://" in df_config["import_path"]:
-                        connector_name = df_config["import_path"].split("://")[0]
-                        connector_path = df_config["import_path"].split("://")[1]
-                        connector_host = connector_path.split(":")[0]
-                        connector_port = connector_path.split(":")[1].split("/")[0]
-                        connector_database = connector_path.split(":")[1].split("/")[1]
-                        connector_table = connector_path.split(":")[1].split("/")[2]
+        if (
+            isinstance(df, str)
+            and not df.endswith(".csv")
+            and not df.endswith(".parquet")
+            and not df.endswith(".xlsx")
+            and not df.startswith("https://docs.google.com/spreadsheets/")
+        ):
+            if not (df_config := self._load_from_config(df)):
+                raise ValueError(
+                    "Could not find a saved dataframe configuration "
+                    "with the given name."
+                )
 
-                        connector_data = {
-                            "host": connector_host,
-                            "database": connector_database,
-                            "table": connector_table,
-                        }
-                        if connector_port:
-                            connector_data["port"] = connector_port
+            if "://" in df_config["import_path"]:
+                connector_name = df_config["import_path"].split("://")[0]
+                connector_path = df_config["import_path"].split("://")[1]
+                connector_host = connector_path.split(":")[0]
+                connector_port = connector_path.split(":")[1].split("/")[0]
+                connector_database = connector_path.split(":")[1].split("/")[1]
+                connector_table = connector_path.split(":")[1].split("/")[2]
 
-                        # instantiate the connector
-                        df = getattr(
-                            __import__(
-                                "pandasai.connectors", fromlist=[connector_name]
-                            ),
-                            connector_name,
-                        )(config=connector_data)
-                    else:
-                        df = df_config["import_path"]
+                connector_data = {
+                    "host": connector_host,
+                    "database": connector_database,
+                    "table": connector_table,
+                }
+                if connector_port:
+                    connector_data["port"] = connector_port
 
-                    if name is None:
-                        name = df_config["name"]
-                    if description is None:
-                        description = df_config["description"]
-                else:
-                    raise ValueError(
-                        "Could not find a saved dataframe configuration "
-                        "with the given name."
-                    )
+                # instantiate the connector
+                df = getattr(
+                    __import__(
+                        "pandasai.connectors", fromlist=[connector_name]
+                    ),
+                    connector_name,
+                )(config=connector_data)
+            else:
+                df = df_config["import_path"]
 
+            if name is None:
+                name = df_config["name"]
+            if description is None:
+                description = df_config["description"]
         self._core = SmartDataframeCore(df, logger)
 
-        self._table_name = name
         self._table_description = description
+        self._table_name = name
         self._lake = SmartDatalake([self], config, logger)
 
         # set instance type in SmartDataLake
@@ -419,11 +417,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                             df_trunc[col] = (
                                 df_trunc[col].str.slice(0, max_size - 3) + "..."
                             )
-            except ImportError:
+            except ImportError as e:
                 raise ImportError(
                     "Polars is not installed. "
                     "Please install Polars to use this feature."
-                )
+                ) from e
 
         return df_trunc
 
