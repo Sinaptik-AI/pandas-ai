@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "1.4"
+version = "1.4.1"
 description = "PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
