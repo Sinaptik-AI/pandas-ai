@@ -74,10 +74,10 @@ def standardize_model_name(
     if "ft:" in model_name:
         model_name = model_name.split(":")[1] + "-finetuned"
     if is_completion and (
-            model_name.startswith("gpt-4")
-            or model_name.startswith("gpt-3.5")
-            or model_name.startswith("gpt-35")
-            or "finetuned" in model_name
+        model_name.startswith("gpt-4")
+        or model_name.startswith("gpt-3.5")
+        or model_name.startswith("gpt-35")
+        or "finetuned" in model_name
     ):
         # The cost of completion token is different from
         # the cost of prompt tokens.

@@ -195,6 +195,30 @@ databricks_connector = DatabricksConnector(
 )
 ```
 
+## GoogleBigQuery connector
+
+The GoogleBigQuery connector allows you to connect to GoogleBigQuery datasests. It is very similar to the SQL connectors, but it has some differences.
+
+To use the DataBricks connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import GoogleBigQueryConnector
+
+bigquery_connector = GoogleBigQueryConnector(
+    config={
+        "credentials_path" : "path to keyfile.json",
+        "database" : "dataset_name",
+        "table" : "table_name",
+        "projectID" : "Project_id_name",
+        "where": [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            ["loan_status", "=", "PAIDOFF"],
+        ],
+    }
+)
+```
+
 ## Yahoo Finance connector
 
 The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply passing the ticker symbol of the stock you want to analyze.

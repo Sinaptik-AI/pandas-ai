@@ -48,6 +48,17 @@ class SqliteConnectorConfig(SQLBaseConnectorConfig):
     database: str
 
 
+class GoogleBigQueryConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for big query.
+    """
+
+    credentials_path: str
+    database: str
+    table: str
+    projectID: str
+
+
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
     """
     Connector configuration for Yahoo Finance.
