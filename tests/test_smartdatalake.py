@@ -181,15 +181,28 @@ Correct the python code and return a new python code that fixes the above mentio
 """  # noqa: E501
         )
 
+    @pytest.mark.parametrize(
+        "save_charts,enable_cache",
+        [(False, False), (False, True), (True, False), (True, True)],
+    )
     @patch("os.makedirs")
-    def test_initialize(self, mock_makedirs, smart_datalake: SmartDatalake):
+    def test_initialize(
+        self, mock_makedirs, smart_datalake: SmartDatalake, save_charts, enable_cache
+    ):
+        smart_datalake.config.save_charts = save_charts
+        smart_datalake.config.enable_cache = enable_cache
         smart_datalake.initialize()
 
-        charts_dir = os.path.join(os.getcwd(), "exports", "charts")
-        mock_makedirs.assert_any_call(charts_dir, mode=0o777, exist_ok=True)
+        if not save_charts and not enable_cache:
+            mock_makedirs.assert_not_called()
 
-        cache_dir = os.path.join(os.getcwd(), "cache")
-        mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
+        if save_charts:
+            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+            mock_makedirs.assert_any_call(charts_dir, mode=0o777, exist_ok=True)
+
+        if enable_cache:
+            cache_dir = os.path.join(os.getcwd(), "cache")
+            mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
 
     def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
         llm = FakeLLM(
