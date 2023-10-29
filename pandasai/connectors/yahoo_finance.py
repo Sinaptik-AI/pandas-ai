@@ -28,11 +28,11 @@ class YahooFinanceConnector(BaseConnector):
 
         try:
             import yfinance
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "Could not import yfinance python package. "
                 "Please install it with `pip install yfinance`."
-            )
+            ) from e
 
         if not isinstance(config, YahooFinanceConnectorConfig):
             if not config:
@@ -57,8 +57,7 @@ class YahooFinanceConnector(BaseConnector):
             DataFrameType: The head of the data source that the connector is
             connected to.
         """
-        head_data = self.ticker.history(period="5d")
-        return head_data
+        return self.ticker.history(period="5d")
 
     def _get_cache_path(self, include_additional_filters: bool = False):
         """
@@ -120,8 +119,7 @@ class YahooFinanceConnector(BaseConnector):
         Returns:
             DataFrameType: The result of the connector.
         """
-        cached_path = self._cached()
-        if cached_path:
+        if cached_path := self._cached():
             return pd.read_parquet(cached_path)
 
         # Use yfinance to retrieve historical stock data

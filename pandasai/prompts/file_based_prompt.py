@@ -29,11 +29,11 @@ class FileBasedPrompt(AbstractPrompt):
         try:
             with open(self._path_to_template) as fp:
                 return fp.read()
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             raise TemplateFileNotFoundError(
                 self._path_to_template, self.__class__.__name__
-            )
+            ) from e
         except IOError as exc:
             raise RuntimeError(
                 f"Failed to read template file '{self._path_to_template}': {exc}"
-            )
+            ) from exc

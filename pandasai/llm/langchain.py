@@ -19,4 +19,4 @@ class LangchainLLM(LLM):
 
     @property
     def type(self) -> str:
-        return "langchain_" + self._langchain_llm._llm_type
+        return f"langchain_{self._langchain_llm._llm_type}"

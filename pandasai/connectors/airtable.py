@@ -143,8 +143,9 @@ class AirtableConnector(BaseConnector):
         Returns:
             DataFrameType: The result of the connector.
         """
-        cached = self._cached() or self._cached(include_additional_filters=True)
-        if cached:
+        if cached := self._cached() or self._cached(
+            include_additional_filters=True
+        ):
             return pd.read_parquet(cached)
 
         if isinstance(self._instance, pd.DataFrame):
@@ -164,17 +165,15 @@ class AirtableConnector(BaseConnector):
             for i in self._config.where:
                 filter_query = f"{i[0]}{i[1]}'{i[2]}'"
                 condition_strings.append(filter_query)
-        filter_formula = f'AND({",".join(condition_strings)})'
-        return filter_formula
+        return f'AND({",".join(condition_strings)})'
 
     def _request_api(self, params):
         url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
-        response = requests.get(
+        return requests.get(
             url=url,
             headers={"Authorization": f"Bearer {self._config.api_key}"},
             params=params,
         )
-        return response
 
     def _fetch_data(self):
         """
@@ -204,8 +203,7 @@ class AirtableConnector(BaseConnector):
             if len(records) < 100 or "offset" not in res:
                 break
 
-            if "offset" in res:
-                params["offset"] = res["offset"]
+            params["offset"] = res["offset"]
 
         return pd.DataFrame(data)
 
