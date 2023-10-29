@@ -199,7 +199,7 @@ databricks_connector = DatabricksConnector(
 
 The GoogleBigQuery connector allows you to connect to GoogleBigQuery datasests. It is very similar to the SQL connectors, but it has some differences.
 
-To use the DataBricks connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+To use the GoogleBigQuery connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
 from pandasai.connectors import GoogleBigQueryConnector
