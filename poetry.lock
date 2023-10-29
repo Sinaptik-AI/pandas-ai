@@ -126,7 +126,7 @@ frozenlist = ">=1.1.0"
 name = "alembic"
 version = "1.12.0"
 description = "A database migration tool for SQLAlchemy."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "alembic-1.12.0-py3-none-any.whl", hash = "sha256:03226222f1cf943deee6c85d9464261a6c710cd19b4fe867a3ad1f25afda610f"},
@@ -270,7 +270,7 @@ files = [
 name = "beautifulsoup4"
 version = "4.12.2"
 description = "Screen-scraping library"
-optional = false
+optional = true
 python-versions = ">=3.6.0"
 files = [
     {file = "beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
@@ -835,7 +835,7 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 name = "databricks-sql-connector"
 version = "2.9.3"
 description = "Databricks SQL Connector for Python"
-optional = true
+optional = false
 python-versions = ">=3.7.1,<4.0.0"
 files = [
     {file = "databricks_sql_connector-2.9.3-py3-none-any.whl", hash = "sha256:e37b5aa8bea22e84a9920e87ad9ba6cafbe656008c180a790baa53b711dd9889"},
@@ -967,7 +967,7 @@ files = [
 name = "et-xmlfile"
 version = "1.1.0"
 description = "An implementation of lxml.xmlfile for the standard library"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
@@ -1233,16 +1233,6 @@ sftp = ["paramiko"]
 smb = ["smbprotocol"]
 ssh = ["paramiko"]
 tqdm = ["tqdm"]
-
-[[package]]
-name = "future"
-version = "0.18.3"
-description = "Clean single-source support for Python 3 and 2"
-optional = true
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-files = [
-    {file = "future-0.18.3.tar.gz", hash = "sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307"},
-]
 
 [[package]]
 name = "ggplot"
@@ -2379,7 +2369,7 @@ source = ["Cython (>=0.29.35)"]
 name = "lz4"
 version = "4.3.2"
 description = "LZ4 Bindings for Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "lz4-4.3.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:1c4c100d99eed7c08d4e8852dd11e7d1ec47a3340f49e3a96f8dfbba17ffb300"},
@@ -2428,7 +2418,7 @@ tests = ["psutil", "pytest (!=3.3.0)", "pytest-cov"]
 name = "mako"
 version = "1.2.4"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "Mako-1.2.4-py3-none-any.whl", hash = "sha256:c97c79c018b9165ac9922ae4f32da095ffd3c4e6872b45eded42926deea46818"},
@@ -2971,7 +2961,7 @@ files = [
 name = "oauthlib"
 version = "3.2.2"
 description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
@@ -3023,7 +3013,7 @@ pydantic = ">=1.8.2"
 name = "openpyxl"
 version = "3.1.2"
 description = "A Python library to read/write Excel 2010 xlsx/xlsm files"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "openpyxl-3.1.2-py2.py3-none-any.whl", hash = "sha256:f91456ead12ab3c6c2e9491cf33ba6d08357d802192379bb482f1033ade496f5"},
@@ -3449,7 +3439,7 @@ tests = ["pytest"]
 name = "pyarrow"
 version = "13.0.0"
 description = "Python library for Apache Arrow"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pyarrow-13.0.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:1afcc2c33f31f6fb25c92d50a86b7a9f076d38acbcb6f9e74349636109550148"},
@@ -3647,28 +3637,6 @@ files = [
 
 [package.extras]
 plugins = ["importlib-metadata"]
-
-[[package]]
-name = "pyhive"
-version = "0.7.0"
-description = "Python interface to Hive"
-optional = true
-python-versions = "*"
-files = [
-    {file = "PyHive-0.7.0.tar.gz", hash = "sha256:585beff9578a61b99aed47140fec97e26323e8c685a5b5d0c8550a8ebf8a24e0"},
-]
-
-[package.dependencies]
-future = "*"
-python-dateutil = "*"
-
-[package.extras]
-hive = ["sasl (>=0.2.1)", "thrift (>=0.10.0)", "thrift_sasl (>=0.1.0)"]
-hive-pure-sasl = ["pure-sasl (>=0.6.2)", "thrift (>=0.10.0)", "thrift_sasl (>=0.1.0)"]
-kerberos = ["requests_kerberos (>=0.12.0)"]
-presto = ["requests (>=1.0.0)"]
-sqlalchemy = ["sqlalchemy (>=1.3.0)"]
-trino = ["requests (>=1.0.0)"]
 
 [[package]]
 name = "pyjwt"
@@ -4431,7 +4399,7 @@ files = [
 name = "soupsieve"
 version = "2.5"
 description = "A modern CSS selector implementation for Beautiful Soup."
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "soupsieve-2.5-py3-none-any.whl", hash = "sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7"},
@@ -4508,22 +4476,6 @@ postgresql-psycopg2binary = ["psycopg2-binary"]
 postgresql-psycopg2cffi = ["psycopg2cffi"]
 pymysql = ["pymysql", "pymysql (<1)"]
 sqlcipher = ["sqlcipher3-binary"]
-
-[[package]]
-name = "sqlalchemy-databricks"
-version = "0.2.0"
-description = "SQLAlchemy Dialect for Databricks"
-optional = true
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "sqlalchemy-databricks-0.2.0.tar.gz", hash = "sha256:d6efc02643962a1841eeb9139b942efc0246440c9cef3e7f7ebb3ea8d38eb5c0"},
-    {file = "sqlalchemy_databricks-0.2.0-py3-none-any.whl", hash = "sha256:c0c34e85727c289f742c258ce236fe7c95bcc4bcc3a2872b724cc2da20f4db8c"},
-]
-
-[package.dependencies]
-databricks-sql-connector = ">=2,<3"
-PyHive = ">=0,<1"
-SQLAlchemy = ">=1,<2"
 
 [[package]]
 name = "stack-data"
@@ -4681,7 +4633,7 @@ files = [
 name = "thrift"
 version = "0.16.0"
 description = "Python bindings for the Apache Thrift RPC system"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "thrift-0.16.0.tar.gz", hash = "sha256:2b5b6488fcded21f9d312aa23c9ff6a0195d0f6ae26ddbd5ad9e3e25dfc14408"},
@@ -5113,4 +5065,4 @@ yfinance = ["yfinance"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "c70c453dd85c2f7881cae7e27ad477530ea05cc66ab356e81499ab4e946603a7"
+content-hash = "4d4d98bab35337e45849c6f4bd14b2ba6e41a3654d4495bbbe9fa4f0339722a8"

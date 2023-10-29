@@ -24,6 +24,7 @@ class TestDataBricksConnector(unittest.TestCase):
             database="DATABRICKS_SAMPLE_DATA",
             httpPath="/sql/1.0/warehouses/1241rsa32",
             table="lineitem",
+            catalog="sample",
             where=[["column_name", "=", "value"]],
         ).dict()
 

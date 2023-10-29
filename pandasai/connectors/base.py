@@ -92,6 +92,7 @@ class DatabricksConnectorConfig(SQLBaseConnectorConfig):
     port: int
     token: str
     httpPath: str
+    catalog: str
 
 
 class BaseConnector(ABC):

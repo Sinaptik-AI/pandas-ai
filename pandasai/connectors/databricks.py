@@ -46,7 +46,7 @@ class DatabricksConnector(SQLConnector):
 
         """
         self._engine = create_engine(
-            f"{config.dialect}://token:{config.token}@{config.host}:{config.port}?http_path={config.httpPath}"
+            f"{config.dialect}://token:{config.token}@{config.host}:{config.port}?http_path={config.httpPath}&catalog={config.catalog}&schema={config.database}"
         )
 
         self._connection = self._engine.connect()

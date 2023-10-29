@@ -186,6 +186,7 @@ databricks_connector = DatabricksConnector(
         "port": 443,
         "table": "loan_payments_data",
         "httpPath": "/sql/1.0/warehouses/213421312",
+        "catalog":"sample",
         "where": [
             # this is optional and filters the data to
             # reduce the size of the dataframe
