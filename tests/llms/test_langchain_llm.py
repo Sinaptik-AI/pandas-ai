@@ -13,15 +13,14 @@ class TestLangchainLLM:
 
     @pytest.fixture
     def langchain_llm(self):
+
         class FakeOpenAI(OpenAI):
             openai_api_key = "fake_key"
 
             def __call__(self, _prompt, stop=None, callbacks=None, **kwargs):
                 return Mock(return_value="Custom response")()
 
-        langchain_llm = FakeOpenAI()
-
-        return langchain_llm
+        return FakeOpenAI()
 
     @pytest.fixture
     def prompt(self):

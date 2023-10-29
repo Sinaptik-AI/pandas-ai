@@ -71,8 +71,7 @@ class TestSkills:
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
-        context = MagicMock(spec=CodeExecutionContext)
-        return context
+        return MagicMock(spec=CodeExecutionContext)
 
     @pytest.fixture
     def agent(self, llm, sample_df):

@@ -84,8 +84,7 @@ class Agent:
         try:
             is_related = self.check_if_related_to_conversation(query)
             self._lake.is_related_query(is_related)
-            result = self._lake.chat(query, output_type=output_type)
-            return result
+            return self._lake.chat(query, output_type=output_type)
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your answers, "
@@ -107,10 +106,7 @@ class Agent:
 
         result = self._call_llm_with_prompt(prompt)
 
-        related = False
-        if "true" in result:
-            related = True
-
+        related = "true" in result
         self._logger.log(
             f"""Check if the new message is related to the conversation: {related}"""
         )

@@ -65,11 +65,10 @@ class HuggingFaceTextGen(LLM):
 
         params = self._default_params
         if self.streaming:
-            completion = ""
-            for chunk in self.client.generate_stream(prompt, **params):
-                completion += chunk.template
-            return completion
-
+            return "".join(
+                chunk.template
+                for chunk in self.client.generate_stream(prompt, **params)
+            )
         res = self.client.generate(prompt, **params)
         if self.stop_sequences:
             # remove stop sequences from the end of the generated text

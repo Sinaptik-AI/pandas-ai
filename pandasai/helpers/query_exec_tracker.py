@@ -62,7 +62,7 @@ class QueryExecTracker:
             output_type (str): output type expected by user
         """
         self._query_info = {
-            "conversation_id": str(conversation_id),
+            "conversation_id": conversation_id,
             "instance": instance,
             "query": query,
             "output_type": output_type,
@@ -154,13 +154,9 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "cache_hit":
-            step["code_generated"] = result
-
-        elif func_name == "generate_code":
-            step["code_generated"] = result[0]
-            step["reasoning"] = result[1]
-            step["answer"] = result[2]
+        if func_name == "_get_prompt":
+            step["prompt_class"] = result.__class__.__name__
+            step["generated_prompt"] = result.to_string()
 
         elif func_name == "_retry_run_code":
             self._func_exec_count["_retry_run_code"] += 1
@@ -172,13 +168,17 @@ class QueryExecTracker:
             step["reasoning"] = result[1]
             step["answer"] = result[2]
 
-        elif func_name == "_get_prompt":
-            step["prompt_class"] = result.__class__.__name__
-            step["generated_prompt"] = result.to_string()
+        elif func_name == "cache_hit":
+            step["code_generated"] = result
 
         elif func_name == "execute_code":
             self._response = self._format_response(result)
             step["result"] = self._response
+
+        elif func_name == "generate_code":
+            step["code_generated"] = result[0]
+            step["reasoning"] = result[1]
+            step["answer"] = result[2]
 
         return step
 
@@ -193,14 +193,13 @@ class QueryExecTracker:
         """
         formatted_result = {}
         if result["type"] == "dataframe":
-            formatted_result = {
+            return {
                 "type": result["type"],
                 "value": {
                     "headers": result["value"].columns.tolist(),
                     "rows": result["value"].values.tolist(),
                 },
             }
-            return formatted_result
         elif result["type"] == "plot":
             with open(result["value"], "rb") as image_file:
                 image_data = image_file.read()
@@ -208,12 +207,10 @@ class QueryExecTracker:
             base64_image = (
                 f"data:image/png;base64,{base64.b64encode(image_data).decode()}"
             )
-            formatted_result = {
+            return {
                 "type": result["type"],
                 "value": base64_image,
             }
-
-            return formatted_result
         else:
             return result
 

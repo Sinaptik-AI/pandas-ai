@@ -73,8 +73,7 @@ class TestCodeManager:
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
-        context = MagicMock(spec=CodeExecutionContext)
-        return context
+        return MagicMock(spec=CodeExecutionContext)
 
     def test_run_code_for_calculations(
         self, code_manager: CodeManager, exec_context: MagicMock
