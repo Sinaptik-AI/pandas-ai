@@ -20,7 +20,7 @@ class GoogleBigQueryConnector(SQLConnector):
         Initialize the GoogleBigQuery connector with the given configuration.
 
         Args:
-            config (ConnectorConfig): The configuration for the GoogleBigQuery connector.
+            config (ConnectorConfig): The config for the GoogleBigQuery connector.
         """
         config["dialect"] = "bigquery"
         if isinstance(config, dict):
@@ -44,7 +44,7 @@ class GoogleBigQueryConnector(SQLConnector):
             config (GoogleBigQueryConnectorConfig): Configurations to load database
 
         """
-        
+
         self._engine = create_engine(
             f"{config.dialect}://{config.projectID}/{config.database}",
             credentials_path=config.credentials_path,
