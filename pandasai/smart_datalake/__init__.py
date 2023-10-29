@@ -83,9 +83,9 @@ class SmartDatalake:
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
-        self.initialize()
-
         self._load_config(config)
+
+        self.initialize()
 
         if logger:
             self.logger = logger
@@ -136,21 +136,30 @@ class SmartDatalake:
         self._query_exec_tracker.set_related_query(flag)
 
     def initialize(self):
-        """Initialize the SmartDatalake"""
+        """Initialize the SmartDatalake, create auxiliary directories.
 
-        # Create exports/charts folder if it doesn't exist
-        try:
-            charts_dir = os.path.join((find_project_root()), "exports", "charts")
-        except ValueError:
-            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
-        os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+        If 'save_charts' option is enabled, create '.exports/charts directory'
+        in case if it doesn't exist.
+        If 'enable_cache' option is enabled, Create './cache' in case if it
+        doesn't exist.
 
-        # Create /cache folder if it doesn't exist
-        try:
-            cache_dir = os.path.join((find_project_root()), "cache")
-        except ValueError:
-            cache_dir = os.path.join(os.getcwd(), "cache")
-        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+        Returns:
+            None
+        """
+
+        if self._config.save_charts:
+            try:
+                charts_dir = os.path.join((find_project_root()), "exports", "charts")
+            except ValueError:
+                charts_dir = os.path.join(os.getcwd(), "exports", "charts")
+            os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+
+        if self._config.enable_cache:
+            try:
+                cache_dir = os.path.join((find_project_root()), "cache")
+            except ValueError:
+                cache_dir = os.path.join(os.getcwd(), "cache")
+            os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
