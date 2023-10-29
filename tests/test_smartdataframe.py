@@ -1114,8 +1114,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
 
 Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
 
-Return the updated code:"""
-            % viz_library_type_hint
+Return the updated code:""" % viz_library_type_hint
         )  # noqa: E501
 
         df.chat(

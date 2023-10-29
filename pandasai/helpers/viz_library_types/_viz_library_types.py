@@ -85,3 +85,4 @@ class SeabornVizLibraryType(BaseVizLibraryType):
     @property
     def name(self):
         return "seaborn"
+
