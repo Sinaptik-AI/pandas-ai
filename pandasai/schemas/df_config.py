@@ -33,6 +33,7 @@ class Config(BaseModel):
     response_parser: Type[ResponseParser] = None
     llm: Any = None
     log_server: LogServerConfig = None
+    visualization_library : str = "matplotlib"
 
     class Config:
         arbitrary_types_allowed = True

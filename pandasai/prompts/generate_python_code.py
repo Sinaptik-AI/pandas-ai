@@ -48,10 +48,10 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
             self._set_instructions(kwargs["custom_instructions"])
         else:
             self._set_instructions(
-                """Analyze the data, using the provided dataframes (`dfs`).
+                f"""Analyze the data, using the provided dataframes (`dfs`).
 1. Prepare: Preprocessing and cleaning data if necessary
 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must use {self.get_config("visualization_library")} and save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
             )
 
         if "current_code" in kwargs:
