@@ -25,8 +25,7 @@ class SyntheticDataframePrompt(BaseLogicUnit):
         if context is None or len(context.dfs) == 0:
             raise ValueError("Dataframe not found")
 
-        prompt = GenerateSyntheticDfPrompt(
-            amount=self._amount, dataframe=context.dfs[kwargs.get("dataframe_index", 0)]
+        return GenerateSyntheticDfPrompt(
+            amount=self._amount,
+            dataframe=context.dfs[kwargs.get("dataframe_index", 0)],
         )
-
-        return prompt
