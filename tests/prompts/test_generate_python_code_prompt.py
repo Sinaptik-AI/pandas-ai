@@ -123,6 +123,7 @@ Based on the last message in the conversation:
         """
 
         llm = FakeLLM("plt.show()")
+        viz_library_type_hint = ""
         dfs = [
             SmartDataframe(
                 pd.DataFrame({"a": [1], "b": [4]}),
@@ -136,6 +137,7 @@ Based on the last message in the conversation:
         prompt.set_var("save_charts_path", "")
         prompt.set_var("output_type_hint", "")
         prompt.set_var("skills", "")
+        prompt.set_var("viz_library_type", "")
 
         expected_prompt_content = f'''You are provided with the following pandas DataFrames:
 
@@ -149,6 +151,8 @@ a,b
 <conversation>
 Question
 </conversation>
+
+{viz_library_type_hint}
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python

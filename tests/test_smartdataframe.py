@@ -1087,7 +1087,7 @@ User: Plot the histogram of countries showing for each the gdp with distinct bar
 
 %s
 
-This is the initial python function. Do not change the params.
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
 import pandas as pd
@@ -1097,12 +1097,12 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
-        { "type": "string", "value": "The highest salary is $9,000." }
+        { "type": "string", "value": f"The highest salary is {highest_salary}." }
         or
         { "type": "number", "value": 125 }
         or
@@ -1112,9 +1112,11 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     \"\"\"
 ```
 
-Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
-
-Return the updated code:""" % viz_library_type_hint
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+- return the updated analyze_data function wrapped within ```python ```"""
+            % viz_library_type_hint
         )  # noqa: E501
 
         df.chat(
