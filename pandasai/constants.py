@@ -84,6 +84,6 @@ WHITELISTED_LIBRARIES = [
     "json",
     "io",
     "base64",
-    "scipy",
+    # "scipy",
     "streamlit",
 ]
