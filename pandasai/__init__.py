@@ -235,23 +235,17 @@ class PandasAI:
     @property
     def logs(self) -> List[dict[str, str]]:
         """Return the logs"""
-        if self._dl is None:
-            return []
-        return self._dl.logs
+        return [] if self._dl is None else self._dl.logs
 
     @property
     def last_prompt_id(self) -> str:
         """Return the id of the last prompt that was run."""
-        if self._dl is None:
-            return None
-        return self._dl.last_prompt_id
+        return None if self._dl is None else self._dl.last_prompt_id
 
     @property
     def last_prompt(self) -> str:
         """Return the last prompt that was executed."""
-        if self._dl is None:
-            return None
-        return self._dl.last_prompt
+        return None if self._dl is None else self._dl.last_prompt
 
 
 def clear_cache(filename: str = None):
