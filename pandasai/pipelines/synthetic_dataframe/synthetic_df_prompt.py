@@ -18,7 +18,6 @@ class SyntheticDataframePrompt(BaseLogicUnit):
             amount (int): Amount of rows to generate
         """
         self._amount = amount
-        print("SyntheticDataframePrompt", amount)
 
     def execute(self, input: Any, **kwargs) -> Any:
         context: PipelineContext = kwargs.get("context")
