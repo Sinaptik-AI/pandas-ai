@@ -142,13 +142,14 @@ class SmartDatalake:
         Returns:
             None
         """
+        try:
+            charts_dir = os.path.join(
+                (find_project_root()), self._config.save_charts_path
+            )
+        except ValueError:
+            charts_dir = os.path.join(os.getcwd(), self._config.save_charts_path)
 
-        if self._config.save_charts:
-            try:
-                charts_dir = os.path.join((find_project_root()), "exports", "charts")
-            except ValueError:
-                charts_dir = os.path.join(os.getcwd(), "exports", "charts")
-            os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+        os.makedirs(charts_dir, mode=0o777, exist_ok=True)
 
         if self._config.enable_cache:
             try:
@@ -256,7 +257,9 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt or default_prompt()
+        prompt = custom_prompt or default_prompt(
+            save_charts_path=self._config.save_charts_path
+        )
 
         # set default values for the prompt
         prompt.set_config(self._config)

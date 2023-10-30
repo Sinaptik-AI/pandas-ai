@@ -46,7 +46,7 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodePrompt()
+        prompt = GeneratePythonCodePrompt(save_charts_path="exports/charts")
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
@@ -76,7 +76,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in exports/charts/temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """
@@ -103,15 +103,14 @@ Based on the last message in the conversation:
                 config={"llm": llm, "use_advanced_reasoning_framework": True},
             )
         ]
-        prompt = GeneratePythonCodePrompt()
+        prompt = GeneratePythonCodePrompt(save_charts_path="exports/charts")
         prompt.set_config(dfs[0]._lake.config)
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
-        prompt.set_var("save_charts_path", "")
         prompt.set_var("output_type_hint", "")
         prompt.set_var("skills", "")
 
-        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
+        expected_prompt_content = '''You are provided with the following pandas DataFrames:
 
 <dataframe>
 Dataframe dfs[0], with 1 rows and 2 columns.
@@ -134,7 +133,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in exports/charts/temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     
     """
@@ -156,7 +155,7 @@ Based on the last message in the conversation:
 1. Load: Load the data from a file or database
 2. Prepare: Preprocessing and cleaning data if necessary
 3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in exports/charts/temp_chart.png and not show the chart.)"""  # noqa: E501
 
         prompt = GeneratePythonCodePrompt(custom_instructions=custom_instructions)
         actual_instructions = prompt._args["instructions"]
@@ -167,5 +166,5 @@ Based on the last message in the conversation:
     1. Load: Load the data from a file or database
     2. Prepare: Preprocessing and cleaning data if necessary
     3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in exports/charts/temp_chart.png and not show the chart.)"""  # noqa: E501
         )
