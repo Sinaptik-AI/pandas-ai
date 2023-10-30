@@ -81,7 +81,7 @@ def standardize_model_name(
     ):
         # The cost of completion token is different from
         # the cost of prompt tokens.
-        return model_name + "-completion"
+        return f"{model_name}-completion"
     else:
         return model_name
 
