@@ -21,10 +21,7 @@ class SDFCodeExecutor(BaseLogicUnit):
             if "df" not in namespace:
                 raise ValueError(f"Unable to execute code: {input}")
 
-            data = namespace["df"]
-
-            return data
-
+            return namespace["df"]
         except Exception:
             logger = kwargs.get("logger")
             if logger is not None:
