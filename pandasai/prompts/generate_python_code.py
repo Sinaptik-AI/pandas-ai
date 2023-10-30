@@ -44,11 +44,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
     _path_to_template = "assets/prompt_templates/generate_python_code.tmpl"
 
     def setup(self, **kwargs) -> None:
-        if "visualization_library" in kwargs:
-            visualization_library = kwargs["visualization_library"]
-        else:
-            visualization_library = "matplotlib"
-
+        visualization_library = kwargs.get("visualization_library", "matplotlib")
         if "custom_instructions" in kwargs:
             self._set_instructions(kwargs["custom_instructions"])
         else:

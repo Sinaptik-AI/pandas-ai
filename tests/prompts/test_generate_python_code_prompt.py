@@ -111,7 +111,7 @@ Based on the last message in the conversation:
         prompt.set_var("output_type_hint", "")
         prompt.set_var("skills", "")
 
-        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
+        expected_prompt_content = '''You are provided with the following pandas DataFrames:
 
 <dataframe>
 Dataframe dfs[0], with 1 rows and 2 columns.
