@@ -113,7 +113,7 @@ class PandasAI:
         middlewares=None,
         custom_whitelisted_dependencies=None,
         enable_logging=True,
-        visualization_library = "matplotlib",
+        visualization_library="matplotlib",
         non_default_prompts: Optional[Dict[str, Type[AbstractPrompt]]] = None,
         callback: Optional[BaseCallback] = None,
     ):
@@ -162,7 +162,7 @@ class PandasAI:
             non_default_prompts=non_default_prompts,
             llm=llm,
             callback=callback,
-            visualization_library = visualization_library
+            visualization_library=visualization_library,
         )
 
     def run(

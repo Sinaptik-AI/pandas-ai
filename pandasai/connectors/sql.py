@@ -246,9 +246,7 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
-        if cached := self._cached() or self._cached(
-            include_additional_filters=True
-        ):
+        if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
 
         if self.logger:

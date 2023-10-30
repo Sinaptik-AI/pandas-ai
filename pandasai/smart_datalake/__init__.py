@@ -256,8 +256,9 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt or default_prompt()
-
+        prompt = custom_prompt or default_prompt(
+            visualization_library=self._config.visualization_library
+        )
         # set default values for the prompt
         prompt.set_config(self._config)
         if "dfs" not in default_values:

@@ -44,6 +44,11 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
     _path_to_template = "assets/prompt_templates/generate_python_code.tmpl"
 
     def setup(self, **kwargs) -> None:
+        if "visualization_library" in kwargs:
+            visualization_library = kwargs["visualization_library"]
+        else:
+            visualization_library = "matplotlib"
+
         if "custom_instructions" in kwargs:
             self._set_instructions(kwargs["custom_instructions"])
         else:
@@ -51,7 +56,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
                 f"""Analyze the data, using the provided dataframes (`dfs`).
 1. Prepare: Preprocessing and cleaning data if necessary
 2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must use {self.get_config(key="visualization_library")} and save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use {visualization_library} and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
             )
 
         if "current_code" in kwargs:

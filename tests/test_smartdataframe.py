@@ -225,7 +225,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use matplotlib and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -286,7 +286,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use matplotlib and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """

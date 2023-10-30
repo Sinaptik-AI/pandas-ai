@@ -76,7 +76,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use matplotlib and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """
@@ -134,7 +134,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use matplotlib and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     
     """
@@ -168,4 +168,16 @@ Based on the last message in the conversation:
     2. Prepare: Preprocessing and cleaning data if necessary
     3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+        )
+
+    def test_custome_visualization_library(self):
+        prompt = GeneratePythonCodePrompt(visualization_library="plotly")
+        actual_instructions = prompt._args["instructions"]
+
+        assert (
+            actual_instructions
+            == """Analyze the data, using the provided dataframes (`dfs`).
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must import on top and use plotly and save it using matplotlib.pyplot as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
         )
