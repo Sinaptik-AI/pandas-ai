@@ -153,6 +153,7 @@ class SmartDatalake:
                     charts_dir = os.path.join(
                         (find_project_root()), self._config.save_charts_path
                     )
+                    self._config.save_charts_path = charts_dir
                 except ValueError:
                     charts_dir = os.path.join(
                         os.getcwd(), self._config.save_charts_path

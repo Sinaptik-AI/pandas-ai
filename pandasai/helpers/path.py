@@ -2,6 +2,9 @@ import os
 
 
 def find_project_root(filename=None):
+    if "PANDASAI_WORKSPACE" in os.environ:
+        return os.environ["PANDASAI_WORKSPACE"]
+
     # Get the path of the file that is being executed
     current_file_path = os.path.abspath(os.getcwd())
 
@@ -26,7 +29,8 @@ def find_project_root(filename=None):
 
         parent_folder = os.path.dirname(root_folder)
         if parent_folder == root_folder:
-            raise ValueError("Could not find the root folder of the project.")
+            # if project root is not found return cwd
+            return os.getcwd()
 
         root_folder = parent_folder
 

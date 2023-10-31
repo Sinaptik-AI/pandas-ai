@@ -461,6 +461,7 @@ result = analyze_data(dfs)
                     "llm": llm,
                     "enable_cache": False,
                     "save_charts": True,
+                    "save_charts_path": "charts",
                 },
             )
 
@@ -470,7 +471,7 @@ result = analyze_data(dfs)
         assert plt_mock.savefig.called
         assert (
             plt_mock.savefig.call_args.args[0]
-            == f"exports/charts/{smart_dataframe.last_prompt_id}.png"
+            == f"charts/{smart_dataframe.last_prompt_id}.png"
         )
 
     def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):

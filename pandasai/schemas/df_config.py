@@ -1,7 +1,6 @@
 from pydantic import BaseModel, validator, Field
 from typing import Optional, List, Any, Dict, Type, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
-
 from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
