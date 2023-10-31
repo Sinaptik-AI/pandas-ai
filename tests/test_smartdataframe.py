@@ -25,7 +25,11 @@ from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
-
+from pandasai.helpers.viz_library_types import (
+    MatplotlibVizLibraryType,
+    viz_lib_map,
+    viz_lib_type_factory,
+)
 import logging
 
 
@@ -215,6 +219,10 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -275,6 +283,10 @@ country
 <conversation>
 User: How many countries are in the dataframe?
 </conversation>
+
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -588,7 +600,7 @@ result = analyze_data(dfs)
         assert smart_dataframe.verbose is False
 
         smart_dataframe.verbose = True
-        assert smart_dataframe.verbose is True
+        assert smart_dataframe.verbose
         assert smart_dataframe.lake._logger.verbose is True
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
@@ -596,7 +608,7 @@ result = analyze_data(dfs)
         )
 
         smart_dataframe.verbose = False
-        assert smart_dataframe.verbose is False
+        assert not smart_dataframe.verbose
         assert smart_dataframe.lake._logger.verbose is False
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
@@ -606,12 +618,12 @@ result = analyze_data(dfs)
         assert smart_dataframe.save_logs is True
 
         smart_dataframe.save_logs = False
-        assert smart_dataframe.save_logs is False
+        assert not smart_dataframe.save_logs
         assert smart_dataframe.lake._logger.save_logs is False
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
         smart_dataframe.save_logs = True
-        assert smart_dataframe.save_logs is True
+        assert smart_dataframe.save_logs
         assert smart_dataframe.lake._logger.save_logs is True
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
@@ -624,13 +636,13 @@ result = analyze_data(dfs)
         assert smart_dataframe.enable_cache is False
 
         smart_dataframe.enable_cache = True
-        assert smart_dataframe.enable_cache is True
+        assert smart_dataframe.enable_cache
         assert smart_dataframe.lake.enable_cache is True
         assert smart_dataframe.lake.cache is not None
         assert isinstance(smart_dataframe.lake._cache, Cache)
 
         smart_dataframe.enable_cache = False
-        assert smart_dataframe.enable_cache is False
+        assert not smart_dataframe.enable_cache
         assert smart_dataframe.lake.enable_cache is False
         assert smart_dataframe.lake.cache is None
 
@@ -648,10 +660,10 @@ result = analyze_data(dfs)
         assert smart_dataframe.callback is not None
 
         smart_dataframe.enforce_privacy = True
-        assert smart_dataframe.enforce_privacy is True
+        assert smart_dataframe.enforce_privacy
 
         smart_dataframe.use_error_correction_framework = False
-        assert smart_dataframe.use_error_correction_framework is False
+        assert not smart_dataframe.use_error_correction_framework
 
         smart_dataframe.custom_prompts = {
             "generate_python_code": GeneratePythonCodePrompt()
@@ -659,7 +671,7 @@ result = analyze_data(dfs)
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True
-        assert smart_dataframe.save_charts is True
+        assert smart_dataframe.save_charts
 
         smart_dataframe.save_charts_path = "some/path"
         assert smart_dataframe.save_charts_path == "some/path"
@@ -1034,3 +1046,83 @@ result = analyze_data(dfs)
     ):
         with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
             assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
+
+    @pytest.mark.parametrize(
+        "viz_library_type,viz_library_type_hint",
+        [
+            (None, MatplotlibVizLibraryType().template_hint),
+            *[
+                (type_, viz_lib_type_factory(type_).template_hint)
+                for type_ in viz_lib_map
+            ],
+        ],
+    )
+    def test_run_passing_viz_library_type(
+        self, llm, viz_library_type, viz_library_type_hint
+    ):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(
+            df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "data_viz_library": viz_library_type,
+            },
+        )
+
+        expected_prompt = (
+            """You are provided with the following pandas DataFrames:
+
+<dataframe>
+Dataframe dfs[0], with 0 rows and 1 columns.
+This is the metadata of the dataframe dfs[0]:
+country
+</dataframe>
+
+<conversation>
+User: Plot the histogram of countries showing for each the gdp with distinct bar colors
+</conversation>
+
+%s
+
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
+```python
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    \"\"\"
+    Analyze the data, using the provided dataframes (`dfs`).
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    At the end, return a dictionary of:
+    - type (possible values "string", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Examples: 
+        { "type": "string", "value": f"The highest salary is {highest_salary}." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "temp_chart.png" }
+    \"\"\"
+```
+
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+            % viz_library_type_hint
+        )
+
+        df.chat(
+            "Plot the histogram of countries showing for each the gdp"
+            " with distinct bar colors"
+        )
+        last_prompt = df.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        assert last_prompt == expected_prompt

@@ -28,6 +28,7 @@ from pandasai.skills import skill
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 
 from ..helpers.output_types import output_type_factory
+from ..helpers.viz_library_types import viz_lib_type_factory
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import ResponseParser
 from ..llm.base import LLM
@@ -45,6 +46,7 @@ from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
+from ..helpers.viz_library_types.base import VisualizationLibrary
 from ..exceptions import AdvancedReasoningDisabledError
 
 
@@ -67,6 +69,8 @@ class SmartDatalake:
     _last_answer: str = None
     _last_result: str = None
     _last_error: str = None
+
+    _viz_lib: str = None
 
     def __init__(
         self,
@@ -116,6 +120,9 @@ class SmartDatalake:
             self._response_parser = self._config.response_parser(context)
         else:
             self._response_parser = ResponseParser(context)
+
+        if self._config.data_viz_library:
+            self._viz_lib = self._config.data_viz_library.value
 
         self._conversation_id = uuid.uuid4()
 
@@ -191,6 +198,10 @@ class SmartDatalake:
             self._load_llm(config["llm"])
             config["llm"] = self._llm
 
+        if config.get("data_viz_library"):
+            self._load_data_viz_library(config["data_viz_library"])
+            config["data_viz_library"] = self._data_viz_library
+
         self._config = Config(**config)
 
     def _load_llm(self, llm: LLM):
@@ -210,6 +221,21 @@ class SmartDatalake:
             llm = LangchainLLM(llm)
 
         self._llm = llm
+
+    def _load_data_viz_library(self, data_viz_library: str):
+        """
+        Load the appropriate instance for viz library type to use.
+
+        Args:
+            data_viz_library (enum): TODO
+
+        Raises:
+            TODO
+        """
+
+        self._data_viz_library = VisualizationLibrary.DEFAULT.value
+        if data_viz_library in (item.value for item in VisualizationLibrary):
+            self._data_viz_library = data_viz_library
 
     def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
@@ -273,7 +299,6 @@ class SmartDatalake:
             prompt.set_var(key, value)
 
         self.logger.log(f"Using prompt: {prompt}")
-
         return prompt
 
     def _get_cache_key(self) -> str:
@@ -333,6 +358,7 @@ class SmartDatalake:
 
         try:
             output_type_helper = output_type_factory(output_type, logger=self.logger)
+            viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
 
             if (
                 self._config.enable_cache
@@ -349,6 +375,7 @@ class SmartDatalake:
                     # TODO: find a better way to determine the engine,
                     "engine": self._dfs[0].engine,
                     "output_type_hint": output_type_helper.template_hint,
+                    "viz_library_type": viz_lib_helper.template_hint,
                 }
 
                 if (
