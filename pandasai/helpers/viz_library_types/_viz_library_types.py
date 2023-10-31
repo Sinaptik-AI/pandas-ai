@@ -4,9 +4,10 @@ from typing import Any, Iterable
 
 class BaseVizLibraryType(ABC):
     @property
-    @abstractmethod
     def template_hint(self) -> str:
-        ...
+        return f"""When a user requests to create a chart, utilize the Python
+{self.name} library to generate high-quality graphics that will be saved 
+directly to a file."""
 
     @property
     @abstractmethod
@@ -14,9 +15,7 @@ class BaseVizLibraryType(ABC):
         ...
 
     def _validate_type(self, actual_type: str) -> bool:
-        if actual_type != self.name:
-            return False
-        return True
+        return actual_type == self.name
 
     def validate(self, result: dict[str, Any]) -> tuple[bool, Iterable[str]]:
         """
@@ -50,25 +49,11 @@ class BaseVizLibraryType(ABC):
 
 class MatplotlibVizLibraryType(BaseVizLibraryType):
     @property
-    def template_hint(self):
-        return """When a user requests to create a chart, utilize the Python matplotlib 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots."""
-
-    @property
     def name(self):
         return "matplotlib"
 
 
 class PlotlyVizLibraryType(BaseVizLibraryType):
-    @property
-    def template_hint(self):
-        return """When a user requests to create a chart, utilize the Python plotly 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots."""
-
     @property
     def name(self):
         return "plotly"
@@ -76,13 +61,5 @@ class PlotlyVizLibraryType(BaseVizLibraryType):
 
 class SeabornVizLibraryType(BaseVizLibraryType):
     @property
-    def template_hint(self):
-        return """When a user requests to create a chart, utilize the Python Seaborn 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots."""
-
-    @property
     def name(self):
         return "seaborn"
-

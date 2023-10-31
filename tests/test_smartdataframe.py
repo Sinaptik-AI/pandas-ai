@@ -219,10 +219,9 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-When a user requests to create a chart, utilize the Python matplotlib 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots.
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -285,10 +284,9 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-When a user requests to create a chart, utilize the Python matplotlib 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots.
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -602,31 +600,31 @@ result = analyze_data(dfs)
         assert smart_dataframe.verbose is False
 
         smart_dataframe.verbose = True
-        assert smart_dataframe.verbose is True
-        assert smart_dataframe.lake._logger.verbose is True
+        assert smart_dataframe.verbose
+        assert smart_dataframe.lake._logger.verbose
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
             smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
         )
 
         smart_dataframe.verbose = False
-        assert smart_dataframe.verbose is False
+        assert not smart_dataframe.verbose
         assert smart_dataframe.lake._logger.verbose is False
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
     def test_updates_save_logs_config_with_setters(
         self, smart_dataframe: SmartDataframe
     ):
-        assert smart_dataframe.save_logs is True
+        assert smart_dataframe.save_logs
 
         smart_dataframe.save_logs = False
-        assert smart_dataframe.save_logs is False
-        assert smart_dataframe.lake._logger.save_logs is False
+        assert not smart_dataframe.save_logs
+        assert not smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
         smart_dataframe.save_logs = True
-        assert smart_dataframe.save_logs is True
-        assert smart_dataframe.lake._logger.save_logs is True
+        assert smart_dataframe.save_logs
+        assert smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
             smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
@@ -638,20 +636,20 @@ result = analyze_data(dfs)
         assert smart_dataframe.enable_cache is False
 
         smart_dataframe.enable_cache = True
-        assert smart_dataframe.enable_cache is True
-        assert smart_dataframe.lake.enable_cache is True
+        assert smart_dataframe.enable_cache
+        assert smart_dataframe.lake.enable_cache
         assert smart_dataframe.lake.cache is not None
         assert isinstance(smart_dataframe.lake._cache, Cache)
 
         smart_dataframe.enable_cache = False
-        assert smart_dataframe.enable_cache is False
+        assert not smart_dataframe.enable_cache
         assert smart_dataframe.lake.enable_cache is False
         assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.callback is None
         assert smart_dataframe.enforce_privacy is False
-        assert smart_dataframe.use_error_correction_framework is True
+        assert smart_dataframe.use_error_correction_framework
         assert smart_dataframe.custom_prompts == {}
         assert smart_dataframe.save_charts is False
         assert smart_dataframe.save_charts_path == "exports/charts"
@@ -662,10 +660,10 @@ result = analyze_data(dfs)
         assert smart_dataframe.callback is not None
 
         smart_dataframe.enforce_privacy = True
-        assert smart_dataframe.enforce_privacy is True
+        assert smart_dataframe.enforce_privacy
 
         smart_dataframe.use_error_correction_framework = False
-        assert smart_dataframe.use_error_correction_framework is False
+        assert not smart_dataframe.use_error_correction_framework
 
         smart_dataframe.custom_prompts = {
             "generate_python_code": GeneratePythonCodePrompt()
@@ -673,7 +671,7 @@ result = analyze_data(dfs)
         assert smart_dataframe.custom_prompts != {}
 
         smart_dataframe.save_charts = True
-        assert smart_dataframe.save_charts is True
+        assert smart_dataframe.save_charts
 
         smart_dataframe.save_charts_path = "some/path"
         assert smart_dataframe.save_charts_path == "some/path"
@@ -961,7 +959,7 @@ result = analyze_data(dfs)
 
         validation_result = df_object.validate(TestSchema)
 
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_pydantic_validate_false(self, llm):
         # Create a sample DataFrame
@@ -996,7 +994,7 @@ result = analyze_data(dfs)
             B: int
 
         validation_result = df_object.validate(TestSchema)
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_pydantic_validate_false_one_record(self, llm):
         # Create a sample DataFrame
@@ -1041,7 +1039,7 @@ result = analyze_data(dfs)
 
         validation_result = df_object.validate(TestSchema)
 
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_head_csv_with_sample_head(
         self, sample_head, data_sampler, smart_dataframe: SmartDataframe
@@ -1115,12 +1113,13 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
 In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""
+- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
             % viz_library_type_hint
-        )  # noqa: E501
+        )
 
         df.chat(
-            "Plot the histogram of countries showing for each the gdp with distinct bar colors"
+            "Plot the histogram of countries showing for each the gdp"
+            " with distinct bar colors"
         )
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
