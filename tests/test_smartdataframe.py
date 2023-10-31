@@ -219,10 +219,9 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-When a user requests to create a chart, utilize the Python matplotlib 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots.
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -285,10 +284,9 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
-When a user requests to create a chart, utilize the Python matplotlib 
-        library to generate high-quality graphics that will be saved 
-        directly to a file. 
-        If you import matplotlib use the 'agg' backend for rendering plots.
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -1115,12 +1113,13 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
 In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""
+- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
             % viz_library_type_hint
-        )  # noqa: E501
+        )
 
         df.chat(
-            "Plot the histogram of countries showing for each the gdp with distinct bar colors"
+            "Plot the histogram of countries showing for each the gdp"
+            " with distinct bar colors"
         )
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
