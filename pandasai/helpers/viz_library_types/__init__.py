@@ -60,4 +60,3 @@ def viz_lib_type_factory(
         )
 
     return viz_lib_type_helper
-
