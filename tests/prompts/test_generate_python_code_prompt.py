@@ -46,7 +46,7 @@ class TestGeneratePythonCodePrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = GeneratePythonCodePrompt(save_charts_path="exports/charts")
+        prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
@@ -103,7 +103,7 @@ Based on the last message in the conversation:
                 config={"llm": llm, "use_advanced_reasoning_framework": True},
             )
         ]
-        prompt = GeneratePythonCodePrompt(save_charts_path="exports/charts")
+        prompt = GeneratePythonCodePrompt()
         prompt.set_config(dfs[0]._lake.config)
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")

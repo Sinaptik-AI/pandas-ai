@@ -143,9 +143,11 @@ class SmartDatalake:
         Returns:
             None
         """
-        # Add project root path if save_charts_path is default and makedir
+
         if self._config.save_charts:
             charts_dir = self._config.save_charts_path
+
+            # Add project root path if save_charts_path is default
             if self._config.save_charts_path == DEFAULT_CHART_DIRECTORY:
                 try:
                     charts_dir = os.path.join(
