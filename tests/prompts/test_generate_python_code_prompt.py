@@ -51,6 +51,7 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("conversation", "Question")
         prompt.set_var("save_charts_path", save_charts_path)
         prompt.set_var("output_type_hint", output_type_hint)
+        prompt.set_var("skills", "")
 
         expected_prompt_content = f'''You are provided with the following pandas DataFrames:
 
@@ -65,7 +66,7 @@ a,b
 Question
 </conversation>
 
-This is the initial python function. Do not change the params.
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
 import pandas as pd
@@ -75,15 +76,76 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     Analyze the data, using the provided dataframes (`dfs`).
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
     At the end, return a dictionary of:
     {output_type_hint}
     """
 ```
 
-Use the provided dataframes (`dfs`) to update the python code within the `analyze_data` function.
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+- return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
+        actual_prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
+        assert actual_prompt_content == expected_prompt_content
 
-Return the updated code:'''  # noqa E501
+    def test_advanced_reasoning_prompt(self):
+        """
+        Test a prompt with advanced reasoning framework
+        """
+
+        llm = FakeLLM("plt.show()")
+        dfs = [
+            SmartDataframe(
+                pd.DataFrame({"a": [1], "b": [4]}),
+                config={"llm": llm, "use_advanced_reasoning_framework": True},
+            )
+        ]
+        prompt = GeneratePythonCodePrompt()
+        prompt.set_config(dfs[0]._lake.config)
+        prompt.set_var("dfs", dfs)
+        prompt.set_var("conversation", "Question")
+        prompt.set_var("save_charts_path", "")
+        prompt.set_var("output_type_hint", "")
+        prompt.set_var("skills", "")
+
+        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
+
+<dataframe>
+Dataframe dfs[0], with 1 rows and 2 columns.
+This is the metadata of the dataframe dfs[0]:
+a,b
+1,4
+</dataframe>
+
+<conversation>
+Question
+</conversation>
+
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
+```python
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    """
+    Analyze the data, using the provided dataframes (`dfs`).
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    At the end, return a dictionary of:
+    
+    """
+```
+
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+- explain your reasoning to implement the last step to the user that asked for it; it should be wrapped between <reasoning> tags.
+- answer to the user as you would do as a data analyst; wrap it between <answer> tags; do not include the value or the chart itself (it will be calculated later).
+- return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
@@ -94,7 +156,7 @@ Return the updated code:'''  # noqa E501
 1. Load: Load the data from a file or database
 2. Prepare: Preprocessing and cleaning data if necessary
 3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
 
         prompt = GeneratePythonCodePrompt(custom_instructions=custom_instructions)
         actual_instructions = prompt._args["instructions"]
@@ -105,5 +167,5 @@ Return the updated code:'''  # noqa E501
     1. Load: Load the data from a file or database
     2. Prepare: Preprocessing and cleaning data if necessary
     3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart save it to an image in temp_chart.png and do not show the chart.)"""  # noqa: E501
+    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
         )

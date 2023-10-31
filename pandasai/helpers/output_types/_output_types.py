@@ -18,9 +18,7 @@ class BaseOutputType(ABC):
         ...
 
     def _validate_type(self, actual_type: str) -> bool:
-        if actual_type != self.name:
-            return False
-        return True
+        return actual_type == self.name
 
     @abstractmethod
     def _validate_value(self, actual_value):
@@ -75,9 +73,7 @@ class NumberOutputType(BaseOutputType):
         return "number"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        if isinstance(actual_value, (int, float, Decimal)):
-            return True
-        return False
+        return isinstance(actual_value, (int, float, Decimal))
 
 
 class DataFrameOutputType(BaseOutputType):
@@ -111,10 +107,7 @@ class PlotOutputType(BaseOutputType):
             return False
 
         path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
-        if re.match(path_to_plot_pattern, actual_value):
-            return True
-
-        return False
+        return bool(re.match(path_to_plot_pattern, actual_value))
 
 
 class StringOutputType(BaseOutputType):
@@ -129,9 +122,7 @@ class StringOutputType(BaseOutputType):
         return "string"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        if isinstance(actual_value, str):
-            return True
-        return False
+        return isinstance(actual_value, str)
 
 
 class DefaultOutputType(BaseOutputType):
@@ -140,7 +131,7 @@ class DefaultOutputType(BaseOutputType):
         return """- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
-        { "type": "string", "value": "The highest salary is $9,000." }
+        { "type": "string", "value": f"The highest salary is {highest_salary}." }
         or
         { "type": "number", "value": 125 }
         or

@@ -36,8 +36,7 @@ class DfConfigManager:
 
         directory_path = os.path.join(find_project_root(), "cache")
         create_directory(directory_path)
-        csv_file_path = os.path.join(directory_path, f"{self._sdf.table_name}.parquet")
-        return csv_file_path
+        return os.path.join(directory_path, f"{self._sdf.table_name}.parquet")
 
     def _check_for_duplicates(self, saved_dfs, name: str):
         """

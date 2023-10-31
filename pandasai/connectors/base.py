@@ -39,6 +39,15 @@ class SQLBaseConnectorConfig(BaseConnectorConfig):
     dialect: Optional[str] = None
 
 
+class SqliteConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configurations for sqlite db.
+    """
+
+    table: str
+    database: str
+
+
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
     """
     Connector configuration for Yahoo Finance.
@@ -167,7 +176,7 @@ class BaseConnector(ABC):
         Args:
             filters (dict): The additional filters to add to the connector.
         """
-        self._additional_filters = filters if filters else []
+        self._additional_filters = filters or []
 
     @property
     def rows_count(self):
@@ -199,10 +208,10 @@ class BaseConnector(ABC):
         Return the path of the data source that the connector is connected to.
         """
         # JDBC string
-        path = self.__class__.__name__ + "://" + self._config.host + ":"
+        path = f"{self.__class__.__name__}://{self._config.host}:"
         if hasattr(self._config, "port"):
             path += str(self._config.port)
-        path += "/" + self._config.database + "/" + self._config.table
+        path += f"/{self._config.database}/{self._config.table}"
         return path
 
     @property

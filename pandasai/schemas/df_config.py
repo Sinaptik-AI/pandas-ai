@@ -1,5 +1,5 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict, Type
+from typing import Optional, List, Any, Dict, Type, TypedDict
 
 from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
@@ -8,12 +8,18 @@ from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
 
 
+class LogServerConfig(TypedDict):
+    server_url: str
+    api_key: str
+
+
 class Config(BaseModel):
     save_logs: bool = True
     verbose: bool = False
     enforce_privacy: bool = False
     enable_cache: bool = True
     use_error_correction_framework: bool = True
+    use_advanced_reasoning_framework: bool = False
     custom_prompts: Dict = Field(default_factory=dict)
     custom_instructions: Optional[str] = None
     open_charts: bool = True
@@ -26,6 +32,7 @@ class Config(BaseModel):
     lazy_load_connector: bool = True
     response_parser: Type[ResponseParser] = None
     llm: Any = None
+    log_server: LogServerConfig = None
 
     class Config:
         arbitrary_types_allowed = True
