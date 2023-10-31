@@ -25,7 +25,11 @@ from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
-
+from pandasai.helpers.viz_library_types import (
+    MatplotlibVizLibraryType,
+    viz_lib_map,
+    viz_lib_type_factory,
+)
 import logging
 
 
@@ -215,6 +219,10 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -275,6 +283,10 @@ country
 <conversation>
 User: How many countries are in the dataframe?
 </conversation>
+
+When a user requests to create a chart, utilize the Python
+matplotlib library to generate high-quality graphics that will be saved 
+directly to a file.
 
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
@@ -1035,3 +1047,83 @@ result = analyze_data(dfs)
     ):
         with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
             assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
+
+    @pytest.mark.parametrize(
+        "viz_library_type,viz_library_type_hint",
+        [
+            (None, MatplotlibVizLibraryType().template_hint),
+            *[
+                (type_, viz_lib_type_factory(type_).template_hint)
+                for type_ in viz_lib_map
+            ],
+        ],
+    )
+    def test_run_passing_viz_library_type(
+        self, llm, viz_library_type, viz_library_type_hint
+    ):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(
+            df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "data_viz_library": viz_library_type,
+            },
+        )
+
+        expected_prompt = (
+            """You are provided with the following pandas DataFrames:
+
+<dataframe>
+Dataframe dfs[0], with 0 rows and 1 columns.
+This is the metadata of the dataframe dfs[0]:
+country
+</dataframe>
+
+<conversation>
+User: Plot the histogram of countries showing for each the gdp with distinct bar colors
+</conversation>
+
+%s
+
+This is the initial python function. Do not change the params. Given the context, use the right dataframes.
+```python
+# TODO import all the dependencies required
+import pandas as pd
+
+def analyze_data(dfs: list[pd.DataFrame]) -> dict:
+    \"\"\"
+    Analyze the data, using the provided dataframes (`dfs`).
+    1. Prepare: Preprocessing and cleaning data if necessary
+    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    At the end, return a dictionary of:
+    - type (possible values "string", "number", "dataframe", "plot")
+    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
+    Examples: 
+        { "type": "string", "value": f"The highest salary is {highest_salary}." }
+        or
+        { "type": "number", "value": 125 }
+        or
+        { "type": "dataframe", "value": pd.DataFrame({...}) }
+        or
+        { "type": "plot", "value": "temp_chart.png" }
+    \"\"\"
+```
+
+Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+            % viz_library_type_hint
+        )
+
+        df.chat(
+            "Plot the histogram of countries showing for each the gdp"
+            " with distinct bar colors"
+        )
+        last_prompt = df.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        assert last_prompt == expected_prompt
