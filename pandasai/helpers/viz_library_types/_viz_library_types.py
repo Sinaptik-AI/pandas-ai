@@ -14,9 +14,7 @@ class BaseVizLibraryType(ABC):
         ...
 
     def _validate_type(self, actual_type: str) -> bool:
-        if actual_type != self.name:
-            return False
-        return True
+        return actual_type == self.name
 
     def validate(self, result: dict[str, Any]) -> tuple[bool, Iterable[str]]:
         """
