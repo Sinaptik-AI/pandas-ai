@@ -259,44 +259,42 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 or df.endswith(".xlsx")
                 or df.startswith("https://docs.google.com/spreadsheets/")
             ):
-                df_config = self._load_from_config(df)
-                if df_config:
-                    if "://" in df_config["import_path"]:
-                        connector_name = df_config["import_path"].split("://")[0]
-                        connector_path = df_config["import_path"].split("://")[1]
-                        connector_host = connector_path.split(":")[0]
-                        connector_port = connector_path.split(":")[1].split("/")[0]
-                        connector_database = connector_path.split(":")[1].split("/")[1]
-                        connector_table = connector_path.split(":")[1].split("/")[2]
-
-                        connector_data = {
-                            "host": connector_host,
-                            "database": connector_database,
-                            "table": connector_table,
-                        }
-                        if connector_port:
-                            connector_data["port"] = connector_port
-
-                        # instantiate the connector
-                        df = getattr(
-                            __import__(
-                                "pandasai.connectors", fromlist=[connector_name]
-                            ),
-                            connector_name,
-                        )(config=connector_data)
-                    else:
-                        df = df_config["import_path"]
-
-                    if name is None:
-                        name = df_config["name"]
-                    if description is None:
-                        description = df_config["description"]
-                else:
+                if not (df_config := self._load_from_config(df)):
                     raise ValueError(
                         "Could not find a saved dataframe configuration "
                         "with the given name."
                     )
 
+                if "://" in df_config["import_path"]:
+                    connector_name = df_config["import_path"].split("://")[0]
+                    connector_path = df_config["import_path"].split("://")[1]
+                    connector_host = connector_path.split(":")[0]
+                    connector_port = connector_path.split(":")[1].split("/")[0]
+                    connector_database = connector_path.split(":")[1].split("/")[1]
+                    connector_table = connector_path.split(":")[1].split("/")[2]
+
+                    connector_data = {
+                        "host": connector_host,
+                        "database": connector_database,
+                        "table": connector_table,
+                    }
+                    if connector_port:
+                        connector_data["port"] = connector_port
+
+                    # instantiate the connector
+                    df = getattr(
+                        __import__(
+                            "pandasai.connectors", fromlist=[connector_name]
+                        ),
+                        connector_name,
+                    )(config=connector_data)
+                else:
+                    df = df_config["import_path"]
+
+                if name is None:
+                    name = df_config["name"]
+                if description is None:
+                    description = df_config["description"]
         self._core = SmartDataframeCore(df, logger)
 
         self._table_name = name
