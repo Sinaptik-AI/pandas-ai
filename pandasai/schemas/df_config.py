@@ -1,11 +1,13 @@
 from pydantic import BaseModel, validator, Field
 from typing import Optional, List, Any, Dict, Type, TypedDict
+from pandasai.constants import DEFAULT_CHART_DIRECTORY
 
 from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
+from ..helpers.viz_library_types.base import VisualizationLibrary
 
 
 class LogServerConfig(TypedDict):
@@ -24,7 +26,7 @@ class Config(BaseModel):
     custom_instructions: Optional[str] = None
     open_charts: bool = True
     save_charts: bool = False
-    save_charts_path: str = "exports/charts"
+    save_charts_path: str = DEFAULT_CHART_DIRECTORY
     custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
     middlewares: List[Middleware] = Field(default_factory=list)
@@ -32,6 +34,7 @@ class Config(BaseModel):
     lazy_load_connector: bool = True
     response_parser: Type[ResponseParser] = None
     llm: Any = None
+    data_viz_library: Optional[VisualizationLibrary] = None
     log_server: LogServerConfig = None
 
     class Config:
