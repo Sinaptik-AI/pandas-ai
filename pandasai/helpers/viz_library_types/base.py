@@ -17,4 +17,3 @@ class VisualizationLibrary(str, Enum):
     PLOTLY = "plotly"
 
     DEFAULT = "default"
-

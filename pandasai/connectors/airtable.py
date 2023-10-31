@@ -143,9 +143,7 @@ class AirtableConnector(BaseConnector):
         Returns:
             DataFrameType: The result of the connector.
         """
-        if cached := self._cached() or self._cached(
-            include_additional_filters=True
-        ):
+        if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
 
         if isinstance(self._instance, pd.DataFrame):

@@ -266,28 +266,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 )
 
             if "://" in df_config["import_path"]:
-                connector_name = df_config["import_path"].split("://")[0]
-                connector_path = df_config["import_path"].split("://")[1]
-                connector_host = connector_path.split(":")[0]
-                connector_port = connector_path.split(":")[1].split("/")[0]
-                connector_database = connector_path.split(":")[1].split("/")[1]
-                connector_table = connector_path.split(":")[1].split("/")[2]
-
-                connector_data = {
-                    "host": connector_host,
-                    "database": connector_database,
-                    "table": connector_table,
-                }
-                if connector_port:
-                    connector_data["port"] = connector_port
-
-                # instantiate the connector
-                df = getattr(
-                    __import__(
-                        "pandasai.connectors", fromlist=[connector_name]
-                    ),
-                    connector_name,
-                )(config=connector_data)
+                df = self._instantiate_connector(df_config["import_path"])
             else:
                 df = df_config["import_path"]
 
@@ -384,6 +363,28 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             Defaults to False.
         """
         self._core.load_connector(temporary)
+
+    def _instantiate_connector(self, import_path: str) -> BaseConnector:
+        connector_name = import_path.split("://")[0]
+        connector_path = import_path.split("://")[1]
+        connector_host = connector_path.split(":")[0]
+        connector_port = connector_path.split(":")[1].split("/")[0]
+        connector_database = connector_path.split(":")[1].split("/")[1]
+        connector_table = connector_path.split(":")[1].split("/")[2]
+
+        connector_data = {
+            "host": connector_host,
+            "database": connector_database,
+            "table": connector_table,
+        }
+        if connector_port:
+            connector_data["port"] = connector_port
+
+        # instantiate the connector
+        return getattr(
+            __import__("pandasai.connectors", fromlist=[connector_name]),
+            connector_name,
+        )(config=connector_data)
 
     def _truncate_head_columns(self, df: DataFrameType, max_size=25) -> DataFrameType:
         """
