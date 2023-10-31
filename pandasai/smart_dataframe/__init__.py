@@ -36,7 +36,7 @@ from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
-from typing import List, Union, Optional
+from typing import Any, List, Union, Optional
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
@@ -726,3 +726,25 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def __len__(self):
         return len(self.dataframe)
+
+
+def load_smartdataframes(
+    dfs: List[Union[DataFrameType, Any]], config: Config
+) -> List[SmartDataframe]:
+    """
+    Load all the dataframes to be used in the smart datalake.
+
+    Args:
+        dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+    """
+
+    from ..smart_dataframe import SmartDataframe
+
+    smart_dfs = []
+    for df in dfs:
+        if not isinstance(df, SmartDataframe):
+            smart_dfs.append(SmartDataframe(df, config=config))
+        else:
+            smart_dfs.append(df)
+
+    return smart_dfs

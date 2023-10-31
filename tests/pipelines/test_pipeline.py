@@ -79,15 +79,29 @@ class TestPipeline:
 
     def test_init(self, context, config):
         # Test the initialization of the Pipeline
-        pipeline = Pipeline(config, context)
+        pipeline = Pipeline(context)
         assert isinstance(pipeline, Pipeline)
-        assert pipeline._config == Config(**config)
+        assert pipeline._context._config == Config(**config)
         assert pipeline._context == context
         assert pipeline._steps == []
 
+    def test_init_with_smartdfs(self, smart_dataframe):
+        # Test the initialization of the Pipeline
+        pipeline = Pipeline([smart_dataframe])
+        assert isinstance(pipeline, Pipeline)
+        assert len(pipeline._context.dfs) == 1
+        assert isinstance(pipeline._context.dfs[0], SmartDataframe)
+
+    def test_init_with_dfs(self, sample_df):
+        # Test the initialization of the Pipeline
+        pipeline = Pipeline([sample_df])
+        assert isinstance(pipeline, Pipeline)
+        assert len(pipeline._context.dfs) == 1
+        assert isinstance(pipeline._context.dfs[0], SmartDataframe)
+
     def test_add_step(self, context, config):
         # Test the add_step method
-        pipeline = Pipeline(config, context)
+        pipeline = Pipeline(context)
         logic_unit = MockLogicUnit()
         pipeline.add_step(logic_unit)
         assert len(pipeline._steps) == 1
@@ -95,18 +109,18 @@ class TestPipeline:
 
     def test_add_step_using_constructor(self, context, config):
         logic_unit = MockLogicUnit()
-        pipeline = Pipeline(config, context, steps=[logic_unit])
+        pipeline = Pipeline(context, steps=[logic_unit])
         assert len(pipeline._steps) == 1
         assert pipeline._steps[0] == logic_unit
 
     def test_add_step_unknown_logic_unit(self, context, config):
-        pipeline = Pipeline(config, context)
+        pipeline = Pipeline(context)
         with pytest.raises(Exception):
             pipeline.add_step(Mock())
 
     def test_run(self, context, config):
         # Test the run method
-        pipeline = Pipeline(config, context)
+        pipeline = Pipeline(context)
 
         class MockLogicUnit(BaseLogicUnit):
             def execute(self, data, logger, config, context):
@@ -118,7 +132,7 @@ class TestPipeline:
 
     def test_run_with_exception(self, context, config):
         # Test the run method with a mock logic unit that raises an exception
-        pipeline = Pipeline(config, context)
+        pipeline = Pipeline(context)
 
         class MockLogicUnit(BaseLogicUnit):
             def execute(self, data, logger, config, context):
@@ -129,7 +143,7 @@ class TestPipeline:
             pipeline.run("InitialData")
 
     def test_run_with_empty_pipeline(self, context, config):
-        pipeline_3 = Pipeline(config, context, [])
+        pipeline_3 = Pipeline(context, [])
         result = pipeline_3.run(5)
         assert result == 5
 
@@ -138,9 +152,7 @@ class TestPipeline:
             def execute(self, data, logger, config, context):
                 return data + 1
 
-        pipeline_2 = Pipeline(
-            config, context, steps=[MockLogic(), MockLogic(), MockLogic()]
-        )
+        pipeline_2 = Pipeline(context, steps=[MockLogic(), MockLogic(), MockLogic()])
 
         result = pipeline_2.run(5)
         assert result == 8

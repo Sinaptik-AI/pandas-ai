@@ -1,5 +1,6 @@
 import pandas as pd
 from pandasai.llm.openai import OpenAI
+from pandasai.pipelines.logic_units.output_logic_unit import ProcessOutput
 from pandasai.pipelines.synthetic_dataframe.generate_sdf_pipeline import (
     GenerateSDFPipeline,
 )
@@ -28,7 +29,7 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("your-api-key")
+llm = OpenAI("Your-API-Key")
 
 config = {"llm": llm, "verbose": True}
 
@@ -36,9 +37,13 @@ context = PipelineContext([salaries_df], config)
 
 # Create your own pipeline
 pipeline = Pipeline(
-    config=config,
     context=context,
-    steps=[SyntheticDataframePrompt(amount=15), PromptExecution(), SDFCodeExecutor()],
+    steps=[
+        SyntheticDataframePrompt(amount=15),
+        PromptExecution(),
+        SDFCodeExecutor(),
+        ProcessOutput(),
+    ],
 )
 
 data_frame = pipeline.run()
@@ -51,8 +56,24 @@ context = PipelineContext([employees_df], config)
 
 pipeline = GenerateSDFPipeline(
     amount=10,
-    config={"llm": llm, "verbose": True},
     context=context,
+)
+
+data_frame = pipeline.run()
+
+print(data_frame)
+
+
+# Without passing Context
+pipeline = Pipeline(
+    [salaries_df],
+    config=config,
+    steps=[
+        SyntheticDataframePrompt(amount=15),
+        PromptExecution(),
+        SDFCodeExecutor(),
+        ProcessOutput(),
+    ],
 )
 
 data_frame = pipeline.run()
