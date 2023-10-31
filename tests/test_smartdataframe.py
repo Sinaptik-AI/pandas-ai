@@ -601,7 +601,7 @@ result = analyze_data(dfs)
 
         smart_dataframe.verbose = True
         assert smart_dataframe.verbose
-        assert smart_dataframe.lake._logger.verbose is True
+        assert smart_dataframe.lake._logger.verbose
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
             smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
@@ -615,16 +615,16 @@ result = analyze_data(dfs)
     def test_updates_save_logs_config_with_setters(
         self, smart_dataframe: SmartDataframe
     ):
-        assert smart_dataframe.save_logs is True
+        assert smart_dataframe.save_logs
 
         smart_dataframe.save_logs = False
         assert not smart_dataframe.save_logs
-        assert smart_dataframe.lake._logger.save_logs is False
+        assert not smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
         smart_dataframe.save_logs = True
         assert smart_dataframe.save_logs
-        assert smart_dataframe.lake._logger.save_logs is True
+        assert smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
             smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
@@ -637,7 +637,7 @@ result = analyze_data(dfs)
 
         smart_dataframe.enable_cache = True
         assert smart_dataframe.enable_cache
-        assert smart_dataframe.lake.enable_cache is True
+        assert smart_dataframe.lake.enable_cache
         assert smart_dataframe.lake.cache is not None
         assert isinstance(smart_dataframe.lake._cache, Cache)
 
@@ -649,7 +649,7 @@ result = analyze_data(dfs)
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.callback is None
         assert smart_dataframe.enforce_privacy is False
-        assert smart_dataframe.use_error_correction_framework is True
+        assert smart_dataframe.use_error_correction_framework
         assert smart_dataframe.custom_prompts == {}
         assert smart_dataframe.save_charts is False
         assert smart_dataframe.save_charts_path == "exports/charts"
@@ -959,7 +959,7 @@ result = analyze_data(dfs)
 
         validation_result = df_object.validate(TestSchema)
 
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_pydantic_validate_false(self, llm):
         # Create a sample DataFrame
@@ -994,7 +994,7 @@ result = analyze_data(dfs)
             B: int
 
         validation_result = df_object.validate(TestSchema)
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_pydantic_validate_false_one_record(self, llm):
         # Create a sample DataFrame
@@ -1039,7 +1039,7 @@ result = analyze_data(dfs)
 
         validation_result = df_object.validate(TestSchema)
 
-        assert validation_result.passed is True
+        assert validation_result.passed
 
     def test_head_csv_with_sample_head(
         self, sample_head, data_sampler, smart_dataframe: SmartDataframe

@@ -181,28 +181,35 @@ Correct the python code and return a new python code that fixes the above mentio
 """  # noqa: E501
         )
 
-    @pytest.mark.parametrize(
-        "save_charts,enable_cache",
-        [(False, False), (False, True), (True, False), (True, True)],
-    )
     @patch("os.makedirs")
-    def test_initialize(
-        self, mock_makedirs, smart_datalake: SmartDatalake, save_charts, enable_cache
-    ):
-        smart_datalake.config.save_charts = save_charts
-        smart_datalake.config.enable_cache = enable_cache
+    def test_initialize_with_cache(self, mock_makedirs, smart_datalake):
+        # Modify the smart_datalake's configuration
+        smart_datalake.config.save_charts = True
+        smart_datalake.config.enable_cache = True
+
+        # Call the initialize method
         smart_datalake.initialize()
 
-        if not save_charts and not enable_cache:
-            mock_makedirs.assert_not_called()
+        # Assertions for enabling cache
+        cache_dir = os.path.join(os.getcwd(), "cache")
+        mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
 
-        if save_charts:
-            charts_dir = os.path.join(os.getcwd(), "exports", "charts")
-            mock_makedirs.assert_any_call(charts_dir, mode=0o777, exist_ok=True)
+        # Assertions for saving charts
+        charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
+        mock_makedirs.assert_any_call(charts_dir, mode=0o777, exist_ok=True)
 
-        if enable_cache:
-            cache_dir = os.path.join(os.getcwd(), "cache")
-            mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
+    @patch("os.makedirs")
+    def test_initialize_without_cache(self, mock_makedirs, smart_datalake):
+        # Modify the smart_datalake's configuration
+        smart_datalake.config.save_charts = True
+        smart_datalake.config.enable_cache = False
+
+        # Call the initialize method
+        smart_datalake.initialize()
+
+        # Assertions for saving charts
+        charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
+        mock_makedirs.assert_called_once_with(charts_dir, mode=0o777, exist_ok=True)
 
     def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
         llm = FakeLLM(

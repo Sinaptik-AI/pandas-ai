@@ -134,7 +134,6 @@ Based on the last message in the conversation:
         prompt.set_config(dfs[0]._lake.config)
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "Question")
-        prompt.set_var("save_charts_path", "")
         prompt.set_var("output_type_hint", "")
         prompt.set_var("skills", "")
         prompt.set_var("viz_library_type", "")
@@ -177,6 +176,9 @@ Based on the last message in the conversation:
 - answer to the user as you would do as a data analyst; wrap it between <answer> tags; do not include the value or the chart itself (it will be calculated later).
 - return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
         actual_prompt_content = prompt.to_string()
+
+        print(expected_prompt_content)
+
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
         assert actual_prompt_content == expected_prompt_content
