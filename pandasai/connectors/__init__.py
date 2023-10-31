@@ -11,6 +11,7 @@ from .databricks import DatabricksConnector
 from .yahoo_finance import YahooFinanceConnector
 from .airtable import AirtableConnector
 from .sql import SqliteConnector
+from .sql import SQLServerConnector
 
 __all__ = [
     "BaseConnector",
@@ -22,4 +23,5 @@ __all__ = [
     "DatabricksConnector",
     "AirtableConnector",
     "SqliteConnector",
+    "SQLServerConnector",
 ]

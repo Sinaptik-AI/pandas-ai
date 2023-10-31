@@ -238,3 +238,32 @@ df = SmartDataframe(airtable_connectors)
 
 df.chat("How many rows are there in data ?")
 ```
+
+## SQLServer Connector
+
+The SQLServer connector allows you to connect to SQLServer database Tables, by simply passing the `host` , `port` , `username`, `password` and `odbc_driver` to connect to the server.
+
+To use the SQLServer connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import SQLServerConnector
+from pandasai import SmartDataframe
+
+
+connectors = SQLServerConnector(
+    config={
+        "username":"admin",
+        "password":"pass1234",
+        "host":"localhost",
+        "port":1433,
+        "database":"your_database",
+        "table":"your_table",
+        "where":[["column_name", "=", "value"]],
+        "odbc_driver":"ODBC+Driver+17+for+SQL+Server"
+    }
+)
+
+df = SmartDataframe(connectors)
+
+df.chat("How many rows are there in data ?")
+```

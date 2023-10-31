@@ -9,6 +9,7 @@ from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
 from .base import BaseConnectorConfig
 from sqlalchemy import create_engine, text, select, asc
 from sqlalchemy.engine import Connection
+from .base import SQLServerConnectorConfig
 
 from functools import cached_property, cache
 import hashlib
@@ -246,9 +247,7 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
-        if cached := self._cached() or self._cached(
-            include_additional_filters=True
-        ):
+        if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
 
         if self.logger:
@@ -445,6 +444,53 @@ class SqliteConnector(SQLConnector):
             f"database={self._config.database} "
             f"table={self._config.table}>"
         )
+
+
+class SQLServerConnector(SQLConnector):
+    """
+    SQLSERVER connectors are used to connect to SQLSERVER databases.
+    """
+
+    def __init__(self, config: Union[SQLServerConnectorConfig, dict]):
+        """
+        Initialize the SQLSERVER connector with the given configuration.
+
+        Args:
+            config (ConnectorConfig): The configuration for the SQLSERVER connector.
+        """
+        config["dialect"] = "mssql"
+        config["driver"] = "pyodbc"
+
+        if isinstance(config, dict):
+            sqlserver_env_vars = {
+                "host": "SQLSERVER_HOST",
+                "port": "SQLSERVER_PORT",
+                "database": "SQLSERVER_DATABASE",
+                "username": "SQLSERVER_USERNAME",
+                "password": "SQLSERVER_PASSWORD",
+                "odbc_driver": "ODBC_DRIVER_NAME",
+            }
+            config = self._populate_config_from_env(config, sqlserver_env_vars)
+
+        super().__init__(config)
+
+    def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
+        return SQLServerConnectorConfig(**config)
+
+    def _init_connection(self, config: SQLServerConnectorConfig):
+        """
+        Initialize Database Connection
+        Args:
+            config (SQLServerConnectorConfig): Configurations to load database
+        """
+
+        self._engine = create_engine(
+            f"{config.dialect}+{config.driver}://{config.username}:{config.password}"
+            f"@{config.host}:{str(config.port)}/{config.database}"
+            f"?driver={config.odbc_driver}"
+        )
+
+        self._connection = self._engine.connect()
 
 
 class MySQLConnector(SQLConnector):

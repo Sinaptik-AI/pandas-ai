@@ -70,6 +70,14 @@ class SQLConnectorConfig(SQLBaseConnectorConfig):
     password: str
 
 
+class SQLServerConnectorConfig(SQLConnectorConfig):
+    """
+    Sql Server Connector configuration.
+    """
+
+    odbc_driver: str
+
+
 class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
     """
     Connector configuration for SnowFlake.

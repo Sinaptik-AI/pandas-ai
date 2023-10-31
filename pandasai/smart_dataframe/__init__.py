@@ -283,9 +283,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
                 # instantiate the connector
                 df = getattr(
-                    __import__(
-                        "pandasai.connectors", fromlist=[connector_name]
-                    ),
+                    __import__("pandasai.connectors", fromlist=[connector_name]),
                     connector_name,
                 )(config=connector_data)
             else:

@@ -59,19 +59,14 @@ def sheet_to_df(sheet) -> list:
     # First pass: get all the headers
     for row in range(len(sheet)):
         # if every cell in the row is empty, skip row
-        if all(
-            sheet[row][col].strip() == "" for col in range(len(sheet[row]))
-        ):
+        if all(sheet[row][col].strip() == "" for col in range(len(sheet[row]))):
             headers += binding_headers
             binding_headers = []
             continue
 
         for col in range(len(sheet[row])):
             # Check if the cell is bounded by a header
-            if any(
-                col >= header[2] and col <= header[3]
-                for header in binding_headers
-            ):
+            if any(col >= header[2] and col <= header[3] for header in binding_headers):
                 continue
 
             # Check if the cell is commented out
@@ -94,8 +89,7 @@ def sheet_to_df(sheet) -> list:
         df = []
         for row in range(header[1], len(sheet)):
             if all(
-                sheet[row][col].strip() == ""
-                for col in range(header[2], header[3])
+                sheet[row][col].strip() == "" for col in range(header[2], header[3])
             ):
                 break
             df_row = [sheet[row][col] for col in range(header[2], header[3])]

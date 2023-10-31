@@ -3,6 +3,7 @@
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
 from pandasai.connectors import MySQLConnector, PostgreSQLConnector, SqliteConnector
+from pandasai.connectors import SQLServerConnector
 
 # With a MySQL database
 loan_connector = MySQLConnector(
@@ -47,6 +48,21 @@ invoice_connector = SqliteConnector(
         "where": [["status", "=", "pending"]],
     }
 )
+
+# With SQLServer connector
+sqlserver_connector = SQLServerConnector(
+    config={
+        "username": "admin",
+        "password": "pass1234",
+        "host": "localhost",
+        "port": 1433,
+        "database": "your_database",
+        "table": "your_table",
+        "where": [["column_name", "=", "value"]],
+        "odbc_driver": "ODBC+Driver+17+for+SQL+Server",
+    }
+)
+
 llm = OpenAI()
 df = SmartDatalake(
     [loan_connector, payment_connector, invoice_connector], config={"llm": llm}
