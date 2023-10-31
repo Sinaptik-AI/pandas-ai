@@ -596,7 +596,7 @@ result = analyze_data(dfs)
         )
 
         smart_dataframe.verbose = False
-        assert smart_dataframe.verbose is False
+        assert not smart_dataframe.verbose
         assert smart_dataframe.lake._logger.verbose is False
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
@@ -630,7 +630,7 @@ result = analyze_data(dfs)
         assert isinstance(smart_dataframe.lake._cache, Cache)
 
         smart_dataframe.enable_cache = False
-        assert smart_dataframe.enable_cache is False
+        assert not smart_dataframe.enable_cache
         assert smart_dataframe.lake.enable_cache is False
         assert smart_dataframe.lake.cache is None
 
@@ -651,7 +651,7 @@ result = analyze_data(dfs)
         assert smart_dataframe.enforce_privacy
 
         smart_dataframe.use_error_correction_framework = False
-        assert smart_dataframe.use_error_correction_framework is False
+        assert not smart_dataframe.use_error_correction_framework
 
         smart_dataframe.custom_prompts = {
             "generate_python_code": GeneratePythonCodePrompt()
