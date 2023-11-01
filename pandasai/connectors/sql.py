@@ -104,12 +104,10 @@ class SQLConnector(BaseConnector):
     def _validate_column_name(self, column_name):
         regex = r"^[a-zA-Z0-9_]+$"
         if not re.match(regex, column_name):
-            raise ValueError("Invalid column name: {}".format(column_name))
+            raise ValueError(f"Invalid column name: {column_name}")
 
     def _build_query(self, limit=None, order=None):
         base_query = select("*").select_from(text(self._config.table))
-        valid_operators = ["=", ">", "<", ">=", "<=", "LIKE", "!=", "IN", "NOT IN"]
-
         if self._config.where or self._additional_filters:
             # conditions is the list of wher + additional filters
             conditions = []
@@ -120,6 +118,8 @@ class SQLConnector(BaseConnector):
 
             query_params = {}
             condition_strings = []
+
+            valid_operators = ["=", ">", "<", ">=", "<=", "LIKE", "!=", "IN", "NOT IN"]
 
             for i, condition in enumerate(conditions):
                 if len(condition) == 3:
@@ -246,10 +246,7 @@ class SQLConnector(BaseConnector):
             DataFrame: The result of the SQL query.
         """
 
-        # try to load the generic cache first, then the cache with additional
-        # filters as a fallback
-        cached = self._cached() or self._cached(include_additional_filters=True)
-        if cached:
+        if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
 
         if self.logger:
