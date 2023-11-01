@@ -19,7 +19,11 @@ viz_lib_map = {
 
 def viz_lib_type_factory(
     viz_lib_type: str = None, logger: Optional[Logger] = None
-) -> Union[MatplotlibVizLibraryType, PlotlyVizLibraryType, SeabornVizLibraryType,]:
+) -> Union[
+    MatplotlibVizLibraryType,
+    PlotlyVizLibraryType,
+    SeabornVizLibraryType,
+]:
     """
     Factory function to get appropriate instance for viz library type.
 
@@ -60,4 +64,3 @@ def viz_lib_type_factory(
         )
 
     return viz_lib_type_helper
-

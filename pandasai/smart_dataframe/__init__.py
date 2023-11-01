@@ -36,7 +36,7 @@ from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
-from typing import List, Union, Optional
+from typing import Any, List, Union, Optional
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
@@ -266,28 +266,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 )
 
             if "://" in df_config["import_path"]:
-                connector_name = df_config["import_path"].split("://")[0]
-                connector_path = df_config["import_path"].split("://")[1]
-                connector_host = connector_path.split(":")[0]
-                connector_port = connector_path.split(":")[1].split("/")[0]
-                connector_database = connector_path.split(":")[1].split("/")[1]
-                connector_table = connector_path.split(":")[1].split("/")[2]
-
-                connector_data = {
-                    "host": connector_host,
-                    "database": connector_database,
-                    "table": connector_table,
-                }
-                if connector_port:
-                    connector_data["port"] = connector_port
-
-                # instantiate the connector
-                df = getattr(
-                    __import__(
-                        "pandasai.connectors", fromlist=[connector_name]
-                    ),
-                    connector_name,
-                )(config=connector_data)
+                df = self._instantiate_connector(df_config["import_path"])
             else:
                 df = df_config["import_path"]
 
@@ -384,6 +363,28 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             Defaults to False.
         """
         self._core.load_connector(temporary)
+
+    def _instantiate_connector(self, import_path: str) -> BaseConnector:
+        connector_name = import_path.split("://")[0]
+        connector_path = import_path.split("://")[1]
+        connector_host = connector_path.split(":")[0]
+        connector_port = connector_path.split(":")[1].split("/")[0]
+        connector_database = connector_path.split(":")[1].split("/")[1]
+        connector_table = connector_path.split(":")[1].split("/")[2]
+
+        connector_data = {
+            "host": connector_host,
+            "database": connector_database,
+            "table": connector_table,
+        }
+        if connector_port:
+            connector_data["port"] = connector_port
+
+        # instantiate the connector
+        return getattr(
+            __import__("pandasai.connectors", fromlist=[connector_name]),
+            connector_name,
+        )(config=connector_data)
 
     def _truncate_head_columns(self, df: DataFrameType, max_size=25) -> DataFrameType:
         """
@@ -724,3 +725,25 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def __len__(self):
         return len(self.dataframe)
+
+
+def load_smartdataframes(
+    dfs: List[Union[DataFrameType, Any]], config: Config
+) -> List[SmartDataframe]:
+    """
+    Load all the dataframes to be used in the smart datalake.
+
+    Args:
+        dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+    """
+
+    from ..smart_dataframe import SmartDataframe
+
+    smart_dfs = []
+    for df in dfs:
+        if not isinstance(df, SmartDataframe):
+            smart_dfs.append(SmartDataframe(df, config=config))
+        else:
+            smart_dfs.append(df)
+
+    return smart_dfs

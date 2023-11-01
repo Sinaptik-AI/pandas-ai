@@ -160,6 +160,7 @@ class SmartDatalake:
                     charts_dir = os.path.join(
                         (find_project_root()), self._config.save_charts_path
                     )
+                    self._config.save_charts_path = charts_dir
                 except ValueError:
                     charts_dir = os.path.join(
                         os.getcwd(), self._config.save_charts_path
@@ -438,6 +439,7 @@ class SmartDatalake:
                     )
 
                     break
+
                 except Exception as e:
                     if (
                         not self._config.use_error_correction_framework

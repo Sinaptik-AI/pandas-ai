@@ -92,6 +92,14 @@ class Agent:
                 f"\n{exception}\n"
             )
 
+    def add_message(self, message, is_user=False):
+        """
+        Add message to the memory. This is useful when you want to add a message
+        to the memory without calling the chat function (for example, when you
+        need to add a message from the agent).
+        """
+        self._lake._memory.add(message, is_user=is_user)
+
     def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation

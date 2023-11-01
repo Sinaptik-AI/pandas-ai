@@ -18,7 +18,9 @@ class StreamlitResponse(ResponseParser):
         try:
             image = mpimg.imread(result["value"])
         except FileNotFoundError as e:
-            raise FileNotFoundError(f"The file {result['value']} does not exist.") from e # noqa: E501
+            raise FileNotFoundError(
+                f"The file {result['value']} does not exist."
+            ) from e  # noqa: E501
         except OSError as e:
             raise ValueError(
                 f"The file {result['value']} is not a valid image file."
