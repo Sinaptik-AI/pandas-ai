@@ -439,6 +439,7 @@ class SmartDatalake:
                     )
 
                     break
+
                 except Exception as e:
                     if (
                         not self._config.use_error_correction_framework

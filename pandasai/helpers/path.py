@@ -1,11 +1,27 @@
 import os
 
+from pandasai.exceptions import InvalidWorkspacePathError
+
 
 def find_project_root(filename=None):
+    """
+    Check if Custom workspace path provide use that otherwise iterate to
+    find project root
+    """
     if "PANDASAI_WORKSPACE" in os.environ:
-        return os.environ["PANDASAI_WORKSPACE"]
+        workspace_path = os.environ["PANDASAI_WORKSPACE"]
+        if (
+            workspace_path
+            and os.path.exists(workspace_path)
+            and os.path.isdir(workspace_path)
+        ):
+            return workspace_path
+        raise InvalidWorkspacePathError(
+            "PANDASAI_WORKSPACE does not point to a valid directory"
+        )
 
-    # Get the path of the file that is being executed
+    # Get the path of the file that is be
+    # ing executed
     current_file_path = os.path.abspath(os.getcwd())
 
     # Navigate back until we either find a $filename file or there is no parent

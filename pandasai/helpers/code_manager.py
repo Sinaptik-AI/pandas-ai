@@ -237,6 +237,7 @@ class CodeManager:
                 save_charts_path_str=self._config.save_charts_path,
             )
         else:
+            # Temporarily save generated chart to display
             code = add_save_chart(
                 code,
                 logger=self._logger,
