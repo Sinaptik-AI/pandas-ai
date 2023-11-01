@@ -1,13 +1,12 @@
 from abc import abstractmethod, ABC
 from typing import Any, Iterable
+from pandasai.prompts.generate_python_code import VizLibraryPrompt
 
 
 class BaseVizLibraryType(ABC):
     @property
     def template_hint(self) -> str:
-        return f"""When a user requests to create a chart, utilize the Python
-{self.name} library to generate high-quality graphics that will be saved 
-directly to a file."""
+        return VizLibraryPrompt(library=self.name)
 
     @property
     @abstractmethod
