@@ -76,7 +76,7 @@ def get_openai_token_cost_for_model(
     ):
         # The cost of completion token is different from
         # the cost of prompt tokens.
-        model_name = model_name + "-completion"
+        model_name += "-completion"
     if model_name not in MODEL_COST_PER_1K_TOKENS:
         raise ValueError(
             f"Unknown model: {model_name}. Please provide a valid OpenAI model name."

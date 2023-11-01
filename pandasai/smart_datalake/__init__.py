@@ -96,11 +96,7 @@ class SmartDatalake:
 
         self._load_dfs(dfs)
 
-        if memory:
-            self._memory = memory
-        else:
-            self._memory = Memory()
-
+        self._memory = memory if memory else Memory()
         self._code_manager = CodeManager(
             dfs=self._dfs,
             config=self._config,
@@ -484,9 +480,9 @@ class SmartDatalake:
         if result is None:
             return
 
-        if result["type"] == "string" or result["type"] == "number":
+        if result["type"] in ["string", "number"]:
             self._memory.add(result["value"], False)
-        elif result["type"] == "dataframe" or result["type"] == "plot":
+        elif result["type"] in ["dataframe", "plot"]:
             self._memory.add("Ok here it is", False)
 
     def _retry_run_code(self, code: str, e: Exception) -> List:
