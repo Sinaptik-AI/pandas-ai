@@ -154,3 +154,11 @@ class UnSupportedLogicUnit(Exception):
     Args:
         Exception (Exception): UnSupportedLogicUnit
     """
+
+class InvalidWorkspacePathError(Exception):
+    """
+    Raised when the environment variable of workspace exist but path is invalid
+
+    Args:
+        Exception (Exception): InvalidWorkspacePathError
+    """
