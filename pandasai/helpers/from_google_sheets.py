@@ -16,11 +16,11 @@ def get_google_sheet(src) -> list:
 
     try:
         from bs4 import BeautifulSoup
-    except ImportError as e:
+    except ImportError:
         raise ImportError(
             "Could not import beautifulsoup4 python package. "
             "Please install it with `pip install beautifulsoup4`."
-        ) from e
+        )
 
     # The size of the Google sheet that can be read is limited
     raw_html = requests.get(src).text
@@ -31,7 +31,9 @@ def get_google_sheet(src) -> list:
     grid = []
     for row in rows:
         cols = row.find_all("td")
-        clean_row = [col.text for col in cols]
+        clean_row = []
+        for col in cols:
+            clean_row.append(col.text)
         grid.append(clean_row)
     return grid
 
@@ -59,14 +61,16 @@ def sheet_to_df(sheet) -> list:
     # First pass: get all the headers
     for row in range(len(sheet)):
         # if every cell in the row is empty, skip row
-        if all(sheet[row][col].strip() == "" for col in range(len(sheet[row]))):
+        if all([sheet[row][col].strip() == "" for col in range(len(sheet[row]))]):
             headers += binding_headers
             binding_headers = []
             continue
 
         for col in range(len(sheet[row])):
             # Check if the cell is bounded by a header
-            if any(col >= header[2] and col <= header[3] for header in binding_headers):
+            if any(
+                [col >= header[2] and col <= header[3] for header in binding_headers]
+            ):
                 continue
 
             # Check if the cell is commented out
@@ -89,10 +93,12 @@ def sheet_to_df(sheet) -> list:
         df = []
         for row in range(header[1], len(sheet)):
             if all(
-                sheet[row][col].strip() == "" for col in range(header[2], header[3])
+                [sheet[row][col].strip() == "" for col in range(header[2], header[3])]
             ):
                 break
-            df_row = [sheet[row][col] for col in range(header[2], header[3])]
+            df_row = []
+            for col in range(header[2], header[3]):
+                df_row.append(sheet[row][col])
             df.append(df_row)
         cols = df[0]
         data = df[1:]
@@ -120,4 +126,5 @@ def from_google_sheets(url) -> list:
     """
 
     sheet = get_google_sheet(url)
-    return sheet_to_df(sheet)
+    dfs = sheet_to_df(sheet)
+    return dfs

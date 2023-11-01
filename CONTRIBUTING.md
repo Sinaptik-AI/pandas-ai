@@ -15,6 +15,7 @@ To make a contribution, follow the following steps:
 
 For more details about pull requests, please read [GitHub's guides](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
 
+
 ### 📦 Package manager
 
 We use `poetry` as our package manager. You can install poetry by following the instructions [here](https://python-poetry.org/docs/#installation).
@@ -43,12 +44,12 @@ ruff pandasai examples
 
 Make sure that the linter does not report any errors or warnings before submitting a pull request.
 
-### Code Format with `ruff-format`
+### Code Format with `black`
 
-We use `ruff` to reformat the code by running the following command:
+We use `black` to reformat the code by running the following command:
 
 ```bash
-ruff format pandasai
+black pandasai 
 ```
 
 ### 🧪 Testing
@@ -60,6 +61,8 @@ poetry run pytest
 ```
 
 Make sure that all tests pass before submitting a pull request.
+
+
 
 ## 🚀 Release Process
 

@@ -72,6 +72,6 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 
     def _set_instructions(self, instructions: str):
         lines = instructions.split("\n")
-        indented_lines = [f"    {line}" for line in lines[1:]]
+        indented_lines = ["    " + line for line in lines[1:]]
         result = "\n".join([lines[0]] + indented_lines)
         self.set_var("instructions", result)

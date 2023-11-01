@@ -44,8 +44,8 @@ class ResponseParser(IResponseParser):
         Returns:
             Any: Returns depending on the user input
         """
-        if not isinstance(result, dict) or any(
-            key not in result for key in ["type", "value"]
+        if not isinstance(result, dict) or not all(
+            key in result for key in ["type", "value"]
         ):
             raise ValueError("Unsupported result format")
 
@@ -92,14 +92,10 @@ class ResponseParser(IResponseParser):
         # Load the image file
         try:
             image = mpimg.imread(result["value"])
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"The file {result['value']} does not exist."
-            ) from e  # noqa: E501
-        except OSError as e:
-            raise ValueError(
-                f"The file {result['value']} is not a valid image file."
-            ) from e
+        except FileNotFoundError:
+            raise FileNotFoundError(f"The file {result['value']} does not exist.")
+        except OSError:
+            raise ValueError(f"The file {result['value']} is not a valid image file.")
 
         # Display the image
         plt.imshow(image)

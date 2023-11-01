@@ -26,7 +26,8 @@ jobs:
       - name: Lint with ruff
         run: poetry run ruff pandasai examples
       - name: Run tests
-        run: poetry run pytest
+        run:
+          poetry run pytest
       - name: Run code coverage
         run: |
           poetry run coverage run --source=pandasai -m pytest

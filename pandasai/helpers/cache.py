@@ -24,7 +24,7 @@ class Cache:
 
         os.makedirs(cache_dir, mode=0o777, exist_ok=True)
 
-        self.filepath = os.path.join(cache_dir, f"{filename}.db")
+        self.filepath = os.path.join(cache_dir, filename + ".db")
         self.connection = duckdb.connect(self.filepath)
         self.connection.execute(
             "CREATE TABLE IF NOT EXISTS cache (key STRING, value STRING)"
@@ -49,7 +49,11 @@ class Cache:
             str: value from the cache.
         """
         result = self.connection.execute("SELECT value FROM cache WHERE key=?", [key])
-        return row[0] if (row := result.fetchone()) else None
+        row = result.fetchone()
+        if row:
+            return row[0]
+        else:
+            return None
 
     def delete(self, key: str) -> None:
         """Delete a key value pair from the cache.
@@ -70,5 +74,5 @@ class Cache:
     def destroy(self) -> None:
         """Destroy the cache."""
         self.connection.close()
-        for cache_file in glob.glob(f"{self.filepath}.*"):
+        for cache_file in glob.glob(self.filepath + ".*"):
             os.remove(cache_file)

@@ -47,7 +47,11 @@ class GoogleVertexAI(BaseGoogle):
             **kwargs: Arguments to control the Model Parameters
         """
 
-        self.model = "text-bison@001" if model is None else model
+        if model is None:
+            self.model = "text-bison@001"
+        else:
+            self.model = model
+
         self._configure(project_id, location)
         self.project_id = project_id
         self.location = location

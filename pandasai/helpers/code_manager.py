@@ -149,41 +149,40 @@ class CodeManager:
             str: Python code. Either original or new one, given by
                 error correction framework.
         """
-        if not isinstance(exc, NameError):
-            return
-        name_to_be_imported = None
-        if hasattr(exc, "name"):
-            name_to_be_imported = exc.name
-        elif exc.args and isinstance(exc.args[0], str):
-            name_ptrn = r"'([0-9a-zA-Z_]+)'"
-            if search_name_res := re.search(name_ptrn, exc.args[0]):
-                name_to_be_imported = search_name_res[1]
+        if isinstance(exc, NameError):
+            name_to_be_imported = None
+            if hasattr(exc, "name"):
+                name_to_be_imported = exc.name
+            elif exc.args and isinstance(exc.args[0], str):
+                name_ptrn = r"'([0-9a-zA-Z_]+)'"
+                if search_name_res := re.search(name_ptrn, exc.args[0]):
+                    name_to_be_imported = search_name_res.group(1)
 
-        if name_to_be_imported and name_to_be_imported in WHITELISTED_LIBRARIES:
-            try:
-                package = import_dependency(name_to_be_imported)
-                environment[name_to_be_imported] = package
+            if name_to_be_imported and name_to_be_imported in WHITELISTED_LIBRARIES:
+                try:
+                    package = import_dependency(name_to_be_imported)
+                    environment[name_to_be_imported] = package
 
-                caught_error = self._execute_catching_errors(code, environment)
-                if caught_error is None:
-                    return code
+                    caught_error = self._execute_catching_errors(code, environment)
+                    if caught_error is None:
+                        return code
 
-            except ModuleNotFoundError:
-                self._logger.log(
-                    f"Unable to fix `NameError`: package '{name_to_be_imported}'"
-                    f" could not be imported.",
-                    level=logging.DEBUG,
-                )
-            except Exception as new_exc:
-                exc = new_exc
-                self._logger.log(
-                    f"Unable to fix `NameError`: an exception was raised: "
-                    f"{traceback.format_exc()}",
-                    level=logging.DEBUG,
-                )
+                except ModuleNotFoundError:
+                    self._logger.log(
+                        f"Unable to fix `NameError`: package '{name_to_be_imported}'"
+                        f" could not be imported.",
+                        level=logging.DEBUG,
+                    )
+                except Exception as new_exc:
+                    exc = new_exc
+                    self._logger.log(
+                        f"Unable to fix `NameError`: an exception was raised: "
+                        f"{traceback.format_exc()}",
+                        level=logging.DEBUG,
+                    )
 
-        if not use_error_correction_framework:
-            raise exc
+            if not use_error_correction_framework:
+                raise exc
 
     def _required_dfs(self, code: str) -> List[str]:
         """
@@ -256,7 +255,7 @@ Code running:
         environment: dict = self._get_environment()
 
         # Add Skills in the env
-        if context.skills_manager.used_skills:
+        if len(context.skills_manager.used_skills) > 0:
             for skill_func_name in context.skills_manager.used_skills:
                 skill = context.skills_manager.get_skill_by_func_name(skill_func_name)
                 environment[skill_func_name] = skill
@@ -272,7 +271,7 @@ Code running:
                 use_error_correction_framework=self._config.use_error_correction_framework,
             )
 
-        analyze_data = environment.get("analyze_data")
+        analyze_data = environment.get("analyze_data", None)
 
         return analyze_data(self._get_originals(dfs))
 
@@ -353,7 +352,11 @@ Code running:
 
         node_str = ast.dump(node)
 
-        return any(builtin in node_str for builtin in DANGEROUS_BUILTINS)
+        for builtin in DANGEROUS_BUILTINS:
+            if builtin in node_str:
+                return True
+
+        return False
 
     def _is_unsafe(self, node: ast.stmt) -> bool:
         """
@@ -366,37 +369,42 @@ Code running:
         """
 
         code = astor.to_source(node)
-        return any(
-            (
-                method in code
-                for method in [
-                    ".to_csv",
-                    ".to_excel",
-                    ".to_json",
-                    ".to_sql",
-                    ".to_feather",
-                    ".to_hdf",
-                    ".to_parquet",
-                    ".to_pickle",
-                    ".to_gbq",
-                    ".to_stata",
-                    ".to_records",
-                    ".to_latex",
-                    ".to_html",
-                    ".to_markdown",
-                    ".to_clipboard",
-                ]
-            )
-        )
+        if any(
+            method in code
+            for method in [
+                ".to_csv",
+                ".to_excel",
+                ".to_json",
+                ".to_sql",
+                ".to_feather",
+                ".to_hdf",
+                ".to_parquet",
+                ".to_pickle",
+                ".to_gbq",
+                ".to_stata",
+                ".to_records",
+                ".to_latex",
+                ".to_html",
+                ".to_markdown",
+                ".to_clipboard",
+            ]
+        ):
+            return True
+
+        return False
 
     def _sanitize_analyze_data(self, analyze_data_node: ast.stmt) -> ast.stmt:
-        sanitized_analyze_data = [
-            node
-            for node in analyze_data_node.body
-            if not self._is_df_overwrite(node)
-            and not self._is_jailbreak(node)
-            and not self._is_unsafe(node)
-        ]
+        # Sanitize the code within analyze_data
+        sanitized_analyze_data = []
+        for node in analyze_data_node.body:
+            if (
+                self._is_df_overwrite(node)
+                or self._is_jailbreak(node)
+                or self._is_unsafe(node)
+            ):
+                continue
+            sanitized_analyze_data.append(node)
+
         analyze_data_node.body = sanitized_analyze_data
         return analyze_data_node
 
@@ -474,7 +482,11 @@ Code running:
             BadImportError: If the import is not whitelisted
 
         """
-        module = node.names[0].name if isinstance(node, ast.Import) else node.module
+        if isinstance(node, ast.Import):
+            module = node.names[0].name
+        else:
+            module = node.module
+
         library = module.split(".")[0]
 
         if library == "pandas":
@@ -662,12 +674,12 @@ Code running:
                         )
                         or current_df
                     )
-                    left_str = slices[-1] if slices else name
+                    left_str = name if not slices else slices[-1]
 
                     for op, right in zip(node.ops, node.comparators):
                         op_str = self._ast_comparatos_map.get(type(op), "Unknown")
                         name, *slices = self._tokenize_operand(right)
-                        right_str = slices[-1] if slices else name
+                        right_str = name if not slices else slices[-1]
 
                         comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons

@@ -17,22 +17,18 @@ class StreamlitResponse(ResponseParser):
         # Load the image file
         try:
             image = mpimg.imread(result["value"])
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"The file {result['value']} does not exist."
-            ) from e  # noqa: E501
-        except OSError as e:
-            raise ValueError(
-                f"The file {result['value']} is not a valid image file."
-            ) from e
+        except FileNotFoundError:
+            raise FileNotFoundError(f"The file {result['value']} does not exist.")
+        except OSError:
+            raise ValueError(f"The file {result['value']} is not a valid image file.")
 
         try:
             import streamlit as st
-        except ImportError as exc:
+        except ImportError:
             raise ImportError(
                 "The 'streamlit' module is required to use StreamLit Response. "
                 "Please install it using pip: pip install streamlit"
-            ) from exc
+            )
 
         # Display the image
         plt.imshow(image)

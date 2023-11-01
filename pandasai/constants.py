@@ -5,8 +5,6 @@ It includes Start & End Code tags, Whitelisted Python Packages and
 While List Builtin Methods.
 
 """
-# Default directory to store chart if user doesn't provide any
-DEFAULT_CHART_DIRECTORY = "exports/charts"
 
 # List of Python builtin libraries that are added to the environment by default.
 WHITELISTED_BUILTINS = [

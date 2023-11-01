@@ -18,7 +18,9 @@ class BaseOutputType(ABC):
         ...
 
     def _validate_type(self, actual_type: str) -> bool:
-        return actual_type == self.name
+        if actual_type != self.name:
+            return False
+        return True
 
     @abstractmethod
     def _validate_value(self, actual_value):
@@ -73,7 +75,9 @@ class NumberOutputType(BaseOutputType):
         return "number"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        return isinstance(actual_value, (int, float, Decimal))
+        if isinstance(actual_value, (int, float, Decimal)):
+            return True
+        return False
 
 
 class DataFrameOutputType(BaseOutputType):
@@ -107,7 +111,10 @@ class PlotOutputType(BaseOutputType):
             return False
 
         path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
-        return bool(re.match(path_to_plot_pattern, actual_value))
+        if re.match(path_to_plot_pattern, actual_value):
+            return True
+
+        return False
 
 
 class StringOutputType(BaseOutputType):
@@ -122,7 +129,9 @@ class StringOutputType(BaseOutputType):
         return "string"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        return isinstance(actual_value, str)
+        if isinstance(actual_value, str):
+            return True
+        return False
 
 
 class DefaultOutputType(BaseOutputType):

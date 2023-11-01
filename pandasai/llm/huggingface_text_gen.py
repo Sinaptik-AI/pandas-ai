@@ -38,11 +38,11 @@ class HuggingFaceTextGen(LLM):
                 timeout=self.timeout,
             )
 
-        except ImportError as e:
+        except ImportError:
             raise ImportError(
                 "Could not import text_generation python package. "
                 "Please install it with `pip install text_generation`."
-            ) from e
+            )
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -65,10 +65,11 @@ class HuggingFaceTextGen(LLM):
 
         params = self._default_params
         if self.streaming:
-            return "".join(
-                chunk.template
-                for chunk in self.client.generate_stream(prompt, **params)
-            )
+            completion = ""
+            for chunk in self.client.generate_stream(prompt, **params):
+                completion += chunk.template
+            return completion
+
         res = self.client.generate(prompt, **params)
         if self.stop_sequences:
             # remove stop sequences from the end of the generated text

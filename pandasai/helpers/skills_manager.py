@@ -53,7 +53,11 @@ class SkillsManager:
         Returns:
             Skill or None: The skill with the given name, or None if not found.
         """
-        return next((skill for skill in self._skills if skill.name == name), None)
+        for skill in self._skills:
+            if skill.name == name:
+                return skill
+
+        return None
 
     def add_used_skill(self, skill: str):
         if self.skill_exists(skill):
@@ -78,10 +82,13 @@ class SkillsManager:
         if len(self._skills) == 0:
             return
 
-        return """
+        return (
+            """
 You can also use the following functions, if relevant:
 
-""" + self.__str__()
+"""
+            + self.__str__()
+        )
 
     @property
     def used_skills(self):

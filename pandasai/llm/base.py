@@ -132,12 +132,13 @@ class LLM:
             (str or None): Extracted text from the response
         """
 
-        if match := re.search(
+        match = re.search(
             f"(<{tag}>)(.*)(</{tag}>)",
             response,
             re.DOTALL | re.MULTILINE,
-        ):
-            return match[2]
+        )
+        if match:
+            return match.group(2)
         return None
 
     def _extract_reasoning(self, response: str) -> str:
@@ -287,7 +288,8 @@ class BaseOpenAI(LLM, ABC):
 
         response = openai.Completion.create(**params)
 
-        if openai_handler := openai_callback_var.get():
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
             openai_handler(response)
 
         return response["choices"][0]["text"]
@@ -318,7 +320,8 @@ class BaseOpenAI(LLM, ABC):
 
         response = openai.ChatCompletion.create(**params)
 
-        if openai_handler := openai_callback_var.get():
+        openai_handler = openai_callback_var.get()
+        if openai_handler:
             openai_handler(response)
 
         return response["choices"][0]["message"]["content"]

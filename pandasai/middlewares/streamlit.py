@@ -21,4 +21,5 @@ class StreamlitMiddleware(Middleware):
         """
 
         code = code.replace("plt.show()", "st.pyplot(plt.gcf())")
-        return "import streamlit as st\n" + code
+        code = "import streamlit as st\n" + code
+        return code
