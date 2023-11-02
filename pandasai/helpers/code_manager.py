@@ -5,6 +5,7 @@ from collections import defaultdict
 
 import astor
 import pandas as pd
+from pandasai.helpers.path import find_project_root
 
 from pandasai.helpers.skills_manager import SkillsManager
 
@@ -234,6 +235,14 @@ class CodeManager:
                 logger=self._logger,
                 file_name=str(context.prompt_id),
                 save_charts_path_str=self._config.save_charts_path,
+            )
+        else:
+            # Temporarily save generated chart to display
+            code = add_save_chart(
+                code,
+                logger=self._logger,
+                file_name="temp_chart",
+                save_charts_path_str=find_project_root(),
             )
 
         # Reset used skills

@@ -26,16 +26,28 @@ class CurrentCodePrompt(FileBasedPrompt):
     _path_to_template = "assets/prompt_templates/current_code.tmpl"
 
 
+class DefaultInstructionsPrompt(FileBasedPrompt):
+    """The default instructions"""
+
+    _path_to_template = "assets/prompt_templates/default_instructions.tmpl"
+
+
 class AdvancedReasoningPrompt(FileBasedPrompt):
-    """The current code"""
+    """The advanced reasoning instructions"""
 
     _path_to_template = "assets/prompt_templates/advanced_reasoning.tmpl"
 
 
 class SimpleReasoningPrompt(FileBasedPrompt):
-    """The current code"""
+    """The simple reasoning instructions"""
 
     _path_to_template = "assets/prompt_templates/simple_reasoning.tmpl"
+
+
+class VizLibraryPrompt(FileBasedPrompt):
+    """Provide information about the visualization library"""
+
+    _path_to_template = "assets/prompt_templates/viz_library.tmpl"
 
 
 class GeneratePythonCodePrompt(FileBasedPrompt):
@@ -45,14 +57,11 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 
     def setup(self, **kwargs) -> None:
         if "custom_instructions" in kwargs:
-            self._set_instructions(kwargs["custom_instructions"])
-        else:
-            self._set_instructions(
-                """Analyze the data, using the provided dataframes (`dfs`).
-1. Prepare: Preprocessing and cleaning data if necessary
-2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+            self.set_var(
+                "instructions", self._format_instructions(kwargs["custom_instructions"])
             )
+        else:
+            self.set_var("instructions", DefaultInstructionsPrompt())
 
         if "current_code" in kwargs:
             self.set_var("current_code", kwargs["current_code"])
@@ -70,8 +79,8 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         else:
             self.set_var("reasoning", SimpleReasoningPrompt())
 
-    def _set_instructions(self, instructions: str):
+    def _format_instructions(self, instructions: str):
         lines = instructions.split("\n")
         indented_lines = [f"    {line}" for line in lines[1:]]
         result = "\n".join([lines[0]] + indented_lines)
-        self.set_var("instructions", result)
+        return result

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "1.4.1"
+version = "1.4.4"
 description = "PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -41,9 +41,8 @@ sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.3.0"
 pre-commit = "^3.2.2"
-ruff = "^0.0.220"
+ruff = "^0.1.0"
 pytest = "^7.3.1"
 pytest-mock = "^3.10.0"
 pytest-env = "^0.8.1"

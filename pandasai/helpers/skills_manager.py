@@ -78,13 +78,10 @@ class SkillsManager:
         if len(self._skills) == 0:
             return
 
-        return (
-            """
+        return """
 You can also use the following functions, if relevant:
 
-"""
-            + self.__str__()
-        )
+""" + self.__str__()
 
     @property
     def used_skills(self):
