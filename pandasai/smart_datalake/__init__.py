@@ -524,7 +524,20 @@ class SmartDatalake:
         Args:
             result (dict): The result to add to the memory
         """
-        if result is None:
+        if not isinstance(result, dict):
+            self.logger.log(
+                f"Inappropriate type of 'result' produced by generated code. "
+                f"Expected 'dict', got '{result.__class__.__name__}'",
+                level=logging.WARNING,
+            )
+            return
+
+        if "type" not in result or "value" not in result:
+            self.logger.log(
+                f"Both 'type' and 'value' items should be present in 'result' "
+                f"produced by generated code. Instead it contains the next "
+                f"content:\n{result}"
+            )
             return
 
         if result["type"] in ["string", "number"]:
