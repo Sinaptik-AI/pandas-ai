@@ -8,6 +8,8 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
+{viz_library_type}
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 {current_code}
 

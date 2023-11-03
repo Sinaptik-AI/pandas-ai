@@ -219,6 +219,8 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -230,7 +232,6 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
     At the end, return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -281,6 +282,8 @@ country
 User: How many countries are in the dataframe?
 </conversation>
 
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -292,7 +295,6 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
     At the end, return a dictionary of:
     {output_type_hint}
     """
@@ -1078,6 +1080,8 @@ country
 User: Plot the histogram of countries showing for each the gdp with distinct bar colors
 </conversation>
 
+%s
+
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -1089,7 +1093,6 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    %s
     At the end, return a dictionary of:
     - type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
@@ -1107,9 +1110,9 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
 In the answer, you must never write the "technical" names of the tables.
 Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+- return the updated analyze_data function wrapped within ```python ```"""
             % viz_library_type_hint
-        )
+        )  # noqa: E501
 
         df.chat(
             "Plot the histogram of countries showing for each the gdp"
