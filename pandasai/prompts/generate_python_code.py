@@ -84,5 +84,4 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
     def _format_instructions(self, instructions: str):
         lines = instructions.split("\n")
         indented_lines = [f"    {line}" for line in lines[1:]]
-        result = "\n".join([lines[0]] + indented_lines)
-        return result
+        return "\n".join([lines[0]] + indented_lines)
