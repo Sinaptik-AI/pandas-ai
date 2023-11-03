@@ -29,7 +29,7 @@ class Agent:
         dfs: Union[DataFrameType, List[DataFrameType]],
         config: Optional[Union[Config, dict]] = None,
         logger: Optional[Logger] = None,
-        memory_size: int = 1,
+        memory_size: int = 10,
     ):
         """
         Args:
