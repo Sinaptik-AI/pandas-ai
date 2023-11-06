@@ -199,7 +199,6 @@ def analyze_data(dfs):
         )
 
         output_df = smart_dataframe.chat("Set column b to column a + 1")
-        print("output", output_df)
         assert output_df["a"].tolist() == [1, 2, 3]
         assert output_df["b"].tolist() == [2, 3, 4]
 

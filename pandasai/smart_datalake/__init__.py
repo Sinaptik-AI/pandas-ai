@@ -260,7 +260,7 @@ class SmartDatalake:
         """
 
         if self._config.direct_sql and all(df.is_connector() for df in dfs):
-            if dfs and all(df == dfs[0] for df in dfs):
+            if all(df == dfs[0] for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(

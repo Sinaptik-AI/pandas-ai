@@ -398,7 +398,7 @@ class SQLConnector(BaseConnector):
 
     def execute_direct_sql_query(self, sql_query):
         if not self._is_sql_query_safe(sql_query):
-            raise MaliciousQueryError("Malicious query in generated code")
+            raise MaliciousQueryError("Malicious query is generated in code")
 
         return pd.read_sql(sql_query, self._connection)
 
