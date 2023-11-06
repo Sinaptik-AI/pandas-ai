@@ -30,11 +30,11 @@ class Config(BaseModel):
     max_retries: int = 3
     middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
-    lazy_load_connector: bool = True
     response_parser: Type[ResponseParser] = None
     llm: Any = None
     data_viz_library: Optional[VisualizationLibrary] = None
     log_server: LogServerConfig = None
+    direct_sql: bool = False
 
     class Config:
         arbitrary_types_allowed = True

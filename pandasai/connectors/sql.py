@@ -360,6 +360,28 @@ class SQLConnector(BaseConnector):
     def fallback_name(self):
         return self._config.table
 
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self._config.dialect,
+                self._config.driver,
+                self._config.host,
+                self._config.port,
+                self._config.username,
+                self._config.password,
+            ) == (
+                other._config.dialect,
+                other._config.driver,
+                other._config.host,
+                other._config.port,
+                other._config.username,
+                other._config.password,
+            )
+        return False
+
+    def execute_direct_sql_query(self, sql_query):
+        return pd.read_sql(sql_query, self._connection)
+
 
 class SqliteConnector(SQLConnector):
     """

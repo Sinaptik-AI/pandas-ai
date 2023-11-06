@@ -283,6 +283,10 @@ Code running:
 
         analyze_data = environment.get("analyze_data")
 
+        if self._config.direct_sql:
+            environment["execute_sql_query"] = self._dfs[0].get_query_exec_func()
+            return analyze_data()
+
         return analyze_data(self._get_originals(dfs))
 
     def _get_samples(self, dfs):

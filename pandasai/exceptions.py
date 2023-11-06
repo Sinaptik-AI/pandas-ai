@@ -155,3 +155,11 @@ class InvalidWorkspacePathError(Exception):
     Args:
         Exception (Exception): InvalidWorkspacePathError
     """
+
+
+class InvalidConfigError(Exception):
+    """
+    Raised when config value is not appliable
+    Args:
+        Exception (Exception): InvalidConfigError
+    """
