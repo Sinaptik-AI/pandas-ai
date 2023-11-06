@@ -2,7 +2,8 @@ import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
 from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import SQLConnector
+from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai.exceptions import MaliciousQueryError
 
 
 class TestSQLConnector(unittest.TestCase):
@@ -104,3 +105,92 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "your_table")
+
+    def test_is_sql_query_safe_safe_query(self):
+        safe_query = "SELECT * FROM users WHERE username = 'John'"
+        result = self.connector._is_sql_query_safe(safe_query)
+        assert result is True
+
+    def test_is_sql_query_safe_malicious_query(self):
+        malicious_query = "DROP TABLE users"
+        result = self.connector._is_sql_query_safe(malicious_query)
+        assert result is False
+
+    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    def test_execute_direct_sql_query_safe_query(self, mock_sql):
+        safe_query = "SELECT * FROM users WHERE username = 'John'"
+        expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
+        mock_sql.return_value = expected_data
+        result = self.connector.execute_direct_sql_query(safe_query)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_execute_direct_sql_query_malicious_query(self):
+        malicious_query = "DROP TABLE users"
+        try:
+            self.connector.execute_direct_sql_query(malicious_query)
+            assert False, "MaliciousQueryError not raised"
+        except MaliciousQueryError:
+            pass
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_identical_configs(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        connector_2 = SQLConnector(self.config)
+
+        assert self.connector.equals(connector_2)
+
+    @patch("pandasai.connectors.SQLConnector._load_connector_config")
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_different_configs(
+        self, mock_load_connector_config, mock_init_connection
+    ):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username_differ",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        connector_2 = SQLConnector(self.config)
+
+        assert not self.connector.equals(connector_2)
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_different_connector(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username_differ",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(self.config)
+
+        assert not self.connector.equals(connector_2)

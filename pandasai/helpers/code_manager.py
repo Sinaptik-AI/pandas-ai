@@ -28,9 +28,15 @@ import traceback
 
 class CodeExecutionContext:
     _prompt_id: uuid.UUID = None
+    _can_direct_sql: bool = False
     _skills_manager: SkillsManager = None
 
-    def __init__(self, prompt_id: uuid.UUID, skills_manager: SkillsManager):
+    def __init__(
+        self,
+        prompt_id: uuid.UUID,
+        skills_manager: SkillsManager,
+        _can_direct_sql: bool = False,
+    ):
         """
         Additional Context for code execution
         Args:
@@ -39,6 +45,7 @@ class CodeExecutionContext:
         """
         self._skills_manager = skills_manager
         self._prompt_id = prompt_id
+        self._can_direct_sql = _can_direct_sql
 
     @property
     def prompt_id(self):
@@ -47,6 +54,10 @@ class CodeExecutionContext:
     @property
     def skills_manager(self):
         return self._skills_manager
+
+    @property
+    def can_direct_sql(self):
+        return self._can_direct_sql
 
 
 class CodeManager:
@@ -283,7 +294,7 @@ Code running:
 
         analyze_data = environment.get("analyze_data")
 
-        if self._config.direct_sql:
+        if context.can_direct_sql:
             environment["execute_sql_query"] = self._dfs[0].get_query_exec_func()
             return analyze_data()
 

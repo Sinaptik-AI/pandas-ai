@@ -730,10 +730,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         if isinstance(other, self.__class__):
             if self._core.has_connector and other._core.has_connector:
                 return self._core.connector.equals(other._core.connector)
-            else:
-                return self.dataframe == other.dataframe
 
         return False
+
+    def is_connector(self):
+        return self._core.has_connector
 
     def get_query_exec_func(self):
         return self._core.connector.execute_direct_sql_query

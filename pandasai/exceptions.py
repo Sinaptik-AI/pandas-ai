@@ -163,3 +163,11 @@ class InvalidConfigError(Exception):
     Args:
         Exception (Exception): InvalidConfigError
     """
+
+
+class MaliciousQueryError(Exception):
+    """
+    Raise error if malicious query is generated
+    Args:
+        Exception (Excpetion): MaliciousQueryError
+    """

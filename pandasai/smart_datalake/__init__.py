@@ -62,6 +62,7 @@ class SmartDatalake:
     _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
+    _can_direct_sql: bool
 
     _last_code_generated: str = None
     _last_reasoning: str = None
@@ -132,7 +133,7 @@ class SmartDatalake:
         )
 
         # Checks if direct sql config set they all belong to same sql connector type
-        self._validate_direct_sql(self._dfs)
+        self._can_direct_sql = self._validate_direct_sql(self._dfs)
 
     def set_instance_type(self, type: str):
         self._instance = type
@@ -257,14 +258,16 @@ class SmartDatalake:
         Raises:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
-        if self._config.direct_sql:
+
+        if self._config.direct_sql and all(df.is_connector() for df in dfs):
             if dfs and all(df == dfs[0] for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(
-                    "Direct requires all connector belong to same datasource "
+                    "Direct requires all SQLConnector and they belong to same datasource "
                     "and have same credentials"
                 )
+        return False
 
     def _get_chat_prompt(self):
         key = "direct_sql_prompt" if self._config.direct_sql else "generate_python_code"
@@ -322,8 +325,6 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        print(key)
-        print(custom_prompt.__class__)
         prompt = custom_prompt or default_prompt
 
         # set default values for the prompt
@@ -469,7 +470,9 @@ class SmartDatalake:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
-                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
+                    context = CodeExecutionContext(
+                        self._last_prompt_id, self._skills, self._can_direct_sql
+                    )
                     result = self._code_manager.execute_code(
                         code=code_to_run,
                         context=context,
