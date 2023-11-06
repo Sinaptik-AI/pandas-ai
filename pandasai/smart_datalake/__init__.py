@@ -366,6 +366,8 @@ class SmartDatalake:
 
         self._memory.add(query, True)
 
+        result_is_valid = False
+
         try:
             output_type_helper = output_type_factory(output_type, logger=self.logger)
             viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
@@ -464,29 +466,27 @@ class SmartDatalake:
                         self._retry_run_code, code, traceback_error
                     )
 
-            if result is not None:
-                if isinstance(result, dict):
-                    validation_ok, validation_logs = output_type_helper.validate(result)
-                    if not validation_ok:
-                        self.logger.log(
-                            "\n".join(validation_logs), level=logging.WARNING
-                        )
-                        self._query_exec_tracker.add_step(
-                            {
-                                "type": "Validating Output",
-                                "success": False,
-                                "message": "Output Validation Failed",
-                            }
-                        )
-                    else:
-                        self._query_exec_tracker.add_step(
-                            {
-                                "type": "Validating Output",
-                                "success": True,
-                                "message": "Output Validation Successful",
-                            }
-                        )
+            if isinstance(result, dict):
+                result_is_valid, validation_logs = output_type_helper.validate(result)
+                if result_is_valid:
+                    self._query_exec_tracker.add_step(
+                        {
+                            "type": "Validating Output",
+                            "success": True,
+                            "message": "Output Validation Successful",
+                        }
+                    )
+                else:
+                    self.logger.log("\n".join(validation_logs), level=logging.WARNING)
+                    self._query_exec_tracker.add_step(
+                        {
+                            "type": "Validating Output",
+                            "success": False,
+                            "message": "Output Validation Failed",
+                        }
+                    )
 
+            if result is not None:
                 self.last_result = result
                 self.logger.log(f"Answer: {result}")
 
@@ -505,7 +505,13 @@ class SmartDatalake:
             f"Executed in: {self._query_exec_tracker.get_execution_time()}s"
         )
 
-        self._add_result_to_memory(result)
+        if result_is_valid:
+            self._add_result_to_memory(result)
+        else:
+            self.logger.log(
+                "The result will not be memorized since it has failed the "
+                "corresponding validation"
+            )
 
         result = self._query_exec_tracker.execute_func(
             self._response_parser.parse, result
@@ -524,22 +530,6 @@ class SmartDatalake:
         Args:
             result (dict): The result to add to the memory
         """
-        if not isinstance(result, dict):
-            self.logger.log(
-                f"Inappropriate type of 'result' produced by generated code. "
-                f"Expected 'dict', got '{result.__class__.__name__}'",
-                level=logging.WARNING,
-            )
-            return
-
-        if "type" not in result or "value" not in result:
-            self.logger.log(
-                f"Both 'type' and 'value' items should be present in 'result' "
-                f"produced by generated code. Instead it contains the next "
-                f"content:\n{result}"
-            )
-            return
-
         if result["type"] in ["string", "number"]:
             self._memory.add(result["value"], False)
         elif result["type"] in ["dataframe", "plot"]:
