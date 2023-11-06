@@ -25,7 +25,7 @@ class DataSampler:
             df = df.to_pandas()
         self.df = df
 
-    def sample(self, n: int = 5) -> pd.DataFrame:
+    def sample(self, n: int = 3) -> pd.DataFrame:
         """Sample the dataframe.
 
         Args:
