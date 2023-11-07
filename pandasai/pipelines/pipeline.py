@@ -5,7 +5,6 @@ from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.smart_dataframe import SmartDataframe, load_smartdataframes
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
@@ -22,9 +21,7 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        context: Union[
-            List[Union[DataFrameType, SmartDataframe]], PipelineContext
-        ] = None,
+        context: Union[List[Union[DataFrameType, Any]], PipelineContext] = None,
         config: Optional[Union[Config, dict]] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,
@@ -40,6 +37,8 @@ class Pipeline(AbstractPipeline):
         """
 
         if not isinstance(context, PipelineContext):
+            from pandasai.smart_dataframe import load_smartdataframes
+
             config = Config(**load_config(config))
             smart_dfs = load_smartdataframes(context, config)
             context = PipelineContext(smart_dfs, config)

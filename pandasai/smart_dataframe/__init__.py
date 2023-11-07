@@ -737,8 +737,6 @@ def load_smartdataframes(
         dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
     """
 
-    from ..smart_dataframe import SmartDataframe
-
     smart_dfs = []
     for df in dfs:
         if not isinstance(df, SmartDataframe):
