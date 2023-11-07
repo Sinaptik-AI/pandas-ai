@@ -26,7 +26,13 @@ class DirectSQLPrompt(FileBasedPrompt):
     def _prepare_tables_data(self, tables):
         tables_join = []
         for table in tables:
-            table = f'<table name="{table.table_name}" description="{table.table_description}">\n{table.head_csv}\n</table>'
+            table_description_tag = (
+                f' description="{table.table_description}"'
+                if table.table_description is not None
+                else ""
+            )
+            table_head_tag = f'<table name="{table.table_name}"{table_description_tag}>'
+            table = f"{table_head_tag}\n{table.head_csv}\n</table>"
             tables_join.append(table)
         return "\n\n".join(tables_join)
 

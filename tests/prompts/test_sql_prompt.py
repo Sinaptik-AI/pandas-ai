@@ -73,7 +73,7 @@ class TestDirectSqlPrompt:
             == f'''You are provided with the following samples of sql tables data:
 
 <Tables>
-<table name="None" description="None">
+<table name="None">
 
 
 </table>
