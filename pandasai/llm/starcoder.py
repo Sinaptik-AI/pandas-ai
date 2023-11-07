@@ -31,7 +31,6 @@ class Starcoder(HuggingFaceLLM):
             aware that it may perform poorly.
             """
         )
-        super().__init__(**kwargs)
 
     @property
     def type(self) -> str:
