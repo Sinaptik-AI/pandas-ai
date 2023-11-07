@@ -23,11 +23,9 @@ import os
 import traceback
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.skills_manager import SkillsManager
-
+from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.skills import skill
-
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
-
 from ..helpers.output_types import output_type_factory
 from ..helpers.viz_library_types import viz_lib_type_factory
 from pandasai.responses.context import Context
@@ -42,13 +40,13 @@ from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
-from typing import Union, List, Any, Type, Optional
+from typing import Union, List, Any, Optional
 from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
-from ..exceptions import AdvancedReasoningDisabledError
+from ..exceptions import AdvancedReasoningDisabledError, InvalidConfigError
 
 
 class SmartDatalake:
@@ -64,6 +62,7 @@ class SmartDatalake:
     _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
+    _can_direct_sql: bool
 
     _last_code_generated: str = None
     _last_reasoning: str = None
@@ -132,6 +131,9 @@ class SmartDatalake:
         self._query_exec_tracker = QueryExecTracker(
             server_config=self._config.log_server,
         )
+
+        # Checks if direct sql config set they all belong to same sql connector type
+        self._can_direct_sql = self._validate_direct_sql(self._dfs)
 
     def set_instance_type(self, type: str):
         self._instance = type
@@ -247,6 +249,37 @@ class SmartDatalake:
         if data_viz_library in (item.value for item in VisualizationLibrary):
             self._data_viz_library = data_viz_library
 
+    def _validate_direct_sql(self, dfs: List) -> None:
+        """
+        Raises error if they don't belong sqlconnector or have different credentials
+        Args:
+            dfs (List[SmartDataframe]): list of SmartDataframes
+
+        Raises:
+            InvalidConfigError: Raise Error in case of config is set but criteria is not met
+        """
+
+        if self._config.direct_sql and all(df.is_connector() for df in dfs):
+            if all(df == dfs[0] for df in dfs):
+                return True
+            else:
+                raise InvalidConfigError(
+                    "Direct requires all SQLConnector and they belong to same datasource "
+                    "and have same credentials"
+                )
+        return False
+
+    def _get_chat_prompt(self):
+        key = "direct_sql_prompt" if self._config.direct_sql else "generate_python_code"
+        return (
+            key,
+            (
+                DirectSQLPrompt(tables=self._dfs)
+                if self._config.direct_sql
+                else GeneratePythonCodePrompt()
+            ),
+        )
+
     def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
@@ -273,7 +306,7 @@ class SmartDatalake:
     def _get_prompt(
         self,
         key: str,
-        default_prompt: Type[AbstractPrompt],
+        default_prompt: AbstractPrompt,
         default_values: Optional[dict] = None,
     ) -> AbstractPrompt:
         """
@@ -292,7 +325,7 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt or default_prompt()
+        prompt = custom_prompt or default_prompt
 
         # set default values for the prompt
         prompt.set_config(self._config)
@@ -324,6 +357,10 @@ class SmartDatalake:
         for df in self._dfs:
             hash = df.column_hash()
             cache_key += str(hash)
+
+        # direct flag to separate out caching for different codegen
+        if self._config.direct_sql:
+            cache_key += "direct_sql"
 
         return cache_key
 
@@ -395,11 +432,12 @@ class SmartDatalake:
                 ):
                     default_values["current_code"] = self._last_code_generated
 
+                prompt_key, prompt = self._get_chat_prompt()
                 generate_python_code_instruction = (
                     self._query_exec_tracker.execute_func(
                         self._get_prompt,
-                        "generate_python_code",
-                        default_prompt=GeneratePythonCodePrompt,
+                        key=prompt_key,
+                        default_prompt=prompt,
                         default_values=default_values,
                     )
                 )
@@ -432,7 +470,9 @@ class SmartDatalake:
             while retry_count < self._config.max_retries:
                 try:
                     # Execute the code
-                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
+                    context = CodeExecutionContext(
+                        self._last_prompt_id, self._skills, self._can_direct_sql
+                    )
                     result = self._code_manager.execute_code(
                         code=code_to_run,
                         context=context,
@@ -553,7 +593,7 @@ class SmartDatalake:
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
-            default_prompt=CorrectErrorPrompt,
+            default_prompt=CorrectErrorPrompt(),
             default_values=default_values,
         )
 

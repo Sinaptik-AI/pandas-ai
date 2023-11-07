@@ -71,8 +71,7 @@ class TestSkills:
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
-        context = MagicMock(spec=CodeExecutionContext)
-        return context
+        return CodeExecutionContext(uuid.uuid4(), SkillsManager())
 
     @pytest.fixture
     def agent(self, llm, sample_df):
@@ -317,7 +316,7 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         )
 
     def test_code_exec_with_skills_no_use(
-        self, code_manager: CodeManager, exec_context: MagicMock
+        self, code_manager: CodeManager, exec_context
     ):
         code = """def analyze_data(dfs):
     return {'type': 'number', 'value': 1 + 1}"""

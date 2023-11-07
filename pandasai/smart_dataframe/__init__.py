@@ -726,6 +726,19 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def __len__(self):
         return len(self.dataframe)
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self._core.has_connector and other._core.has_connector:
+                return self._core.connector.equals(other._core.connector)
+
+        return False
+
+    def is_connector(self):
+        return self._core.has_connector
+
+    def get_query_exec_func(self):
+        return self._core.connector.execute_direct_sql_query
+
 
 def load_smartdataframes(
     dfs: List[Union[DataFrameType, Any]], config: Config

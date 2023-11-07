@@ -90,8 +90,6 @@ a,b
 Question
 </conversation>
 
-{viz_library_type_hint}
-
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -103,6 +101,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    {viz_library_type_hint}
     At the end, return a dictionary of:
     {output_type_hint}
     """
@@ -151,8 +150,6 @@ a,b
 Question
 </conversation>
 
-{viz_library_type_hint}
-
 This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
 # TODO import all the dependencies required
@@ -164,6 +161,7 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
     1. Prepare: Preprocessing and cleaning data if necessary
     2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
     3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
+    {viz_library_type_hint}
     At the end, return a dictionary of:
     
     """
