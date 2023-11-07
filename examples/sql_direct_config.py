@@ -40,10 +40,10 @@ products = PostgreSQLConnector(
 )
 
 
-llm = OpenAI("YOUR_API_KEY")
+llm = OpenAI("OPEN_API_KEY")
 df = SmartDatalake(
     [order_details, payment_connector, products],
     config={"llm": llm, "direct_sql": True},
 )
-response = df.chat("Return Orders with OrderDetails and counts of distinct Products")
+response = df.chat("return orders with count of distinct products")
 print(response)
