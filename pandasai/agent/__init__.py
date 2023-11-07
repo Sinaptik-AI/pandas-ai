@@ -209,3 +209,7 @@ class Agent:
     @property
     def last_answer(self):
         return self._lake.last_answer
+
+    @property
+    def last_query_log_id(self):
+        return self._lake.last_query_log_id

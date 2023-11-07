@@ -703,6 +703,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def sample_head(self, sample_head: pd.DataFrame):
         self._sample_head = sample_head.to_csv(index=False)
 
+    @property
+    def last_query_log_id(self):
+        return self._lake.last_query_log_id
+
     def __getattr__(self, name):
         if name in self._core.__dir__():
             return getattr(self._core, name)

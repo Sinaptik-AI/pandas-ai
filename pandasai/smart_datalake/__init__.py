@@ -777,3 +777,7 @@ class SmartDatalake:
     @property
     def instance(self):
         return self._instance
+
+    @property
+    def last_query_log_id(self):
+        return self._query_exec_tracker.last_log_id

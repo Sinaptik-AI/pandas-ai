@@ -1,7 +1,9 @@
 import base64
+import json
 import os
 import time
 from typing import Any, List, TypedDict, Union
+import uuid
 
 import requests
 from collections import defaultdict
@@ -30,6 +32,7 @@ class QueryExecTracker:
     _func_exec_count: dict
     _success: bool
     _server_config: dict
+    _last_log_id: int
 
     def __init__(
         self,
@@ -51,7 +54,11 @@ class QueryExecTracker:
         self._is_related_query = flag
 
     def add_query_info(
-        self, conversation_id: str, instance: str, query: str, output_type: str
+        self,
+        conversation_id: uuid.UUID,
+        instance: str,
+        query: str,
+        output_type: str,
     ):
         """
         Adds query information for new track
@@ -62,7 +69,7 @@ class QueryExecTracker:
             output_type (str): output type expected by user
         """
         self._query_info = {
-            "conversation_id": conversation_id,
+            "conversation_id": str(conversation_id),
             "instance": instance,
             "query": query,
             "output_type": output_type,
@@ -73,6 +80,7 @@ class QueryExecTracker:
         """
         Resets tracking variables to start new track
         """
+        self._last_log_id = None
         self._start_time = time.time()
         self._dataframes: List = []
         self._response: ResponseType = {}
@@ -267,6 +275,11 @@ class QueryExecTracker:
             if response.status_code != 200:
                 raise Exception(response.text)
 
+            json_data = json.loads(response.text)
+
+            if "data" in json_data and json_data["data"] is not None:
+                self._last_log_id = json_data["data"]["log_id"]
+
         except Exception as e:
             print(f"Exception in APILogger: {e}")
 
@@ -277,3 +290,7 @@ class QueryExecTracker:
     @success.setter
     def success(self, value: bool):
         self._success = value
+
+    @property
+    def last_log_id(self) -> int:
+        return self._last_log_id
