@@ -148,6 +148,14 @@ class AdvancedReasoningDisabledError(Exception):
     """
 
 
+class UnSupportedLogicUnit(Exception):
+    """
+    Raised when unsupported logic unit is added in the pipeline
+    Args:
+        Exception (Exception): UnSupportedLogicUnit
+    """
+
+
 class InvalidWorkspacePathError(Exception):
     """
     Raised when the environment variable of workspace exist but path is invalid
