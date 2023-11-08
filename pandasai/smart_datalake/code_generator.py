@@ -1,5 +1,6 @@
 from typing import Any
 from pandasai.helpers.logger import Logger
+from pandasai.helpers.viz_library_types import viz_lib_type_factory
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
@@ -29,14 +30,15 @@ class CodeGenerator(BaseLogicUnit):
             )
 
         else:
+
+            viz_lib_helper = viz_lib_type_factory(pipeline_context.config.data_viz_library.value, logger=self.logger)
             default_values = {
                 # TODO: find a better way to determine the engine,
                 "engine": pipeline_context.dfs[0].engine,
                 "output_type_hint": pipeline_context.get_intermediate_value(
                     "output_type_helper"
                 ).template_hint,
-                "viz_library_type": pipeline_context.get_intermediate_value(
-                    "viz_lib_helper"
+                "viz_library_type": viz_lib_helper
                 ).template_hint,
             }
 

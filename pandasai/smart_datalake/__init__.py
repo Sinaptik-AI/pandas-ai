@@ -405,7 +405,6 @@ class SmartDatalake:
         self._memory.add(query, True)
 
         output_type_helper = output_type_factory(output_type, logger=self.logger)
-        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
 
         pipeline_context = PipelineContext(
             dfs=self.dfs,
@@ -417,7 +416,6 @@ class SmartDatalake:
         pipeline_context.add_intermediate_value(
             "output_type_helper", output_type_helper
         )
-        pipeline_context.add_intermediate_value("viz_lib_helper", viz_lib_helper)
         pipeline_context.add_intermediate_value(
             "last_code_generated", self._last_code_generated
         )
