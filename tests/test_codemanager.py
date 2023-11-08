@@ -162,8 +162,6 @@ print(os.listdir())
     print(dfs)"""
         )
 
-    # TODO: @Milind, minor test case issue, will fix it in next commit
-    @pytest.mark.skip(reason="minor test case issue, will fix it in next commit")
     def test_exception_handling(
         self, smart_dataframe: SmartDataframe, code_manager: CodeManager
     ):

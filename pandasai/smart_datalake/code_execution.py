@@ -59,7 +59,11 @@ class CodeExecution(BaseLogicUnit):
                     reasoning,
                     answer,
                 ] = pipeline_context.query_exec_tracker.execute_func(
-                    self._retry_run_code, code, pipeline_context, logger, traceback_error
+                    self._retry_run_code,
+                    code,
+                    pipeline_context,
+                    logger,
+                    traceback_error,
                 )
 
                 pipeline_context.add_intermediate_value("reasoning", reasoning)
@@ -90,17 +94,13 @@ class CodeExecution(BaseLogicUnit):
             "code": code,
             "error_returned": e,
         }
-        error_correcting_instruction = self.context.get_intermediate_value(
-            "get_prompt"
-        )(
+        error_correcting_instruction = context.get_intermediate_value("get_prompt")(
             "correct_error",
             default_prompt=CorrectErrorPrompt,
             default_values=default_values,
         )
 
-        result = context.config.llm.generate_code(
-            error_correcting_instruction
-        )
+        result = context.config.llm.generate_code(error_correcting_instruction)
         if context.config.callback is not None:
             context.config.callback.on_code(result[0])
 

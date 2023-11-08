@@ -67,6 +67,9 @@ class CodeGenerator(BaseLogicUnit):
                 generate_python_code_instruction,
             )
 
+            pipeline_context.add_intermediate_value("last_reasoning", reasoning)
+            pipeline_context.add_intermediate_value("last_answer", answer)
+
             if pipeline_context.config.enable_cache and pipeline_context.cache:
                 pipeline_context.cache.set(
                     self._get_cache_key(context=pipeline_context), code

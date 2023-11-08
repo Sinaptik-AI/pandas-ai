@@ -441,6 +441,8 @@ class SmartDatalake:
             pipeline_context (PipelineContext): Pipeline Context after the Smart Data Lake pipeline execution
 
         """
+        self._last_reasoning = pipeline_context.get_intermediate_value("last_reasoning")
+        self._last_answer = pipeline_context.get_intermediate_value("last_answer")
         self._last_code_generated = pipeline_context.get_intermediate_value(
             "last_code_generated"
         )
