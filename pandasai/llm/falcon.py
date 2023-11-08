@@ -27,9 +27,9 @@ class Falcon(HuggingFaceLLM):
 
     def __init__(self, **kwargs):
         warnings.warn(
-            """Falcon is deprecated and will be removed in a future release.
-            Please use langchain.llms.HuggingFaceHub instead, although please be 
-            aware that it may perform poorly.
+            """Falcon has been deprecated as of version 1.5.
+            Please choose a different LLM instead from the ones listed in
+            https://docs.pandas-ai.com/en/latest/API/llms/
             """
         )
 

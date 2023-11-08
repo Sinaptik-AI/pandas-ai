@@ -70,41 +70,6 @@ with get_openai_callback() as cb:
 # Total Cost (USD): $ 0.000750
 ```
 
-## HuggingFace models
-
-In order to use HuggingFace models, you need to have a HuggingFace API key. You can create a HuggingFace account [here](https://huggingface.co/join) and get an API key [here](https://hf.co/settings/tokens).
-
-Once you have an API key, you can use it to instantiate one of the HuggingFace models.
-
-At the moment, PandasAI supports the following HuggingFace models:
-
-- Starcoder: `bigcode/starcoder`
-- Falcon: `tiiuae/falcon-7b-instruct`
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import Starcoder, Falcon
-
-llm = Starcoder(api_token="my-huggingface-api-key")
-# or
-llm = Falcon(api_token="my-huggingface-api-key")
-
-df = SmartDataframe("data.csv", config={"llm": llm})
-```
-
-As an alternative, you can set the `HUGGINGFACE_API_KEY` environment variable and instantiate the HuggingFace object without passing the API key:
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import Starcoder, Falcon
-
-llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
-# or
-llm = Falcon() # no need to pass the API key, it will be read from the environment variable
-
-df = SmartDataframe("data.csv", config={"llm": llm})
-```
-
 ## Google PaLM
 
 In order to use Google PaLM models, you need to have a Google Cloud API key. You can get one [here](https://developers.generativeai.google/tutorials/setup).
