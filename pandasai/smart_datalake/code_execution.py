@@ -59,11 +59,11 @@ class CodeExecution(BaseLogicUnit):
                     reasoning,
                     answer,
                 ] = pipeline_context.query_exec_tracker.execute_func(
-                    self._retry_run_code, code, traceback_error
+                    self._retry_run_code, code, pipeline_context, logger, traceback_error
                 )
 
-                pipeline_context.set_intermediate_value("reasoning", reasoning)
-                pipeline_context.set_intermediate_value("answer", answer)
+                pipeline_context.add_intermediate_value("reasoning", reasoning)
+                pipeline_context.add_intermediate_value("answer", answer)
 
         return result
 
