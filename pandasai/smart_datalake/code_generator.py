@@ -63,12 +63,9 @@ class CodeGenerator(BaseLogicUnit):
                 reasoning,
                 answer,
             ] = pipeline_context.query_exec_tracker.execute_func(
-                pipeline_context.get_intermediate_value("llm").generate_code,
+                pipeline_context.config.llm.generate_code,
                 generate_python_code_instruction,
             )
-
-            pipeline_context.add_intermediate_value("last_reasoning", reasoning)
-            pipeline_context.add_intermediate_value("last_answer", answer)
 
             if pipeline_context.config.enable_cache and pipeline_context.cache:
                 pipeline_context.cache.set(

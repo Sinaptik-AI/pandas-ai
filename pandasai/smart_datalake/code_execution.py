@@ -98,7 +98,7 @@ class CodeExecution(BaseLogicUnit):
             default_values=default_values,
         )
 
-        result = context.get_intermediate_value("llm").generate_code(
+        result = context.config.llm.generate_code(
             error_correcting_instruction
         )
         if context.config.callback is not None:

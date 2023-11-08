@@ -418,13 +418,10 @@ class SmartDatalake:
             "output_type_helper", output_type_helper
         )
         pipeline_context.add_intermediate_value("viz_lib_helper", viz_lib_helper)
-        pipeline_context.add_intermediate_value("last_reasoning", self._last_reasoning)
-        pipeline_context.add_intermediate_value("last_answer", self._last_answer)
         pipeline_context.add_intermediate_value(
             "last_code_generated", self._last_code_generated
         )
         pipeline_context.add_intermediate_value("get_prompt", self._get_prompt)
-        pipeline_context.add_intermediate_value("llm", self.llm)
         pipeline_context.add_intermediate_value("last_prompt_id", self.last_prompt_id)
         pipeline_context.add_intermediate_value("skills", self._skills)
         pipeline_context.add_intermediate_value("code_manager", self._code_manager)
@@ -444,8 +441,6 @@ class SmartDatalake:
             pipeline_context (PipelineContext): Pipeline Context after the Smart Data Lake pipeline execution
 
         """
-        self._last_reasoning = pipeline_context.get_intermediate_value("last_reasoning")
-        self._last_answer = pipeline_context.get_intermediate_value("last_answer")
         self._last_code_generated = pipeline_context.get_intermediate_value(
             "last_code_generated"
         )
