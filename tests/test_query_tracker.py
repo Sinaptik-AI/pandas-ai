@@ -92,7 +92,7 @@ class TestQueryExecTracker:
         # Check if the dataframe was added correctly
         assert len(tracker._dataframes) == 1
         assert len(tracker._dataframes[0]["headers"]) == 3
-        assert len(tracker._dataframes[0]["rows"]) == 5
+        assert len(tracker._dataframes[0]["rows"]) == 3
 
     def test_add_step(self, tracker: QueryExecTracker):
         # Create a sample step

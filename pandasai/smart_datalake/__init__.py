@@ -364,7 +364,7 @@ class SmartDatalake:
 
         return cache_key
 
-    def chat(self, query: str, output_type: Optional[str] = None):
+    def chat(self, query: str, output_type: Optional[str] = None) -> str:
         """
         Run a query on the dataframe.
 
@@ -388,6 +388,9 @@ class SmartDatalake:
             ValueError: If the query is empty
         """
 
+        if not query:
+            raise ValueError("Query cannot be empty")
+
         self._query_exec_tracker.start_new_track()
 
         self.logger.log(f"Question: {query}")
@@ -403,133 +406,11 @@ class SmartDatalake:
 
         self._memory.add(query, True)
 
+        result_is_valid = False
+
         try:
-            output_type_helper = output_type_factory(output_type, logger=self.logger)
-            viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
-
-            if (
-                self._config.enable_cache
-                and self._cache
-                and self._cache.get(self._get_cache_key())
-            ):
-                self.logger.log("Using cached response")
-                code = self._query_exec_tracker.execute_func(
-                    self._cache.get, self._get_cache_key(), tag="cache_hit"
-                )
-
-            else:
-                default_values = {
-                    # TODO: find a better way to determine the engine,
-                    "engine": self._dfs[0].engine,
-                    "output_type_hint": output_type_helper.template_hint,
-                    "viz_library_type": viz_lib_helper.template_hint,
-                }
-
-                if (
-                    self.memory.size > 1
-                    and self.memory.count() > 1
-                    and self._last_code_generated
-                ):
-                    default_values["current_code"] = self._last_code_generated
-
-                prompt_key, prompt = self._get_chat_prompt()
-                generate_python_code_instruction = (
-                    self._query_exec_tracker.execute_func(
-                        self._get_prompt,
-                        key=prompt_key,
-                        default_prompt=prompt,
-                        default_values=default_values,
-                    )
-                )
-
-                [code, reasoning, answer] = self._query_exec_tracker.execute_func(
-                    self._llm.generate_code, generate_python_code_instruction
-                )
-
-                self.last_reasoning = reasoning
-                self.last_answer = answer
-
-                if self._config.enable_cache and self._cache:
-                    self._cache.set(self._get_cache_key(), code)
-
-            if self._config.callback is not None:
-                self._config.callback.on_code(code)
-
-            self.last_code_generated = code
-            self.logger.log(
-                f"""Code generated:
-```
-{code}
-```
-"""
-            )
-
-            retry_count = 0
-            code_to_run = code
-            result = None
-            while retry_count < self._config.max_retries:
-                try:
-                    # Execute the code
-                    context = CodeExecutionContext(
-                        self._last_prompt_id, self._skills, self._can_direct_sql
-                    )
-                    result = self._code_manager.execute_code(
-                        code=code_to_run,
-                        context=context,
-                    )
-
-                    break
-
-                except Exception as e:
-                    if (
-                        not self._config.use_error_correction_framework
-                        or retry_count >= self._config.max_retries - 1
-                    ):
-                        raise e
-
-                    retry_count += 1
-
-                    self._logger.log(
-                        f"Failed to execute code with a correction framework "
-                        f"[retry number: {retry_count}]",
-                        level=logging.WARNING,
-                    )
-
-                    traceback_error = traceback.format_exc()
-                    [
-                        code_to_run,
-                        reasoning,
-                        answer,
-                    ] = self._query_exec_tracker.execute_func(
-                        self._retry_run_code, code, traceback_error
-                    )
-
-            if result is not None:
-                if isinstance(result, dict):
-                    validation_ok, validation_logs = output_type_helper.validate(result)
-                    if not validation_ok:
-                        self.logger.log(
-                            "\n".join(validation_logs), level=logging.WARNING
-                        )
-                        self._query_exec_tracker.add_step(
-                            {
-                                "type": "Validating Output",
-                                "success": False,
-                                "message": "Output Validation Failed",
-                            }
-                        )
-                    else:
-                        self._query_exec_tracker.add_step(
-                            {
-                                "type": "Validating Output",
-                                "success": True,
-                                "message": "Output Validation Successful",
-                            }
-                        )
-
-                self.last_result = result
-                self.logger.log(f"Answer: {result}")
-
+            code = self._generate_code(output_type)
+            result = self._execute_code(code, output_type)
         except Exception as exception:
             self.last_error = str(exception)
             self._query_exec_tracker.success = False
@@ -545,7 +426,13 @@ class SmartDatalake:
             f"Executed in: {self._query_exec_tracker.get_execution_time()}s"
         )
 
-        self._add_result_to_memory(result)
+        if result_is_valid:
+            self._add_result_to_memory(result)
+        else:
+            self.logger.log(
+                "The result will not be memorized since it has failed the "
+                "corresponding validation"
+            )
 
         result = self._query_exec_tracker.execute_func(
             self._response_parser.parse, result
@@ -557,6 +444,227 @@ class SmartDatalake:
 
         return result
 
+    def _generate_code(self, output_type: Optional[str] = None) -> str:
+        """
+        Generate Python code from the query.
+
+        Args:
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Returns:
+            (str): Generated Python code
+        """
+        if (
+            self._config.enable_cache
+            and self._cache
+            and self._cache.get(self._get_cache_key())
+        ):
+            self.logger.log("Using cached response")
+            code = self._query_exec_tracker.execute_func(
+                self._cache.get, self._get_cache_key(), tag="cache_hit"
+            )
+
+        else:
+            default_values = {
+                # TODO: find a better way to determine the engine,
+                "engine": self._dfs[0].engine,
+                "output_type_hint": self._get_output_type_hint(output_type),
+                "viz_library_type": self._get_viz_library_type(),
+            }
+
+            if (
+                self.memory.size > 1
+                and self.memory.count() > 1
+                and self._last_code_generated
+            ):
+                default_values["current_code"] = self._last_code_generated
+
+            prompt_key, prompt = self._get_chat_prompt()
+            generate_python_code_instruction = self._query_exec_tracker.execute_func(
+                self._get_prompt,
+                key=prompt_key,
+                default_prompt=prompt,
+                default_values=default_values,
+            )
+
+            [code, reasoning, answer] = self._query_exec_tracker.execute_func(
+                self._llm.generate_code, generate_python_code_instruction
+            )
+
+            self.last_reasoning = reasoning
+            self.last_answer = answer
+
+            if self._config.enable_cache and self._cache:
+                self._cache.set(self._get_cache_key(), code)
+
+        if self._config.callback is not None:
+            self._config.callback.on_code(code)
+
+        self.last_code_generated = code
+        self.logger.log(
+            f"""Code generated:
+```
+{code}
+```
+"""
+        )
+        return code
+
+    def _execute_code(self, code: str, output_type: Optional[str] = None) -> Any:
+        """
+        Execute the generated Python code.
+
+        Args:
+            code (str): Generated Python code
+
+        Returns:
+            (Any): Result of executing the code
+        """
+
+        retry_count = 0
+        code_to_run = code
+        result = None
+        while retry_count < self._config.max_retries:
+            try:
+                # Execute the code
+                context = CodeExecutionContext(
+                    self._last_prompt_id, self._skills, self._can_direct_sql
+                )
+                result = self._code_manager.execute_code(
+                    code=code_to_run,
+                    context=context,
+                )
+
+                break
+
+            except Exception as e:
+                if (
+                    not self._config.use_error_correction_framework
+                    or retry_count >= self._config.max_retries - 1
+                ):
+                    raise e
+
+                retry_count += 1
+
+                self._logger.log(
+                    f"Failed to execute code with a correction framework "
+                    f"[retry number: {retry_count}]",
+                    level=logging.WARNING,
+                )
+
+                traceback_error = traceback.format_exc()
+                [
+                    code_to_run,
+                    reasoning,
+                    answer,
+                ] = self._query_exec_tracker.execute_func(
+                    self._retry_run_code, code, traceback_error
+                )
+
+        if isinstance(result, dict):
+            self._validate_output(result, output_type)
+
+        if result is not None:
+            self.last_result = result
+            self.logger.log(f"Answer: {result}")
+
+        return result
+
+    def _validate_output(self, result: dict, output_type: Optional[str] = None):
+        """
+        Validate the output of the code execution.
+
+        Args:
+            result (Any): Result of executing the code
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Raises:
+            (ValueError): If the output is not valid
+        """
+
+        output_type_helper = output_type_factory(output_type, logger=self.logger)
+        result_is_valid, validation_logs = output_type_helper.validate(result)
+
+        if result_is_valid:
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": True,
+                    "message": "Output Validation Successful",
+                }
+            )
+        else:
+            self.logger.log("\n".join(validation_logs), level=logging.WARNING)
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": False,
+                    "message": "Output Validation Failed",
+                }
+            )
+            raise ValueError("Output validation failed")
+
+    def _get_output_type_hint(self, output_type: Optional[str]) -> str:
+        """
+        Get the output type hint based on the specified output type.
+
+        Args:
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Returns:
+            (str): Output type hint
+        """
+
+        output_type_helper = output_type_factory(output_type, logger=self.logger)
+        return output_type_helper.template_hint
+
+    def _get_viz_library_type(self) -> str:
+        """
+        Get the visualization library type based on the configured library.
+
+        Returns:
+            (str): Visualization library type
+        """
+
+        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
+        return viz_lib_helper.template_hint
+
     def _add_result_to_memory(self, result: dict):
         """
         Add the result to the memory.
@@ -564,9 +672,6 @@ class SmartDatalake:
         Args:
             result (dict): The result to add to the memory
         """
-        if result is None:
-            return
-
         if result["type"] in ["string", "number"]:
             self._memory.add(result["value"], False)
         elif result["type"] in ["dataframe", "plot"]:
@@ -817,3 +922,7 @@ class SmartDatalake:
     @property
     def instance(self):
         return self._instance
+
+    @property
+    def last_query_log_id(self):
+        return self._query_exec_tracker.last_log_id

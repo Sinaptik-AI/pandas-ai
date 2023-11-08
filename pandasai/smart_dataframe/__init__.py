@@ -428,7 +428,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def _get_sample_head(self) -> DataFrameType:
         head = None
-        rows_to_display = 0 if self.lake.config.enforce_privacy else 5
+        rows_to_display = 0 if self.lake.config.enforce_privacy else 3
         if self._sample_head is not None:
             head = self.sample_head
         elif not self._core._df_loaded and self.connector:
@@ -703,6 +703,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def sample_head(self, sample_head: pd.DataFrame):
         self._sample_head = sample_head.to_csv(index=False)
 
+    @property
+    def last_query_log_id(self):
+        return self._lake.last_query_log_id
+
     def __getattr__(self, name):
         if name in self._core.__dir__():
             return getattr(self._core, name)
@@ -727,9 +731,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return len(self.dataframe)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            if self._core.has_connector and other._core.has_connector:
-                return self._core.connector.equals(other._core.connector)
+        if isinstance(other, self.__class__) and (
+            self._core.has_connector and other._core.has_connector
+        ):
+            return self._core.connector.equals(other._core.connector)
 
         return False
 
