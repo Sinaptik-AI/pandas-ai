@@ -9,6 +9,8 @@ class ResultParsing(BaseLogicUnit):
     Result Parsing Stage
     """
 
+    pass
+
     def execute(self, input: Any, **kwargs) -> Any:
         pipeline_context: PipelineContext = kwargs.get("context")
 

@@ -71,4 +71,4 @@ class PipelineContext:
         self._intermediate_values[key] = value
 
     def get_intermediate_value(self, key: str):
-        return self._intermediate_values[key]
+        return self._intermediate_values.get(key, "")

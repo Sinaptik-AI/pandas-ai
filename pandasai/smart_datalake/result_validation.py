@@ -11,6 +11,8 @@ class ResultValidation(BaseLogicUnit):
     Result Validation Stage
     """
 
+    pass
+
     def execute(self, input: Any, **kwargs) -> Any:
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")

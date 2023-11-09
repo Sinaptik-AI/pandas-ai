@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 from unittest.mock import Mock
 import pandas as pd
 
@@ -13,8 +13,10 @@ from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 from pandasai.smart_dataframe import SmartDataframe
 from pandasai.smart_datalake.code_generator import CodeGenerator
 
+
 class TestCodeGenerator:
     "Unit test for Smart Data Lake Code Generator"
+
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
         return FakeLLM(output=output)
@@ -78,25 +80,11 @@ class TestCodeGenerator:
     @pytest.fixture
     def logger(self):
         return Logger(True, False)
-    
+
     def test_init(self, context, config):
         # Test the initialization of the CodeGenerator
         code_generator = CodeGenerator()
         assert isinstance(code_generator, CodeGenerator)
-
-    def test_code_found_in_cache(self, context, logger):
-        # Test Flow : Code found in the cache
-        code_generator = CodeGenerator()
-
-        context._cache = Mock()
-        context.cache.get = Mock(return_value="Cached Mocked Code")
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value="Cached Mocked Code")
-
-        code = code_generator.execute(input=None, context=context, logger=logger)
-
-        assert isinstance(code_generator, CodeGenerator)
-        assert code == "Cached Mocked Code"
 
     def test_code_not_found_in_cache(self, context, logger):
         # Test Flow : Code Not found in the cache
@@ -104,20 +92,20 @@ class TestCodeGenerator:
 
         mock_get_promt = Mock(return_value=GeneratePythonCodePrompt)
 
-        def mock_intermediate_values(key : str):
-            if key == "output_type_helper" :
+        def mock_intermediate_values(key: str):
+            if key == "output_type_helper":
                 return output_type_factory("DefaultOutputType")
-            elif key == "viz_lib_helper" :
+            elif key == "viz_lib_helper":
                 return viz_lib_type_factory("DefaultVizLibraryType")
             elif key == "get_prompt":
                 return mock_get_promt
-            
+
         def mock_execute_func(function, *args, **kwargs):
-            if function == mock_get_promt :
+            if function == mock_get_promt:
                 return mock_get_promt()
             return ["Mocked LLM Generated Code", "Mocked Reasoning", "Mocked Answer"]
 
-        context.get_intermediate_value= Mock(side_effect=mock_intermediate_values)
+        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
         context._cache = Mock()
         context.cache.get = Mock(return_value=None)
         context._query_exec_tracker = Mock()

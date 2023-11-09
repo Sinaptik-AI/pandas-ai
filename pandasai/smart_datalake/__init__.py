@@ -414,6 +414,7 @@ class SmartDatalake:
             cache=self.cache,
             query_exec_tracker=self._query_exec_tracker,
         )
+        pipeline_context.add_intermediate_value("is_present_in_cache", False)
         pipeline_context.add_intermediate_value(
             "output_type_helper", output_type_helper
         )
