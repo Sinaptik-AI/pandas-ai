@@ -37,13 +37,9 @@ class PromptGeneration(BaseLogicUnit):
                 "last_code_generated"
             )
 
-        generate_python_code_instruction = (
-            pipeline_context.query_exec_tracker.execute_func(
-                pipeline_context.get_intermediate_value("get_prompt"),
-                "generate_python_code",
-                default_prompt=GeneratePythonCodePrompt,
-                default_values=default_values,
-            )
+        return pipeline_context.query_exec_tracker.execute_func(
+            pipeline_context.get_intermediate_value("get_prompt"),
+            "generate_python_code",
+            default_prompt=GeneratePythonCodePrompt,
+            default_values=default_values,
         )
-
-        return generate_python_code_instruction

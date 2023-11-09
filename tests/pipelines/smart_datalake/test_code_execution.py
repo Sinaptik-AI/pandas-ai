@@ -74,8 +74,7 @@ class TestCodeExecution:
 
     @pytest.fixture
     def context(self, sample_df, config):
-        pipeline_context = PipelineContext([sample_df], config)
-        return pipeline_context
+        return PipelineContext([sample_df], config)
 
     @pytest.fixture
     def logger(self):
@@ -127,15 +126,16 @@ class TestCodeExecution:
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
-        
+
         assert isinstance(code_execution, CodeExecution)
 
         result = None
         try:
             result = code_execution.execute(input="Test Code", context=context, logger=logger)
         except Exception as e:
-            assert result == None
+            assert result is None
 
     def test_code_execution_successful_at_retry(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
