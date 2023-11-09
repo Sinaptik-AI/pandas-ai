@@ -287,12 +287,14 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-@skill(
-    name="Display employee salary",
-    description="Plots the employee salaries against names",
-    usage="Displays the plot having name on x axis and salaries on y axis",
-)
+@skill
 def plot_salaries(merged_df: pd.DataFrame) -> str:
+    """
+    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Args:
+        name (list[str]): Employee name
+        salaries (list[int]): Salaries
+    """
     import matplotlib.pyplot as plt
 
     plt.bar(merged_df["Name"], merged_df["Salary"])
