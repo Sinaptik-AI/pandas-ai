@@ -1,14 +1,14 @@
 from typing import Optional
-from pandasai.helpers.logger import Logger
-from pandasai.pipelines.pipeline import Pipeline
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.smart_datalake.cache_lookup import CacheLookup
-from pandasai.smart_datalake.cache_population import CachePopulation
-from pandasai.smart_datalake.code_execution import CodeExecution
-from pandasai.smart_datalake.code_generator import CodeGenerator
-from pandasai.smart_datalake.prompt_generation import PromptGeneration
-from pandasai.smart_datalake.result_parsing import ResultParsing
-from pandasai.smart_datalake.result_validation import ResultValidation
+from ...helpers.logger import Logger
+from ..pipeline import Pipeline
+from ..pipeline_context import PipelineContext
+from .cache_lookup import CacheLookup
+from .cache_population import CachePopulation
+from .code_execution import CodeExecution
+from .code_generator import CodeGenerator
+from .prompt_generation import PromptGeneration
+from .result_parsing import ResultParsing
+from .result_validation import ResultValidation
 
 
 class GenerateSmartDatalakePipeline:

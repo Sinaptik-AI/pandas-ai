@@ -1,7 +1,7 @@
 from typing import Any
-from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from ..base_logic_unit import BaseLogicUnit
+from ..pipeline_context import PipelineContext
+from ...prompts.generate_python_code import GeneratePythonCodePrompt
 
 
 class PromptGeneration(BaseLogicUnit):
@@ -12,10 +12,19 @@ class PromptGeneration(BaseLogicUnit):
     pass
 
     def execute(self, input: Any, **kwargs) -> Any:
-        pipeline_context: PipelineContext = kwargs.get("context")
+        """
+        This method will return output according to
+        Implementation.
 
-        if self.skip_if is not None and self.skip_if(pipeline_context):
-            return input
+        :param input: Your input data.
+        :param kwargs: A dictionary of keyword arguments.
+            - 'logger' (any): The logger for logging.
+            - 'config' (Config): Global configurations for the test
+            - 'context' (any): The execution context.
+
+        :return: The result of the execution.
+        """
+        pipeline_context: PipelineContext = kwargs.get("context")
 
         default_values = {
             # TODO: find a better way to determine the engine,

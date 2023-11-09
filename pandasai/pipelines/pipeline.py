@@ -78,6 +78,10 @@ class Pipeline(AbstractPipeline):
         try:
             for index, logic in enumerate(self._steps):
                 self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
+
+                if logic.skip_if is not None and logic.skip_if(self._context):
+                    continue
+
                 data = logic.execute(
                     data,
                     logger=self._logger,

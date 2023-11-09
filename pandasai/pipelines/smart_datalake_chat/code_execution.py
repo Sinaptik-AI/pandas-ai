@@ -1,15 +1,14 @@
 import logging
 import traceback
 from typing import Any, List
-from pandasai.helpers.code_manager import CodeExecutionContext
-from pandasai.helpers.logger import Logger
-from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
+from ...helpers.code_manager import CodeExecutionContext
+from ...helpers.logger import Logger
+from ..base_logic_unit import BaseLogicUnit
+from ..pipeline_context import PipelineContext
+from ...prompts.correct_error_prompt import CorrectErrorPrompt
 
 
 class CodeExecution(BaseLogicUnit):
-
     """
     Code Execution Stage
     """
@@ -17,6 +16,18 @@ class CodeExecution(BaseLogicUnit):
     pass
 
     def execute(self, input: Any, **kwargs) -> Any:
+        """
+        This method will return output according to
+        Implementation.
+
+        :param input: Your input data.
+        :param kwargs: A dictionary of keyword arguments.
+            - 'logger' (any): The logger for logging.
+            - 'config' (Config): Global configurations for the test
+            - 'context' (any): The execution context.
+
+        :return: The result of the execution.
+        """
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")
 

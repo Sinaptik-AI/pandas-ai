@@ -11,7 +11,7 @@ from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 from pandasai.smart_dataframe import SmartDataframe
-from pandasai.smart_datalake.code_generator import CodeGenerator
+from pandasai.pipelines.smart_datalake_chat.code_generator import CodeGenerator
 
 
 class TestCodeGenerator:

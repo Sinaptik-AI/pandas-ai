@@ -7,7 +7,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.smart_dataframe import SmartDataframe
-from pandasai.smart_datalake.result_parsing import ResultParsing
+from pandasai.pipelines.smart_datalake_chat.result_parsing import ResultParsing
 
 
 class TestResultParsing:
@@ -77,7 +77,7 @@ class TestResultParsing:
     @pytest.fixture
     def logger(self):
         return Logger(True, False)
-    
+
     def test_init(self, context, config):
         # Test the initialization of the CodeExecution
         result_parsing = ResultParsing()
@@ -89,15 +89,19 @@ class TestResultParsing:
         result_parsing._add_result_to_memory = Mock()
         mock_response_parser = Mock()
         context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value="Mocked Parsed Result")
+        context.query_exec_tracker.execute_func = Mock(
+            return_value="Mocked Parsed Result"
+        )
 
-        def mock_intermediate_values(key : str):
-            if key == "response_parser" :
+        def mock_intermediate_values(key: str):
+            if key == "response_parser":
                 return mock_response_parser
-        
+
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
-        result = result_parsing.execute(input="Test Result", context=context, logger=logger)
+        result = result_parsing.execute(
+            input="Test Result", context=context, logger=logger
+        )
 
         assert isinstance(result_parsing, ResultParsing)
         assert result == "Mocked Parsed Result"
@@ -114,16 +118,17 @@ class TestResultParsing:
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.execute_func = Mock(side_effect=mock_result_parsing)
 
-        def mock_intermediate_values(key : str):
-            if key == "response_parser" :
+        def mock_intermediate_values(key: str):
+            if key == "response_parser":
                 return mock_response_parser
 
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
         result = None
         try:
-            result = result_parsing.execute(input="Test Result", context=context, logger=logger)
-        except Exception as e:
+            result = result_parsing.execute(
+                input="Test Result", context=context, logger=logger
+            )
+        except Exception:
             assert result is None
         assert isinstance(result_parsing, ResultParsing)
-        

@@ -7,7 +7,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.smart_dataframe import SmartDataframe
-from pandasai.smart_datalake.result_validation import ResultValidation
+from pandasai.pipelines.smart_datalake_chat.result_validation import ResultValidation
 
 
 class TestResultValidation:
@@ -77,7 +77,7 @@ class TestResultValidation:
     @pytest.fixture
     def logger(self):
         return Logger(True, False)
-    
+
     def test_init(self, context, config):
         # Test the initialization of the CodeExecution
         result_validation = ResultValidation()
@@ -105,7 +105,9 @@ class TestResultValidation:
         context.query_exec_tracker.get_execution_time = Mock()
         context.query_exec_tracker.add_step = Mock()
 
-        result = result_validation.execute(input="Not Dict Type Result", context=context, logger=logger)
+        result = result_validation.execute(
+            input="Not Dict Type Result", context=context, logger=logger
+        )
 
         assert not context.query_exec_tracker.add_step.called
         assert isinstance(result_validation, ResultValidation)
@@ -119,17 +121,21 @@ class TestResultValidation:
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.get_execution_time = Mock()
         context.get_intermediate_value = Mock(return_value=output_type_helper)
-        output_type_helper.validate = Mock(return_value=(True,"Mocked Logs"))
+        output_type_helper.validate = Mock(return_value=(True, "Mocked Logs"))
 
-        result = result_validation.execute(input={"Mocked":"Result"}, context=context, logger=logger)
+        result = result_validation.execute(
+            input={"Mocked": "Result"}, context=context, logger=logger
+        )
 
-        context.query_exec_tracker.add_step.assert_called_with({
-                            "type": "Validating Output",
-                            "success": True,
-                            "message": "Output Validation Successful",
-                        })
+        context.query_exec_tracker.add_step.assert_called_with(
+            {
+                "type": "Validating Output",
+                "success": True,
+                "message": "Output Validation Successful",
+            }
+        )
         assert isinstance(result_validation, ResultValidation)
-        assert result == {"Mocked":"Result"}
+        assert result == {"Mocked": "Result"}
 
     def test_result_is_of_dict_type_and_not_valid(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
@@ -139,14 +145,18 @@ class TestResultValidation:
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.get_execution_time = Mock()
         context.get_intermediate_value = Mock(return_value=output_type_helper)
-        output_type_helper.validate = Mock(return_value=(False,"Mocked Logs"))
+        output_type_helper.validate = Mock(return_value=(False, "Mocked Logs"))
 
-        result = result_validation.execute(input={"Mocked":"Result"}, context=context, logger=logger)
+        result = result_validation.execute(
+            input={"Mocked": "Result"}, context=context, logger=logger
+        )
 
-        context.query_exec_tracker.add_step.assert_called_with({
-                            "type": "Validating Output",
-                            "success": False,
-                            "message": "Output Validation Failed",
-                        })
+        context.query_exec_tracker.add_step.assert_called_with(
+            {
+                "type": "Validating Output",
+                "success": False,
+                "message": "Output Validation Failed",
+            }
+        )
         assert isinstance(result_validation, ResultValidation)
-        assert result == {"Mocked":"Result"}
+        assert result == {"Mocked": "Result"}

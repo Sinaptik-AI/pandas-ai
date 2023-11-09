@@ -2,14 +2,13 @@ from typing import Optional
 from unittest.mock import Mock
 import pandas as pd
 import pytest
-from pandasai.helpers.code_manager import CodeManager
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.smart_dataframe import SmartDataframe
-from pandasai.smart_datalake.code_execution import CodeExecution
+from pandasai.pipelines.smart_datalake_chat.code_execution import CodeExecution
 
 
 class TestCodeExecution:
@@ -79,7 +78,7 @@ class TestCodeExecution:
     @pytest.fixture
     def logger(self):
         return Logger(True, False)
-    
+
     def test_init(self, context, config):
         # Test the initialization of the CodeExecution
         code_execution = CodeExecution()
@@ -92,16 +91,19 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key : str):
-            if key == "last_prompt_id" :
+        def mock_intermediate_values(key: str):
+            if key == "last_prompt_id":
                 return "Mocked Promt ID"
-            elif key == "skills" :
+            elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
-                return mock_code_manager   
+                return mock_code_manager
+
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
-        result = code_execution.execute(input="Test Code", context=context, logger=logger)
+        result = code_execution.execute(
+            input="Test Code", context=context, logger=logger
+        )
 
         assert isinstance(code_execution, CodeExecution)
         assert result == "Mocked Result"
@@ -117,12 +119,18 @@ class TestCodeExecution:
         mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
 
         context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value=["Interuppted Code", "Exception Testing","Unsuccessful after Retries"])
+        context.query_exec_tracker.execute_func = Mock(
+            return_value=[
+                "Interuppted Code",
+                "Exception Testing",
+                "Unsuccessful after Retries",
+            ]
+        )
 
-        def mock_intermediate_values(key : str):
-            if key == "last_prompt_id" :
+        def mock_intermediate_values(key: str):
+            if key == "last_prompt_id":
                 return "Mocked Promt ID"
-            elif key == "skills" :
+            elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
@@ -133,17 +141,18 @@ class TestCodeExecution:
 
         result = None
         try:
-            result = code_execution.execute(input="Test Code", context=context, logger=logger)
-        except Exception as e:
+            result = code_execution.execute(
+                input="Test Code", context=context, logger=logger
+            )
+        except Exception:
             assert result is None
 
     def test_code_execution_successful_at_retry(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         code_execution = CodeExecution()
 
-        self.throw_exception == True
         def mock_execute_code(*args, **kwargs):
-            if self.throw_exception == True:
+            if self.throw_exception is True:
                 self.throw_exception = False
                 raise Exception("Unit test exception")
             return "Mocked Result after retry"
@@ -152,18 +161,27 @@ class TestCodeExecution:
         mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
 
         context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value=["Interuppted Code", "Exception Testing","Successful after Retry"])
+        context.query_exec_tracker.execute_func = Mock(
+            return_value=[
+                "Interuppted Code",
+                "Exception Testing",
+                "Successful after Retry",
+            ]
+        )
 
-        def mock_intermediate_values(key : str):
-            if key == "last_prompt_id" :
+        def mock_intermediate_values(key: str):
+            if key == "last_prompt_id":
                 return "Mocked Promt ID"
-            elif key == "skills" :
+            elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
-        result = code_execution.execute(input="Test Code", context=context, logger=logger)
+        result = code_execution.execute(
+            input="Test Code", context=context, logger=logger
+        )
 
         assert isinstance(code_execution, CodeExecution)
         assert result == "Mocked Result after retry"

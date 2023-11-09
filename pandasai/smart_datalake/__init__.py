@@ -27,7 +27,7 @@ from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.skills import skill
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
-from pandasai.smart_datalake.generate_smart_datalake_pipeline import (
+from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
 )
 
