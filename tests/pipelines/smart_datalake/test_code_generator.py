@@ -74,8 +74,7 @@ class TestCodeGenerator:
 
     @pytest.fixture
     def context(self, sample_df, config):
-        pipeline_context = PipelineContext([sample_df], config)
-        return pipeline_context
+        return PipelineContext([sample_df], config)
 
     @pytest.fixture
     def logger(self):

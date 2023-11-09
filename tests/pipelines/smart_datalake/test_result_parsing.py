@@ -72,8 +72,7 @@ class TestResultParsing:
 
     @pytest.fixture
     def context(self, sample_df, config):
-        pipeline_context = PipelineContext([sample_df], config)
-        return pipeline_context
+        return PipelineContext([sample_df], config)
 
     @pytest.fixture
     def logger(self):
@@ -111,20 +110,20 @@ class TestResultParsing:
 
         def mock_result_parsing(*args, **kwargs):
             raise Exception("Unit test exception")
-        
+
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.execute_func = Mock(side_effect=mock_result_parsing)
 
         def mock_intermediate_values(key : str):
             if key == "response_parser" :
                 return mock_response_parser
-        
+
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
         result = None
         try:
             result = result_parsing.execute(input="Test Result", context=context, logger=logger)
         except Exception as e:
-            assert result == None
+            assert result is None
         assert isinstance(result_parsing, ResultParsing)
         

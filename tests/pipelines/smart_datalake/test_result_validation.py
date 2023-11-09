@@ -72,8 +72,7 @@ class TestResultValidation:
 
     @pytest.fixture
     def context(self, sample_df, config):
-        pipeline_context = PipelineContext([sample_df], config)
-        return pipeline_context
+        return PipelineContext([sample_df], config)
 
     @pytest.fixture
     def logger(self):
@@ -96,7 +95,7 @@ class TestResultValidation:
 
         assert not context.query_exec_tracker.add_step.called
         assert isinstance(result_validation, ResultValidation)
-        assert result == None
+        assert result is None
 
     def test_result_is_not_of_dict_type(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
