@@ -77,6 +77,15 @@ Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to ge
 > The API access to openai is a paid service. You have to set up billing.
 > Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
 
+### Passing name and description
+
+Sometimes, to help the LLM to work better, you might want to pass a name and a description of the dataframe.
+You can do so as follows:
+
+```python
+df = SmartDataframe(df, name="My DataFrame", description="This is my DataFrame")
+```
+
 ## SmartDatalake
 
 PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`. A `SmartDatalake` is a collection of `SmartDataframe`s. You can instantiate a `SmartDatalake` as follows:
