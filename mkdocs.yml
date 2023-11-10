@@ -21,6 +21,7 @@ nav:
       - shortcuts.md
       - custom-head.md
       - save-dataframes.md
+      - determinism.md
       - cache.md
       - middlewares.md
       - custom-response.md

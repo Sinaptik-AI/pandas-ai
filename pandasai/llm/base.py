@@ -221,6 +221,7 @@ class BaseOpenAI(LLM, ABC):
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
     stop: Optional[str] = None
+    seed: Optional[int] = None
     # support explicit proxy for OpenAI
     openai_proxy: Optional[str] = None
 
@@ -229,7 +230,7 @@ class BaseOpenAI(LLM, ABC):
         Set Parameters
         Args:
             **kwargs: ["model", "engine", "deployment_id", "temperature","max_tokens",
-            "top_p", "frequency_penalty", "presence_penalty", "stop", ]
+            "top_p", "frequency_penalty", "presence_penalty", "stop", "seed", ]
 
         Returns:
             None.
@@ -246,6 +247,7 @@ class BaseOpenAI(LLM, ABC):
             "frequency_penalty",
             "presence_penalty",
             "stop",
+            "seed",
         ]
         for key, value in kwargs.items():
             if key in valid_params:
@@ -267,6 +269,7 @@ class BaseOpenAI(LLM, ABC):
             "top_p": self.top_p,
             "frequency_penalty": self.frequency_penalty,
             "presence_penalty": self.presence_penalty,
+            "seed": self.seed,
         }
 
     def completion(self, prompt: str) -> str:
