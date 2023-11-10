@@ -43,9 +43,9 @@ from ..schemas.df_config import Config
 from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
-from typing import Union, List, Any, Type, Optional
+from typing import Union, List, Any, Optional
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
-from ..helpers.code_manager import CodeExecutionContext, CodeManager
+from ..helpers.code_manager import CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
@@ -378,27 +378,18 @@ class SmartDatalake:
 
         try:
             result = GenerateSmartDatalakePipeline(pipeline_context, self.logger).run()
-                self._logger.log(
-                    f"Failed to execute code with a correction framework "
-                    f"[retry number: {retry_count}]",
-                    level=logging.WARNING,
-                )
+        except Exception as exception:
+            self.last_error = str(exception)
+            self._query_exec_tracker.success = False
+            self._query_exec_tracker.publish()
 
-                traceback_error = traceback.format_exc()
-                [
-                    code_to_run,
-                    reasoning,
-                    answer,
-                ] = self._query_exec_tracker.execute_func(
-                    self._retry_run_code, code, traceback_error
-                )
+            return (
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
 
-        if isinstance(result, dict):
-            self._validate_output(result, output_type)
-
-        if result is not None:
-            self.last_result = result
-            self.logger.log(f"Answer: {result}")
+        self.update_intermediate_value_post_pipeline_execution(pipeline_context)
 
         return result
 
@@ -447,9 +438,6 @@ class SmartDatalake:
                 }
             )
             raise ValueError("Output validation failed")
-
-        self.update_intermediate_value_post_pipeline_execution(pipeline_context)
-
 
     def _get_viz_library_type(self) -> str:
         """

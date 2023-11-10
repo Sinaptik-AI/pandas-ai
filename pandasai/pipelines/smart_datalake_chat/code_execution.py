@@ -109,7 +109,7 @@ class CodeExecution(BaseLogicUnit):
         }
         error_correcting_instruction = context.get_intermediate_value("get_prompt")(
             "correct_error",
-            default_prompt=CorrectErrorPrompt,
+            default_prompt=CorrectErrorPrompt(),
             default_values=default_values,
         )
 
