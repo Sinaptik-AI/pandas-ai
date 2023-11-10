@@ -5,6 +5,8 @@ SQL connectors are used to connect to SQL databases in different dialects.
 import re
 import os
 import pandas as pd
+
+from pandasai.exceptions import MaliciousQueryError
 from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
 from .base import BaseConnectorConfig
 from sqlalchemy import create_engine, text, select, asc
@@ -359,6 +361,46 @@ class SQLConnector(BaseConnector):
     @property
     def fallback_name(self):
         return self._config.table
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self._config.dialect,
+                self._config.driver,
+                self._config.host,
+                self._config.port,
+                self._config.username,
+                self._config.password,
+            ) == (
+                other._config.dialect,
+                other._config.driver,
+                other._config.host,
+                other._config.port,
+                other._config.username,
+                other._config.password,
+            )
+        return False
+
+    def _is_sql_query_safe(self, query: str):
+        infected_keywords = [
+            r"\bINSERT\b",
+            r"\bUPDATE\b",
+            r"\bDELETE\b",
+            r"\bDROP\b",
+            r"\bEXEC\b",
+            r"\bALTER\b",
+            r"\bCREATE\b",
+        ]
+
+        return not any(
+            re.search(keyword, query, re.IGNORECASE) for keyword in infected_keywords
+        )
+
+    def execute_direct_sql_query(self, sql_query):
+        if not self._is_sql_query_safe(sql_query):
+            raise MaliciousQueryError("Malicious query is generated in code")
+
+        return pd.read_sql(sql_query, self._connection)
 
 
 class SqliteConnector(SQLConnector):

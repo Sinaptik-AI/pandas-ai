@@ -2,6 +2,7 @@
 In order to better handle the instructions, this prompt module is written.
 """
 from abc import ABC, abstractmethod
+import string
 
 
 class AbstractPrompt(ABC):
@@ -92,12 +93,11 @@ This is the metadata of the dataframe dfs[{index-1}]:
         prompt_args = {}
         for key, value in self._args.items():
             if isinstance(value, AbstractPrompt):
+                args = [
+                    arg[1] for arg in string.Formatter().parse(value.template) if arg[1]
+                ]
                 value.set_vars(
-                    {
-                        k: v
-                        for k, v in self._args.items()
-                        if k != key and not isinstance(v, AbstractPrompt)
-                    }
+                    {k: v for k, v in self._args.items() if k != key and k in args}
                 )
                 prompt_args[key] = value.to_string()
             else:

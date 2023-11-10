@@ -90,3 +90,18 @@ class SnowFlakeConnector(SQLConnector):
             f"database={self._config.database} schema={str(self._config.dbSchema)}  "
             f"table={self._config.table}>"
         )
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self._config.dialect,
+                self._config.account,
+                self._config.username,
+                self._config.password,
+            ) == (
+                other._config.dialect,
+                other._config.account,
+                other._config.username,
+                other._config.password,
+            )
+        return False

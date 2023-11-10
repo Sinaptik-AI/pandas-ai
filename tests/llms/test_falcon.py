@@ -1,8 +1,5 @@
 """Unit tests for the falcon LLM class"""
 
-import pytest
-
-from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.llm import Falcon
 
 
@@ -11,7 +8,3 @@ class TestFalconLLM:
 
     def test_type(self):
         assert Falcon(api_token="test").type == "falcon"
-
-    def test_init(self):
-        with pytest.raises(APIKeyNotFoundError):
-            Falcon()

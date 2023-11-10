@@ -19,9 +19,7 @@ class TestLangchainLLM:
             def __call__(self, _prompt, stop=None, callbacks=None, **kwargs):
                 return Mock(return_value="Custom response")()
 
-        langchain_llm = FakeOpenAI()
-
-        return langchain_llm
+        return FakeOpenAI()
 
     @pytest.fixture
     def prompt(self):

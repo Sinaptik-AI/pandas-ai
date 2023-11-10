@@ -34,6 +34,7 @@ class Config(BaseModel):
     llm: Any = None
     data_viz_library: Optional[VisualizationLibrary] = None
     log_server: LogServerConfig = None
+    direct_sql: bool = False
 
     class Config:
         arbitrary_types_allowed = True

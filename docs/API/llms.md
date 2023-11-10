@@ -18,26 +18,6 @@ OpenAI API wrapper extended through BaseOpenAI class.
 options:
 show_root_heading: true
 
-### Starcoder (deprecated)
-
-Starcoder wrapper extended through Base HuggingFace Class
-
-- Note: Starcoder is deprecated and will be removed in future versions. Please use another LLM.
-
-::: pandasai.llm.starcoder
-options:
-show_root_heading: true
-
-### Falcon (deprecated)
-
-Falcon wrapper extended through Base HuggingFace Class
-
-- Note: Falcon is deprecated and will be removed in future versions. Please use another LLM.
-
-::: pandasai.llm.falcon
-options:
-show_root_heading: true
-
 ### Azure OpenAI
 
 OpenAI API through Azure Platform wrapper

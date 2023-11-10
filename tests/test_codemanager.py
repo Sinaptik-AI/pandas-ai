@@ -1,11 +1,13 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
+import uuid
 
 import pandas as pd
 import pytest
 
 from pandasai.exceptions import BadImportError, NoCodeFoundError
+from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 
 from pandasai.smart_dataframe import SmartDataframe
@@ -73,7 +75,7 @@ class TestCodeManager:
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
-        return MagicMock(spec=CodeExecutionContext)
+        return CodeExecutionContext(uuid.uuid4(), SkillsManager())
 
     def test_run_code_for_calculations(
         self, code_manager: CodeManager, exec_context: MagicMock
@@ -96,6 +98,8 @@ class TestCodeManager:
         builtins_code = """import set
 def analyze_data(dfs):
     return {'type': 'number', 'value': set([1, 2, 3])}"""
+
+        exec_context._can_direct_sql = False
         assert code_manager.execute_code(builtins_code, exec_context)["value"] == {
             1,
             2,

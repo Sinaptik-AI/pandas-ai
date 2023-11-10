@@ -155,10 +155,27 @@ class UnSupportedLogicUnit(Exception):
         Exception (Exception): UnSupportedLogicUnit
     """
 
+
 class InvalidWorkspacePathError(Exception):
     """
     Raised when the environment variable of workspace exist but path is invalid
 
     Args:
         Exception (Exception): InvalidWorkspacePathError
+    """
+
+
+class InvalidConfigError(Exception):
+    """
+    Raised when config value is not appliable
+    Args:
+        Exception (Exception): InvalidConfigError
+    """
+
+
+class MaliciousQueryError(Exception):
+    """
+    Raise error if malicious query is generated
+    Args:
+        Exception (Excpetion): MaliciousQueryError
     """

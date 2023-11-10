@@ -63,3 +63,20 @@ class DatabricksConnector(SQLConnector):
             f"host={self._config.host} port={self._config.port} "
             f"database={self._config.database} httpPath={str(self._config.httpPath)}"
         )
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self._config.dialect,
+                self._config.token,
+                self._config.host,
+                self._config.port,
+                self._config.httpPath,
+            ) == (
+                other._config.dialect,
+                other._config.token,
+                other._config.host,
+                other._config.port,
+                other._config.httpPath,
+            )
+        return False

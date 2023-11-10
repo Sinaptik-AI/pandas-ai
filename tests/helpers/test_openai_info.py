@@ -60,23 +60,28 @@ class TestOpenAIInfo:
     @pytest.mark.parametrize(
         "model_name,expected_cost",
         [
-            ("gpt-3.5-turbo", 0.0035),
+            ("gpt-3.5-turbo", 0.003),
             (
                 "gpt-3.5-turbo-0613",
-                0.0035,
+                0.003,
             ),
             (
                 "gpt-3.5-turbo-16k-0613",
-                0.007,
+                0.003,
+            ),
+            (
+                "gpt-3.5-turbo-1106",
+                0.003,
             ),
             (
                 "gpt-3.5-turbo-16k",
-                0.007,
+                0.003,
             ),
             ("gpt-4", 0.09),
             ("gpt-4-0613", 0.09),
             ("gpt-4-32k", 0.18),
             ("gpt-4-32k-0613", 0.18),
+            ("gpt-4-1106-preview", 0.04),
         ],
     )
     def test_handler_openai(

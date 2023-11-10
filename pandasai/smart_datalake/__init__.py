@@ -23,9 +23,8 @@ import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.pipelines.pipeline_context import PipelineContext
-
+from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.skills import skill
-
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
@@ -45,12 +44,13 @@ from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from typing import Union, List, Any, Type, Optional
-from ..helpers.code_manager import CodeManager
+from ..prompts.generate_python_code import GeneratePythonCodePrompt
+from ..helpers.code_manager import CodeExecutionContext, CodeManager
 from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
-from ..exceptions import AdvancedReasoningDisabledError
+from ..exceptions import AdvancedReasoningDisabledError, InvalidConfigError
 
 
 class SmartDatalake:
@@ -66,6 +66,7 @@ class SmartDatalake:
     _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
+    _can_direct_sql: bool
 
     _last_code_generated: str = None
     _last_reasoning: str = None
@@ -134,6 +135,9 @@ class SmartDatalake:
         self._query_exec_tracker = QueryExecTracker(
             server_config=self._config.log_server,
         )
+
+        # Checks if direct sql config set they all belong to same sql connector type
+        self._can_direct_sql = self._validate_direct_sql(self._dfs)
 
     def set_instance_type(self, type: str):
         self._instance = type
@@ -249,6 +253,37 @@ class SmartDatalake:
         if data_viz_library in (item.value for item in VisualizationLibrary):
             self._data_viz_library = data_viz_library
 
+    def _validate_direct_sql(self, dfs: List) -> None:
+        """
+        Raises error if they don't belong sqlconnector or have different credentials
+        Args:
+            dfs (List[SmartDataframe]): list of SmartDataframes
+
+        Raises:
+            InvalidConfigError: Raise Error in case of config is set but criteria is not met
+        """
+
+        if self._config.direct_sql and all(df.is_connector() for df in dfs):
+            if all(df == dfs[0] for df in dfs):
+                return True
+            else:
+                raise InvalidConfigError(
+                    "Direct requires all SQLConnector and they belong to same datasource "
+                    "and have same credentials"
+                )
+        return False
+
+    def _get_chat_prompt(self):
+        key = "direct_sql_prompt" if self._config.direct_sql else "generate_python_code"
+        return (
+            key,
+            (
+                DirectSQLPrompt(tables=self._dfs)
+                if self._config.direct_sql
+                else GeneratePythonCodePrompt()
+            ),
+        )
+
     def add_middlewares(self, *middlewares: Optional[Middleware]):
         """
         Add middlewares to PandasAI instance.
@@ -275,7 +310,7 @@ class SmartDatalake:
     def _get_prompt(
         self,
         key: str,
-        default_prompt: Type[AbstractPrompt],
+        default_prompt: AbstractPrompt,
         default_values: Optional[dict] = None,
     ) -> AbstractPrompt:
         """
@@ -294,7 +329,7 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt or default_prompt()
+        prompt = custom_prompt or default_prompt
 
         # set default values for the prompt
         prompt.set_config(self._config)
@@ -343,25 +378,89 @@ class SmartDatalake:
 
         try:
             result = GenerateSmartDatalakePipeline(pipeline_context, self.logger).run()
+                self._logger.log(
+                    f"Failed to execute code with a correction framework "
+                    f"[retry number: {retry_count}]",
+                    level=logging.WARNING,
+                )
 
-        except Exception as exception:
-            self.last_error = str(exception)
-            self._query_exec_tracker.success = False
-            self._query_exec_tracker.publish()
+                traceback_error = traceback.format_exc()
+                [
+                    code_to_run,
+                    reasoning,
+                    answer,
+                ] = self._query_exec_tracker.execute_func(
+                    self._retry_run_code, code, traceback_error
+                )
 
-            return (
-                "Unfortunately, I was not able to answer your question, "
-                "because of the following error:\n"
-                f"\n{exception}\n"
+        if isinstance(result, dict):
+            self._validate_output(result, output_type)
+
+        if result is not None:
+            self.last_result = result
+            self.logger.log(f"Answer: {result}")
+
+        return result
+
+    def _validate_output(self, result: dict, output_type: Optional[str] = None):
+        """
+        Validate the output of the code execution.
+
+        Args:
+            result (Any): Result of executing the code
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Raises:
+            (ValueError): If the output is not valid
+        """
+
+        output_type_helper = output_type_factory(output_type, logger=self.logger)
+        result_is_valid, validation_logs = output_type_helper.validate(result)
+
+        if result_is_valid:
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": True,
+                    "message": "Output Validation Successful",
+                }
             )
+        else:
+            self.logger.log("\n".join(validation_logs), level=logging.WARNING)
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": False,
+                    "message": "Output Validation Failed",
+                }
+            )
+            raise ValueError("Output validation failed")
 
         self.update_intermediate_value_post_pipeline_execution(pipeline_context)
 
-        self._query_exec_tracker.success = True
 
-        self._query_exec_tracker.publish()
+    def _get_viz_library_type(self) -> str:
+        """
+        Get the visualization library type based on the configured library.
 
-        return result
+        Returns:
+            (str): Visualization library type
+        """
+
+        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
+        return viz_lib_helper.template_hint
 
     def prepare_context_for_smart_datalake_pipeline(
         self, query: str, output_type: Optional[str] = None
@@ -470,7 +569,7 @@ class SmartDatalake:
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
-            default_prompt=CorrectErrorPrompt,
+            default_prompt=CorrectErrorPrompt(),
             default_values=default_values,
         )
 
@@ -694,3 +793,7 @@ class SmartDatalake:
     @property
     def instance(self):
         return self._instance
+
+    @property
+    def last_query_log_id(self):
+        return self._query_exec_tracker.last_log_id
