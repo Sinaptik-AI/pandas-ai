@@ -21,11 +21,15 @@ class SyntheticDataframePrompt(BaseLogicUnit):
 
     def execute(self, input: Any, **kwargs) -> Any:
         context: PipelineContext = kwargs.get("context")
+        logger = kwargs.get("logger")
 
         if context is None or len(context.dfs) == 0:
             raise ValueError("Dataframe not found")
 
-        return GenerateSyntheticDfPrompt(
+        prompt = GenerateSyntheticDfPrompt(
             amount=self._amount,
             dataframe=context.dfs[kwargs.get("dataframe_index", 0)],
         )
+        logger.log(f"Generate Prompt: {prompt}")
+
+        return prompt
