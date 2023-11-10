@@ -13,6 +13,7 @@ from sqlalchemy.engine import Connection
 from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
+from ..constants import DEFAULT_FILE_PERMISSIONS
 from typing import Union
 import time
 
@@ -183,7 +184,7 @@ class SQLConnector(BaseConnector):
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
 
-        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+        os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
         filename = (
             self._get_column_hash(include_additional_filters=include_additional_filters)
