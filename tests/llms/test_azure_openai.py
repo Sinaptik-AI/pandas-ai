@@ -105,6 +105,7 @@ class TestAzureOpenAILLM:
             top_p=openai.top_p,
             frequency_penalty=openai.frequency_penalty,
             presence_penalty=openai.presence_penalty,
+            seed=openai.seed
         )
 
         assert result == expected_text
