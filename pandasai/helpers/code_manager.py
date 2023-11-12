@@ -13,12 +13,10 @@ from .node_visitors import AssignmentVisitor, CallVisitor
 from .save_chart import add_save_chart
 from .optional import import_dependency
 from ..exceptions import BadImportError
-from ..middlewares.base import Middleware
 from ..constants import (
     WHITELISTED_BUILTINS,
     WHITELISTED_LIBRARIES,
 )
-from ..middlewares.charts import ChartsMiddleware
 from typing import Union, List, Optional, Generator, Any
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
@@ -62,7 +60,6 @@ class CodeExecutionContext:
 
 class CodeManager:
     _dfs: List
-    _middlewares: List[Middleware] = [ChartsMiddleware()]
     _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
@@ -96,19 +93,6 @@ class CodeManager:
         self._dfs = dfs
         self._config = config
         self._logger = logger
-
-        if self._config.middlewares is not None:
-            self.add_middlewares(*self._config.middlewares)
-
-    def add_middlewares(self, *middlewares: Optional[Middleware]):
-        """
-        Add middlewares to PandasAI instance.
-
-        Args:
-            *middlewares: Middlewares to be added
-
-        """
-        self._middlewares.extend(middlewares)
 
     def _execute_catching_errors(
         self, code: str, environment: dict
@@ -235,9 +219,6 @@ class CodeManager:
 
         """
         self._current_code_executed = code
-
-        for middleware in self._middlewares:
-            code = middleware(code)
 
         # Add save chart code
         if self._config.save_charts:
@@ -736,10 +717,6 @@ Code running:
             raise
 
         return filters
-
-    @property
-    def middlewares(self):
-        return self._middlewares
 
     @property
     def last_code_executed(self):

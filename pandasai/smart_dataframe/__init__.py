@@ -37,7 +37,6 @@ from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
 from typing import Any, List, Union, Optional
-from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
 from ..callbacks.base import BaseCallback
@@ -289,16 +288,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         if sample_head is not None:
             self._sample_head = sample_head.to_csv(index=False)
-
-    def add_middlewares(self, *middlewares: Optional[Middleware]):
-        """
-        Add middlewares to PandasAI instance.
-
-        Args:
-            *middlewares: Middlewares to be added
-
-        """
-        self.lake.add_middlewares(*middlewares)
 
     def add_skills(self, *skills: List[skill]):
         """
@@ -560,10 +549,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def cache(self):
         return self.lake.cache
-
-    @property
-    def middlewares(self):
-        return self.lake.middlewares
 
     def original_import(self):
         return self._original_import

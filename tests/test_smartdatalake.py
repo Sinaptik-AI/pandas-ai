@@ -14,7 +14,6 @@ from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares import Middleware
 
 from langchain import OpenAI
 
@@ -118,15 +117,6 @@ class TestSmartDatalake:
     def smart_datalake(self, smart_dataframe: SmartDataframe):
         return smart_dataframe.lake
 
-    @pytest.fixture
-    def custom_middleware(self):
-        class CustomMiddleware(Middleware):
-            def run(self, code):
-                return """def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Overwritten by middleware" }"""
-
-        return CustomMiddleware
-
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
         smart_datalake._llm = None
         assert smart_datalake._llm is None
@@ -161,16 +151,6 @@ class TestSmartDatalake:
             "type": "string",
             "value": "There are 10 countries in the dataframe.",
         }
-
-    def test_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
-        middleware = custom_middleware()
-        smart_dataframe.lake._code_manager._middlewares = [middleware]
-        assert smart_dataframe.lake.middlewares == [middleware]
-        assert (
-            smart_dataframe.chat("How many countries are in the dataframe?")
-            == "Overwritten by middleware"
-        )
-        assert middleware.has_run
 
     def test_retry_on_error_with_single_df(
         self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe

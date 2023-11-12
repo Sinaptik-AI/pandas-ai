@@ -34,7 +34,6 @@ class TestPandasAI:
         assert pai._config.save_charts_path == ""
         assert pai._config.verbose is False
         assert pai._config.max_retries == 3
-        assert pai._config.middlewares == []
 
     def test_logs(self, pai):
         assert pai.logs == []

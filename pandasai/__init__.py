@@ -79,8 +79,6 @@ class PandasAI:
         to None
         _logs (List[dict], optional): List of logs to be stored. Default to []
         _prompt_id (str, optional): Unique ID to differentiate calls. Default to None
-        _middlewares (List[Middleware], optional): List of middlewares to run. Default
-        to [ChartsMiddleware()]
         _additional_dependencies (List[dict], optional): List of additional dependencies
         to be added. Default to []
         _custom_whitelisted_dependencies (List[str], optional): List of custom
@@ -110,7 +108,6 @@ class PandasAI:
         save_charts=False,
         save_charts_path="",
         enable_cache=True,
-        middlewares=None,
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[AbstractPrompt]]] = None,
@@ -131,7 +128,6 @@ class PandasAI:
             Default to False
             enable_cache (bool): Enable the cache to store the results.
             Default to True
-            middlewares (list): List of middlewares to be used. Default to None
             custom_whitelisted_dependencies (list): List of custom dependencies to
             be used. Default to None
             enable_logging (bool): Enable the logging. Default to True
@@ -155,7 +151,6 @@ class PandasAI:
             save_charts=save_charts,
             save_charts_path=save_charts_path,
             enable_cache=enable_cache,
-            middlewares=middlewares or [],
             custom_whitelisted_dependencies=custom_whitelisted_dependencies or [],
             enable_logging=enable_logging,
             non_default_prompts=non_default_prompts,

@@ -46,7 +46,6 @@ from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from typing import Union, List, Any, Optional
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from ..helpers.code_manager import CodeManager
-from ..middlewares.base import Middleware
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
@@ -283,15 +282,6 @@ class SmartDatalake:
                 else GeneratePythonCodePrompt()
             ),
         )
-
-    def add_middlewares(self, *middlewares: Optional[Middleware]):
-        """
-        Add middlewares to PandasAI instance.
-
-        Args:
-            *middlewares: Middlewares to be added
-        """
-        self._code_manager.add_middlewares(*middlewares)
 
     def add_skills(self, *skills: List[skill]):
         """
@@ -608,10 +598,6 @@ class SmartDatalake:
     @property
     def cache(self):
         return self._cache
-
-    @property
-    def middlewares(self):
-        return self._code_manager.middlewares
 
     @property
     def verbose(self):

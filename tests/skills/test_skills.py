@@ -335,8 +335,6 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         def plot_salaries() -> str:
             return "plot_salaries"
 
-        code_manager._middlewares = []
-
         sm = SkillsManager()
         sm.add_skills(plot_salaries)
         exec_context = CodeExecutionContext(uuid.uuid4(), sm)

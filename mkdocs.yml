@@ -22,7 +22,6 @@ nav:
       - custom-head.md
       - save-dataframes.md
       - cache.md
-      - middlewares.md
       - custom-response.md
       - callbacks.md
       - custom-instructions.md

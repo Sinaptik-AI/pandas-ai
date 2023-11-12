@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Union
 
-from . import llm, middlewares, callbacks
+from . import llm, callbacks
 from .helpers.path import find_closest
 from .schemas.df_config import Config
 
@@ -32,12 +32,6 @@ def load_config(
             if config.get("llm") and not override_config.get("llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
-
-            if config.get("middlewares") and not override_config.get("middlewares"):
-                config["middlewares"] = [
-                    getattr(middlewares, middleware)()
-                    for middleware in config["middlewares"]
-                ]
 
             if config.get("callback") and not override_config.get("callback"):
                 config["callback"] = getattr(callbacks, config["callback"])()

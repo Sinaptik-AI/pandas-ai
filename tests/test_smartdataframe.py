@@ -21,7 +21,6 @@ from pandasai.helpers.output_types import (
     output_type_factory,
 )
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares import Middleware
 from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
@@ -144,15 +143,6 @@ class TestSmartDataframe:
         )
         smart_df._core._df = Mock()
         return smart_df
-
-    @pytest.fixture
-    def custom_middleware(self):
-        class CustomMiddleware(Middleware):
-            def run(self, code):
-                return """def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Overwritten by middleware" }"""
-
-        return CustomMiddleware
 
     def test_init(self, smart_dataframe):
         assert smart_dataframe._table_name is None
@@ -478,14 +468,6 @@ result = analyze_data(dfs)
         assert (
             plt_mock.savefig.call_args.args[0]
             == f"charts/{smart_dataframe.last_prompt_id}.png"
-        )
-
-    def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
-        middleware = custom_middleware()
-        smart_dataframe.add_middlewares(middleware)
-        assert (
-            smart_dataframe.middlewares[len(smart_dataframe.middlewares) - 1]
-            == middleware
         )
 
     def test_shortcut(self, smart_dataframe: SmartDataframe):
