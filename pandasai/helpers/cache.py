@@ -1,5 +1,6 @@
 import os
 import glob
+from typing import Any
 import duckdb
 from .path import find_project_root
 
@@ -72,3 +73,19 @@ class Cache:
         self.connection.close()
         for cache_file in glob.glob(f"{self.filepath}.*"):
             os.remove(cache_file)
+
+    def get_cache_key(self, context: Any) -> str:
+        """
+        Return the cache key for the current conversation.
+
+        Returns:
+            str: The cache key for the current conversation
+        """
+        cache_key = context.memory.get_conversation()
+
+        # make the cache key unique for each combination of dfs
+        for df in context.dfs:
+            hash = df.column_hash()
+            cache_key += str(hash)
+
+        return cache_key

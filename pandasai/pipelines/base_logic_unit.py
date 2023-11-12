@@ -7,6 +7,12 @@ class BaseLogicUnit(ABC):
     Logic units for pipeline each logic unit should be inherited from this Logic unit
     """
 
+    _skip_if: callable
+
+    def __init__(self, skip_if=None):
+        super().__init__()
+        self._skip_if = skip_if
+
     @abstractmethod
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -22,3 +28,7 @@ class BaseLogicUnit(ABC):
         :return: The result of the execution.
         """
         raise NotImplementedError("execute method is not implemented.")
+
+    @property
+    def skip_if(self):
+        return self._skip_if

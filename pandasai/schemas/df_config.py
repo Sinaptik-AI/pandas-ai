@@ -1,7 +1,6 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict, Type, TypedDict
+from typing import Optional, List, Any, Dict, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
-from pandasai.responses import ResponseParser
 from ..middlewares.base import Middleware
 from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
@@ -30,7 +29,8 @@ class Config(BaseModel):
     max_retries: int = 3
     middlewares: List[Middleware] = Field(default_factory=list)
     callback: Optional[BaseCallback] = None
-    response_parser: Type[ResponseParser] = None
+    lazy_load_connector: bool = True
+    response_parser: Any = None
     llm: Any = None
     data_viz_library: Optional[VisualizationLibrary] = None
     log_server: LogServerConfig = None

@@ -266,6 +266,7 @@ def analyze_data(dfs):
 ```"""
         )
         smart_datalake._llm = llm
+        smart_datalake._config.llm = llm
         smart_datalake.config.use_advanced_reasoning_framework = True
         assert smart_datalake.last_answer is None
         assert smart_datalake.last_reasoning is None
