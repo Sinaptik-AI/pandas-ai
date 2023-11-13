@@ -582,7 +582,7 @@ class SmartDatalake:
         return self._llm.last_prompt
 
     @property
-    def last_prompt_id(self) -> str:
+    def last_prompt_id(self) -> uuid.UUID:
         """Return the id of the last prompt that was run."""
         if self._last_prompt_id is None:
             raise ValueError("Pandas AI has not been run yet.")
