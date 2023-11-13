@@ -41,7 +41,6 @@ import pandas as pd
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 from .prompts.base import AbstractPrompt
-from .callbacks.base import BaseCallback
 from .schemas.df_config import Config
 from .helpers.cache import Cache
 from .agent import Agent
@@ -111,7 +110,6 @@ class PandasAI:
         custom_whitelisted_dependencies=None,
         enable_logging=True,
         non_default_prompts: Optional[Dict[str, Type[AbstractPrompt]]] = None,
-        callback: Optional[BaseCallback] = None,
     ):
         """
         __init__ method of the Class PandasAI
@@ -155,7 +153,6 @@ class PandasAI:
             enable_logging=enable_logging,
             non_default_prompts=non_default_prompts,
             llm=llm,
-            callback=callback,
         )
 
     def run(

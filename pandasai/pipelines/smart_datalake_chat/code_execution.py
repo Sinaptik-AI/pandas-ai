@@ -114,7 +114,5 @@ class CodeExecution(BaseLogicUnit):
         )
 
         result = context.config.llm.generate_code(error_correcting_instruction)
-        if context.config.callback is not None:
-            context.config.callback.on_code(result[0])
 
         return result

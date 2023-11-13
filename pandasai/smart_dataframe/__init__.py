@@ -39,7 +39,6 @@ from ..helpers.from_google_sheets import from_google_sheets
 from typing import Any, List, Union, Optional
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
-from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
 
@@ -580,14 +579,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @save_logs.setter
     def save_logs(self, save_logs: bool):
         self.lake.save_logs = save_logs
-
-    @property
-    def callback(self):
-        return self.lake.callback
-
-    @callback.setter
-    def callback(self, callback: BaseCallback):
-        self.lake.callback = callback
 
     @property
     def enforce_privacy(self):

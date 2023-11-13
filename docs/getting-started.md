@@ -194,7 +194,6 @@ Settings:
 - `max_retries`: the maximum number of retries to use when using the error correction framework. Defaults to `3`. You can use this setting to override the default number of retries.
 - `custom_prompts`: the custom prompts to use. Defaults to `{}`. You can use this setting to override the default custom prompts. You can find more information about custom prompts [here](custom-prompts.md).
 - `custom_whitelisted_dependencies`: the custom whitelisted dependencies to use. Defaults to `{}`. You can use this setting to override the default custom whitelisted dependencies. You can find more information about custom whitelisted dependencies [here](custom-whitelisted-dependencies.md).
-- `callback`: the callback to use. Defaults to `None`. You can use this setting to override the default callback. You can find more information about callbacks [here](callbacks.md).
 
 ## Demo in Google Colab
 

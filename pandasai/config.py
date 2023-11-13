@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Union
 
-from . import llm, callbacks
+from . import llm
 from .helpers.path import find_closest
 from .schemas.df_config import Config
 
@@ -32,9 +32,6 @@ def load_config(
             if config.get("llm") and not override_config.get("llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
-
-            if config.get("callback") and not override_config.get("callback"):
-                config["callback"] = getattr(callbacks, config["callback"])()
     except Exception:
         # Ignore the error if the file does not exist, will use the default config
         pass

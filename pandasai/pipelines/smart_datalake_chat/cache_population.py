@@ -32,7 +32,4 @@ class CachePopulation(BaseLogicUnit):
                 pipeline_context.cache.get_cache_key(pipeline_context), code
             )
 
-        if pipeline_context.config.callback is not None:
-            pipeline_context.config.callback.on_code(code)
-
         return code

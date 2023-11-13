@@ -23,7 +23,6 @@ nav:
       - save-dataframes.md
       - cache.md
       - custom-response.md
-      - callbacks.md
       - custom-instructions.md
       - custom-prompts.md
       - skills.md

@@ -23,7 +23,6 @@ class TestPandasAI:
 
     def test_init(self, pai, llm):
         assert pai._config.llm == llm
-        assert pai._config.callback is None
         assert pai._config.custom_prompts == {}
         assert pai._config.custom_whitelisted_dependencies == []
         assert pai._config.enable_cache is False

@@ -21,7 +21,6 @@ from pandasai.helpers.output_types import (
     output_type_factory,
 )
 from pandasai.llm.fake import FakeLLM
-from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.viz_library_types import (
@@ -167,15 +166,6 @@ class TestSmartDataframe:
             "def analyze_data(dfs):\n    return { 'type': 'number', 'value': 1 + 1 }"
         )
         assert smart_dataframe.chat("What is the sum of 1 + 1?") == 2
-
-    def test_callback(self, smart_dataframe: SmartDataframe):
-        callback = StdoutCallback()
-        smart_dataframe.callback = callback
-
-        # mock on_code function
-        with patch.object(callback, "on_code") as mock_on_code:
-            smart_dataframe.chat("Give me sum of all gdps?")
-            mock_on_code.assert_called()
 
     def test_run_code(self, smart_dataframe: SmartDataframe, llm):
         llm._output = """
@@ -624,7 +614,6 @@ result = analyze_data(dfs)
         assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.callback is None
         assert smart_dataframe.enforce_privacy is False
         assert smart_dataframe.use_error_correction_framework
         assert smart_dataframe.custom_prompts == {}
@@ -632,9 +621,6 @@ result = analyze_data(dfs)
         assert smart_dataframe.save_charts_path == "exports/charts"
         assert smart_dataframe.custom_whitelisted_dependencies == []
         assert smart_dataframe.max_retries == 3
-
-        smart_dataframe.callback = lambda x: x
-        assert smart_dataframe.callback is not None
 
         smart_dataframe.enforce_privacy = True
         assert smart_dataframe.enforce_privacy

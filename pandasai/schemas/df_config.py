@@ -1,7 +1,6 @@
 from pydantic import BaseModel, validator, Field
 from typing import Optional, List, Any, Dict, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
-from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
 from ..helpers.viz_library_types.base import VisualizationLibrary
@@ -26,7 +25,6 @@ class Config(BaseModel):
     save_charts_path: str = DEFAULT_CHART_DIRECTORY
     custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
-    callback: Optional[BaseCallback] = None
     lazy_load_connector: bool = True
     response_parser: Any = None
     llm: Any = None

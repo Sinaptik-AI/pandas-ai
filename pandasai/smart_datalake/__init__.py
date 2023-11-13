@@ -552,8 +552,6 @@ class SmartDatalake:
         )
 
         result = self._llm.generate_code(error_correcting_instruction)
-        if self._config.callback is not None:
-            self._config.callback.on_code(result[0])
 
         return result
 
@@ -616,14 +614,6 @@ class SmartDatalake:
     def save_logs(self, save_logs: bool):
         self._config.save_logs = save_logs
         self._logger.save_logs = save_logs
-
-    @property
-    def callback(self):
-        return self._config.callback
-
-    @callback.setter
-    def callback(self, callback: Any):
-        self.config.callback = callback
 
     @property
     def enforce_privacy(self):
