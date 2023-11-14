@@ -16,7 +16,6 @@ from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
 from ..helpers.openai import is_openai_v1
-from ..prompts.base import AbstractPrompt
 from .base import BaseOpenAI
 
 load_dotenv()

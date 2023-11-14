@@ -17,10 +17,9 @@ Example:
 import os
 import ast
 import re
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Dict, Optional, Union, Mapping, Tuple
 
-import openai
 import requests
 
 from ..exceptions import (
