@@ -75,7 +75,6 @@ class TestOpenAILLM:
         result = openai.completion("Some prompt.")
 
         openai.completion.assert_called_once_with("Some prompt.")
-
         assert result == expected_response
 
     def test_chat_completion(self, mocker):

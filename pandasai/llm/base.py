@@ -226,6 +226,7 @@ class BaseOpenAI(LLM):
     stop: Optional[str] = None
     request_timeout: Union[float, Tuple[float, float], Any, None] = None
     max_retries: int = 2
+    seed: Optional[int] = None
     # support explicit proxy for OpenAI
     openai_proxy: Optional[str] = None
     default_headers: Union[Mapping[str, str], None] = None
@@ -241,7 +242,7 @@ class BaseOpenAI(LLM):
         Set Parameters
         Args:
             **kwargs: ["model", "deployment_name", "temperature","max_tokens",
-            "top_p", "frequency_penalty", "presence_penalty", "stop", ]
+            "top_p", "frequency_penalty", "presence_penalty", "stop", "seed"]
 
         Returns:
             None.
@@ -257,6 +258,7 @@ class BaseOpenAI(LLM):
             "frequency_penalty",
             "presence_penalty",
             "stop",
+            "seed",
         ]
         for key, value in kwargs.items():
             if key in valid_params:
@@ -270,6 +272,7 @@ class BaseOpenAI(LLM):
             "top_p": self.top_p,
             "frequency_penalty": self.frequency_penalty,
             "presence_penalty": self.presence_penalty,
+            "seed": self.seed,
             "stop": self.stop,
             "n": self.n,
         }

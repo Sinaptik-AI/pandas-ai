@@ -21,7 +21,7 @@ import uuid
 import logging
 import os
 import traceback
-from pandasai.constants import DEFAULT_CHART_DIRECTORY
+from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.skills import skill
@@ -165,14 +165,14 @@ class SmartDatalake:
                     charts_dir = os.path.join(
                         os.getcwd(), self._config.save_charts_path
                     )
-            os.makedirs(charts_dir, mode=0o777, exist_ok=True)
+            os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
         if self._config.enable_cache:
             try:
                 cache_dir = os.path.join((find_project_root()), "cache")
             except ValueError:
                 cache_dir = os.path.join(os.getcwd(), "cache")
-            os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+            os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
     def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
         """
