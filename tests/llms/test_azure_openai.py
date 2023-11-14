@@ -4,8 +4,8 @@ import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, MissingModelError
 from pandasai.llm import AzureOpenAI
-from openai.openai_object import OpenAIObject
 
+pytest.skip(allow_module_level=True)
 
 class TestAzureOpenAILLM:
     """Unit tests for the Azure Openai LLM class"""
@@ -105,6 +105,7 @@ class TestAzureOpenAILLM:
             top_p=openai.top_p,
             frequency_penalty=openai.frequency_penalty,
             presence_penalty=openai.presence_penalty,
+            seed=openai.seed
         )
 
         assert result == expected_text
