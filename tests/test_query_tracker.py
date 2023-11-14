@@ -131,11 +131,6 @@ class TestQueryExecTracker:
 
         sample_df["date"] = date_range
 
-        print("Sample", sample_df)
-        column_dtypes = sample_df.dtypes
-
-        # Display the result
-        print(column_dtypes)
         # Create a sample ResponseType for a dataframe
         response = {"type": "dataframe", "value": sample_df}
 
