@@ -88,6 +88,10 @@ class QueryExecTracker:
         self._query_info = {}
         self._func_exec_count: dict = defaultdict(int)
 
+    def convert_dataframe_to_dict(self, df):
+        json_data = json.loads(df.to_json(orient="split", date_format="iso"))
+        return {"headers": json_data["columns"], "rows": json_data["data"]}
+
     def add_dataframes(self, dfs: List) -> None:
         """
         Add used dataframes for the query to query exec tracker
@@ -96,15 +100,7 @@ class QueryExecTracker:
         """
         for df in dfs:
             head = df.head_df
-            json_data = json.loads(
-                head.to_json(
-                    orient="split",
-                    date_format="iso",
-                )
-            )
-            self._dataframes.append(
-                {"headers": json_data["columns"], "rows": json_data["data"]}
-            )
+            self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_step(self, step: dict) -> None:
         """
@@ -206,19 +202,9 @@ class QueryExecTracker:
             ResponseType: formatted response output
         """
         if result["type"] == "dataframe":
-            json_data = json.loads(
-                result["value"].to_json(
-                    orient="split",
-                    date_format="iso",
-                )
-            )
-            return {
-                "type": result["type"],
-                "value": {
-                    "headers": json_data["columns"],
-                    "rows": json_data["data"],
-                },
-            }
+            df_dict = self.convert_dataframe_to_dict(result["value"])
+            return {"type": result["type"], "value": df_dict}
+
         elif result["type"] == "plot":
             with open(result["value"], "rb") as image_file:
                 image_data = image_file.read()
