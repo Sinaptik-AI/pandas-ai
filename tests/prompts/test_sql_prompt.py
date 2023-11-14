@@ -64,47 +64,42 @@ class TestDirectSqlPrompt:
         prompt.set_var("output_type_hint", output_type_hint)
         prompt.set_var("save_charts_path", save_charts_path)
         prompt.set_var("viz_library_type", viz_library_type_hint)
+        prompt.set_var(
+            "current_code",
+            """# TODO: import the required dependencies
+import pandas as pd""",
+        )
+        prompt.set_var("skills", "")
+        prompt.set_var(
+            "reasoning",
+            """Take a deep breath and reason step-by-step. Act as a senior data analyst.
+In the answer, you must never write the "technical" names of the tables.
+Based on the last message in the conversation:
+
+- return the updated analyze_data function wrapped within `python `""",
+        )
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
         assert (
             prompt_content
-            == f'''You are provided with the following samples of sql tables data:
-
-<Tables>
+            == '''<tables>
 <table name="None">
 
 
 </table>
-<Tables>
+</tables>
 
-<conversation>
 What is the correct code?
-</conversation>
 
-You are provided with following function that executes the sql query, 
-<Function>
+<function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe
-"""his method connect to the database executes the sql query and returns the dataframe"""
-</Function>
-
-This is the initial python function. Do not change the params.
-
+    """This method connects to the database, executes the sql query and returns the dataframe"""
+</function>
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
-
-def analyze_data() -> dict:
-    """
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: generate sql query to get data for analysis (grouping, filtering, aggregating, etc.)
-    2. Process: execute the query using execute method available to you which returns dataframe
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    {viz_library_type_hint}
-    At the end, return a dictionary of:
-    {output_type_hint}
-    """
 ```
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.

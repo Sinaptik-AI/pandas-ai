@@ -1,20 +1,4 @@
-""" Prompt to explain code generation by the LLM
-The previous conversation we had
-
-<Conversation>
-{conversation}
-</Conversation>
-
-Based on the last conversation you generated the following code:
-
-<Code>
-{code}
-</Code>
-
-Explain how you came up with code for non-technical people without 
-mentioning technical details or mentioning the libraries used?
-
-"""
+""" Prompt to explain code generation by the LLM"""
 from .file_based_prompt import FileBasedPrompt
 
 

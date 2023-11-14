@@ -77,40 +77,32 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("viz_library_type", viz_library_type_hint)
         prompt.set_var("skills", "")
 
-        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
-
-<dataframe>
+        expected_prompt_content = f"""<dataframe>
 Dataframe dfs[0], with 1 rows and 2 columns.
 This is the metadata of the dataframe dfs[0]:
 a,b
 1,4
 </dataframe>
 
-<conversation>
 Question
-</conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    """
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    {viz_library_type_hint}
-    At the end, return a dictionary of:
-    {output_type_hint}
-    """
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+{viz_library_type_hint}
+
+Return a "result" variable dict:
+{output_type_hint}
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
+Return the code:"""  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
@@ -135,41 +127,35 @@ Based on the last message in the conversation:
         prompt.set_var("conversation", "Question")
         prompt.set_var("output_type_hint", "")
         prompt.set_var("skills", "")
-        prompt.set_var("viz_library_type", "")
+        prompt.set_var("viz_library_type", viz_library_type_hint)
 
-        expected_prompt_content = f'''You are provided with the following pandas DataFrames:
-
-<dataframe>
+        expected_prompt_content = '''<dataframe>
 Dataframe dfs[0], with 1 rows and 2 columns.
 This is the metadata of the dataframe dfs[0]:
 a,b
 1,4
 </dataframe>
 
-<conversation>
 Question
-</conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    """
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    {viz_library_type_hint}
-    At the end, return a dictionary of:
-    
-    """
+"""
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+
+
+Return a "result" variable dict:
+
+"""
 ```
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
 In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
 - explain your reasoning to implement the last step to the user that asked for it; it should be wrapped between <reasoning> tags.
 - answer to the user as you would do as a data analyst; wrap it between <answer> tags; do not include the value or the chart itself (it will be calculated later).
 - return the updated analyze_data function wrapped within ```python ```'''  # noqa E501

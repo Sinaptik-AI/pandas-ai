@@ -187,32 +187,27 @@ def analyze_data(dfs):
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
         df.enforce_privacy = True
 
-        expected_prompt = """You are provided with the following pandas DataFrames:
-
-<dataframe>
+        expected_prompt = """<dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
 This is the metadata of the dataframe dfs[0]:
 country
 </dataframe>
 
-<conversation>
 User: How many countries are in the dataframe?
-</conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
-    At the end, return a dictionary of:
-    - type (possible values "string", "number", "dataframe", "plot")
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
+Return a "result" variable dict:
+- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
         { "type": "string", "value": f"The highest salary is {highest_salary}." }
@@ -222,17 +217,15 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
         { "type": "plot", "value": "temp_chart.png" }
-    \"\"\"
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+Return the code:"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
@@ -249,44 +242,39 @@ Based on the last message in the conversation:
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
-        expected_prompt = f'''You are provided with the following pandas DataFrames:
-
-<dataframe>
+        expected_prompt = f"""<dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
 This is the metadata of the dataframe dfs[0]:
 country
 </dataframe>
 
-<conversation>
 User: How many countries are in the dataframe?
-</conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    """
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
-    At the end, return a dictionary of:
-    {output_type_hint}
-    """
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
+Return a "result" variable dict:
+{output_type_hint}
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```'''  # noqa: E501
+Return the code:"""
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print(last_prompt)
+
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
@@ -1034,32 +1022,27 @@ result = analyze_data(dfs)
         )
 
         expected_prompt = (
-            """You are provided with the following pandas DataFrames:
-
-<dataframe>
+            """<dataframe>
 Dataframe dfs[0], with 0 rows and 1 columns.
 This is the metadata of the dataframe dfs[0]:
 country
 </dataframe>
 
-<conversation>
 User: Plot the histogram of countries showing for each the gdp with distinct bar colors
-</conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    %s
-    At the end, return a dictionary of:
-    - type (possible values "string", "number", "dataframe", "plot")
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+%s
+
+Return a "result" variable dict:
+- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
         { "type": "string", "value": f"The highest salary is {highest_salary}." }
@@ -1069,13 +1052,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
         { "type": "plot", "value": "temp_chart.png" }
-    \"\"\"
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+Return the code:"""  # noqa: E501
             % viz_library_type_hint
         )
 
@@ -1086,5 +1066,13 @@ Based on the last message in the conversation:
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print("+" * 100)
+        print("+" * 100)
+        print("+" * 100)
+        print(last_prompt)
+        print("+" * 100)
+        print("+" * 100)
+        print("+" * 100)
 
         assert last_prompt == expected_prompt

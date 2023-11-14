@@ -179,10 +179,7 @@ class TestSmartDatalake:
 
         assert (
             last_prompt
-            == """
-You are provided with the following pandas DataFrames with the following metadata:
-
-<dataframe>
+            == """<dataframe>
 Dataframe dfs[0], with 10 rows and 3 columns.
 This is the metadata of the dataframe dfs[0]:
 country,gdp,happiness_index
@@ -201,8 +198,7 @@ def analyze_data(df):
 It fails with the following error:
 Test error
 
-Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
-"""  # noqa: E501
+Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
