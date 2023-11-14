@@ -25,14 +25,18 @@ def load_config(
     if override_config is None:
         override_config = {}
 
+    if isinstance(override_config, Config):
+        override_config = override_config.dict()
+
     try:
         with open(find_closest("pandasai.json"), "r") as f:
             config = json.load(f)
 
-            if config.get("llm") and not override_config.get("llm"):
+            # if config is a dict
+            if hasattr(config, "llm") and not hasattr(override_config, "llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
-    except Exception:
+    except FileNotFoundError:
         # Ignore the error if the file does not exist, will use the default config
         pass
 

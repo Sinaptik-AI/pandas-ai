@@ -85,23 +85,23 @@ class TestPipeline:
         assert pipeline._context == context
         assert pipeline._steps == []
 
-    def test_init_with_smartdfs(self, smart_dataframe):
+    def test_init_with_smartdfs(self, smart_dataframe, config):
         # Test the initialization of the Pipeline
-        pipeline = Pipeline([smart_dataframe])
+        pipeline = Pipeline([smart_dataframe], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
         assert isinstance(pipeline._context.dfs[0], SmartDataframe)
 
-    def test_init_with_dfs(self, sample_df):
+    def test_init_with_dfs(self, sample_df, config):
         # Test the initialization of the Pipeline
-        pipeline = Pipeline([sample_df])
+        pipeline = Pipeline([sample_df], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
         assert isinstance(pipeline._context.dfs[0], SmartDataframe)
 
     def test_add_step(self, context, config):
         # Test the add_step method
-        pipeline = Pipeline(context)
+        pipeline = Pipeline(context, config=config)
         logic_unit = MockLogicUnit()
         pipeline.add_step(logic_unit)
         assert len(pipeline._steps) == 1
