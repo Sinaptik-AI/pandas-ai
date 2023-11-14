@@ -27,9 +27,6 @@ class CodeGenerator(BaseLogicUnit):
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")
 
-        if self.skip_if is not None and self.skip_if(pipeline_context):
-            return input
-
         generate_python_code_instruction = input
 
         [

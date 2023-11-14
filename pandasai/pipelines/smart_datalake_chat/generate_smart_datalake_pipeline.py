@@ -25,17 +25,17 @@ class GenerateSmartDatalakePipeline:
             steps=[
                 CacheLookup(),
                 PromptGeneration(
-                    lambda pipeline_context: pipeline_context.get_intermediate_value(
+                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
                         "is_present_in_cache"
                     )
                 ),
                 CodeGenerator(
-                    lambda pipeline_context: pipeline_context.get_intermediate_value(
+                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
                         "is_present_in_cache"
                     )
                 ),
                 CachePopulation(
-                    lambda pipeline_context: pipeline_context.get_intermediate_value(
+                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
                         "is_present_in_cache"
                     )
                 ),
