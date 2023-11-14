@@ -96,8 +96,14 @@ class QueryExecTracker:
         """
         for df in dfs:
             head = df.head_df
+            json_data = json.loads(
+                head.to_json(
+                    orient="split",
+                    date_format="iso",
+                )
+            )
             self._dataframes.append(
-                {"headers": head.columns.tolist(), "rows": head.values.tolist()}
+                {"headers": json_data["columns"], "rows": json_data["data"]}
             )
 
     def add_step(self, step: dict) -> None:
@@ -200,11 +206,17 @@ class QueryExecTracker:
             ResponseType: formatted response output
         """
         if result["type"] == "dataframe":
+            json_data = json.loads(
+                result["value"].to_json(
+                    orient="split",
+                    date_format="iso",
+                )
+            )
             return {
                 "type": result["type"],
                 "value": {
-                    "headers": result["value"].columns.tolist(),
-                    "rows": result["value"].values.tolist(),
+                    "headers": json_data["columns"],
+                    "rows": json_data["data"],
                 },
             }
         elif result["type"] == "plot":
