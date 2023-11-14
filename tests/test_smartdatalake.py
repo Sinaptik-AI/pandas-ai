@@ -180,8 +180,7 @@ class TestSmartDatalake:
         assert (
             last_prompt
             == """<dataframe>
-Dataframe dfs[0], with 10 rows and 3 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:10x3
 country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16

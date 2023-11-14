@@ -32,8 +32,7 @@ class TestCorrectErrorPrompt:
         assert (
             prompt_content
             == """<dataframe>
-Dataframe dfs[0], with 0 rows and 0 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:0x0
 
 </dataframe>
 

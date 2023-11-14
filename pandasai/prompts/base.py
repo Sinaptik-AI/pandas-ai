@@ -40,21 +40,27 @@ class AbstractPrompt(ABC):
         """
         dataframes = []
         for index, df in enumerate(dfs, start=1):
-            description = """<dataframe>
-Dataframe """
+            dataframe_info = "<dataframe"
+
+            # Add name attribute if available
             if df.table_name is not None:
-                description += f"{df.table_name} (dfs[{index-1}])"
-            else:
-                description += f"dfs[{index-1}]"
-            description += (
-                f", with {df.rows_count} rows and {df.columns_count} columns."
-            )
+                dataframe_info += f' name="{df.table_name}"'
+
+            # Add description attribute if available
             if df.table_description is not None:
-                description += f"\nDescription: {df.table_description}"
-            description += f"""
-This is the metadata of the dataframe dfs[{index-1}]:
-{df.head_csv}</dataframe>"""  # noqa: E501
-            dataframes.append(description)
+                dataframe_info += f' description="{df.table_description}"'
+
+            dataframe_info += ">"
+
+            # Add dataframe details
+            dataframe_info += (
+                f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_csv}"
+            )
+
+            # Close the dataframe tag
+            dataframe_info += "</dataframe>"
+
+            dataframes.append(dataframe_info)
 
         return "\n\n".join(dataframes)
 

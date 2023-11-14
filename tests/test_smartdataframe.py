@@ -188,8 +188,7 @@ def analyze_data(dfs):
         df.enforce_privacy = True
 
         expected_prompt = """<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:0x1
 country
 </dataframe>
 
@@ -243,8 +242,7 @@ Return the code:"""  # noqa: E501
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
         expected_prompt = f"""<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:0x1
 country
 </dataframe>
 
@@ -1023,8 +1021,7 @@ result = analyze_data(dfs)
 
         expected_prompt = (
             """<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:0x1
 country
 </dataframe>
 

@@ -78,8 +78,7 @@ class TestGeneratePythonCodePrompt:
         prompt.set_var("skills", "")
 
         expected_prompt_content = f"""<dataframe>
-Dataframe dfs[0], with 1 rows and 2 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:1x2
 a,b
 1,4
 </dataframe>
@@ -130,8 +129,7 @@ Return the code:"""  # noqa E501
         prompt.set_var("viz_library_type", viz_library_type_hint)
 
         expected_prompt_content = '''<dataframe>
-Dataframe dfs[0], with 1 rows and 2 columns.
-This is the metadata of the dataframe dfs[0]:
+dfs[0]:1x2
 a,b
 1,4
 </dataframe>
