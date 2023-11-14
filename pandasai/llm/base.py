@@ -382,11 +382,11 @@ class BaseOpenAI(LLM):
         """
         self.last_prompt = instruction.to_string() + suffix
 
-        if self._is_chat_model:
-            response = self.chat_completion(self.last_prompt)
-        else:
-            response = self.completion(self.last_prompt)
-        return response
+        return (
+            self.chat_completion(self.last_prompt)
+            if self._is_chat_model
+            else self.completion(self.last_prompt)
+        )
 
 
 class HuggingFaceLLM(LLM):
