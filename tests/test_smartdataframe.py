@@ -187,7 +187,7 @@ dfs[0]:0x1
 country
 </dataframe>
 
-User: How many countries are in the dataframe?
+Q: How many countries are in the dataframe?
 
 ```python
 # TODO: import the required dependencies
@@ -251,7 +251,7 @@ dfs[0]:0x1
 country
 </dataframe>
 
-User: How many countries are in the dataframe?
+Q: How many countries are in the dataframe?
 
 ```python
 # TODO: import the required dependencies
@@ -1025,7 +1025,7 @@ dfs[0]:0x1
 country
 </dataframe>
 
-User: Plot the histogram of countries showing for each the gdp with distinct bar colors
+Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
 
 ```python
 # TODO: import the required dependencies
