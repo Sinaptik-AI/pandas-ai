@@ -19,6 +19,7 @@ Example:
 """
 
 import hashlib
+import uuid
 from io import StringIO
 
 import pandas as pd
@@ -538,7 +539,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return self.lake.last_prompt
 
     @property
-    def last_prompt_id(self) -> str:
+    def last_prompt_id(self) -> uuid.UUID:
         return self.lake.last_prompt_id
 
     @property
