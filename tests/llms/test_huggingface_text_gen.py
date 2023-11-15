@@ -1,5 +1,5 @@
 """Unit tests for the LLaMa2TextGen LLM class"""
-from pandasai import AbstractPrompt
+from pandasai.prompts import AbstractPrompt
 from pandasai.llm import HuggingFaceTextGen
 
 

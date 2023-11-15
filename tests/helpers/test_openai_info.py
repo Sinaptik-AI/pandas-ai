@@ -1,7 +1,7 @@
 import pytest
-import openai
 
-from pandasai import PandasAI
+
+from pandasai import SmartDataframe
 from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
@@ -27,11 +27,13 @@ class TestOpenAIInfo:
     def test_handler(self, handler: OpenAICallbackHandler) -> None:
         response = OpenAIObject(
             {
-                "usage": OpenAIObject({
-                    "prompt_tokens": 2,
-                    "completion_tokens": 1,
-                    "total_tokens": 3,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 2,
+                        "completion_tokens": 1,
+                        "total_tokens": 3,
+                    }
+                ),
                 "model": "gpt-35-turbo",
             }
         )
@@ -45,11 +47,13 @@ class TestOpenAIInfo:
     def test_handler_unknown_model(self, handler: OpenAICallbackHandler) -> None:
         response = OpenAIObject(
             {
-                "usage": OpenAIObject({
-                    "prompt_tokens": 2,
-                    "completion_tokens": 1,
-                    "total_tokens": 3,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 2,
+                        "completion_tokens": 1,
+                        "total_tokens": 3,
+                    }
+                ),
                 "model": "foo-bar",
             }
         )
@@ -66,20 +70,20 @@ class TestOpenAIInfo:
         [
             ("gpt-3.5-turbo", 0.003),
             (
-                    "gpt-3.5-turbo-0613",
-                    0.003,
+                "gpt-3.5-turbo-0613",
+                0.003,
             ),
             (
-                    "gpt-3.5-turbo-16k-0613",
-                    0.003,
+                "gpt-3.5-turbo-16k-0613",
+                0.003,
             ),
             (
-                    "gpt-3.5-turbo-1106",
-                    0.003,
+                "gpt-3.5-turbo-1106",
+                0.003,
             ),
             (
-                    "gpt-3.5-turbo-16k",
-                    0.003,
+                "gpt-3.5-turbo-16k",
+                0.003,
             ),
             ("gpt-4", 0.09),
             ("gpt-4-0613", 0.09),
@@ -89,15 +93,17 @@ class TestOpenAIInfo:
         ],
     )
     def test_handler_openai(
-            self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
+        self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
     ) -> None:
         response = OpenAIObject(
             {
-                "usage": OpenAIObject({
-                    "prompt_tokens": 1000,
-                    "completion_tokens": 1000,
-                    "total_tokens": 2000,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 1000,
+                        "completion_tokens": 1000,
+                        "total_tokens": 2000,
+                    }
+                ),
                 "model": model_name,
             }
         )
@@ -109,16 +115,16 @@ class TestOpenAIInfo:
         [
             ("gpt-35-turbo", 0.0035),
             (
-                    "gpt-35-turbo-0613",
-                    0.0035,
+                "gpt-35-turbo-0613",
+                0.0035,
             ),
             (
-                    "gpt-35-turbo-16k-0613",
-                    0.007,
+                "gpt-35-turbo-16k-0613",
+                0.007,
             ),
             (
-                    "gpt-35-turbo-16k",
-                    0.007,
+                "gpt-35-turbo-16k",
+                0.007,
             ),
             ("gpt-4", 0.09),
             ("gpt-4-0613", 0.09),
@@ -127,15 +133,17 @@ class TestOpenAIInfo:
         ],
     )
     def test_handler_azure_openai(
-            self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
+        self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
     ) -> None:
         response = OpenAIObject(
             {
-                "usage": OpenAIObject({
-                    "prompt_tokens": 1000,
-                    "completion_tokens": 1000,
-                    "total_tokens": 2000,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 1000,
+                        "completion_tokens": 1000,
+                        "total_tokens": 2000,
+                    }
+                ),
                 "model": model_name,
             }
         )
@@ -150,15 +158,17 @@ class TestOpenAIInfo:
         ],
     )
     def test_handler_finetuned_model(
-            self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
+        self, handler: OpenAICallbackHandler, model_name: str, expected_cost: float
     ):
         response = OpenAIObject(
             {
-                "usage": OpenAIObject({
-                    "prompt_tokens": 1000,
-                    "completion_tokens": 1000,
-                    "total_tokens": 2000,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 1000,
+                        "completion_tokens": 1000,
+                        "total_tokens": 2000,
+                    }
+                ),
                 "model": model_name,
             }
         )
@@ -180,18 +190,20 @@ class TestOpenAIInfo:
                     }
                 ],
                 "model": llm.model,
-                "usage": OpenAIObject({
-                    "prompt_tokens": 2,
-                    "completion_tokens": 1,
-                    "total_tokens": 3,
-                }),
+                "usage": OpenAIObject(
+                    {
+                        "prompt_tokens": 2,
+                        "completion_tokens": 1,
+                        "total_tokens": 3,
+                    }
+                ),
             }
         )
         mocker.patch.object(llm.client, "create", return_value=llm_response)
 
-        pandas_ai = PandasAI(llm, enable_cache=False)
+        sdf = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
         with get_openai_callback() as cb:
-            _ = pandas_ai(df, "some question")
+            sdf.chat("some question 1")
             assert cb.total_tokens == 3
             assert cb.prompt_tokens == 2
             assert cb.completion_tokens == 1
@@ -200,14 +212,14 @@ class TestOpenAIInfo:
         total_tokens = cb.total_tokens
 
         with get_openai_callback() as cb:
-            pandas_ai(df, "some question")
-            pandas_ai(df, "some question")
+            sdf.chat("some question 2")
+            sdf.chat("some question 3")
 
         assert cb.total_tokens == total_tokens * 2
 
         with get_openai_callback() as cb:
-            pandas_ai(df, "some question")
-            pandas_ai(df, "some question")
-            pandas_ai(df, "some question")
+            sdf.chat("some question 4")
+            sdf.chat("some question 5")
+            sdf.chat("some question 6")
 
         assert cb.total_tokens == total_tokens * 3
