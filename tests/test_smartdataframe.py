@@ -151,28 +151,23 @@ class TestSmartDataframe:
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
-            SmartDataframe(sample_df, config={"llm": None})
+            SmartDataframe(sample_df, config={"llm": "-"})
 
     def test_run(self, smart_dataframe: SmartDataframe, llm):
-        llm._output = (
-            "def analyze_data(dfs):\n    return { 'type': 'number', 'value': 1 }"
-        )
+        llm._output = "result = { 'type': 'number', 'value': 1 }"
         assert smart_dataframe.chat("What number comes before 2?") == 1
 
     def test_run_with_non_conversational_answer(
         self, smart_dataframe: SmartDataframe, llm
     ):
-        llm._output = (
-            "def analyze_data(dfs):\n    return { 'type': 'number', 'value': 1 + 1 }"
-        )
+        llm._output = "result = { 'type': 'number', 'value': 1 + 1 }"
         assert smart_dataframe.chat("What is the sum of 1 + 1?") == 2
 
     def test_run_code(self, smart_dataframe: SmartDataframe, llm):
         llm._output = """
-def analyze_data(dfs):
-    df = dfs[0]
-    df['b'] = df['a'] + 1
-    return { 'type': 'dataframe', 'value': df }
+df = dfs[0]
+df['b'] = df['a'] + 1
+result = { 'type': 'dataframe', 'value': df }
 """
         smart_dataframe = SmartDataframe(
             pd.DataFrame({"a": [1, 2, 3]}), config={"llm": llm, "enable_cache": False}
@@ -224,6 +219,16 @@ Return the code:"""  # noqa: E501
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print(last_prompt)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
 
         assert last_prompt == expected_prompt
 
@@ -290,10 +295,8 @@ Return the code:"""
         output_type_to_pass,
         output_type_returned,
     ):
-        llm._output = f"""
-def analyze_data(dfs: list[pd.DataFrame]) ->dict:
-    highest_gdp = dfs[0]['gdp'].max()
-    return {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
+        llm._output = f"""highest_gdp = dfs[0]['gdp'].max()
+result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
 """
         smart_dataframe = SmartDataframe(
             sample_df, config={"llm": llm, "enable_cache": False}
@@ -373,13 +376,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             smart_dataframe.last_prompt_id
 
     def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
-        llm._output = (
-            "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
-        )
+        llm._output = "result = {'type': 'number', 'value': 1}"
         smart_dataframe.chat("What number comes before 2?")
         assert (
             smart_dataframe.last_code_generated
-            == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+            == "result = {'type': 'number', 'value': 1}"
         )
 
     def test_save_chart_non_default_dir(
@@ -412,17 +413,16 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         llm._output = """
 import pandas as pd
 import matplotlib.pyplot as plt
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    df = dfs[0].nlargest(5, 'happiness_index')
-    
-    plt.figure(figsize=(8, 6))
-    plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
-    plt.title('Happiness Index for the 5 Happiest Countries')
-    plt.savefig('temp_chart.png')
-    plt.close()
-    
-    return {"type": None, "value": "temp_chart.png"}
-result = analyze_data(dfs)
+
+df = dfs[0].nlargest(5, 'happiness_index')
+
+plt.figure(figsize=(8, 6))
+plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
+plt.title('Happiness Index for the 5 Happiest Countries')
+plt.savefig('temp_chart.png')
+plt.close()
+
+result = {"type": None, "value": "temp_chart.png"}
 """
         with patch(
             "pandasai.helpers.code_manager.import_dependency"

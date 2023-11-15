@@ -33,7 +33,7 @@ def load_config(
             config = json.load(f)
 
             # if config is a dict
-            if hasattr(config, "llm") and not hasattr(override_config, "llm"):
+            if config.get("llm") and not override_config.get("llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
     except FileNotFoundError:

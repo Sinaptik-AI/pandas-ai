@@ -9,8 +9,7 @@ from .base import LLM
 class FakeLLM(LLM):
     """Fake LLM"""
 
-    _output: str = """def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Hello World" }"""
+    _output: str = """result = { 'type': 'text', 'value': "Hello World" }"""
 
     def __init__(self, output: Optional[str] = None):
         if output is not None:

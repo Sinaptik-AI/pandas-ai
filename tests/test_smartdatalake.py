@@ -155,8 +155,7 @@ class TestSmartDatalake:
     def test_retry_on_error_with_single_df(
         self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe
     ):
-        code = """def analyze_data(df):
-    return { "type": "text", "value": "Hello World" }"""
+        code = """result = 'Hello World'"""
 
         smart_dataframe._get_sample_head = Mock(
             return_value=pd.DataFrame(
@@ -191,8 +190,7 @@ The user asked the following question:
 
 
 You generated this python code:
-def analyze_data(df):
-    return { "type": "text", "value": "Hello World" }
+result = 'Hello World'
 
 It fails with the following error:
 Test error
@@ -233,11 +231,10 @@ Fix the python code above and return the new python code:"""  # noqa: E501
     def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
         llm = FakeLLM(
             """
-            <reasoning>Custom reasoning</reasoning>
-            <answer>Custom answer</answer>
-            ```python
-def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Hello World" }
+<reasoning>Custom reasoning</reasoning>
+<answer>Custom answer</answer>
+```python
+result = { "type": "string", "value": "Hello World" }
 ```"""
         )
         smart_datalake._llm = llm

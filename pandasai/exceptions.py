@@ -43,6 +43,15 @@ class NoCodeFoundError(Exception):
     """
 
 
+class NoResultFoundError(Exception):
+    """
+    Raised when no result is found in the response.
+
+    Args:
+        Exception (Exception): NoResultFoundError
+    """
+
+
 class MethodNotImplementedError(Exception):
     """
     Raised when a method is not implemented.

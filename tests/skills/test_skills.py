@@ -153,7 +153,10 @@ class TestSkills:
 
         # Test prompt_display method when skills exist
         prompt = skills_manager.prompt_display()
-        assert "You can also use the following functions" in prompt
+        assert (
+            "You can call the following functions that have been pre-defined for you:"
+            in prompt
+        )
 
         # Test prompt_display method when no skills exist
         skills_manager._skills = []
@@ -312,14 +315,14 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
         assert (
-            "You can also use the following functions, if relevant:" not in last_prompt
+            "You can call the following functions that have been pre-defined for you:"
+            not in last_prompt
         )
 
     def test_code_exec_with_skills_no_use(
         self, code_manager: CodeManager, exec_context
     ):
-        code = """def analyze_data(dfs):
-    return {'type': 'number', 'value': 1 + 1}"""
+        code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
         skill1.name = "SkillA"
         exec_context._skills_manager._skills = [skill1]
@@ -327,18 +330,18 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         assert len(exec_context._skills_manager.used_skills) == 0
 
     def test_code_exec_with_skills(self, code_manager: CodeManager):
-        code = """def analyze_data(dfs):
-    plot_salaries()
-    return {'type': 'number', 'value': 1 + 1}"""
+        code = """plot_salaries()
+result = {'type': 'number', 'value': 1 + 1}"""
 
         @skill
         def plot_salaries() -> str:
-            return "plot_salaries"
+            return "return {'type': 'number', 'value': 1 + 1}"
 
         sm = SkillsManager()
         sm.add_skills(plot_salaries)
         exec_context = CodeExecutionContext(uuid.uuid4(), sm)
-        code_manager.execute_code(code, exec_context)
+        result = code_manager.execute_code(code, exec_context)
 
         assert len(exec_context._skills_manager.used_skills) == 1
         assert exec_context._skills_manager.used_skills[0] == "plot_salaries"
+        assert result == {"type": "number", "value": 1 + 1}

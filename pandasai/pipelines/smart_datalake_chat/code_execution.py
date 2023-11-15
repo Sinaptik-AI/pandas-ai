@@ -79,8 +79,8 @@ class CodeExecution(BaseLogicUnit):
                     traceback_error,
                 )
 
-                pipeline_context.add_intermediate_value("reasoning", reasoning)
-                pipeline_context.add_intermediate_value("answer", answer)
+            pipeline_context.add_intermediate_value("reasoning", reasoning)
+            pipeline_context.add_intermediate_value("answer", answer)
 
         return result
 

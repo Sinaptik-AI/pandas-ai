@@ -178,8 +178,8 @@ In the answer, you must never write the "technical" names of the tables.
         assert (
             actual_instructions
             == """Analyze the data.
-    1. Load: Load the data from a file or database
-    2. Prepare: Preprocessing and cleaning data if necessary
-    3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
+1. Load: Load the data from a file or database
+2. Prepare: Preprocessing and cleaning data if necessary
+3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
+4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
         )
