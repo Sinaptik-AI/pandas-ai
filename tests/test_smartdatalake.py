@@ -14,6 +14,7 @@ from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
 from langchain import OpenAI
 
@@ -209,11 +210,15 @@ Fix the python code above and return the new python code:"""  # noqa: E501
 
         # Assertions for enabling cache
         cache_dir = os.path.join(os.getcwd(), "cache")
-        mock_makedirs.assert_any_call(cache_dir, mode=0o777, exist_ok=True)
+        mock_makedirs.assert_any_call(
+            cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
+        )
 
         # Assertions for saving charts
         charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
-        mock_makedirs.assert_any_call(charts_dir, mode=0o777, exist_ok=True)
+        mock_makedirs.assert_any_call(
+            charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
+        )
 
     @patch("os.makedirs")
     def test_initialize_without_cache(self, mock_makedirs, smart_datalake):
@@ -226,7 +231,9 @@ Fix the python code above and return the new python code:"""  # noqa: E501
 
         # Assertions for saving charts
         charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
-        mock_makedirs.assert_called_once_with(charts_dir, mode=0o777, exist_ok=True)
+        mock_makedirs.assert_called_once_with(
+            charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
+        )
 
     def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
         llm = FakeLLM(

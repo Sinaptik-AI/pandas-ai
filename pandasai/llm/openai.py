@@ -15,7 +15,7 @@ import openai
 from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
-from ..prompts.base import AbstractPrompt
+from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -50,10 +50,9 @@ class OpenAI(BaseOpenAI):
     model: str = "gpt-3.5-turbo"
 
     def __init__(
-        self,
-        api_token: Optional[str] = None,
-        api_key_path: Optional[str] = None,
-        **kwargs,
+            self,
+            api_token: Optional[str] = None,
+            **kwargs,
     ):
         """
         __init__ method of OpenAI Class
@@ -64,21 +63,31 @@ class OpenAI(BaseOpenAI):
 
         """
         self.api_token = api_token or os.getenv("OPENAI_API_KEY") or None
-        self.api_key_path = api_key_path
 
-        if (not self.api_token) and (not self.api_key_path):
-            raise APIKeyNotFoundError("Either OpenAI API key or key path is required")
-
-        if self.api_token:
-            openai.api_key = self.api_token
-        else:
-            openai.api_key_path = self.api_key_path
+        if not self.api_token:
+            raise APIKeyNotFoundError("OpenAI API key is required")
 
         self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
         if self.openai_proxy:
             openai.proxy = {"http": self.openai_proxy, "https": self.openai_proxy}
 
         self._set_params(**kwargs)
+        # set the client
+        model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
+        if model_name in self._supported_chat_models:
+            self._is_chat_model = True
+            if is_openai_v1():
+                self.client = openai.OpenAI(**self._client_params).chat.completions
+            else:
+                self.client = openai.ChatCompletion
+        elif model_name in self._supported_completion_models:
+            self._is_chat_model = False
+            if is_openai_v1():
+                self.client = openai.OpenAI(**self._client_params).completions
+            else:
+                self.client = openai.Completion
+        else:
+            raise UnsupportedModelError(self.model)
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -87,32 +96,6 @@ class OpenAI(BaseOpenAI):
             **super()._default_params,
             "model": self.model,
         }
-
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
-        """
-        Call the OpenAI LLM.
-
-        Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
-            suffix (str): Suffix to pass.
-
-        Raises:
-            UnsupportedModelError: Unsupported model
-
-        Returns:
-            str: Response
-        """
-        self.last_prompt = instruction.to_string() + suffix
-
-        model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
-        if model_name in self._supported_chat_models:
-            response = self.chat_completion(self.last_prompt)
-        elif model_name in self._supported_completion_models:
-            response = self.completion(self.last_prompt)
-        else:
-            raise UnsupportedModelError(self.model)
-
-        return response
 
     @property
     def type(self) -> str:

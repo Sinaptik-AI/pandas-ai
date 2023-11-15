@@ -5,6 +5,7 @@ from typing import Optional, Union
 from .base import YahooFinanceConnectorConfig, BaseConnector
 import time
 from ..helpers.path import find_project_root
+from ..constants import DEFAULT_FILE_PERMISSIONS
 import hashlib
 
 
@@ -83,7 +84,7 @@ class YahooFinanceConnector(BaseConnector):
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
 
-        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+        os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
         return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
 

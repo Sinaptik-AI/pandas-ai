@@ -17,10 +17,9 @@ Example:
 import os
 import ast
 import re
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from abc import abstractmethod
+from typing import Any, Dict, Optional, Union, Mapping, Tuple
 
-import openai
 import requests
 
 from ..exceptions import (
@@ -29,6 +28,7 @@ from ..exceptions import (
     NoCodeFoundError,
     LLMResponseHTTPError,
 )
+from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import AbstractPrompt
 
@@ -133,9 +133,9 @@ class LLM:
         """
 
         if match := re.search(
-            f"(<{tag}>)(.*)(</{tag}>)",
-            response,
-            re.DOTALL | re.MULTILINE,
+                f"(<{tag}>)(.*)(</{tag}>)",
+                response,
+                re.DOTALL | re.MULTILINE,
         ):
             return match[2]
         return None
@@ -207,7 +207,7 @@ class LLM:
         ]
 
 
-class BaseOpenAI(LLM, ABC):
+class BaseOpenAI(LLM):
     """Base class to implement a new OpenAI LLM.
 
     LLM base class, this class is extended to be used with OpenAI API.
@@ -215,21 +215,34 @@ class BaseOpenAI(LLM, ABC):
     """
 
     api_token: str
+    api_base: str
     temperature: float = 0
     max_tokens: int = 1000
     top_p: float = 1
     frequency_penalty: float = 0
     presence_penalty: float = 0.6
+    best_of: int = 1
+    n: int = 1
     stop: Optional[str] = None
+    request_timeout: Union[float, Tuple[float, float], Any, None] = None
+    max_retries: int = 2
+    seed: Optional[int] = None
     # support explicit proxy for OpenAI
     openai_proxy: Optional[str] = None
+    default_headers: Union[Mapping[str, str], None] = None
+    default_query: Union[Mapping[str, object], None] = None
+    # Configure a custom httpx client. See the
+    # [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
+    http_client: Union[Any, None] = None
+    client: Any
+    _is_chat_model: bool
 
     def _set_params(self, **kwargs):
         """
         Set Parameters
         Args:
-            **kwargs: ["model", "engine", "deployment_id", "temperature","max_tokens",
-            "top_p", "frequency_penalty", "presence_penalty", "stop", ]
+            **kwargs: ["model", "deployment_name", "temperature","max_tokens",
+            "top_p", "frequency_penalty", "presence_penalty", "stop", "seed"]
 
         Returns:
             None.
@@ -238,14 +251,14 @@ class BaseOpenAI(LLM, ABC):
 
         valid_params = [
             "model",
-            "engine",
-            "deployment_id",
+            "deployment_name",
             "temperature",
             "max_tokens",
             "top_p",
             "frequency_penalty",
             "presence_penalty",
             "stop",
+            "seed",
         ]
         for key, value in kwargs.items():
             if key in valid_params:
@@ -253,20 +266,50 @@ class BaseOpenAI(LLM, ABC):
 
     @property
     def _default_params(self) -> Dict[str, Any]:
-        """
-        Get the default parameters for calling OpenAI API
-
-        Returns
-            Dict: A dict of OpenAi API parameters.
-
-        """
-
-        return {
+        """Get the default parameters for calling OpenAI API."""
+        params: Dict[str, Any] = {
             "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
             "top_p": self.top_p,
             "frequency_penalty": self.frequency_penalty,
             "presence_penalty": self.presence_penalty,
+            "seed": self.seed,
+            "stop": self.stop,
+            "n": self.n,
+        }
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+
+        # Azure gpt-35-turbo doesn't support best_of
+        # don't specify best_of if it is 1
+        if self.best_of > 1:
+            params["best_of"] = self.best_of
+
+        return params
+
+    @property
+    def _invocation_params(self) -> Dict[str, Any]:
+        """Get the parameters used to invoke the model."""
+        openai_creds: Dict[str, Any] = {}
+        if not is_openai_v1():
+            openai_creds.update(
+                {
+                    "api_key": self.api_token,
+                    "api_base": self.api_base,
+                }
+            )
+
+        return {**openai_creds, **self._default_params}
+
+    @property
+    def _client_params(self) -> Dict[str, any]:
+        return {
+            "api_key": self.api_token,
+            "timeout": self.request_timeout,
+            "max_retries": self.max_retries,
+            "default_headers": self.default_headers,
+            "default_query": self.default_query,
+            "http_client": self.http_client,
         }
 
     def completion(self, prompt: str) -> str:
@@ -280,17 +323,17 @@ class BaseOpenAI(LLM, ABC):
             str: LLM response.
 
         """
-        params = {**self._default_params, "prompt": prompt}
+        params = {**self._invocation_params, "prompt": prompt}
 
         if self.stop is not None:
             params["stop"] = [self.stop]
 
-        response = openai.Completion.create(**params)
+        response = self.client.create(**params)
 
         if openai_handler := openai_callback_var.get():
             openai_handler(response)
 
-        return response["choices"][0]["text"]
+        return response.choices[0].text
 
     def chat_completion(self, value: str) -> str:
         """
@@ -304,7 +347,7 @@ class BaseOpenAI(LLM, ABC):
 
         """
         params = {
-            **self._default_params,
+            **self._invocation_params,
             "messages": [
                 {
                     "role": "system",
@@ -316,12 +359,34 @@ class BaseOpenAI(LLM, ABC):
         if self.stop is not None:
             params["stop"] = [self.stop]
 
-        response = openai.ChatCompletion.create(**params)
+        response = self.client.create(**params)
 
         if openai_handler := openai_callback_var.get():
             openai_handler(response)
 
-        return response["choices"][0]["message"]["content"]
+        return response.choices[0].message.content
+
+    def call(self, instruction: AbstractPrompt, suffix: str = ""):
+        """
+        Call the OpenAI LLM.
+
+        Args:
+            instruction (AbstractPrompt): A prompt object with instruction for LLM.
+            suffix (str): Suffix to pass.
+
+        Raises:
+            UnsupportedModelError: Unsupported model
+
+        Returns:
+            str: Response
+        """
+        self.last_prompt = instruction.to_string() + suffix
+
+        return (
+            self.chat_completion(self.last_prompt)
+            if self._is_chat_model
+            else self.completion(self.last_prompt)
+        )
 
 
 class HuggingFaceLLM(LLM):
@@ -349,7 +414,7 @@ class HuggingFaceLLM(LLM):
 
         """
         self.api_token = (
-            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
+                kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
         )
         if self.api_token is None:
             raise APIKeyNotFoundError("HuggingFace Hub API key is required")

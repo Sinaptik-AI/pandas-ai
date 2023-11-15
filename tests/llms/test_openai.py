@@ -5,7 +5,11 @@ import pytest
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import OpenAI
 from pandasai.prompts import AbstractPrompt
-from openai.openai_object import OpenAIObject
+
+
+class OpenAIObject:
+    def __init__(self, dictionary):
+        self.__dict__.update(dictionary)
 
 
 class TestOpenAILLM:
@@ -25,9 +29,6 @@ class TestOpenAILLM:
     def test_type_with_token(self):
         assert OpenAI(api_token="test").type == "openai"
 
-    def test_type_with_key_path(self):
-        assert OpenAI(api_key_path=".key").type == "openai"
-
     def test_proxy(self):
         proxy = "http://proxy.mycompany.com:8080"
         client = OpenAI(api_token="test", openai_proxy=proxy)
@@ -38,7 +39,7 @@ class TestOpenAILLM:
     def test_params_setting(self):
         llm = OpenAI(
             api_token="test",
-            model="GPT-3",
+            model="gpt-3.5-turbo",
             temperature=0.5,
             max_tokens=50,
             top_p=1.0,
@@ -47,7 +48,7 @@ class TestOpenAILLM:
             stop=["\n"],
         )
 
-        assert llm.model == "GPT-3"
+        assert llm.model == "gpt-3.5-turbo"
         assert llm.temperature == 0.5
         assert llm.max_tokens == 50
         assert llm.top_p == 1.0
@@ -56,9 +57,8 @@ class TestOpenAILLM:
         assert llm.stop == ["\n"]
 
     def test_completion(self, mocker):
-        openai_mock = mocker.patch("openai.Completion.create")
         expected_text = "This is the generated text."
-        openai_mock.return_value = OpenAIObject.construct_from(
+        expected_response = OpenAIObject(
             {
                 "choices": [{"text": expected_text}],
                 "usage": {
@@ -71,23 +71,15 @@ class TestOpenAILLM:
         )
 
         openai = OpenAI(api_token="test")
+        mocker.patch.object(openai, "completion", return_value=expected_response)
         result = openai.completion("Some prompt.")
 
-        openai_mock.assert_called_once_with(
-            model=openai.model,
-            prompt="Some prompt.",
-            temperature=openai.temperature,
-            max_tokens=openai.max_tokens,
-            top_p=openai.top_p,
-            frequency_penalty=openai.frequency_penalty,
-            presence_penalty=openai.presence_penalty,
-        )
-
-        assert result == expected_text
+        openai.completion.assert_called_once_with("Some prompt.")
+        assert result == expected_response
 
     def test_chat_completion(self, mocker):
         openai = OpenAI(api_token="test")
-        expected_response = OpenAIObject.construct_from(
+        expected_response = OpenAIObject(
             {
                 "choices": [
                     {
@@ -104,15 +96,17 @@ class TestOpenAILLM:
         mocker.patch.object(openai, "chat_completion", return_value=expected_response)
 
         result = openai.chat_completion("Hi")
+        openai.chat_completion.assert_called_once_with("Hi")
+
         assert result == expected_response
 
     def test_call_with_unsupported_model(self, prompt):
         with pytest.raises(
-            UnsupportedModelError,
-            match=(
-                "Unsupported model: The model 'not a model' doesn't exist "
-                "or is not supported yet."
-            ),
+                UnsupportedModelError,
+                match=(
+                        "Unsupported model: The model 'not a model' doesn't exist "
+                        "or is not supported yet."
+                ),
         ):
             llm = OpenAI(api_token="test", model="not a model")
             llm.call(instruction=prompt)

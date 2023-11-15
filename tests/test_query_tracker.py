@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from typing import Optional
@@ -9,6 +10,7 @@ from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
 from pandasai.smart_dataframe import SmartDataframe
 from unittest import TestCase
+from datetime import datetime, timedelta
 
 
 assert_almost_equal = TestCase().assertAlmostEqual
@@ -118,6 +120,29 @@ class TestQueryExecTracker:
         # Check if the response is formatted correctly
         assert formatted_response["type"] == "dataframe"
         assert len(formatted_response["value"]["headers"]) == 3
+        assert len(formatted_response["value"]["rows"]) == 10
+
+    def test_format_response_dataframe_with_datetime_field(
+        self, tracker: QueryExecTracker, sample_df: pd.DataFrame
+    ):
+        # Add a date column with random dates for demonstration
+        start_date = datetime(2023, 1, 1)
+        date_range = [start_date + timedelta(days=x) for x in range(len(sample_df))]
+
+        sample_df["date"] = date_range
+
+        # Create a sample ResponseType for a dataframe
+        response = {"type": "dataframe", "value": sample_df}
+
+        # Format the response using _format_response
+        formatted_response = tracker._format_response(response)
+
+        # Validate dataframe json serialization
+        json.dumps(formatted_response)
+
+        # Check if the response is formatted correctly
+        assert formatted_response["type"] == "dataframe"
+        assert len(formatted_response["value"]["headers"]) == 4
         assert len(formatted_response["value"]["rows"]) == 10
 
     def test_format_response_other_type(self, tracker: QueryExecTracker):

@@ -8,6 +8,8 @@ While List Builtin Methods.
 # Default directory to store chart if user doesn't provide any
 DEFAULT_CHART_DIRECTORY = "exports/charts"
 
+DEFAULT_FILE_PERMISSIONS = 0o755
+
 # List of Python builtin libraries that are added to the environment by default.
 WHITELISTED_BUILTINS = [
     "abs",

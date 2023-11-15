@@ -35,6 +35,7 @@ Example:
 """
 import warnings
 from typing import List, Optional, Union, Dict, Type
+import uuid
 import importlib.metadata
 
 import pandas as pd
@@ -228,7 +229,7 @@ class PandasAI:
         return [] if self._dl is None else self._dl.logs
 
     @property
-    def last_prompt_id(self) -> str:
+    def last_prompt_id(self) -> uuid.UUID:
         """Return the id of the last prompt that was run."""
         return None if self._dl is None else self._dl.last_prompt_id
 

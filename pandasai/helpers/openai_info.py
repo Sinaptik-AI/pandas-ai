@@ -2,7 +2,6 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Optional, Generator
 
-from openai.openai_object import OpenAIObject
 
 MODEL_COST_PER_1K_TOKENS = {
     # GPT-4 input
@@ -132,10 +131,10 @@ class OpenAICallbackHandler:
             f"Total Cost (USD): ${self.total_cost:9.6f}"
         )
 
-    def __call__(self, response: OpenAIObject) -> None:
+    def __call__(self, response) -> None:
         """Collect token usage"""
         usage = response.usage
-        if "total_tokens" not in usage:
+        if not hasattr(usage, "total_tokens"):
             return None
 
         model_name = standardize_model_name(response.model)

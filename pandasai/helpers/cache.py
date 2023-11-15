@@ -3,6 +3,7 @@ import glob
 from typing import Any
 import duckdb
 from .path import find_project_root
+from ..constants import DEFAULT_FILE_PERMISSIONS
 
 
 class Cache:
@@ -23,7 +24,7 @@ class Cache:
             except ValueError:
                 cache_dir = os.path.join(os.getcwd(), "cache")
 
-        os.makedirs(cache_dir, mode=0o777, exist_ok=True)
+        os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
         self.filepath = os.path.join(cache_dir, f"{filename}.db")
         self.connection = duckdb.connect(self.filepath)
