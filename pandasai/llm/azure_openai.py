@@ -100,12 +100,11 @@ class AzureOpenAI(BaseOpenAI):
                     "Azure endpoint is required. Please add an environment variable "
                     "`AZURE_OPENAI_API_ENDPOINT` or pass `azure_endpoint` as a named parameter"
                 )
-        else:
-            if self.api_base is None:
-                raise APIKeyNotFoundError(
-                    "Azure OpenAI base is required. Please add an environment variable "
-                    "`OPENAI_API_BASE` or pass `api_base` as a named parameter"
-                )
+        elif self.api_base is None:
+            raise APIKeyNotFoundError(
+                "Azure OpenAI base is required. Please add an environment variable "
+                "`OPENAI_API_BASE` or pass `api_base` as a named parameter"
+            )
         if self.api_version is None:
             raise APIKeyNotFoundError(
                 "Azure OpenAI version is required. Please add an environment variable "
@@ -129,15 +128,15 @@ class AzureOpenAI(BaseOpenAI):
         self._set_params(**kwargs)
         # set the client
         if self._is_chat_model:
-            if is_openai_v1():
-                self.client = openai.AzureOpenAI(**self._client_params).chat.completions
-            else:
-                self.client = openai.ChatCompletion
+            self.client = (
+                openai.AzureOpenAI(**self._client_params).chat.completions
+                if is_openai_v1()
+                else openai.ChatCompletion
+            )
+        elif is_openai_v1():
+            self.client = openai.AzureOpenAI(**self._client_params).completions
         else:
-            if is_openai_v1():
-                self.client = openai.AzureOpenAI(**self._client_params).completions
-            else:
-                self.client = openai.Completion
+            self.client = openai.Completion
 
     @property
     def _default_params(self) -> Dict[str, Any]:
