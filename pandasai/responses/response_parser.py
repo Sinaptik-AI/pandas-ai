@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from pandasai.helpers.env import is_running_in_console
 from ..helpers.df_info import polars_imported
+from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
 
@@ -86,26 +86,11 @@ class ResponseParser(IResponseParser):
         Returns:
             Any: Returns depending on the user input
         """
-        import matplotlib.pyplot as plt
-        import matplotlib.image as mpimg
+        if not self._context._config.open_charts:
+            return
 
-        # Load the image file
-        try:
-            image = mpimg.imread(result["value"])
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"The file {result['value']} does not exist."
-            ) from e  # noqa: E501
-        except OSError as e:
-            raise ValueError(
-                f"The file {result['value']} is not a valid image file."
-            ) from e
-
-        # Display the image
-        plt.imshow(image)
-        plt.axis("off")
-        plt.show(block=is_running_in_console())
-        plt.close("all")
+        with Image.open(result["value"]) as img:
+            img.show()
 
     def format_other(self, result) -> Any:
         """

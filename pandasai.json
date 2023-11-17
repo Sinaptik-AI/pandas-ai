@@ -6,6 +6,7 @@
   "use_error_correction_framework": true,
   "max_retries": 3,
   "custom_prompts": {},
+  "open_charts": true,
   "save_charts": false,
   "save_charts_path": "exports/charts",
   "custom_whitelisted_dependencies": [],
