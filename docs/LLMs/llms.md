@@ -152,14 +152,14 @@ from pandasai.llm import AzureOpenAI
 
 llm = AzureOpenAI(
     api_token="my-azure-openai-api-key",
-    api_base="my-azure-openai-api-endpoint",
+    azure_endpoint="my-azure-openai-api-endpoint",
     api_version="2023-05-15",
     deployment_name="my-deployment-name"
 )
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
 
-As an alternative, you can set the `OPENAI_API_KEY`, `OPENAI_API_VERSION`, and `OPENAI_API_BASE` environment variables and instantiate the Azure OpenAI object without passing them:
+As an alternative, you can set the `AZURE_OPENAI_API_KEY`, `OPENAI_API_VERSION`, and `AZURE_OPENAI_ENDPOINT` environment variables and instantiate the Azure OpenAI object without passing them:
 
 ```python
 from pandasai import SmartDataframe

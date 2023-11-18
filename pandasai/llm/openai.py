@@ -50,9 +50,9 @@ class OpenAI(BaseOpenAI):
     model: str = "gpt-3.5-turbo"
 
     def __init__(
-            self,
-            api_token: Optional[str] = None,
-            **kwargs,
+        self,
+        api_token: Optional[str] = None,
+        **kwargs,
     ):
         """
         __init__ method of OpenAI Class
@@ -76,16 +76,18 @@ class OpenAI(BaseOpenAI):
         model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
         if model_name in self._supported_chat_models:
             self._is_chat_model = True
-            if is_openai_v1():
-                self.client = openai.OpenAI(**self._client_params).chat.completions
-            else:
-                self.client = openai.ChatCompletion
+            self.client = (
+                openai.OpenAI(**self._client_params).chat.completions
+                if is_openai_v1()
+                else openai.ChatCompletion
+            )
         elif model_name in self._supported_completion_models:
             self._is_chat_model = False
-            if is_openai_v1():
-                self.client = openai.OpenAI(**self._client_params).completions
-            else:
-                self.client = openai.Completion
+            self.client = (
+                openai.OpenAI(**self._client_params).completions
+                if is_openai_v1()
+                else openai.Completion
+            )
         else:
             raise UnsupportedModelError(self.model)
 
