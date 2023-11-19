@@ -84,8 +84,8 @@ class AzureOpenAI(BaseOpenAI):
 
         self.api_token = (
             api_token
-            or os.getenv("OPENAI_API_KEY")
             or os.getenv("AZURE_OPENAI_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
         )
         self.azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
         self.api_base = api_base or os.getenv("OPENAI_API_BASE")
@@ -93,7 +93,7 @@ class AzureOpenAI(BaseOpenAI):
         if self.api_token is None:
             raise APIKeyNotFoundError(
                 "Azure OpenAI key is required. Please add an environment variable "
-                "`OPENAI_API_KEY` or pass `api_token` as a named parameter"
+                "`AZURE_OPENAI_API_KEY` or `OPENAI_API_KEY` or pass `api_token` as a named parameter"
             )
         if is_openai_v1():
             if self.azure_endpoint is None:
