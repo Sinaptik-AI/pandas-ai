@@ -14,8 +14,8 @@ head_df = pd.DataFrame({
 })
 
 df = SmartDataframe("data/country_gdp.csv", {
-    "sample_head": head_df
+    "custom_head": head_df
 })
 ```
 
-Doing so will make the LLM use the `head_df` as the sample head instead of the first 5 rows of the dataframe.
+Doing so will make the LLM use the `head_df` as the custom head instead of the first 5 rows of the dataframe.

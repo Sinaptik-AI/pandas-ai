@@ -226,7 +226,7 @@ class SmartDataframeCore:
 class SmartDataframe(DataframeAbstract, Shortcuts):
     _table_name: str
     _table_description: str
-    _sample_head: str = None
+    _custom_head: str = None
     _original_import: any
     _core: SmartDataframeCore
     _lake: SmartDatalake
@@ -236,7 +236,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         df: DataFrameType,
         name: str = None,
         description: str = None,
-        sample_head: pd.DataFrame = None,
+        custom_head: pd.DataFrame = None,
         config: Config = None,
         logger: Logger = None,
     ):
@@ -245,7 +245,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
-            sample_head (pd.DataFrame, optional): Sample head of the dataframe.
+            custom_head (pd.DataFrame, optional): Sample head of the dataframe.
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
@@ -286,8 +286,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         if self._table_name is None and self.connector:
             self._table_name = self.connector.fallback_name
 
-        if sample_head is not None:
-            self._sample_head = sample_head.to_csv(index=False)
+        if custom_head is not None:
+            self._custom_head = custom_head.to_csv(index=False)
 
     def add_skills(self, *skills: List[skill]):
         """
@@ -418,8 +418,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def _get_sample_head(self) -> DataFrameType:
         head = None
         rows_to_display = 0 if self.lake.config.enforce_privacy else 3
-        if self._sample_head is not None:
-            head = self.sample_head
+        if self._custom_head is not None:
+            head = self.custom_head
         elif not self._core._df_loaded and self.connector:
             head = self.connector.head()
         else:
@@ -664,9 +664,13 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return self._table_description
 
     @property
-    def sample_head(self):
-        data = StringIO(self._sample_head)
+    def custom_head(self):
+        data = StringIO(self._custom_head)
         return pd.read_csv(data)
+
+    @custom_head.setter
+    def custom_head(self, custom_head: pd.DataFrame):
+        self._custom_head = custom_head.to_csv(index=False)
 
     @property
     def last_reasoning(self):
@@ -675,10 +679,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def last_answer(self):
         return self.lake.last_answer
-
-    @sample_head.setter
-    def sample_head(self, sample_head: pd.DataFrame):
-        self._sample_head = sample_head.to_csv(index=False)
 
     @property
     def last_query_log_id(self):

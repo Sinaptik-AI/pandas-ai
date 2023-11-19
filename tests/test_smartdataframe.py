@@ -122,23 +122,23 @@ class TestSmartDataframe:
         ]
 
     @pytest.fixture
-    def sample_head(self, sample_df: pd.DataFrame):
+    def custom_head(self, sample_df: pd.DataFrame):
         return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df, sample_head):
+    def smart_dataframe(self, llm, sample_df, custom_head):
         return SmartDataframe(
             sample_df,
             config={"llm": llm, "enable_cache": False},
-            sample_head=sample_head,
+            custom_head=custom_head,
         )
 
     @pytest.fixture
-    def smart_dataframe_mocked_df(self, llm, sample_df, sample_head):
+    def smart_dataframe_mocked_df(self, llm, sample_df, custom_head):
         smart_df = SmartDataframe(
             sample_df,
             config={"llm": llm, "enable_cache": False},
-            sample_head=sample_head,
+            custom_head=custom_head,
         )
         smart_df._core._df = Mock()
         return smart_df
@@ -631,15 +631,15 @@ result = {"type": None, "value": "temp_chart.png"}
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
 
-    def test_sample_head_getter(self, sample_head, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.sample_head.equals(sample_head)
+    def test_custom_head_getter(self, custom_head, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.custom_head.equals(custom_head)
 
-    def test_sample_head_setter(self, sample_head, smart_dataframe: SmartDataframe):
-        new_sample_head = (
-            sample_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
+    def test_custom_head_setter(self, custom_head, smart_dataframe: SmartDataframe):
+        new_custom_head = (
+            custom_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
         )
-        smart_dataframe.sample_head = new_sample_head
-        assert new_sample_head.equals(smart_dataframe.sample_head)
+        smart_dataframe.custom_head = new_custom_head
+        assert new_custom_head.equals(smart_dataframe.custom_head)
 
     def test_load_dataframe_from_list(self, smart_dataframe):
         input_data = [
@@ -990,11 +990,11 @@ result = {"type": None, "value": "temp_chart.png"}
 
         assert validation_result.passed
 
-    def test_head_csv_with_sample_head(
-        self, sample_head, data_sampler, smart_dataframe: SmartDataframe
+    def test_head_csv_with_custom_head(
+        self, custom_head, data_sampler, smart_dataframe: SmartDataframe
     ):
         with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
-            assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
+            assert smart_dataframe.head_csv == custom_head.to_csv(index=False)
 
     @pytest.mark.parametrize(
         "viz_library_type,viz_library_type_hint",
