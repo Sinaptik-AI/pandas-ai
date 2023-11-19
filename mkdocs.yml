@@ -16,7 +16,6 @@ nav:
       - connectors.md
   - LLMs:
       - LLMs/llms.md
-      - LLMs/langchain.md
   - Advanced usage:
       - shortcuts.md
       - custom-head.md
