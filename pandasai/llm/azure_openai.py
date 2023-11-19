@@ -48,16 +48,16 @@ class AzureOpenAI(BaseOpenAI):
     api_type: str = "azure"
 
     def __init__(
-            self,
-            api_token: Optional[str] = None,
-            azure_endpoint: Union[str, None] = None,
-            azure_ad_token: Union[str, None] = None,
-            azure_ad_token_provider: Union[str, None] = None,
-            api_base: Optional[str] = None,
-            api_version: Optional[str] = None,
-            deployment_name: str = None,
-            is_chat_model: bool = True,
-            **kwargs,
+        self,
+        api_token: Optional[str] = None,
+        azure_endpoint: Union[str, None] = None,
+        azure_ad_token: Union[str, None] = None,
+        azure_ad_token_provider: Union[str, None] = None,
+        api_base: Optional[str] = None,
+        api_version: Optional[str] = None,
+        deployment_name: str = None,
+        is_chat_model: bool = True,
+        **kwargs,
     ):
         """
         __init__ method of AzureOpenAI Class.
@@ -74,7 +74,8 @@ class AzureOpenAI(BaseOpenAI):
                 Will be invoked on every request.
             api_version (str): Version of the Azure OpenAI API.
                 Be aware the API version may change.
-            api_base (str): Legacy, kept for backward compatibility with openai < 1.0
+            api_base (str): Legacy, kept for backward compatibility with openai < 1.0.
+                Ignored for openai >= 1.0.
             deployment_name (str): Custom name of the deployed model
             is_chat_model (bool): Whether ``deployment_name`` corresponds to a Chat
                 or a Completion model.
@@ -82,9 +83,9 @@ class AzureOpenAI(BaseOpenAI):
         """
 
         self.api_token = (
-                api_token
-                or os.getenv("OPENAI_API_KEY")
-                or os.getenv("AZURE_OPENAI_API_KEY")
+            api_token
+            or os.getenv("AZURE_OPENAI_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
         )
         self.azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
         self.api_base = api_base or os.getenv("OPENAI_API_BASE")
@@ -92,7 +93,7 @@ class AzureOpenAI(BaseOpenAI):
         if self.api_token is None:
             raise APIKeyNotFoundError(
                 "Azure OpenAI key is required. Please add an environment variable "
-                "`OPENAI_API_KEY` or pass `api_token` as a named parameter"
+                "`AZURE_OPENAI_API_KEY` or `OPENAI_API_KEY` or pass `api_token` as a named parameter"
             )
         if is_openai_v1():
             if self.azure_endpoint is None:
@@ -105,6 +106,7 @@ class AzureOpenAI(BaseOpenAI):
                 "Azure OpenAI base is required. Please add an environment variable "
                 "`OPENAI_API_BASE` or pass `api_base` as a named parameter"
             )
+
         if self.api_version is None:
             raise APIKeyNotFoundError(
                 "Azure OpenAI version is required. Please add an environment variable "
@@ -133,10 +135,12 @@ class AzureOpenAI(BaseOpenAI):
                 if is_openai_v1()
                 else openai.ChatCompletion
             )
-        elif is_openai_v1():
-            self.client = openai.AzureOpenAI(**self._client_params).completions
         else:
-            self.client = openai.Completion
+            self.client = (
+                openai.AzureOpenAI(**self._client_params).completions
+                if is_openai_v1()
+                else openai.Completion
+            )
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -147,7 +151,10 @@ class AzureOpenAI(BaseOpenAI):
             dict: A dictionary containing Default Params.
 
         """
-        return {**super()._default_params, "model" if is_openai_v1() else "engine": self.deployment_name}
+        return {
+            **super()._default_params,
+            "model" if is_openai_v1() else "engine": self.deployment_name,
+        }
 
     @property
     def _invocation_params(self) -> Dict[str, Any]:

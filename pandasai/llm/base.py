@@ -133,9 +133,9 @@ class LLM:
         """
 
         if match := re.search(
-                f"(<{tag}>)(.*)(</{tag}>)",
-                response,
-                re.DOTALL | re.MULTILINE,
+            f"(<{tag}>)(.*)(</{tag}>)",
+            response,
+            re.DOTALL | re.MULTILINE,
         ):
             return match[2]
         return None
@@ -414,7 +414,7 @@ class HuggingFaceLLM(LLM):
 
         """
         self.api_token = (
-                kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
+            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
         )
         if self.api_token is None:
             raise APIKeyNotFoundError("HuggingFace Hub API key is required")
