@@ -16,7 +16,10 @@ nav:
       - connectors.md
   - LLMs:
       - LLMs/llms.md
+  - Pipelines:
+      - pipelines/pipelines.md
   - Advanced usage:
+      - skills.md
       - shortcuts.md
       - custom-head.md
       - save-dataframes.md
@@ -25,7 +28,6 @@ nav:
       - custom-response.md
       - custom-instructions.md
       - custom-prompts.md
-      - skills.md
       - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md
