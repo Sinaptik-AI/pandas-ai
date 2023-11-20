@@ -67,20 +67,13 @@ class CodeExecution(BaseLogicUnit):
                 )
 
                 traceback_error = traceback.format_exc()
-                [
-                    code_to_run,
-                    reasoning,
-                    answer,
-                ] = pipeline_context.query_exec_tracker.execute_func(
+                code_to_run = pipeline_context.query_exec_tracker.execute_func(
                     self._retry_run_code,
                     code,
                     pipeline_context,
                     logger,
                     traceback_error,
                 )
-
-            pipeline_context.add_intermediate_value("reasoning", reasoning)
-            pipeline_context.add_intermediate_value("answer", answer)
 
         return result
 

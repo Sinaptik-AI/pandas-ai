@@ -23,18 +23,44 @@ class Memory:
     def last(self) -> dict:
         return self._messages[-1]
 
-    def get_conversation(self, limit: int = None) -> str:
+    def _truncate(self, message: str, max_length: int = 100) -> str:
+        """
+        Truncates the message if it is longer than max_length
+        """
+        return f"{message[:max_length]} ..." if len(message) > max_length else message
+
+    def get_messages(self, limit: int = None) -> list:
         """
         Returns the conversation messages based on limit parameter
         or default memory size
         """
         limit = self._memory_size if limit is None else limit
-        return "\n".join(
-            [
-                f"{'Q' if message['is_user'] else 'A'}: {message['message']}"
-                for message in self._messages[-limit:]
-            ]
-        )
+
+        return [
+            f"{'Q' if message['is_user'] else 'A'}: {self._truncate(message['message'])}"
+            for message in self._messages[-limit:]
+        ]
+
+    def get_conversation(self, limit: int = None) -> str:
+        """
+        Returns the conversation messages based on limit parameter
+        or default memory size
+        """
+        return "\n".join(self.get_messages(limit))
+
+    def get_previous_conversation(self) -> str:
+        """
+        Returns the previous conversation but the last message
+        """
+        messages = self.get_messages(self._memory_size)
+        return "" if len(messages) <= 1 else "\n".join(messages[:-1])
+
+    def get_last_message(self) -> str:
+        """
+        Returns the last message in the conversation
+        """
+        messages = self.get_messages(self._memory_size)
+        return "" if len(messages) == 0 else messages[-1]
 
     def clear(self):
         self._messages = []

@@ -1,4 +1,6 @@
+from typing import Any
 from pandasai.responses.response_parser import ResponseParser
+import pandas as pd
 
 
 class StreamlitResponse(ResponseParser):
@@ -11,31 +13,24 @@ class StreamlitResponse(ResponseParser):
         Args:
             result (dict): result contains type and value
         """
-        import matplotlib.pyplot as plt
-        import matplotlib.image as mpimg
+        return result["value"]
 
-        # Load the image file
-        try:
-            image = mpimg.imread(result["value"])
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"The file {result['value']} does not exist."
-            ) from e  # noqa: E501
-        except OSError as e:
-            raise ValueError(
-                f"The file {result['value']} is not a valid image file."
-            ) from e
+    def format_dataframe(self, result: dict) -> pd.DataFrame:
+        """
+        Format dataframe generate against a user query
+        Args:
+            result (dict): result contains type and value
+        Returns:
+            Any: Returns depending on the user input
+        """
+        return result["value"]
 
-        try:
-            import streamlit as st
-        except ImportError as exc:
-            raise ImportError(
-                "The 'streamlit' module is required to use StreamLit Response. "
-                "Please install it using pip: pip install streamlit"
-            ) from exc
-
-        # Display the image
-        plt.imshow(image)
-        plt.axis("off")
-        fig = plt.gcf()
-        st.pyplot(fig)
+    def format_other(self, result) -> Any:
+        """
+        Format other results
+        Args:
+            result (dict): result contains type and value
+        Returns:
+            Any: Returns depending on the user input
+        """
+        return result["value"]

@@ -175,8 +175,6 @@ class QueryExecTracker:
                 "type"
             ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
             step["code_generated"] = result[0]
-            step["reasoning"] = result[1]
-            step["answer"] = result[2]
 
         elif func_name == "cache_hit":
             step["code_generated"] = result
@@ -187,8 +185,6 @@ class QueryExecTracker:
 
         elif func_name == "generate_code":
             step["code_generated"] = result[0]
-            step["reasoning"] = result[1]
-            step["answer"] = result[2]
 
         return step
 

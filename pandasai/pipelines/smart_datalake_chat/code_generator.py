@@ -29,11 +29,7 @@ class CodeGenerator(BaseLogicUnit):
 
         generate_python_code_instruction = input
 
-        [
-            code,
-            reasoning,
-            answer,
-        ] = pipeline_context.query_exec_tracker.execute_func(
+        code = pipeline_context.query_exec_tracker.execute_func(
             pipeline_context.config.llm.generate_code,
             generate_python_code_instruction,
         )
@@ -45,7 +41,5 @@ class CodeGenerator(BaseLogicUnit):
             ```
             """
         )
-        pipeline_context.add_intermediate_value("last_reasoning", reasoning)
-        pipeline_context.add_intermediate_value("last_answer", answer)
 
         return code

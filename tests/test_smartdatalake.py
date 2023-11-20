@@ -235,25 +235,6 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
         )
 
-    def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
-        llm = FakeLLM(
-            """
-<reasoning>Custom reasoning</reasoning>
-<answer>Custom answer</answer>
-```python
-result = { "type": "string", "value": "Hello World" }
-```"""
-        )
-        smart_datalake._llm = llm
-        smart_datalake._config.llm = llm
-        smart_datalake.config.use_advanced_reasoning_framework = True
-        assert smart_datalake.last_answer is None
-        assert smart_datalake.last_reasoning is None
-
-        smart_datalake.chat("How many countries are in the dataframe?")
-        assert smart_datalake.last_answer == "Custom answer"
-        assert smart_datalake.last_reasoning == "Custom reasoning"
-
     def test_get_chat_prompt(self, smart_datalake: SmartDatalake):
         # Test case 1: direct_sql is True
         smart_datalake._config.direct_sql = True

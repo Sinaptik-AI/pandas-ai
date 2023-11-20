@@ -147,16 +147,6 @@ class TemplateFileNotFoundError(FileNotFoundError):
         )
 
 
-class AdvancedReasoningDisabledError(Exception):
-    """
-    Raised when one tries to have access to the answer or reasoning without
-    having use_advanced_reasoning_framework enabled.
-
-    Args:
-        Exception (Exception): AdvancedReasoningDisabledError
-    """
-
-
 class UnSupportedLogicUnit(Exception):
     """
     Raised when unsupported logic unit is added in the pipeline

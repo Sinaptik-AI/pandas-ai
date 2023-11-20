@@ -187,8 +187,10 @@ dfs[0]:0x1
 country
 </dataframe>
 
-Q: How many countries are in the dataframe?
 
+
+
+Update this initial code:
 ```python
 # TODO: import the required dependencies
 import pandas as pd
@@ -214,7 +216,8 @@ Return a "result" variable dict:
 \"\"\"
 ```
 
-Return the code:"""  # noqa: E501
+Q: How many countries are in the dataframe?
+Return the full updated code:"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
@@ -251,8 +254,10 @@ dfs[0]:0x1
 country
 </dataframe>
 
-Q: How many countries are in the dataframe?
 
+
+
+Update this initial code:
 ```python
 # TODO: import the required dependencies
 import pandas as pd
@@ -269,7 +274,8 @@ Return a "result" variable dict:
 \"\"\"
 ```
 
-Return the code:"""
+Q: How many countries are in the dataframe?
+Return the full updated code:"""
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
@@ -1025,8 +1031,10 @@ dfs[0]:0x1
 country
 </dataframe>
 
-Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
 
+
+
+Update this initial code:
 ```python
 # TODO: import the required dependencies
 import pandas as pd
@@ -1052,7 +1060,8 @@ Return a "result" variable dict:
 \"\"\"
 ```
 
-Return the code:"""  # noqa: E501
+Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
+Return the full updated code:"""  # noqa: E501
             % viz_library_type_hint
         )
 

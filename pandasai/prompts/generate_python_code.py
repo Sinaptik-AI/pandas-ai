@@ -8,7 +8,7 @@ You are provided with the following pandas DataFrames:
 {conversation}
 </conversation>
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
+This is the initial python function. Given the context, use the right dataframes.
 {current_code}
 
 Take a deep breath and reason step-by-step. Act as a senior data analyst.
@@ -30,12 +30,6 @@ class DefaultInstructionsPrompt(FileBasedPrompt):
     """The default instructions"""
 
     _path_to_template = "assets/prompt_templates/default_instructions.tmpl"
-
-
-class AdvancedReasoningPrompt(FileBasedPrompt):
-    """The advanced reasoning instructions"""
-
-    _path_to_template = "assets/prompt_templates/advanced_reasoning.tmpl"
 
 
 class SimpleReasoningPrompt(FileBasedPrompt):
@@ -66,13 +60,25 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         else:
             self.set_var("current_code", CurrentCodePrompt())
 
+        if "code_description" in kwargs:
+            self.set_var("code_description", kwargs["code_description"])
+        else:
+            self.set_var("code_description", "Update this initial code:")
+
+        if "last_message" in kwargs:
+            self.set_var("last_message", kwargs["last_message"])
+        else:
+            self.set_var("last_message", "")
+
+        if "prev_conversation" in kwargs:
+            self.set_var("prev_conversation", kwargs["prev_conversation"])
+        else:
+            self.set_var("prev_conversation", "")
+
     def on_prompt_generation(self) -> None:
         default_import = "import pandas as pd"
         engine_df_name = "pd.DataFrame"
 
         self.set_var("default_import", default_import)
         self.set_var("engine_df_name", engine_df_name)
-        if self.get_config("use_advanced_reasoning_framework"):
-            self.set_var("reasoning", AdvancedReasoningPrompt())
-        else:
-            self.set_var("reasoning", SimpleReasoningPrompt())
+        self.set_var("reasoning", SimpleReasoningPrompt())

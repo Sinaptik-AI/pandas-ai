@@ -673,14 +673,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._custom_head = custom_head.to_csv(index=False)
 
     @property
-    def last_reasoning(self):
-        return self.lake.last_reasoning
-
-    @property
-    def last_answer(self):
-        return self.lake.last_answer
-
-    @property
     def last_query_log_id(self):
         return self._lake.last_query_log_id
 

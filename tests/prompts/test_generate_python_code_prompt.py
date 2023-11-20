@@ -71,7 +71,7 @@ class TestGeneratePythonCodePrompt:
         ]
         prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
-        prompt.set_var("conversation", "Question")
+        prompt.set_var("last_message", "Q: Question")
         prompt.set_var("save_charts_path", save_charts_path)
         prompt.set_var("output_type_hint", output_type_hint)
         prompt.set_var("viz_library_type", viz_library_type_hint)
@@ -83,8 +83,10 @@ a,b
 1,4
 </dataframe>
 
-Question
 
+
+
+Update this initial code:
 ```python
 # TODO: import the required dependencies
 import pandas as pd
@@ -101,66 +103,9 @@ Return a "result" variable dict:
 \"\"\"
 ```
 
-Return the code:"""  # noqa E501
+Q: Question
+Return the full updated code:"""  # noqa E501
         actual_prompt_content = prompt.to_string()
-        if sys.platform.startswith("win"):
-            actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
-        assert actual_prompt_content == expected_prompt_content
-
-    def test_advanced_reasoning_prompt(self):
-        """
-        Test a prompt with advanced reasoning framework
-        """
-
-        llm = FakeLLM("plt.show()")
-        viz_library_type_hint = ""
-        dfs = [
-            SmartDataframe(
-                pd.DataFrame({"a": [1], "b": [4]}),
-                config={"llm": llm, "use_advanced_reasoning_framework": True},
-            )
-        ]
-        prompt = GeneratePythonCodePrompt()
-        prompt.set_config(dfs[0]._lake.config)
-        prompt.set_var("dfs", dfs)
-        prompt.set_var("conversation", "Question")
-        prompt.set_var("output_type_hint", "")
-        prompt.set_var("skills", "")
-        prompt.set_var("viz_library_type", viz_library_type_hint)
-
-        expected_prompt_content = '''<dataframe>
-dfs[0]:1x2
-a,b
-1,4
-</dataframe>
-
-Question
-
-```python
-# TODO: import the required dependencies
-import pandas as pd
-
-"""
-The variable `dfs: list[pd.DataFrame]` is already decalared.
-1. Prep: preprocessing/cleaning
-2. Proc: data manipulation (group, filter, aggregate)
-3. Analyze data
-
-
-Return a "result" variable dict:
-
-"""
-```
-
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-- explain your reasoning to implement the last step to the user that asked for it; it should be wrapped between <reasoning> tags.
-- answer to the user as you would do as a data analyst; wrap it between <answer> tags; do not include the value or the chart itself (it will be calculated later).
-- return the updated analyze_data function wrapped within ```python ```'''  # noqa E501
-        actual_prompt_content = prompt.to_string()
-
-        print(expected_prompt_content)
-
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
         assert actual_prompt_content == expected_prompt_content

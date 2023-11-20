@@ -140,39 +140,6 @@ class LLM:
             return match[2]
         return None
 
-    def _extract_reasoning(self, response: str) -> str:
-        """
-        Extracts the reasoning from the response (wrapped in <reasoning> tags).
-
-        Args:
-            response (str): Response
-
-        Returns:
-            (str or None): Extracted reasoning from the response
-        """
-
-        return self._extract_tag_text(response, "reasoning")
-
-    def _extract_answer(self, response: str) -> str:
-        """
-        Extracts the answer from the response (wrapped in <answer> tags).
-
-        Args:
-            response (str): Response
-
-        Returns:
-            (str or None): Extracted answer from the response
-        """
-
-        sentences = [
-            sentence
-            for sentence in response.split(". ")
-            if "temp_chart.png" not in sentence
-        ]
-        answer = ". ".join(sentences)
-
-        return self._extract_tag_text(answer, "answer")
-
     @abstractmethod
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         """
@@ -188,7 +155,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: AbstractPrompt) -> [str, str, str]:
+    def generate_code(self, instruction: AbstractPrompt) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -200,11 +167,7 @@ class LLM:
 
         """
         response = self.call(instruction, suffix="")
-        return [
-            self._extract_code(response),
-            self._extract_reasoning(response),
-            self._extract_answer(response),
-        ]
+        return self._extract_code(response)
 
 
 class BaseOpenAI(LLM):

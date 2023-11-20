@@ -203,13 +203,5 @@ class Agent:
         return self._lake.last_prompt
 
     @property
-    def last_reasoning(self):
-        return self._lake.last_reasoning
-
-    @property
-    def last_answer(self):
-        return self._lake.last_answer
-
-    @property
     def last_query_log_id(self):
         return self._lake.last_query_log_id

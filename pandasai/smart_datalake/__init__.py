@@ -49,7 +49,7 @@ from ..helpers.code_manager import CodeManager
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
-from ..exceptions import AdvancedReasoningDisabledError, InvalidConfigError
+from ..exceptions import InvalidConfigError
 
 
 class SmartDatalake:
@@ -68,8 +68,6 @@ class SmartDatalake:
     _can_direct_sql: bool
 
     _last_code_generated: str = None
-    _last_reasoning: str = None
-    _last_answer: str = None
     _last_result: str = None
     _last_error: str = None
 
@@ -327,6 +325,12 @@ class SmartDatalake:
             prompt.set_var("dfs", self._dfs)
         if "conversation" not in default_values:
             prompt.set_var("conversation", self._memory.get_conversation())
+        if "prev_conversation" not in default_values:
+            prompt.set_var(
+                "prev_conversation", self._memory.get_previous_conversation()
+            )
+        if "last_message" not in default_values:
+            prompt.set_var("last_message", self._memory.get_last_message())
 
         # Adds the skills to prompt if exist else display nothing
         skills_prompt = self._skills.prompt_display()
@@ -519,8 +523,6 @@ class SmartDatalake:
             pipeline_context (PipelineContext): Pipeline Context after the Smart Data Lake pipeline execution
 
         """
-        self._last_reasoning = pipeline_context.get_intermediate_value("last_reasoning")
-        self._last_answer = pipeline_context.get_intermediate_value("last_answer")
         self._last_code_generated = pipeline_context.get_intermediate_value(
             "last_code_generated"
         )
@@ -703,30 +705,6 @@ class SmartDatalake:
     @property
     def last_code_executed(self):
         return self._code_manager.last_code_executed
-
-    @property
-    def last_reasoning(self):
-        if not self._config.use_advanced_reasoning_framework:
-            raise AdvancedReasoningDisabledError(
-                "You need to enable the advanced reasoning framework"
-            )
-        return self._last_reasoning
-
-    @last_reasoning.setter
-    def last_reasoning(self, last_reasoning: str):
-        self._last_reasoning = last_reasoning
-
-    @property
-    def last_answer(self):
-        if not self._config.use_advanced_reasoning_framework:
-            raise AdvancedReasoningDisabledError(
-                "You need to enable the advanced reasoning framework"
-            )
-        return self._last_answer
-
-    @last_answer.setter
-    def last_answer(self, last_answer: str):
-        self._last_answer = last_answer
 
     @property
     def last_result(self):

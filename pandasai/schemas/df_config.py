@@ -17,7 +17,6 @@ class Config(BaseModel):
     enforce_privacy: bool = False
     enable_cache: bool = True
     use_error_correction_framework: bool = True
-    use_advanced_reasoning_framework: bool = False
     custom_prompts: Dict = Field(default_factory=dict)
     custom_instructions: Optional[str] = None
     open_charts: bool = True

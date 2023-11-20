@@ -102,7 +102,7 @@ class TestCodeGenerator:
         def mock_execute_func(function, *args, **kwargs):
             if function == mock_get_promt:
                 return mock_get_promt()
-            return ["Mocked LLM Generated Code", "Mocked Reasoning", "Mocked Answer"]
+            return "Mocked LLM Generated Code"
 
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
         context._cache = Mock()
