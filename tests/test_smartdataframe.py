@@ -223,16 +223,6 @@ Return the full updated code:"""  # noqa: E501
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
 
-        print("*" * 100)
-        print("*" * 100)
-        print("*" * 100)
-        print("*" * 100)
-        print(last_prompt)
-        print("*" * 100)
-        print("*" * 100)
-        print("*" * 100)
-        print("*" * 100)
-
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
@@ -281,8 +271,6 @@ Return the full updated code:"""
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
-
-        print(last_prompt)
 
         assert last_prompt == expected_prompt
 
@@ -700,9 +688,6 @@ result = {"type": None, "value": "temp_chart.png"}
 
         smart_dataframe._load_dataframe(polars_df)
 
-        print(smart_dataframe.dataframe)
-        print(polars_df)
-
         assert isinstance(smart_dataframe.dataframe, pl.DataFrame)
         assert smart_dataframe.dataframe.frame_equal(polars_df)
 
@@ -1072,13 +1057,5 @@ Return the full updated code:"""  # noqa: E501
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
-
-        print("+" * 100)
-        print("+" * 100)
-        print("+" * 100)
-        print(last_prompt)
-        print("+" * 100)
-        print("+" * 100)
-        print("+" * 100)
 
         assert last_prompt == expected_prompt
