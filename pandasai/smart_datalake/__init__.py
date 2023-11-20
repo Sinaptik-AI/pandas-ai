@@ -551,9 +551,7 @@ class SmartDatalake:
             default_values=default_values,
         )
 
-        result = self._llm.generate_code(error_correcting_instruction)
-
-        return result
+        return self._llm.generate_code(error_correcting_instruction)
 
     def clear_memory(self):
         """

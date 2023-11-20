@@ -113,6 +113,4 @@ class CodeExecution(BaseLogicUnit):
             default_values=default_values,
         )
 
-        result = context.config.llm.generate_code(error_correcting_instruction)
-
-        return result
+        return context.config.llm.generate_code(error_correcting_instruction)
