@@ -239,7 +239,8 @@ class SQLConnector(BaseConnector):
             include_additional_filters=self._additional_filters is not None
             and len(self._additional_filters) > 0
         )
-        df.to_parquet(filename)
+
+        df.to_csv(filename, index=False)
 
     def execute(self):
         """
@@ -250,7 +251,7 @@ class SQLConnector(BaseConnector):
         """
 
         if cached := self._cached() or self._cached(include_additional_filters=True):
-            return pd.read_parquet(cached)
+            return pd.read_csv(cached)
 
         if self.logger:
             self.logger.log(
