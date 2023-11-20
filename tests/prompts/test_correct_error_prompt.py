@@ -31,12 +31,8 @@ class TestCorrectErrorPrompt:
 
         assert (
             prompt_content
-            == """
-You are provided with the following pandas DataFrames with the following metadata:
-
-<dataframe>
-Dataframe dfs[0], with 0 rows and 0 columns.
-This is the metadata of the dataframe dfs[0]:
+            == """<dataframe>
+dfs[0]:0x0
 
 </dataframe>
 
@@ -49,6 +45,5 @@ df.head()
 It fails with the following error:
 Error message
 
-Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
-"""  # noqa: E501
+Fix the python code above and return the new python code:"""  # noqa: E501
         )

@@ -17,6 +17,8 @@ If the model expects one or more parameters, you can pass them to the constructo
 }
 ```
 
+## OpenAI models
+
 In order to use OpenAI models, you need to have an OpenAI API key. You can get one [here](https://platform.openai.com/account/api-keys).
 
 Once you have an API key, you can use it to instantiate an OpenAI object:
@@ -68,41 +70,6 @@ with get_openai_callback() as cb:
 #	Prompt Tokens: 210
 #	Completion Tokens: 165
 # Total Cost (USD): $ 0.000750
-```
-
-## HuggingFace models
-
-In order to use HuggingFace models, you need to have a HuggingFace API key. You can create a HuggingFace account [here](https://huggingface.co/join) and get an API key [here](https://hf.co/settings/tokens).
-
-Once you have an API key, you can use it to instantiate one of the HuggingFace models.
-
-At the moment, PandasAI supports the following HuggingFace models:
-
-- Starcoder: `bigcode/starcoder`
-- Falcon: `tiiuae/falcon-7b-instruct`
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import Starcoder, Falcon
-
-llm = Starcoder(api_token="my-huggingface-api-key")
-# or
-llm = Falcon(api_token="my-huggingface-api-key")
-
-df = SmartDataframe("data.csv", config={"llm": llm})
-```
-
-As an alternative, you can set the `HUGGINGFACE_API_KEY` environment variable and instantiate the HuggingFace object without passing the API key:
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import Starcoder, Falcon
-
-llm = Starcoder() # no need to pass the API key, it will be read from the environment variable
-# or
-llm = Falcon() # no need to pass the API key, it will be read from the environment variable
-
-df = SmartDataframe("data.csv", config={"llm": llm})
 ```
 
 ## Google PaLM
@@ -190,3 +157,29 @@ llm = HuggingFaceTextGen(
 )
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
+
+## LangChain models
+
+PandasAI has also built-in support for [LangChain](https://langchain.com/) models.
+
+In order to use LangChain models, you need to install the `langchain` package:
+
+```bash
+pip install pandasai[langchain]
+```
+
+Once you have installed the `langchain` package, you can use it to instantiate a LangChain object:
+
+```python
+from pandasai import SmartDataframe
+from langchain.llms import OpenAI
+
+langchain_llm = OpenAI(openai_api_key="my-openai-api-key")
+df = SmartDataframe("data.csv", {"llm": langchain_llm})
+```
+
+PandasAI will automatically detect that you are using a LangChain llm and will convert it to a PandasAI llm.
+
+### More information
+
+For more information about LangChain models, please refer to the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).

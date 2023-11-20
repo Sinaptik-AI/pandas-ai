@@ -21,8 +21,6 @@ from pandasai.helpers.output_types import (
     output_type_factory,
 )
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares import Middleware
-from pandasai.callbacks import StdoutCallback
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.viz_library_types import (
@@ -124,35 +122,26 @@ class TestSmartDataframe:
         ]
 
     @pytest.fixture
-    def sample_head(self, sample_df: pd.DataFrame):
+    def custom_head(self, sample_df: pd.DataFrame):
         return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df, sample_head):
+    def smart_dataframe(self, llm, sample_df, custom_head):
         return SmartDataframe(
             sample_df,
             config={"llm": llm, "enable_cache": False},
-            sample_head=sample_head,
+            custom_head=custom_head,
         )
 
     @pytest.fixture
-    def smart_dataframe_mocked_df(self, llm, sample_df, sample_head):
+    def smart_dataframe_mocked_df(self, llm, sample_df, custom_head):
         smart_df = SmartDataframe(
             sample_df,
             config={"llm": llm, "enable_cache": False},
-            sample_head=sample_head,
+            custom_head=custom_head,
         )
         smart_df._core._df = Mock()
         return smart_df
-
-    @pytest.fixture
-    def custom_middleware(self):
-        class CustomMiddleware(Middleware):
-            def run(self, code):
-                return """def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Overwritten by middleware" }"""
-
-        return CustomMiddleware
 
     def test_init(self, smart_dataframe):
         assert smart_dataframe._table_name is None
@@ -162,37 +151,23 @@ class TestSmartDataframe:
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
-            SmartDataframe(sample_df, config={"llm": None})
+            SmartDataframe(sample_df, config={"llm": "-"})
 
     def test_run(self, smart_dataframe: SmartDataframe, llm):
-        llm._output = (
-            "def analyze_data(dfs):\n    return { 'type': 'number', 'value': 1 }"
-        )
+        llm._output = "result = { 'type': 'number', 'value': 1 }"
         assert smart_dataframe.chat("What number comes before 2?") == 1
 
     def test_run_with_non_conversational_answer(
         self, smart_dataframe: SmartDataframe, llm
     ):
-        llm._output = (
-            "def analyze_data(dfs):\n    return { 'type': 'number', 'value': 1 + 1 }"
-        )
+        llm._output = "result = { 'type': 'number', 'value': 1 + 1 }"
         assert smart_dataframe.chat("What is the sum of 1 + 1?") == 2
-
-    def test_callback(self, smart_dataframe: SmartDataframe):
-        callback = StdoutCallback()
-        smart_dataframe.callback = callback
-
-        # mock on_code function
-        with patch.object(callback, "on_code") as mock_on_code:
-            smart_dataframe.chat("Give me sum of all gdps?")
-            mock_on_code.assert_called()
 
     def test_run_code(self, smart_dataframe: SmartDataframe, llm):
         llm._output = """
-def analyze_data(dfs):
-    df = dfs[0]
-    df['b'] = df['a'] + 1
-    return { 'type': 'dataframe', 'value': df }
+df = dfs[0]
+df['b'] = df['a'] + 1
+result = { 'type': 'dataframe', 'value': df }
 """
         smart_dataframe = SmartDataframe(
             pd.DataFrame({"a": [1, 2, 3]}), config={"llm": llm, "enable_cache": False}
@@ -207,32 +182,26 @@ def analyze_data(dfs):
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
         df.enforce_privacy = True
 
-        expected_prompt = """You are provided with the following pandas DataFrames:
-
-<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+        expected_prompt = """<dataframe>
+dfs[0]:0x1
 country
 </dataframe>
 
-<conversation>
-User: How many countries are in the dataframe?
-</conversation>
+Q: How many countries are in the dataframe?
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
-    At the end, return a dictionary of:
-    - type (possible values "string", "number", "dataframe", "plot")
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
+Return a "result" variable dict:
+- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
         { "type": "string", "value": f"The highest salary is {highest_salary}." }
@@ -242,17 +211,25 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
         { "type": "plot", "value": "temp_chart.png" }
-    \"\"\"
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+Return the code:"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print(last_prompt)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+        print("*" * 100)
+
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
@@ -269,44 +246,38 @@ Based on the last message in the conversation:
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
-        expected_prompt = f'''You are provided with the following pandas DataFrames:
-
-<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+        expected_prompt = f"""<dataframe>
+dfs[0]:0x1
 country
 </dataframe>
 
-<conversation>
-User: How many countries are in the dataframe?
-</conversation>
+Q: How many countries are in the dataframe?
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    """
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
-    At the end, return a dictionary of:
-    {output_type_hint}
-    """
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+
+Return a "result" variable dict:
+{output_type_hint}
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```'''  # noqa: E501
+Return the code:"""
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print(last_prompt)
+
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
@@ -324,10 +295,8 @@ Based on the last message in the conversation:
         output_type_to_pass,
         output_type_returned,
     ):
-        llm._output = f"""
-def analyze_data(dfs: list[pd.DataFrame]) ->dict:
-    highest_gdp = dfs[0]['gdp'].max()
-    return {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
+        llm._output = f"""highest_gdp = dfs[0]['gdp'].max()
+result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
 """
         smart_dataframe = SmartDataframe(
             sample_df, config={"llm": llm, "enable_cache": False}
@@ -407,13 +376,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
             smart_dataframe.last_prompt_id
 
     def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
-        llm._output = (
-            "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
-        )
+        llm._output = "result = {'type': 'number', 'value': 1}"
         smart_dataframe.chat("What number comes before 2?")
         assert (
             smart_dataframe.last_code_generated
-            == "def analyze_data(dfs):\n    return {'type': 'number', 'value': 1}"
+            == "result = {'type': 'number', 'value': 1}"
         )
 
     def test_save_chart_non_default_dir(
@@ -446,17 +413,16 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         llm._output = """
 import pandas as pd
 import matplotlib.pyplot as plt
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    df = dfs[0].nlargest(5, 'happiness_index')
-    
-    plt.figure(figsize=(8, 6))
-    plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
-    plt.title('Happiness Index for the 5 Happiest Countries')
-    plt.savefig('temp_chart.png')
-    plt.close()
-    
-    return {"type": None, "value": "temp_chart.png"}
-result = analyze_data(dfs)
+
+df = dfs[0].nlargest(5, 'happiness_index')
+
+plt.figure(figsize=(8, 6))
+plt.pie(df['happiness_index'], labels=df['country'], autopct='%1.1f%%')
+plt.title('Happiness Index for the 5 Happiest Countries')
+plt.savefig('temp_chart.png')
+plt.close()
+
+result = {"type": None, "value": "temp_chart.png"}
 """
         with patch(
             "pandasai.helpers.code_manager.import_dependency"
@@ -478,14 +444,6 @@ result = analyze_data(dfs)
         assert (
             plt_mock.savefig.call_args.args[0]
             == f"charts/{smart_dataframe.last_prompt_id}.png"
-        )
-
-    def test_add_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
-        middleware = custom_middleware()
-        smart_dataframe.add_middlewares(middleware)
-        assert (
-            smart_dataframe.middlewares[len(smart_dataframe.middlewares) - 1]
-            == middleware
         )
 
     def test_shortcut(self, smart_dataframe: SmartDataframe):
@@ -642,7 +600,6 @@ result = analyze_data(dfs)
         assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.callback is None
         assert smart_dataframe.enforce_privacy is False
         assert smart_dataframe.use_error_correction_framework
         assert smart_dataframe.custom_prompts == {}
@@ -650,9 +607,6 @@ result = analyze_data(dfs)
         assert smart_dataframe.save_charts_path == "exports/charts"
         assert smart_dataframe.custom_whitelisted_dependencies == []
         assert smart_dataframe.max_retries == 3
-
-        smart_dataframe.callback = lambda x: x
-        assert smart_dataframe.callback is not None
 
         smart_dataframe.enforce_privacy = True
         assert smart_dataframe.enforce_privacy
@@ -677,15 +631,15 @@ result = analyze_data(dfs)
         smart_dataframe.max_retries = 5
         assert smart_dataframe.max_retries == 5
 
-    def test_sample_head_getter(self, sample_head, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.sample_head.equals(sample_head)
+    def test_custom_head_getter(self, custom_head, smart_dataframe: SmartDataframe):
+        assert smart_dataframe.custom_head.equals(custom_head)
 
-    def test_sample_head_setter(self, sample_head, smart_dataframe: SmartDataframe):
-        new_sample_head = (
-            sample_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
+    def test_custom_head_setter(self, custom_head, smart_dataframe: SmartDataframe):
+        new_custom_head = (
+            custom_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
         )
-        smart_dataframe.sample_head = new_sample_head
-        assert new_sample_head.equals(smart_dataframe.sample_head)
+        smart_dataframe.custom_head = new_custom_head
+        assert new_custom_head.equals(smart_dataframe.custom_head)
 
     def test_load_dataframe_from_list(self, smart_dataframe):
         input_data = [
@@ -1036,11 +990,11 @@ result = analyze_data(dfs)
 
         assert validation_result.passed
 
-    def test_head_csv_with_sample_head(
-        self, sample_head, data_sampler, smart_dataframe: SmartDataframe
+    def test_head_csv_with_custom_head(
+        self, custom_head, data_sampler, smart_dataframe: SmartDataframe
     ):
         with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
-            assert smart_dataframe.head_csv == sample_head.to_csv(index=False)
+            assert smart_dataframe.head_csv == custom_head.to_csv(index=False)
 
     @pytest.mark.parametrize(
         "viz_library_type,viz_library_type_hint",
@@ -1066,32 +1020,26 @@ result = analyze_data(dfs)
         )
 
         expected_prompt = (
-            """You are provided with the following pandas DataFrames:
-
-<dataframe>
-Dataframe dfs[0], with 0 rows and 1 columns.
-This is the metadata of the dataframe dfs[0]:
+            """<dataframe>
+dfs[0]:0x1
 country
 </dataframe>
 
-<conversation>
-User: Plot the histogram of countries showing for each the gdp with distinct bar colors
-</conversation>
+Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
 
-This is the initial python function. Do not change the params. Given the context, use the right dataframes.
 ```python
-# TODO import all the dependencies required
+# TODO: import the required dependencies
 import pandas as pd
 
-def analyze_data(dfs: list[pd.DataFrame]) -> dict:
-    \"\"\"
-    Analyze the data, using the provided dataframes (`dfs`).
-    1. Prepare: Preprocessing and cleaning data if necessary
-    2. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-    3. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)
-    %s
-    At the end, return a dictionary of:
-    - type (possible values "string", "number", "dataframe", "plot")
+\"\"\"
+The variable `dfs: list[pd.DataFrame]` is already decalared.
+1. Prep: preprocessing/cleaning
+2. Proc: data manipulation (group, filter, aggregate)
+3. Analyze data
+%s
+
+Return a "result" variable dict:
+- type (possible values "string", "number", "dataframe", "plot")
     - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
     Examples: 
         { "type": "string", "value": f"The highest salary is {highest_salary}." }
@@ -1101,13 +1049,10 @@ def analyze_data(dfs: list[pd.DataFrame]) -> dict:
         { "type": "dataframe", "value": pd.DataFrame({...}) }
         or
         { "type": "plot", "value": "temp_chart.png" }
-    \"\"\"
+\"\"\"
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
-- return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
+Return the code:"""  # noqa: E501
             % viz_library_type_hint
         )
 
@@ -1118,5 +1063,13 @@ Based on the last message in the conversation:
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        print("+" * 100)
+        print("+" * 100)
+        print("+" * 100)
+        print(last_prompt)
+        print("+" * 100)
+        print("+" * 100)
+        print("+" * 100)
 
         assert last_prompt == expected_prompt

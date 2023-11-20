@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Union
 
-from . import llm, middlewares, callbacks
+from . import llm
 from .helpers.path import find_closest
 from .schemas.df_config import Config
 
@@ -25,23 +25,18 @@ def load_config(
     if override_config is None:
         override_config = {}
 
+    if isinstance(override_config, Config):
+        override_config = override_config.dict()
+
     try:
         with open(find_closest("pandasai.json"), "r") as f:
             config = json.load(f)
 
+            # if config is a dict
             if config.get("llm") and not override_config.get("llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
-
-            if config.get("middlewares") and not override_config.get("middlewares"):
-                config["middlewares"] = [
-                    getattr(middlewares, middleware)()
-                    for middleware in config["middlewares"]
-                ]
-
-            if config.get("callback") and not override_config.get("callback"):
-                config["callback"] = getattr(callbacks, config["callback"])()
-    except Exception:
+    except FileNotFoundError:
         # Ignore the error if the file does not exist, will use the default config
         pass
 

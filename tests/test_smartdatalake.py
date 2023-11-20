@@ -9,12 +9,17 @@ import pandas as pd
 import pytest
 
 from pandasai import SmartDataframe, SmartDatalake
+from pandasai.connectors.base import SQLConnectorConfig
+from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.middlewares import Middleware
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
 from langchain import OpenAI
+
+from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
+from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 
 class TestSmartDatalake:
@@ -68,21 +73,50 @@ class TestSmartDatalake:
         )
 
     @pytest.fixture
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def sql_connector(self, create_engine):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        return SQLConnector(self.config)
+
+    @pytest.fixture
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def pgsql_connector(self, create_engine):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        return PostgreSQLConnector(self.config)
+
+    @pytest.fixture
     def smart_dataframe(self, llm, sample_df):
         return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
     def smart_datalake(self, smart_dataframe: SmartDataframe):
         return smart_dataframe.lake
-
-    @pytest.fixture
-    def custom_middleware(self):
-        class CustomMiddleware(Middleware):
-            def run(self, code):
-                return """def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Overwritten by middleware" }"""
-
-        return CustomMiddleware
 
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
         smart_datalake._llm = None
@@ -119,21 +153,10 @@ class TestSmartDatalake:
             "value": "There are 10 countries in the dataframe.",
         }
 
-    def test_middlewares(self, smart_dataframe: SmartDataframe, custom_middleware):
-        middleware = custom_middleware()
-        smart_dataframe.lake._code_manager._middlewares = [middleware]
-        assert smart_dataframe.lake.middlewares == [middleware]
-        assert (
-            smart_dataframe.chat("How many countries are in the dataframe?")
-            == "Overwritten by middleware"
-        )
-        assert middleware.has_run
-
     def test_retry_on_error_with_single_df(
         self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe
     ):
-        code = """def analyze_data(df):
-    return { "type": "text", "value": "Hello World" }"""
+        code = """result = 'Hello World'"""
 
         smart_dataframe._get_sample_head = Mock(
             return_value=pd.DataFrame(
@@ -156,12 +179,8 @@ class TestSmartDatalake:
 
         assert (
             last_prompt
-            == """
-You are provided with the following pandas DataFrames with the following metadata:
-
-<dataframe>
-Dataframe dfs[0], with 10 rows and 3 columns.
-This is the metadata of the dataframe dfs[0]:
+            == """<dataframe>
+dfs[0]:10x3
 country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16
@@ -172,14 +191,12 @@ The user asked the following question:
 
 
 You generated this python code:
-def analyze_data(df):
-    return { "type": "text", "value": "Hello World" }
+result = 'Hello World'
 
 It fails with the following error:
 Test error
 
-Correct the python code and return a new python code that fixes the above mentioned error. Do not generate the same code again.
-"""  # noqa: E501
+Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
@@ -221,14 +238,14 @@ Correct the python code and return a new python code that fixes the above mentio
     def test_last_answer_and_reasoning(self, smart_datalake: SmartDatalake):
         llm = FakeLLM(
             """
-            <reasoning>Custom reasoning</reasoning>
-            <answer>Custom answer</answer>
-            ```python
-def analyze_data(dfs):
-    return { 'type': 'text', 'value': "Hello World" }
+<reasoning>Custom reasoning</reasoning>
+<answer>Custom answer</answer>
+```python
+result = { "type": "string", "value": "Hello World" }
 ```"""
         )
         smart_datalake._llm = llm
+        smart_datalake._config.llm = llm
         smart_datalake.config.use_advanced_reasoning_framework = True
         assert smart_datalake.last_answer is None
         assert smart_datalake.last_reasoning is None
@@ -236,3 +253,59 @@ def analyze_data(dfs):
         smart_datalake.chat("How many countries are in the dataframe?")
         assert smart_datalake.last_answer == "Custom answer"
         assert smart_datalake.last_reasoning == "Custom reasoning"
+
+    def test_get_chat_prompt(self, smart_datalake: SmartDatalake):
+        # Test case 1: direct_sql is True
+        smart_datalake._config.direct_sql = True
+        gen_key, gen_prompt = smart_datalake._get_chat_prompt()
+        expected_key = "direct_sql_prompt"
+        assert gen_key == expected_key
+        assert isinstance(gen_prompt, DirectSQLPrompt)
+
+        # Test case 2: direct_sql is False
+        smart_datalake._config.direct_sql = False
+        gen_key, gen_prompt = smart_datalake._get_chat_prompt()
+        expected_key = "generate_python_code"
+        assert gen_key == expected_key
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+
+    def test_validate_true_direct_sql_with_non_connector(self, llm, sample_df):
+        # raise exception with non connector
+        SmartDatalake(
+            [sample_df],
+            config={"llm": llm, "enable_cache": False, "direct_sql": True},
+        )
+
+    def test_validate_direct_sql_with_connector(self, llm, sql_connector):
+        # not exception is raised using single connector
+        SmartDatalake(
+            [sql_connector],
+            config={"llm": llm, "enable_cache": False, "direct_sql": True},
+        )
+
+    def test_validate_false_direct_sql_with_connector(self, llm, sql_connector):
+        # not exception is raised using single connector
+        SmartDatalake(
+            [sql_connector],
+            config={"llm": llm, "enable_cache": False, "direct_sql": False},
+        )
+
+    def test_validate_false_direct_sql_with_two_different_connector(
+        self, llm, sql_connector, pgsql_connector
+    ):
+        # not exception is raised using single connector
+        SmartDatalake(
+            [sql_connector, pgsql_connector],
+            config={"llm": llm, "enable_cache": False, "direct_sql": False},
+        )
+
+    def test_validate_true_direct_sql_with_two_different_connector(
+        self, llm, sql_connector, pgsql_connector
+    ):
+        # not exception is raised using single connector
+        # raise exception when two different connector
+        with pytest.raises(InvalidConfigError):
+            SmartDatalake(
+                [sql_connector, pgsql_connector],
+                config={"llm": llm, "enable_cache": False, "direct_sql": True},
+            )

@@ -43,6 +43,15 @@ class NoCodeFoundError(Exception):
     """
 
 
+class NoResultFoundError(Exception):
+    """
+    Raised when no result is found in the response.
+
+    Args:
+        Exception (Exception): NoResultFoundError
+    """
+
+
 class MethodNotImplementedError(Exception):
     """
     Raised when a method is not implemented.
@@ -148,10 +157,34 @@ class AdvancedReasoningDisabledError(Exception):
     """
 
 
+class UnSupportedLogicUnit(Exception):
+    """
+    Raised when unsupported logic unit is added in the pipeline
+    Args:
+        Exception (Exception): UnSupportedLogicUnit
+    """
+
+
 class InvalidWorkspacePathError(Exception):
     """
     Raised when the environment variable of workspace exist but path is invalid
 
     Args:
         Exception (Exception): InvalidWorkspacePathError
+    """
+
+
+class InvalidConfigError(Exception):
+    """
+    Raised when config value is not appliable
+    Args:
+        Exception (Exception): InvalidConfigError
+    """
+
+
+class MaliciousQueryError(Exception):
+    """
+    Raise error if malicious query is generated
+    Args:
+        Exception (Excpetion): MaliciousQueryError
     """

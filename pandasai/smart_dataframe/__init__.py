@@ -37,11 +37,9 @@ from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from ..helpers.from_google_sheets import from_google_sheets
-from typing import List, Union, Optional
-from ..middlewares.base import Middleware
+from typing import Any, List, Union, Optional
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
-from ..callbacks.base import BaseCallback
 from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
 
@@ -228,7 +226,7 @@ class SmartDataframeCore:
 class SmartDataframe(DataframeAbstract, Shortcuts):
     _table_name: str
     _table_description: str
-    _sample_head: str = None
+    _custom_head: str = None
     _original_import: any
     _core: SmartDataframeCore
     _lake: SmartDatalake
@@ -238,7 +236,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         df: DataFrameType,
         name: str = None,
         description: str = None,
-        sample_head: pd.DataFrame = None,
+        custom_head: pd.DataFrame = None,
         config: Config = None,
         logger: Logger = None,
     ):
@@ -247,7 +245,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
-            sample_head (pd.DataFrame, optional): Sample head of the dataframe.
+            custom_head (pd.DataFrame, optional): Sample head of the dataframe.
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
@@ -288,18 +286,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         if self._table_name is None and self.connector:
             self._table_name = self.connector.fallback_name
 
-        if sample_head is not None:
-            self._sample_head = sample_head.to_csv(index=False)
-
-    def add_middlewares(self, *middlewares: Optional[Middleware]):
-        """
-        Add middlewares to PandasAI instance.
-
-        Args:
-            *middlewares: Middlewares to be added
-
-        """
-        self.lake.add_middlewares(*middlewares)
+        if custom_head is not None:
+            self._custom_head = custom_head.to_csv(index=False)
 
     def add_skills(self, *skills: List[skill]):
         """
@@ -430,8 +418,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def _get_sample_head(self) -> DataFrameType:
         head = None
         rows_to_display = 0 if self.lake.config.enforce_privacy else 3
-        if self._sample_head is not None:
-            head = self.sample_head
+        if self._custom_head is not None:
+            head = self.custom_head
         elif not self._core._df_loaded and self.connector:
             head = self.connector.head()
         else:
@@ -562,10 +550,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     def cache(self):
         return self.lake.cache
 
-    @property
-    def middlewares(self):
-        return self.lake.middlewares
-
     def original_import(self):
         return self._original_import
 
@@ -596,14 +580,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @save_logs.setter
     def save_logs(self, save_logs: bool):
         self.lake.save_logs = save_logs
-
-    @property
-    def callback(self):
-        return self.lake.callback
-
-    @callback.setter
-    def callback(self, callback: BaseCallback):
-        self.lake.callback = callback
 
     @property
     def enforce_privacy(self):
@@ -688,9 +664,13 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return self._table_description
 
     @property
-    def sample_head(self):
-        data = StringIO(self._sample_head)
+    def custom_head(self):
+        data = StringIO(self._custom_head)
         return pd.read_csv(data)
+
+    @custom_head.setter
+    def custom_head(self, custom_head: pd.DataFrame):
+        self._custom_head = custom_head.to_csv(index=False)
 
     @property
     def last_reasoning(self):
@@ -699,10 +679,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def last_answer(self):
         return self.lake.last_answer
-
-    @sample_head.setter
-    def sample_head(self, sample_head: pd.DataFrame):
-        self._sample_head = sample_head.to_csv(index=False)
 
     @property
     def last_query_log_id(self):
@@ -730,3 +706,37 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def __len__(self):
         return len(self.dataframe)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and (
+            self._core.has_connector and other._core.has_connector
+        ):
+            return self._core.connector.equals(other._core.connector)
+
+        return False
+
+    def is_connector(self):
+        return self._core.has_connector
+
+    def get_query_exec_func(self):
+        return self._core.connector.execute_direct_sql_query
+
+
+def load_smartdataframes(
+    dfs: List[Union[DataFrameType, Any]], config: Config
+) -> List[SmartDataframe]:
+    """
+    Load all the dataframes to be used in the smart datalake.
+
+    Args:
+        dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+    """
+
+    smart_dfs = []
+    for df in dfs:
+        if not isinstance(df, SmartDataframe):
+            smart_dfs.append(SmartDataframe(df, config=config))
+        else:
+            smart_dfs.append(df)
+
+    return smart_dfs

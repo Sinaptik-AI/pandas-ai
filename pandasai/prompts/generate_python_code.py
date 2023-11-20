@@ -57,9 +57,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
 
     def setup(self, **kwargs) -> None:
         if "custom_instructions" in kwargs:
-            self.set_var(
-                "instructions", self._format_instructions(kwargs["custom_instructions"])
-            )
+            self.set_var("instructions", kwargs["custom_instructions"])
         else:
             self.set_var("instructions", DefaultInstructionsPrompt())
 
@@ -78,9 +76,3 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
             self.set_var("reasoning", AdvancedReasoningPrompt())
         else:
             self.set_var("reasoning", SimpleReasoningPrompt())
-
-    def _format_instructions(self, instructions: str):
-        lines = instructions.split("\n")
-        indented_lines = [f"    {line}" for line in lines[1:]]
-        result = "\n".join([lines[0]] + indented_lines)
-        return result

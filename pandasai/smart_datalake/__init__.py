@@ -20,16 +20,18 @@ Example:
 import uuid
 import logging
 import os
-import traceback
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.skills_manager import SkillsManager
-
+from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.skills import skill
-
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
+    GenerateSmartDatalakePipeline,
+)
 
-from ..helpers.output_types import output_type_factory
-from ..helpers.viz_library_types import viz_lib_type_factory
+from pandasai.helpers.output_types import output_type_factory
+from pandasai.helpers.viz_library_types import viz_lib_type_factory
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import ResponseParser
 from ..llm.base import LLM
@@ -41,14 +43,13 @@ from ..schemas.df_config import Config
 from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
+from typing import Union, List, Any, Optional
 from ..prompts.generate_python_code import GeneratePythonCodePrompt
-from typing import Union, List, Any, Type, Optional
-from ..helpers.code_manager import CodeExecutionContext, CodeManager
-from ..middlewares.base import Middleware
+from ..helpers.code_manager import CodeManager
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
-from ..exceptions import AdvancedReasoningDisabledError
+from ..exceptions import AdvancedReasoningDisabledError, InvalidConfigError
 
 
 class SmartDatalake:
@@ -64,6 +65,7 @@ class SmartDatalake:
     _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
+    _can_direct_sql: bool
 
     _last_code_generated: str = None
     _last_reasoning: str = None
@@ -132,6 +134,9 @@ class SmartDatalake:
         self._query_exec_tracker = QueryExecTracker(
             server_config=self._config.log_server,
         )
+
+        # Checks if direct sql config set they all belong to same sql connector type
+        self._can_direct_sql = self._validate_direct_sql(self._dfs)
 
     def set_instance_type(self, type: str):
         self._instance = type
@@ -247,14 +252,36 @@ class SmartDatalake:
         if data_viz_library in (item.value for item in VisualizationLibrary):
             self._data_viz_library = data_viz_library
 
-    def add_middlewares(self, *middlewares: Optional[Middleware]):
+    def _validate_direct_sql(self, dfs: List) -> None:
         """
-        Add middlewares to PandasAI instance.
-
+        Raises error if they don't belong sqlconnector or have different credentials
         Args:
-            *middlewares: Middlewares to be added
+            dfs (List[SmartDataframe]): list of SmartDataframes
+
+        Raises:
+            InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
-        self._code_manager.add_middlewares(*middlewares)
+
+        if self._config.direct_sql and all(df.is_connector() for df in dfs):
+            if all(df == dfs[0] for df in dfs):
+                return True
+            else:
+                raise InvalidConfigError(
+                    "Direct requires all SQLConnector and they belong to same datasource "
+                    "and have same credentials"
+                )
+        return False
+
+    def _get_chat_prompt(self):
+        key = "direct_sql_prompt" if self._config.direct_sql else "generate_python_code"
+        return (
+            key,
+            (
+                DirectSQLPrompt(tables=self._dfs)
+                if self._config.direct_sql
+                else GeneratePythonCodePrompt()
+            ),
+        )
 
     def add_skills(self, *skills: List[skill]):
         """
@@ -273,7 +300,7 @@ class SmartDatalake:
     def _get_prompt(
         self,
         key: str,
-        default_prompt: Type[AbstractPrompt],
+        default_prompt: AbstractPrompt,
         default_values: Optional[dict] = None,
     ) -> AbstractPrompt:
         """
@@ -292,7 +319,7 @@ class SmartDatalake:
             default_values = {}
 
         custom_prompt = self._config.custom_prompts.get(key)
-        prompt = custom_prompt or default_prompt()
+        prompt = custom_prompt or default_prompt
 
         # set default values for the prompt
         prompt.set_config(self._config)
@@ -310,22 +337,6 @@ class SmartDatalake:
 
         self.logger.log(f"Using prompt: {prompt}")
         return prompt
-
-    def _get_cache_key(self) -> str:
-        """
-        Return the cache key for the current conversation.
-
-        Returns:
-            str: The cache key for the current conversation
-        """
-        cache_key = self._memory.get_conversation()
-
-        # make the cache key unique for each combination of dfs
-        for df in self._dfs:
-            hash = df.column_hash()
-            cache_key += str(hash)
-
-        return cache_key
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
@@ -351,6 +362,110 @@ class SmartDatalake:
             ValueError: If the query is empty
         """
 
+        pipeline_context = self.prepare_context_for_smart_datalake_pipeline(
+            query=query, output_type=output_type
+        )
+
+        try:
+            result = GenerateSmartDatalakePipeline(pipeline_context, self.logger).run()
+        except Exception as exception:
+            self.last_error = str(exception)
+            self._query_exec_tracker.success = False
+            self._query_exec_tracker.publish()
+
+            return (
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+        self.update_intermediate_value_post_pipeline_execution(pipeline_context)
+
+        return result
+
+    def _validate_output(self, result: dict, output_type: Optional[str] = None):
+        """
+        Validate the output of the code execution.
+
+        Args:
+            result (Any): Result of executing the code
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Raises:
+            (ValueError): If the output is not valid
+        """
+
+        output_type_helper = output_type_factory(output_type, logger=self.logger)
+        result_is_valid, validation_logs = output_type_helper.validate(result)
+
+        if result_is_valid:
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": True,
+                    "message": "Output Validation Successful",
+                }
+            )
+        else:
+            self.logger.log("\n".join(validation_logs), level=logging.WARNING)
+            self._query_exec_tracker.add_step(
+                {
+                    "type": "Validating Output",
+                    "success": False,
+                    "message": "Output Validation Failed",
+                }
+            )
+            raise ValueError("Output validation failed")
+
+    def _get_viz_library_type(self) -> str:
+        """
+        Get the visualization library type based on the configured library.
+
+        Returns:
+            (str): Visualization library type
+        """
+
+        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
+        return viz_lib_helper.template_hint
+
+    def prepare_context_for_smart_datalake_pipeline(
+        self, query: str, output_type: Optional[str] = None
+    ) -> PipelineContext:
+        """
+        Prepare Pipeline Context to intiate Smart Data Lake Pipeline.
+
+        Args:
+            query (str): Query to run on the dataframe
+            output_type (Optional[str]): Add a hint for LLM which
+                type should be returned by `analyze_data()` in generated
+                code. Possible values: "number", "dataframe", "plot", "string":
+                    * number - specifies that user expects to get a number
+                        as a response object
+                    * dataframe - specifies that user expects to get
+                        pandas/polars dataframe as a response object
+                    * plot - specifies that user expects LLM to build
+                        a plot
+                    * string - specifies that user expects to get text
+                        as a response object
+                If none `output_type` is specified, the type can be any
+                of the above or "text".
+
+        Returns:
+            PipelineContext: The Pipeline Context to be used by Smart Data Lake Pipeline.
+        """
+
         self._query_exec_tracker.start_new_track()
 
         self.logger.log(f"Question: {query}")
@@ -366,174 +481,50 @@ class SmartDatalake:
 
         self._memory.add(query, True)
 
-        result_is_valid = False
+        output_type_helper = output_type_factory(output_type, logger=self.logger)
+        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
 
-        try:
-            output_type_helper = output_type_factory(output_type, logger=self.logger)
-            viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
-
-            if (
-                self._config.enable_cache
-                and self._cache
-                and self._cache.get(self._get_cache_key())
-            ):
-                self.logger.log("Using cached response")
-                code = self._query_exec_tracker.execute_func(
-                    self._cache.get, self._get_cache_key(), tag="cache_hit"
-                )
-
-            else:
-                default_values = {
-                    # TODO: find a better way to determine the engine,
-                    "engine": self._dfs[0].engine,
-                    "output_type_hint": output_type_helper.template_hint,
-                    "viz_library_type": viz_lib_helper.template_hint,
-                }
-
-                if (
-                    self.memory.size > 1
-                    and self.memory.count() > 1
-                    and self._last_code_generated
-                ):
-                    default_values["current_code"] = self._last_code_generated
-
-                generate_python_code_instruction = (
-                    self._query_exec_tracker.execute_func(
-                        self._get_prompt,
-                        "generate_python_code",
-                        default_prompt=GeneratePythonCodePrompt,
-                        default_values=default_values,
-                    )
-                )
-
-                [code, reasoning, answer] = self._query_exec_tracker.execute_func(
-                    self._llm.generate_code, generate_python_code_instruction
-                )
-
-                self.last_reasoning = reasoning
-                self.last_answer = answer
-
-                if self._config.enable_cache and self._cache:
-                    self._cache.set(self._get_cache_key(), code)
-
-            if self._config.callback is not None:
-                self._config.callback.on_code(code)
-
-            self.last_code_generated = code
-            self.logger.log(
-                f"""Code generated:
-```
-{code}
-```
-"""
-            )
-
-            retry_count = 0
-            code_to_run = code
-            result = None
-            while retry_count < self._config.max_retries:
-                try:
-                    # Execute the code
-                    context = CodeExecutionContext(self._last_prompt_id, self._skills)
-                    result = self._code_manager.execute_code(
-                        code=code_to_run,
-                        context=context,
-                    )
-
-                    break
-
-                except Exception as e:
-                    if (
-                        not self._config.use_error_correction_framework
-                        or retry_count >= self._config.max_retries - 1
-                    ):
-                        raise e
-
-                    retry_count += 1
-
-                    self._logger.log(
-                        f"Failed to execute code with a correction framework "
-                        f"[retry number: {retry_count}]",
-                        level=logging.WARNING,
-                    )
-
-                    traceback_error = traceback.format_exc()
-                    [
-                        code_to_run,
-                        reasoning,
-                        answer,
-                    ] = self._query_exec_tracker.execute_func(
-                        self._retry_run_code, code, traceback_error
-                    )
-
-            if isinstance(result, dict):
-                result_is_valid, validation_logs = output_type_helper.validate(result)
-                if result_is_valid:
-                    self._query_exec_tracker.add_step(
-                        {
-                            "type": "Validating Output",
-                            "success": True,
-                            "message": "Output Validation Successful",
-                        }
-                    )
-                else:
-                    self.logger.log("\n".join(validation_logs), level=logging.WARNING)
-                    self._query_exec_tracker.add_step(
-                        {
-                            "type": "Validating Output",
-                            "success": False,
-                            "message": "Output Validation Failed",
-                        }
-                    )
-
-            if result is not None:
-                self.last_result = result
-                self.logger.log(f"Answer: {result}")
-
-        except Exception as exception:
-            self.last_error = str(exception)
-            self._query_exec_tracker.success = False
-            self._query_exec_tracker.publish()
-
-            return (
-                "Unfortunately, I was not able to answer your question, "
-                "because of the following error:\n"
-                f"\n{exception}\n"
-            )
-
-        self.logger.log(
-            f"Executed in: {self._query_exec_tracker.get_execution_time()}s"
+        pipeline_context = PipelineContext(
+            dfs=self.dfs,
+            config=self.config,
+            memory=self.memory,
+            cache=self.cache,
+            query_exec_tracker=self._query_exec_tracker,
+        )
+        pipeline_context.add_intermediate_value("is_present_in_cache", False)
+        pipeline_context.add_intermediate_value(
+            "output_type_helper", output_type_helper
+        )
+        pipeline_context.add_intermediate_value("viz_lib_helper", viz_lib_helper)
+        pipeline_context.add_intermediate_value(
+            "last_code_generated", self._last_code_generated
+        )
+        pipeline_context.add_intermediate_value("get_prompt", self._get_prompt)
+        pipeline_context.add_intermediate_value("last_prompt_id", self.last_prompt_id)
+        pipeline_context.add_intermediate_value("skills", self._skills)
+        pipeline_context.add_intermediate_value("code_manager", self._code_manager)
+        pipeline_context.add_intermediate_value(
+            "response_parser", self._response_parser
         )
 
-        if result_is_valid:
-            self._add_result_to_memory(result)
-        else:
-            self.logger.log(
-                "The result will not be memorized since it has failed the "
-                "corresponding validation"
-            )
+        return pipeline_context
 
-        result = self._query_exec_tracker.execute_func(
-            self._response_parser.parse, result
-        )
-
-        self._query_exec_tracker.success = True
-
-        self._query_exec_tracker.publish()
-
-        return result
-
-    def _add_result_to_memory(self, result: dict):
+    def update_intermediate_value_post_pipeline_execution(
+        self, pipeline_context: PipelineContext
+    ):
         """
-        Add the result to the memory.
+        After the Smart Data Lake Pipeline has executed, update values of Smart Data Lake object.
 
         Args:
-            result (dict): The result to add to the memory
+            pipeline_context (PipelineContext): Pipeline Context after the Smart Data Lake pipeline execution
+
         """
-        if result["type"] in ["string", "number"]:
-            self._memory.add(result["value"], False)
-        elif result["type"] in ["dataframe", "plot"]:
-            self._memory.add("Ok here it is", False)
+        self._last_reasoning = pipeline_context.get_intermediate_value("last_reasoning")
+        self._last_answer = pipeline_context.get_intermediate_value("last_answer")
+        self._last_code_generated = pipeline_context.get_intermediate_value(
+            "last_code_generated"
+        )
+        self._last_result = pipeline_context.get_intermediate_value("last_result")
 
     def _retry_run_code(self, code: str, e: Exception) -> List:
         """
@@ -556,15 +547,11 @@ class SmartDatalake:
         }
         error_correcting_instruction = self._get_prompt(
             "correct_error",
-            default_prompt=CorrectErrorPrompt,
+            default_prompt=CorrectErrorPrompt(),
             default_values=default_values,
         )
 
-        result = self._llm.generate_code(error_correcting_instruction)
-        if self._config.callback is not None:
-            self._config.callback.on_code(result[0])
-
-        return result
+        return self._llm.generate_code(error_correcting_instruction)
 
     def clear_memory(self):
         """
@@ -609,10 +596,6 @@ class SmartDatalake:
         return self._cache
 
     @property
-    def middlewares(self):
-        return self._code_manager.middlewares
-
-    @property
     def verbose(self):
         return self._config.verbose
 
@@ -629,14 +612,6 @@ class SmartDatalake:
     def save_logs(self, save_logs: bool):
         self._config.save_logs = save_logs
         self._logger.save_logs = save_logs
-
-    @property
-    def callback(self):
-        return self._config.callback
-
-    @callback.setter
-    def callback(self, callback: Any):
-        self.config.callback = callback
 
     @property
     def enforce_privacy(self):

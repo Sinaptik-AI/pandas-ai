@@ -78,9 +78,7 @@ class SkillsManager:
         if len(self._skills) == 0:
             return
 
-        return """
-You can also use the following functions, if relevant:
-
+        return """You can call the following functions that have been pre-defined for you:
 """ + self.__str__()
 
     @property

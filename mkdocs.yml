@@ -16,19 +16,18 @@ nav:
       - connectors.md
   - LLMs:
       - LLMs/llms.md
-      - LLMs/langchain.md
+  - Pipelines:
+      - pipelines/pipelines.md
   - Advanced usage:
+      - skills.md
       - shortcuts.md
       - custom-head.md
       - save-dataframes.md
       - determinism.md
       - cache.md
-      - middlewares.md
       - custom-response.md
-      - callbacks.md
       - custom-instructions.md
       - custom-prompts.md
-      - skills.md
       - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md

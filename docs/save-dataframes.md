@@ -17,7 +17,7 @@ df = SmartDataframe(
     "data/country_gdp.csv",
     name="Country GDP",
     description="A dataset containing the GDP of countries",
-    sample_head=head_df
+    custom_head=head_df
 )
 df.save("country")
 ```
