@@ -68,7 +68,7 @@ class LLM:
         removing the imports and removing trailing spaces and new lines.
 
         Args:
-            code (str): A sting of Python code.
+            code (str): A string of Python code.
 
         Returns:
             str: Polished code.

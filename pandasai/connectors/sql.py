@@ -112,7 +112,7 @@ class SQLConnector(BaseConnector):
     def _build_query(self, limit=None, order=None):
         base_query = select("*").select_from(text(self._config.table))
         if self._config.where or self._additional_filters:
-            # conditions is the list of wher + additional filters
+            # conditions is the list of where + additional filters
             conditions = []
             if self._config.where:
                 conditions += self._config.where
@@ -412,7 +412,7 @@ class SqliteConnector(SQLConnector):
 
     def __init__(self, config: Union[SqliteConnectorConfig, dict]):
         """
-        Intialize the Sqlite connector with the given configuration.
+        Initialize the Sqlite connector with the given configuration.
 
         Args:
             config (ConnectorConfig) : The configuration for the MySQL connector.

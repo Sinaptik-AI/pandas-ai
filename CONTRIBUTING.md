@@ -48,8 +48,17 @@ Make sure that the linter does not report any errors or warnings before submitti
 We use `ruff` to reformat the code by running the following command:
 
 ```bash
-ruff format pandasai
+ruff format pandasai examples
 ```
+
+### Spell check
+
+We usee `codespell` to check the spelling of our code. You can run codespell by running the following command:
+
+```bash
+codespell pandasai docs examples -w
+```
+
 
 ### 🧪 Testing
 

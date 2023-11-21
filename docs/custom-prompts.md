@@ -25,7 +25,7 @@ class MyCustomPrompt(AbstractPrompt):
         return """This is your custom text for your prompt with custom {my_custom_value}"""
 
     def setup(self, kwargs):
-        # This method is called before the prompt is intialized
+        # This method is called before the prompt is initialized
         # You can use it to setup your prompt and pass any additional
         # variables to the template
         self.set_var("my_custom_value", kwargs["my_custom_value"])

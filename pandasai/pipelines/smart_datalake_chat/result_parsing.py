@@ -41,7 +41,7 @@ class ResultParsing(BaseLogicUnit):
 
         Args:
             result (dict): The result to add to the memory
-            context (PipelineContext) : Pipleline Context
+            context (PipelineContext) : Pipeline Context
         """
         if result is None:
             return

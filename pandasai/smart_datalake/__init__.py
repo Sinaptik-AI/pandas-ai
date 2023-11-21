@@ -410,7 +410,7 @@ class SmartDatalake:
         self, query: str, output_type: Optional[str] = None
     ) -> PipelineContext:
         """
-        Prepare Pipeline Context to intiate Smart Data Lake Pipeline.
+        Prepare Pipeline Context to initiate Smart Data Lake Pipeline.
 
         Args:
             query (str): Query to run on the dataframe

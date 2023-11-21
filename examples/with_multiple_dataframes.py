@@ -25,6 +25,6 @@ dl = SmartDatalake(
     [employees_df, salaries_df],
     config={"llm": llm, "verbose": True},
 )
-response = dl.chat("Plot salaries againt name")
+response = dl.chat("Plot salaries against name")
 print(response)
 # Output: <displays the plot>

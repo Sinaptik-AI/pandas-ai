@@ -29,7 +29,7 @@ class CurrentCodePrompt(FileBasedPrompt):
         if kwargs.get("dfs_declared", False):
             self.set_var(
                 "dfs_declared_message",
-                "The variable `dfs: list[pd.DataFrame]` is already decalared.",
+                "The variable `dfs: list[pd.DataFrame]` is already declared.",
             )
         else:
             self.set_var("dfs_declared_message", "")
