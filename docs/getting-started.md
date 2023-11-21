@@ -12,11 +12,11 @@ poetry add pandasai
 pip install pandasai
 ```
 
-> Before you installation, we recommend you create a virtual environment using your preffered choice of environment manager e.g [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.
+> Before installation, we recommend you create a virtual environment using your preffered choice of environment manager e.g [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.
 
-### Optional Installs
+### Optional dependencies
 
-To keep the package size small, we have decided to make some dependencies that are not required by default. These dependencies are required for some features of `pandasai`. To install `pandasai` with these extra dependencies, run:
+To keep the package size small, we have decided to make some dependencies optional. To install `pandasai` with these extra dependencies, run:
 
 ```console
 pip install pandasai[extra-dependency-name]
@@ -61,20 +61,20 @@ df.chat('Which are the 5 happiest countries?')
 # Output: United Kingdom, Canada, Australia, United States, Germany
 ```
 
-If you want to get to know more about the `SmartDataframe` class, check out this video:
+If you want to learn more about the `SmartDataframe` class, check out this video:
 
 [![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to SmartDataframe")
 
-### How to generate OpenAI API Token
+### How to generate an OpenAI API Token
 
-Users are required to generate `YOUR_API_TOKEN`. Follow below simple steps to generate your API_TOKEN with
+Users are required to generate `YOUR_API_TOKEN`. Follow these simple steps to generate your API_TOKEN with
 [openai](https://platform.openai.com/overview).
 
 1. Go to https://openai.com/api/ and signup with your email address or connect your Google Account.
-2. Go to View API Keys on left side of your Personal Account Settings
-3. Select Create new Secret key
+2. Go to View API Keys on left side of your Personal Account Settings.
+3. Select Create new Secret key.
 
-> The API access to openai is a paid service. You have to set up billing.
+> The API access to OPENAI is a paid service. You have to set up billing.
 > Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
 
 ### Passing name and description
