@@ -38,7 +38,7 @@ payment_connector = PostgreSQLConnector(
     }
 )
 
-# With a Sqlite databse
+# With a Sqlite database
 
 invoice_connector = SqliteConnector(
     config={

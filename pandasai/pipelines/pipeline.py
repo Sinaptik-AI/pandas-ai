@@ -27,7 +27,7 @@ class Pipeline(AbstractPipeline):
         logger: Optional[Logger] = None,
     ):
         """
-        Intialize the pipeline with given context and configuration
+        Initialize the pipeline with given context and configuration
             parameters.
         Args :
             context (Context) : Context is required for ResponseParsers.

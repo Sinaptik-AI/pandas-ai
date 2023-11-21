@@ -196,7 +196,7 @@ Update this initial code:
 import pandas as pd
 
 \"\"\"
-The variable `dfs: list[pd.DataFrame]` is already decalared.
+The variable `dfs: list[pd.DataFrame]` is already declared.
 1. Prep: preprocessing/cleaning
 2. Proc: data manipulation (group, filter, aggregate)
 3. Analyze data
@@ -253,7 +253,7 @@ Update this initial code:
 import pandas as pd
 
 \"\"\"
-The variable `dfs: list[pd.DataFrame]` is already decalared.
+The variable `dfs: list[pd.DataFrame]` is already declared.
 1. Prep: preprocessing/cleaning
 2. Proc: data manipulation (group, filter, aggregate)
 3. Analyze data
@@ -1025,7 +1025,7 @@ Update this initial code:
 import pandas as pd
 
 \"\"\"
-The variable `dfs: list[pd.DataFrame]` is already decalared.
+The variable `dfs: list[pd.DataFrame]` is already declared.
 1. Prep: preprocessing/cleaning
 2. Proc: data manipulation (group, filter, aggregate)
 3. Analyze data

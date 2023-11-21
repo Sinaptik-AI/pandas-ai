@@ -45,6 +45,7 @@ pillow = "^10.1.0"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.2.2"
 ruff = "^0.1.0"
+codespell = "^2.2.0"
 pytest = "^7.3.1"
 pytest-mock = "^3.10.0"
 pytest-env = "^0.8.1"

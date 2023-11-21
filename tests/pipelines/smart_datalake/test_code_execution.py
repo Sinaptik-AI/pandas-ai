@@ -93,7 +93,7 @@ class TestCodeExecution:
 
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
-                return "Mocked Promt ID"
+                return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
@@ -129,7 +129,7 @@ class TestCodeExecution:
 
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
-                return "Mocked Promt ID"
+                return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
@@ -171,7 +171,7 @@ class TestCodeExecution:
 
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
-                return "Mocked Promt ID"
+                return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":

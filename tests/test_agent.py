@@ -258,7 +258,7 @@ What is expected Salary Increase?
     def test_clarification_prompt_validate_output_true_case(self, agent: Agent):
         # Test whether the output is json or not
         agent._lake.llm.call = Mock()
-        agent._lake.llm.call.return_value = '["This is test quesiton"]'
+        agent._lake.llm.call.return_value = '["This is test question"]'
 
         prompt = ClarificationQuestionPrompt(
             dataframes=agent._lake.dfs,
