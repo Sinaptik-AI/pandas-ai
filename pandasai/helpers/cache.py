@@ -3,7 +3,7 @@ import glob
 from typing import Any
 import duckdb
 from .path import find_project_root
-from ..constants import DEFAULT_FILE_PERMISSIONS
+from ..constants import DEFAULT_FILE_PERMISSIONS, CACHE_TOKEN
 
 
 class Cache:
@@ -32,6 +32,9 @@ class Cache:
             "CREATE TABLE IF NOT EXISTS cache (key STRING, value STRING)"
         )
 
+    def versioned_key(self, key: str) -> str:
+        return f"{CACHE_TOKEN}-{key}"
+
     def set(self, key: str, value: str) -> None:
         """Set a key value pair in the cache.
 
@@ -39,7 +42,9 @@ class Cache:
             key (str): key to store the value.
             value (str): value to store in the cache.
         """
-        self.connection.execute("INSERT INTO cache VALUES (?, ?)", [key, value])
+        self.connection.execute(
+            "INSERT INTO cache VALUES (?, ?)", [self.versioned_key(key), value]
+        )
 
     def get(self, key: str) -> str:
         """Get a value from the cache.
@@ -50,7 +55,9 @@ class Cache:
         Returns:
             str: value from the cache.
         """
-        result = self.connection.execute("SELECT value FROM cache WHERE key=?", [key])
+        result = self.connection.execute(
+            "SELECT value FROM cache WHERE key=?", [self.versioned_key(key)]
+        )
         return row[0] if (row := result.fetchone()) else None
 
     def delete(self, key: str) -> None:
@@ -59,7 +66,9 @@ class Cache:
         Args:
             key (str): key to delete the value from the cache.
         """
-        self.connection.execute("DELETE FROM cache WHERE key=?", [key])
+        self.connection.execute(
+            "DELETE FROM cache WHERE key=?", [self.versioned_key(key)]
+        )
 
     def close(self) -> None:
         """Close the cache."""
