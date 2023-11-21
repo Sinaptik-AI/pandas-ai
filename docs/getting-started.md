@@ -2,7 +2,7 @@
 
 ## Installation
 
-To use `pandasai`, first install it
+To use `pandasai`, first install it:
 
 ```console
 # Using poetry (recommended)
@@ -16,7 +16,7 @@ pip install pandasai
 
 ### Optional Installs
 
-To keep the package size small, we have decided to make some dependencies that are not required by default. These dependencies are required for some features of `pandasai`. To install `pandasai` with these extra dependencies, run
+To keep the package size small, we have decided to make some dependencies that are not required by default. These dependencies are required for some features of `pandasai`. To install `pandasai` with these extra dependencies, run:
 
 ```console
 pip install pandasai[extra-dependency-name]
