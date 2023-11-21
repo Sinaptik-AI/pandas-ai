@@ -67,7 +67,7 @@ If you want to learn more about the `SmartDataframe` class, check out this video
 
 ### How to generate an OpenAI API Token
 
-Users are required to generate `YOUR_API_TOKEN`. Follow these simple steps to generate your API_TOKEN with
+Users are required to generate `YOUR_API_TOKEN`. Follow these simple steps to generate `YOUR_API_TOKEN` with
 [openai](https://platform.openai.com/overview).
 
 1. Go to https://openai.com/api/ and signup with your email address or connect your Google Account.
@@ -106,7 +106,7 @@ df3 = "data/Loan payments data.xlsx"
 dl = SmartDatalake([df1, df2, df3])
 ```
 
-Then, you can use the `SmartDatalake` as follows, similar to how you would use a `SmartDataframe`:
+Then, similar to how you would use a `SmartDataframe`, you can use the `SmartDatalake` as follows:
 
 ```python
 dl.chat('Which are the 5 happiest countries?')
