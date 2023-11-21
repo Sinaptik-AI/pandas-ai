@@ -178,7 +178,7 @@ langchain_llm = OpenAI(openai_api_key="my-openai-api-key")
 df = SmartDataframe("data.csv", {"llm": langchain_llm})
 ```
 
-PandasAI will automatically detect that you are using a LangChain llm and will convert it to a PandasAI llm.
+PandasAI will automatically detect that you are using a LangChain LLM and will convert it to a PandasAI LLM.
 
 ### More information
 
