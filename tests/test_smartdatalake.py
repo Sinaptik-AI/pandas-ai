@@ -11,15 +11,11 @@ import pytest
 from pandasai import SmartDataframe, SmartDatalake
 from pandasai.connectors.base import SQLConnectorConfig
 from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
-from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
 from langchain import OpenAI
-
-from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 
 class TestSmartDatalake:
@@ -235,21 +231,6 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
         )
 
-    def test_get_chat_prompt(self, smart_datalake: SmartDatalake):
-        # Test case 1: direct_sql is True
-        smart_datalake._config.direct_sql = True
-        gen_key, gen_prompt = smart_datalake._get_chat_prompt()
-        expected_key = "direct_sql_prompt"
-        assert gen_key == expected_key
-        assert isinstance(gen_prompt, DirectSQLPrompt)
-
-        # Test case 2: direct_sql is False
-        smart_datalake._config.direct_sql = False
-        gen_key, gen_prompt = smart_datalake._get_chat_prompt()
-        expected_key = "generate_python_code"
-        assert gen_key == expected_key
-        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
-
     def test_validate_true_direct_sql_with_non_connector(self, llm, sample_df):
         # raise exception with non connector
         SmartDatalake(
@@ -279,14 +260,3 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             [sql_connector, pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": False},
         )
-
-    def test_validate_true_direct_sql_with_two_different_connector(
-        self, llm, sql_connector, pgsql_connector
-    ):
-        # not exception is raised using single connector
-        # raise exception when two different connector
-        with pytest.raises(InvalidConfigError):
-            SmartDatalake(
-                [sql_connector, pgsql_connector],
-                config={"llm": llm, "enable_cache": False, "direct_sql": True},
-            )

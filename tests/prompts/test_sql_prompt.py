@@ -91,20 +91,21 @@ Based on the last message in the conversation:
 </table>
 </tables>
 
-What is the correct code?
-
+You can call the following functions that have been pre-defined for you:
 <function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe
     """This method connects to the database, executes the sql query and returns the dataframe"""
 </function>
+
+
+
+
+Update this initial code:
 ```python
 # TODO: import the required dependencies
 import pandas as pd
 ```
 
-Take a deep breath and reason step-by-step. Act as a senior data analyst.
-In the answer, you must never write the "technical" names of the tables.
-Based on the last message in the conversation:
 
-- return the updated analyze_data function wrapped within `python `'''  # noqa: E501
+Return the full updated code:'''  # noqa: E501
         )

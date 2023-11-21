@@ -1,14 +1,17 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 import uuid
 
 import pandas as pd
 import pytest
 
+from pandasai.connectors.base import SQLConnectorConfig
+from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
 from pandasai.exceptions import BadImportError, NoCodeFoundError
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.exceptions import InvalidConfigError
 
 from pandasai.smart_dataframe import SmartDataframe
 
@@ -76,6 +79,44 @@ class TestCodeManager:
     @pytest.fixture
     def exec_context(self) -> MagicMock:
         return CodeExecutionContext(uuid.uuid4(), SkillsManager())
+
+    @pytest.fixture
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def sql_connector(self, create_engine):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        return SQLConnector(self.config)
+
+    @pytest.fixture
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def pgsql_connector(self, create_engine):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        return PostgreSQLConnector(self.config)
 
     def test_run_code_for_calculations(
         self, code_manager: CodeManager, exec_context: MagicMock
@@ -452,3 +493,20 @@ result = {
 
         assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
         assert filters["dfs[2]"][1] == ("Gender", "=", "female")
+
+    def test_validate_true_direct_sql_with_two_different_connector(
+        self, code_manager: CodeManager, sql_connector, pgsql_connector
+    ):
+        # not exception is raised using single connector
+        # raise exception when two different connector
+        with pytest.raises(InvalidConfigError):
+            code_manager._config.direct_sql = True
+            df1 = SmartDataframe(
+                sql_connector,
+                config={"llm": FakeLLM(output="")},
+            )
+            df2 = SmartDataframe(
+                pgsql_connector,
+                config={"llm": FakeLLM(output="")},
+            )
+            code_manager._validate_direct_sql([df1, df2])

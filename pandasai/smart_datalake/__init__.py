@@ -23,7 +23,6 @@ import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.skills import skill
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
@@ -44,12 +43,10 @@ from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from typing import Union, List, Any, Optional
-from ..prompts.generate_python_code import GeneratePythonCodePrompt
 from ..helpers.code_manager import CodeManager
 from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
-from ..exceptions import InvalidConfigError
 
 
 class SmartDatalake:
@@ -65,7 +62,6 @@ class SmartDatalake:
     _skills: SkillsManager
     _instance: str
     _query_exec_tracker: QueryExecTracker
-    _can_direct_sql: bool
 
     _last_code_generated: str = None
     _last_result: str = None
@@ -132,9 +128,6 @@ class SmartDatalake:
         self._query_exec_tracker = QueryExecTracker(
             server_config=self._config.log_server,
         )
-
-        # Checks if direct sql config set they all belong to same sql connector type
-        self._can_direct_sql = self._validate_direct_sql(self._dfs)
 
     def set_instance_type(self, type: str):
         self._instance = type
@@ -249,37 +242,6 @@ class SmartDatalake:
         self._data_viz_library = VisualizationLibrary.DEFAULT.value
         if data_viz_library in (item.value for item in VisualizationLibrary):
             self._data_viz_library = data_viz_library
-
-    def _validate_direct_sql(self, dfs: List) -> None:
-        """
-        Raises error if they don't belong sqlconnector or have different credentials
-        Args:
-            dfs (List[SmartDataframe]): list of SmartDataframes
-
-        Raises:
-            InvalidConfigError: Raise Error in case of config is set but criteria is not met
-        """
-
-        if self._config.direct_sql and all(df.is_connector() for df in dfs):
-            if all(df == dfs[0] for df in dfs):
-                return True
-            else:
-                raise InvalidConfigError(
-                    "Direct requires all SQLConnector and they belong to same datasource "
-                    "and have same credentials"
-                )
-        return False
-
-    def _get_chat_prompt(self):
-        key = "direct_sql_prompt" if self._config.direct_sql else "generate_python_code"
-        return (
-            key,
-            (
-                DirectSQLPrompt(tables=self._dfs)
-                if self._config.direct_sql
-                else GeneratePythonCodePrompt()
-            ),
-        )
 
     def add_skills(self, *skills: List[skill]):
         """

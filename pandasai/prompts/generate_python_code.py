@@ -25,6 +25,15 @@ class CurrentCodePrompt(FileBasedPrompt):
 
     _path_to_template = "assets/prompt_templates/current_code.tmpl"
 
+    def setup(self, **kwargs) -> None:
+        if kwargs.get("dfs_declared", False):
+            self.set_var(
+                "dfs_declared_message",
+                "The variable `dfs: list[pd.DataFrame]` is already decalared.",
+            )
+        else:
+            self.set_var("dfs_declared_message", "")
+
 
 class DefaultInstructionsPrompt(FileBasedPrompt):
     """The default instructions"""
@@ -58,7 +67,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         if "current_code" in kwargs:
             self.set_var("current_code", kwargs["current_code"])
         else:
-            self.set_var("current_code", CurrentCodePrompt())
+            self.set_var("current_code", CurrentCodePrompt(dfs_declared=True))
 
         if "code_description" in kwargs:
             self.set_var("code_description", kwargs["code_description"])

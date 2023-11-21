@@ -2,6 +2,8 @@ from typing import Any
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...prompts.generate_python_code import GeneratePythonCodePrompt
+from ...prompts.direct_sql_prompt import DirectSQLPrompt
+from ...prompts.file_based_prompt import FileBasedPrompt
 
 
 class PromptGeneration(BaseLogicUnit):
@@ -10,6 +12,19 @@ class PromptGeneration(BaseLogicUnit):
     """
 
     pass
+
+    def _get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
+        key = (
+            "direct_sql_prompt" if context.config.direct_sql else "generate_python_code"
+        )
+        return (
+            key,
+            (
+                DirectSQLPrompt(tables=context.dfs)
+                if context.config.direct_sql
+                else GeneratePythonCodePrompt()
+            ),
+        )
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -49,9 +64,11 @@ class PromptGeneration(BaseLogicUnit):
                 "code_description"
             ] = "This is the code generated to answer the previous question:"  # noqa: E501
 
+        [key, default_prompt] = self._get_chat_prompt(pipeline_context)
+
         return pipeline_context.query_exec_tracker.execute_func(
             pipeline_context.get_intermediate_value("get_prompt"),
-            "generate_python_code",
-            default_prompt=GeneratePythonCodePrompt(),
+            key=key,
+            default_prompt=default_prompt,
             default_values=default_values,
         )
