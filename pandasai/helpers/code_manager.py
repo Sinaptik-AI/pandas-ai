@@ -419,7 +419,7 @@ Code running:
     @staticmethod
     def _tokenize_operand(operand_node: ast.expr) -> Generator[str, None, None]:
         """
-        Utility generator function to get subscript slice contants.
+        Utility generator function to get subscript slice constants.
 
         Args:
             operand_node (ast.expr):
@@ -453,7 +453,7 @@ Code running:
         current_lineno: int, assignments: list[ast.Assign], target_name: str
     ):
         """
-        Utility function to get df label by finding the nearest assigment.
+        Utility function to get df label by finding the nearest assignment.
 
         Sort assignment nodes list (copy of the list) by line number.
         Iterate over the assignment nodes list. If the assignment node's value

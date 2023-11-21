@@ -159,7 +159,7 @@ class Agent:
             )
             response = self._call_llm_with_prompt(prompt)
             self._logger.log(
-                f"""Explaination:  {response}
+                f"""Explanation:  {response}
                 """
             )
             return response

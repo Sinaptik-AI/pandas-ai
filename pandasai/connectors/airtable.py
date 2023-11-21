@@ -213,7 +213,7 @@ class AirtableConnector(BaseConnector):
 
         Returns :
             DatFrameType: The head of the data source
-                 that the conector is connected to .
+                 that the connector is connected to .
         """
         data = self._request_api(params={"maxRecords": 5})
         return pd.DataFrame(

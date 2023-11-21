@@ -46,7 +46,7 @@ Below is the rundown of documentation structure for `pandasai`, you need to know
 2. copy `mkdocs.yml`, `.readthedocs.yaml` and the `docs/` folder into your project root.
 3. `docs/API` contains the API documentation created using `docstring`. For any new module, add the links here
 4. Project is using standard Google Docstring Style.
-5. Rebuild the documenation locally to see that it works.
+5. Rebuild the documentation locally to see that it works.
 6. Documentation are hosted on [Read the Docs tutorial](https://docs.readthedocs.io/en/stable/tutorial/)
 
 > Define the release version in `mkdocs.yml` file.

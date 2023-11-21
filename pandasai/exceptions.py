@@ -8,7 +8,7 @@ This module contains the implementation of Custom Exceptions.
 class InvalidRequestError(Exception):
 
     """
-    Raised when the request is not succesfull.
+    Raised when the request is not successful.
 
     Args :
         Exception (Exception): InvalidRequestError
@@ -80,7 +80,7 @@ class UnsupportedModelError(Exception):
 
 class MissingModelError(Exception):
     """
-    Raised when deployment name is not passed to azure as it's a required paramter
+    Raised when deployment name is not passed to azure as it's a required parameter
 
     Args:
     Exception (Exception): MissingModelError
@@ -166,7 +166,7 @@ class InvalidWorkspacePathError(Exception):
 
 class InvalidConfigError(Exception):
     """
-    Raised when config value is not appliable
+    Raised when config value is not applicable
     Args:
         Exception (Exception): InvalidConfigError
     """
@@ -176,5 +176,5 @@ class MaliciousQueryError(Exception):
     """
     Raise error if malicious query is generated
     Args:
-        Exception (Excpetion): MaliciousQueryError
+        Exception (Exception): MaliciousQueryError
     """
