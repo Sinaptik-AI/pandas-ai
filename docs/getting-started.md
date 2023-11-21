@@ -12,7 +12,7 @@ poetry add pandasai
 pip install pandasai
 ```
 
-> Before you install it, we recommended to create a Virtual environment using your preffred choice of Environment Managers e.g [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.
+> Before you install it, we recommend you create a virtual environment using your preffered choice of environment manager e.g [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.
 
 ### Optional Installs
 
