@@ -159,7 +159,7 @@ class TestCodeExecution:
                 raise Exception("Unit test exception")
             return "Mocked Result after retry"
 
-        # Conditional return of execute_func method based args it is called with
+        # Conditional return of execute_func method based arguments it is called with
         def mock_execute_func(*args, **kwargs):
             if isinstance(args[0], Mock) and args[0].name == "execute_code":
                 return mock_execute_code(*args, **kwargs)
