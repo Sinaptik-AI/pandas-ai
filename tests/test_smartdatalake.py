@@ -149,6 +149,25 @@ class TestSmartDatalake:
             "value": "There are 10 countries in the dataframe.",
         }
 
+    @patch.object(
+        CodeManager,
+        "execute_code",
+        return_value={
+            "type": "string",
+            "value": "There are 10 countries in the dataframe.",
+        },
+    )
+    @patch("pandasai.helpers.query_exec_tracker.QueryExecTracker.publish")
+    def test_query_tracker_publish_called_in_chat_method(
+        self, mock_query_tracker_publish, _mocked_method, smart_datalake: SmartDatalake
+    ):
+        assert smart_datalake.last_result is None
+
+        _mocked_method.__name__ = "execute_code"
+
+        smart_datalake.chat("How many countries are in the dataframe?")
+        mock_query_tracker_publish.assert_called()
+
     def test_retry_on_error_with_single_df(
         self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe
     ):

@@ -100,6 +100,8 @@ class TestCodeExecution:
                 return mock_code_manager
 
         context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context._query_exec_tracker = Mock()
+        context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         result = code_execution.execute(
             input="Test Code", context=context, logger=logger
@@ -157,17 +159,24 @@ class TestCodeExecution:
                 raise Exception("Unit test exception")
             return "Mocked Result after retry"
 
+        # Conditional return of execute_func method based arguments it is called with
+        def mock_execute_func(*args, **kwargs):
+            if isinstance(args[0], Mock) and args[0].name == "execute_code":
+                return mock_execute_code(*args, **kwargs)
+            else:
+                return [
+                    "Interuppted Code",
+                    "Exception Testing",
+                    "Successful after Retry",
+                ]
+
         mock_code_manager = Mock()
-        mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
+        mock_code_manager.execute_code = Mock()
+        mock_code_manager.execute_code.name = "execute_code"
 
         context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(
-            return_value=[
-                "Interuppted Code",
-                "Exception Testing",
-                "Successful after Retry",
-            ]
-        )
+
+        context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
 
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
