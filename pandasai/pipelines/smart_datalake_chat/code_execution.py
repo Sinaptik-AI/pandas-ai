@@ -42,9 +42,11 @@ class CodeExecution(BaseLogicUnit):
                     pipeline_context.get_intermediate_value("last_prompt_id"),
                     pipeline_context.get_intermediate_value("skills"),
                 )
-                result = pipeline_context.get_intermediate_value(
-                    "code_manager"
-                ).execute_code(
+
+                result = pipeline_context.query_exec_tracker.execute_func(
+                    pipeline_context.get_intermediate_value(
+                        "code_manager"
+                    ).execute_code,
                     code=code_to_run,
                     context=code_context,
                 )
