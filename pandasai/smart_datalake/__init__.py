@@ -347,6 +347,9 @@ class SmartDatalake:
 
         self.update_intermediate_value_post_pipeline_execution(pipeline_context)
 
+        # publish query tracker
+        self._query_exec_tracker.publish()
+
         return result
 
     def _validate_output(self, result: dict, output_type: Optional[str] = None):
