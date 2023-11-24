@@ -3,6 +3,7 @@ from typing import Union, Optional
 from .base import VisualizationLibrary
 
 from ._viz_library_types import (
+    NoVizLibraryType,
     MatplotlibVizLibraryType,
     PlotlyVizLibraryType,
     SeabornVizLibraryType,
@@ -55,7 +56,7 @@ def viz_lib_type_factory(
             level=logging.WARNING,
         )
 
-    viz_lib_default = MatplotlibVizLibraryType
+    viz_lib_default = NoVizLibraryType
     viz_lib_type_helper = viz_lib_map.get(viz_lib_type, viz_lib_default)()
 
     if logger:

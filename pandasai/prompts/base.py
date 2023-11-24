@@ -62,7 +62,7 @@ class AbstractPrompt(ABC):
 
             dataframes.append(dataframe_info)
 
-        return "\n\n".join(dataframes)
+        return "\n".join(dataframes)
 
     @property
     @abstractmethod

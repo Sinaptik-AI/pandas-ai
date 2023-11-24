@@ -91,20 +91,19 @@ Update this initial code:
 # TODO: import the required dependencies
 import pandas as pd
 
-\"\"\"
-The variable `dfs: list[pd.DataFrame]` is already declared.
-1. Prep: preprocessing/cleaning
-2. Proc: data manipulation (group, filter, aggregate)
-3. Analyze data
-{viz_library_type_hint}
+# Write code here
 
-Return a "result" variable dict:
-{output_type_hint}
-\"\"\"
+# Declare result var: {output_type_hint}
 ```
 
 Q: Question
-Return the full updated code:"""  # noqa E501
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" var dict: {output_type_hint}
+{viz_library_type_hint}
+
+
+Generate python code and return full updated code:"""  # noqa E501
         actual_prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")

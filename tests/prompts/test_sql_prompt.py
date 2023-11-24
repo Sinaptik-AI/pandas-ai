@@ -84,7 +84,7 @@ Based on the last message in the conversation:
 
         assert (
             prompt_content
-            == '''<tables>
+            == f'''<tables>
 <table name="None">
 
 
@@ -107,5 +107,10 @@ import pandas as pd
 ```
 
 
-Return the full updated code:'''  # noqa: E501
+
+At the end, declare "result" var dict: {output_type_hint}
+{viz_library_type_hint}
+
+
+Generate python code and return full updated code:'''  # noqa: E501
         )

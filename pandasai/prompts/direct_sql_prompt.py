@@ -3,7 +3,6 @@ from .file_based_prompt import FileBasedPrompt
 from .generate_python_code import (
     CurrentCodePrompt,
     SimpleReasoningPrompt,
-    DefaultInstructionsPrompt,
 )
 
 
@@ -31,7 +30,7 @@ class DirectSQLPrompt(FileBasedPrompt):
         if "custom_instructions" in kwargs:
             self.set_var("instructions", kwargs["custom_instructions"])
         else:
-            self.set_var("instructions", DefaultInstructionsPrompt())
+            self.set_var("instructions", "")
 
         if "current_code" in kwargs:
             self.set_var("current_code", kwargs["current_code"])

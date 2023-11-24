@@ -35,12 +35,6 @@ class CurrentCodePrompt(FileBasedPrompt):
             self.set_var("dfs_declared_message", "")
 
 
-class DefaultInstructionsPrompt(FileBasedPrompt):
-    """The default instructions"""
-
-    _path_to_template = "assets/prompt_templates/default_instructions.tmpl"
-
-
 class SimpleReasoningPrompt(FileBasedPrompt):
     """The simple reasoning instructions"""
 
@@ -62,7 +56,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         if "custom_instructions" in kwargs:
             self.set_var("instructions", kwargs["custom_instructions"])
         else:
-            self.set_var("instructions", DefaultInstructionsPrompt())
+            self.set_var("instructions", "")
 
         if "current_code" in kwargs:
             self.set_var("current_code", kwargs["current_code"])

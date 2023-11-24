@@ -24,7 +24,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.viz_library_types import (
-    MatplotlibVizLibraryType,
+    NoVizLibraryType,
     viz_lib_map,
     viz_lib_type_factory,
 )
@@ -195,29 +195,19 @@ Update this initial code:
 # TODO: import the required dependencies
 import pandas as pd
 
-\"\"\"
-The variable `dfs: list[pd.DataFrame]` is already declared.
-1. Prep: preprocessing/cleaning
-2. Proc: data manipulation (group, filter, aggregate)
-3. Analyze data
-If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+# Write code here
 
-Return a "result" variable dict:
-- type (possible values "string", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Examples: 
-        { "type": "string", "value": f"The highest salary is {highest_salary}." }
-        or
-        { "type": "number", "value": 125 }
-        or
-        { "type": "dataframe", "value": pd.DataFrame({...}) }
-        or
-        { "type": "plot", "value": "temp_chart.png" }
-\"\"\"
+# Declare result var: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
 ```
 
 Q: How many countries are in the dataframe?
-Return the full updated code:"""  # noqa: E501
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" var dict: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+
+
+Generate python code and return full updated code:"""  # noqa: E501
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
@@ -252,20 +242,19 @@ Update this initial code:
 # TODO: import the required dependencies
 import pandas as pd
 
-\"\"\"
-The variable `dfs: list[pd.DataFrame]` is already declared.
-1. Prep: preprocessing/cleaning
-2. Proc: data manipulation (group, filter, aggregate)
-3. Analyze data
-If the user requests to create a chart, utilize the Python matplotlib library to generate high-quality graphics that will be saved directly to a file.
+# Write code here
 
-Return a "result" variable dict:
-{output_type_hint}
-\"\"\"
+# Declare result var: {output_type_hint}
 ```
 
 Q: How many countries are in the dataframe?
-Return the full updated code:"""
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" var dict: {output_type_hint}
+
+
+
+Generate python code and return full updated code:"""
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
@@ -990,7 +979,7 @@ result = {"type": None, "value": "temp_chart.png"}
     @pytest.mark.parametrize(
         "viz_library_type,viz_library_type_hint",
         [
-            (None, MatplotlibVizLibraryType().template_hint),
+            (None, NoVizLibraryType().template_hint),
             *[
                 (type_, viz_lib_type_factory(type_).template_hint)
                 for type_ in viz_lib_map
@@ -1024,29 +1013,19 @@ Update this initial code:
 # TODO: import the required dependencies
 import pandas as pd
 
-\"\"\"
-The variable `dfs: list[pd.DataFrame]` is already declared.
-1. Prep: preprocessing/cleaning
-2. Proc: data manipulation (group, filter, aggregate)
-3. Analyze data
-%s
+# Write code here
 
-Return a "result" variable dict:
-- type (possible values "string", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Examples: 
-        { "type": "string", "value": f"The highest salary is {highest_salary}." }
-        or
-        { "type": "number", "value": 125 }
-        or
-        { "type": "dataframe", "value": pd.DataFrame({...}) }
-        or
-        { "type": "plot", "value": "temp_chart.png" }
-\"\"\"
+# Declare result var: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
 ```
 
 Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
-Return the full updated code:"""  # noqa: E501
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" var dict: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+%s
+
+
+Generate python code and return full updated code:"""  # noqa: E501
             % viz_library_type_hint
         )
 

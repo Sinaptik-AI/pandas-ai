@@ -101,6 +101,9 @@ class CodeExecution(BaseLogicUnit):
             "engine": context.dfs[0].engine,
             "code": code,
             "error_returned": e,
+            "output_type_hint": context.get_intermediate_value(
+                "output_type_helper"
+            ).template_hint,
         }
         error_correcting_instruction = context.get_intermediate_value("get_prompt")(
             "correct_error",

@@ -125,7 +125,7 @@ class GoogleVertexAI(BaseGoogle):
         else:
             raise UnsupportedModelError(self.model)
 
-        return str(completion)
+        return completion.text
 
     @property
     def type(self) -> str:

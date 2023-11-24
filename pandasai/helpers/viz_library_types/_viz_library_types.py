@@ -46,6 +46,16 @@ class BaseVizLibraryType(ABC):
         return type_ok, validation_logs
 
 
+class NoVizLibraryType(BaseVizLibraryType):
+    @property
+    def template_hint(self) -> str:
+        return ""
+
+    @property
+    def name(self):
+        return "no_viz_library"
+
+
 class MatplotlibVizLibraryType(BaseVizLibraryType):
     @property
     def name(self):

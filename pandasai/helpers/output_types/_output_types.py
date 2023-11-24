@@ -64,9 +64,7 @@ class BaseOutputType(ABC):
 class NumberOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (must be "number")
-    - value (must be a number)
-    Example output: { "type": "number", "value": 125 }"""
+        return """type (must be "number"), value must int. Example: { "type": "number", "value": 125 }"""  # noqa E501
 
     @property
     def name(self):
@@ -79,9 +77,7 @@ class NumberOutputType(BaseOutputType):
 class DataFrameOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (must be "dataframe")
-    - value (must be a pandas dataframe)
-    Example output: { "type": "dataframe", "value": pd.DataFrame({...}) }"""
+        return """type (must be "dataframe"), value must be pd.DataFrame or pd.Series. Example: { "type": "dataframe", "value": pd.DataFrame({...}) }"""  # noqa E501
 
     @property
     def name(self):
@@ -94,9 +90,7 @@ class DataFrameOutputType(BaseOutputType):
 class PlotOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (must be "plot")
-    - value (must be a string containing the path of the plot image)
-    Example output: { "type": "plot", "value": "export/charts/temp_chart.png" }"""
+        return """type (must be "plot"), value must be string. Example: { "type": "plot", "value": "temp_chart.png" }"""  # noqa E501
 
     @property
     def name(self):
@@ -113,9 +107,7 @@ class PlotOutputType(BaseOutputType):
 class StringOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (must be "string")
-    - value (must be a conversational answer, as a string)
-    Example output: { "type": "string", "value": f"The highest salary is {highest_salary}." }"""  # noqa E501
+        return """type (must be "string"), value must be string. Example: { "type": "string", "value": f"The highest salary is {highest_salary}." }"""  # noqa E501
 
     @property
     def name(self):
@@ -128,16 +120,7 @@ class StringOutputType(BaseOutputType):
 class DefaultOutputType(BaseOutputType):
     @property
     def template_hint(self):
-        return """- type (possible values "string", "number", "dataframe", "plot")
-    - value (can be a string, a dataframe or the path of the plot, NOT a dictionary)
-    Examples: 
-        { "type": "string", "value": f"The highest salary is {highest_salary}." }
-        or
-        { "type": "number", "value": 125 }
-        or
-        { "type": "dataframe", "value": pd.DataFrame({...}) }
-        or
-        { "type": "plot", "value": "temp_chart.png" }"""  # noqa E501
+        return """type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }"""  # noqa E501
 
     @property
     def name(self):

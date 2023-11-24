@@ -60,9 +60,7 @@ class PromptGeneration(BaseLogicUnit):
             default_values["current_code"] = pipeline_context.get_intermediate_value(
                 "last_code_generated"
             )
-            default_values[
-                "code_description"
-            ] = "This is the code generated to answer the previous question:"  # noqa: E501
+            default_values["code_description"] = ""
 
         [key, default_prompt] = self._get_chat_prompt(pipeline_context)
 
