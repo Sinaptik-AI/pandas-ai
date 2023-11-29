@@ -680,53 +680,6 @@ result = {"type": None, "value": "temp_chart.png"}
         assert isinstance(smart_dataframe.dataframe, pl.DataFrame)
         assert smart_dataframe.dataframe.frame_equal(polars_df)
 
-    def test_import_csv_file(self, smart_dataframe, mocker):
-        mocker.patch.object(
-            pd,
-            "read_parquet",
-            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
-        )
-
-        file_path = "sample.parquet"
-
-        df = smart_dataframe._import_from_file(file_path)
-
-        assert isinstance(df, pd.DataFrame)
-
-    def test_import_parquet_file(self, smart_dataframe, mocker):
-        mocker.patch.object(
-            pd,
-            "read_parquet",
-            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
-        )
-
-        file_path = "sample.parquet"
-
-        df = smart_dataframe._import_from_file(file_path)
-
-        assert isinstance(df, pd.DataFrame)
-
-    def test_import_excel_file(self, smart_dataframe, mocker):
-        mocker.patch.object(
-            pd,
-            "read_excel",
-            return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
-        )
-
-        file_path = "sample.xlsx"
-
-        df = smart_dataframe._import_from_file(file_path)
-
-        assert isinstance(df, pd.DataFrame)
-
-        expected_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
-        assert df.equals(expected_df)
-
-    @pytest.mark.parametrize("file_path", ["sample.txt", "sample.docx", "sample.pdf"])
-    def test_invalid_file_format(self, smart_dataframe, file_path):
-        with pytest.raises(ValueError):
-            smart_dataframe._import_from_file(file_path)
-
     def test_import_pandas_series(self, llm):
         pandas_series = pd.Series([1, 2, 3])
 

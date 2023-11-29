@@ -36,12 +36,13 @@ from ..helpers.data_sampler import DataSampler
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
-from ..helpers.from_google_sheets import from_google_sheets
 from typing import Any, List, Union, Optional
 from ..helpers.df_info import DataFrameType, df_type
 from .abstract_df import DataframeAbstract
 from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
+
+from .file_importer import FileImporter
 
 
 class SmartDataframeCore:
@@ -76,7 +77,7 @@ class SmartDataframeCore:
             self.connector.logger = self._logger
             self._df_loaded = False
         elif isinstance(df, str):
-            self.dataframe = self._import_from_file(df)
+            self.dataframe = FileImporter.import_from_file(df)
         elif isinstance(df, pd.Series):
             self.dataframe = df.to_frame()
         elif isinstance(df, (list, dict)):
@@ -90,28 +91,6 @@ class SmartDataframeCore:
                 ) from e
         else:
             self.dataframe = df
-
-    def _import_from_file(self, file_path: str):
-        """
-        Import a dataframe from a file (csv, parquet, xlsx)
-
-        Args:
-            file_path (str): Path to the file to be imported.
-
-        Returns:
-            pd.DataFrame: Pandas dataframe
-        """
-
-        if file_path.endswith(".csv"):
-            return pd.read_csv(file_path)
-        elif file_path.endswith(".parquet"):
-            return pd.read_parquet(file_path)
-        elif file_path.endswith(".xlsx"):
-            return pd.read_excel(file_path)
-        elif file_path.startswith("https://docs.google.com/spreadsheets/"):
-            return from_google_sheets(file_path)[0]
-        else:
-            raise ValueError("Invalid file format.")
 
     def _load_engine(self):
         """
@@ -137,7 +116,7 @@ class SmartDataframeCore:
             DataFrameType: Pandas or Polars dataframe
         """
         if isinstance(df, str):
-            return self._import_from_file(df)
+            return FileImporter.import_from_file(df)
         elif isinstance(df, (list, dict)):
             # if the list or dictionary can be converted to a dataframe, convert it
             # otherwise, raise an error
