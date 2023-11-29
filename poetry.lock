@@ -5324,4 +5324,4 @@ yfinance = ["yfinance"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "7c6772d0bcd98c3e669bb35cf44f2850ab791a6178d4d7c7f08697c81692cb90"
+content-hash = "8df91b702416097f9b3264e4b19dbb032cda645ea4bd748f17d5f877946c2c43"
