@@ -121,7 +121,7 @@ class DfConfigManager:
                 {
                     "name": name,
                     "description": self._sdf.table_description,
-                    "sample": self._sdf.head_csv,
+                    "sample": self._sdf.head_df.to_csv(),
                     "import_path": import_path,
                 }
             )
@@ -152,14 +152,14 @@ class DfConfigManager:
 
     @property
     def head_csv(self):
-        return self._sdf.head_csv
+        return self._sdf.head_df.to_csv()
 
     @property
     def name(self):
         name = self._sdf.table_name
         if name is None:
             # Generate random hash
-            hash_object = hashlib.sha256(self._sdf.head_csv.encode())
+            hash_object = hashlib.sha256(self._sdf.head_df.to_csv().encode())
             name = hash_object.hexdigest()
         return name
 

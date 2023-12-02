@@ -173,14 +173,12 @@ class TestSmartDatalake:
     ):
         code = """result = 'Hello World'"""
 
-        smart_dataframe._get_sample_head = Mock(
-            return_value=pd.DataFrame(
-                {
-                    "country": ["China", "Japan", "Spain"],
-                    "gdp": [654881226, 9009692259, 8446903488],
-                    "happiness_index": [6.66, 7.16, 6.38],
-                }
-            )
+        smart_dataframe.head_df.to_csv = Mock(
+            return_value="""country,gdp,happiness_index
+China,654881226,6.66
+Japan,9009692259,7.16
+Spain,8446903488,6.38
+"""
         )
 
         smart_datalake._retry_run_code(

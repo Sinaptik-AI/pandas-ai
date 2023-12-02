@@ -53,9 +53,7 @@ class AbstractPrompt(ABC):
             dataframe_info += ">"
 
             # Add dataframe details
-            dataframe_info += (
-                f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_csv}"
-            )
+            dataframe_info += f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_df.to_csv()}"
 
             # Close the dataframe tag
             dataframe_info += "</dataframe>"

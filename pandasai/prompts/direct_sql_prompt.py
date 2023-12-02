@@ -20,7 +20,7 @@ class DirectSQLPrompt(FileBasedPrompt):
                 else ""
             )
             table_head_tag = f'<table name="{table.table_name}"{table_description_tag}>'
-            table = f"{table_head_tag}\n{table.head_csv}\n</table>"
+            table = f"{table_head_tag}\n{table.head_df.to_csv()}\n</table>"
             tables_join.append(table)
         return "\n\n".join(tables_join)
 

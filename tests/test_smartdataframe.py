@@ -615,14 +615,14 @@ result = {"type": None, "value": "temp_chart.png"}
         assert smart_dataframe.max_retries == 5
 
     def test_custom_head_getter(self, custom_head, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.custom_head.equals(custom_head)
+        assert smart_dataframe.head_df.custom_head.equals(custom_head)
 
     def test_custom_head_setter(self, custom_head, smart_dataframe: SmartDataframe):
         new_custom_head = (
             custom_head.copy().sample(frac=1, axis=1).reset_index(drop=True)
         )
-        smart_dataframe.custom_head = new_custom_head
-        assert new_custom_head.equals(smart_dataframe.custom_head)
+        smart_dataframe.head_df.custom_head = new_custom_head
+        assert new_custom_head.equals(smart_dataframe.head_df.custom_head)
 
     def test_load_dataframe_from_list(self, smart_dataframe):
         input_data = [
@@ -814,7 +814,7 @@ result = {"type": None, "value": "temp_chart.png"}
             df_object.save()
 
             # Check that hashlib.sha256() was called with the correct argument
-            mock_sha256.assert_called_with(df_object.head_csv.encode())
+            mock_sha256.assert_called_with(df_object.head_df.to_csv().encode())
 
         # Verify that the data was saved correctly
         with open("pandasai.json", "r") as json_file:
@@ -926,8 +926,8 @@ result = {"type": None, "value": "temp_chart.png"}
     def test_head_csv_with_custom_head(
         self, custom_head, data_sampler, smart_dataframe: SmartDataframe
     ):
-        with patch("pandasai.smart_dataframe.DataSampler", new=data_sampler):
-            assert smart_dataframe.head_csv == custom_head.to_csv(index=False)
+        with patch("pandasai.smart_dataframe.df_head.DataSampler", new=data_sampler):
+            assert smart_dataframe.head_df.to_csv() == custom_head.to_csv(index=False)
 
     @pytest.mark.parametrize(
         "viz_library_type,viz_library_type_hint",
