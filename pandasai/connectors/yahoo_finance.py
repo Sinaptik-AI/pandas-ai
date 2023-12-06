@@ -2,11 +2,22 @@ import os
 import pandas as pd
 from typing import Optional, Union
 
-from .base import YahooFinanceConnectorConfig, BaseConnector
+from .base import BaseConnector, BaseConnectorConfig
 import time
 from ..helpers.path import find_project_root
 from ..constants import DEFAULT_FILE_PERMISSIONS
 import hashlib
+
+
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Yahoo Finance.
+    """
+
+    dialect: str = "yahoo_finance"
+    host: str = "yahoo.finance.com"
+    database: str = "stock_data"
+    host: str
 
 
 class YahooFinanceConnector(BaseConnector):

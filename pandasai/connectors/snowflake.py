@@ -3,11 +3,24 @@ SnowFlake connectors are used to connect to SnowFlake Data Cloud.
 """
 
 import pandas as pd
-from .base import BaseConnectorConfig, SnowFlakeConnectorConfig
+from .base import BaseConnectorConfig
 from sqlalchemy import create_engine
 from functools import cache
 from typing import Union
-from .sql import SQLConnector
+from .sql import SQLConnector, SQLBaseConnectorConfig
+
+
+class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
+
+    account: str
+    database: str
+    username: str
+    password: str
+    dbSchema: str
+    warehouse: str
 
 
 class SnowFlakeConnector(SQLConnector):

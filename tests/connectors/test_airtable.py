@@ -1,6 +1,6 @@
 import unittest
 from pandasai.connectors import AirtableConnector
-from pandasai.connectors.base import AirtableConnectorConfig
+from pandasai.connectors.airtable import AirtableConnectorConfig
 import pandas as pd
 from unittest.mock import patch
 import json

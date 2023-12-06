@@ -9,8 +9,11 @@ import pandas as pd
 import pytest
 
 from pandasai import SmartDataframe, SmartDatalake
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai.connectors.sql import (
+    PostgreSQLConnector,
+    SQLConnector,
+    SQLConnectorConfig,
+)
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS

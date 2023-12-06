@@ -1,21 +1,20 @@
 import unittest
 import pandas as pd
-from unittest.mock import Mock,patch
-from pandasai.connectors.base import SqliteConnectorConfig
+from unittest.mock import Mock, patch
+from pandasai.connectors.sql import SqliteConnectorConfig
 from pandasai.connectors import SqliteConnector
 
+
 class TestSqliteConnector(unittest.TestCase):
-    @patch("pandasai.connectors.sql.create_engine",autospec=True)
-    def setUp(self,mock_create_engine) -> None:
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def setUp(self, mock_create_engine) -> None:
         self.mock_engine = Mock()
         self.mock_connection = Mock()
         self.mock_engine.connect.return_value = self.mock_connection
         mock_create_engine.return_value = self.mock_engine
 
         self.config = SqliteConnectorConfig(
-            dialect="sqlite",
-            database="path_todb.db",
-            table="yourtable"
+            dialect="sqlite", database="path_todb.db", table="yourtable"
         ).dict()
 
         self.connector = SqliteConnector(self.config)
@@ -37,11 +36,10 @@ class TestSqliteConnector(unittest.TestCase):
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
-            "<SqliteConnector dialect=sqlite "
-            "database=path_todb.db table=yourtable>"
+            "<SqliteConnector dialect=sqlite " "database=path_todb.db table=yourtable>"
         )
         self.assertEqual(repr(self.connector), expected_repr)
-    
+
     @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})

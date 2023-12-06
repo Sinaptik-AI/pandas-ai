@@ -1,8 +1,11 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai.connectors.sql import (
+    PostgreSQLConnector,
+    SQLConnector,
+    SQLConnectorConfig,
+)
 from pandasai.exceptions import MaliciousQueryError
 
 

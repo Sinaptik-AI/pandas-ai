@@ -7,7 +7,7 @@ import os
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
-from typing import Optional, Union
+from typing import Union
 
 
 class BaseConnectorConfig(BaseModel):
@@ -18,80 +18,6 @@ class BaseConnectorConfig(BaseModel):
     database: str
     table: str
     where: list[list[str]] = None
-
-
-class AirtableConnectorConfig(BaseConnectorConfig):
-    """
-    Connecter configuration for Airtable data.
-    """
-
-    api_key: str
-    base_id: str
-    database: str = "airtable_data"
-
-
-class SQLBaseConnectorConfig(BaseConnectorConfig):
-    """
-    Base Connector configuration.
-    """
-
-    driver: Optional[str] = None
-    dialect: Optional[str] = None
-
-
-class SqliteConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configurations for sqlite db.
-    """
-
-    table: str
-    database: str
-
-
-class YahooFinanceConnectorConfig(BaseConnectorConfig):
-    """
-    Connector configuration for Yahoo Finance.
-    """
-
-    dialect: str = "yahoo_finance"
-    host: str = "yahoo.finance.com"
-    database: str = "stock_data"
-    host: str
-
-
-class SQLConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration.
-    """
-
-    host: str
-    port: int
-    username: str
-    password: str
-
-
-class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for SnowFlake.
-    """
-
-    account: str
-    database: str
-    username: str
-    password: str
-    dbSchema: str
-    warehouse: str
-
-
-class DatabricksConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for DataBricks.
-    """
-
-    host: str
-    port: int
-    token: str
-    httpPath: str
 
 
 class BaseConnector(ABC):

@@ -7,8 +7,7 @@ import os
 import pandas as pd
 
 from pandasai.exceptions import MaliciousQueryError
-from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
-from .base import BaseConnectorConfig
+from .base import BaseConnector, BaseConnectorConfig
 from sqlalchemy import create_engine, text, select, asc
 from sqlalchemy.engine import Connection
 
@@ -16,8 +15,37 @@ from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
 from ..constants import DEFAULT_FILE_PERMISSIONS
-from typing import Union
+from typing import Optional, Union
 import time
+
+
+class SQLBaseConnectorConfig(BaseConnectorConfig):
+    """
+    Base Connector configuration.
+    """
+
+    driver: Optional[str] = None
+    dialect: Optional[str] = None
+
+
+class SqliteConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configurations for sqlite db.
+    """
+
+    table: str
+    database: str
+
+
+class SQLConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration.
+    """
+
+    host: str
+    port: int
+    username: str
+    password: str
 
 
 class SQLConnector(BaseConnector):
