@@ -129,8 +129,8 @@ class TestSmartDataframe:
         return smart_df
 
     def test_init(self, smart_dataframe):
-        assert smart_dataframe._table_name is None
-        assert smart_dataframe._table_description is None
+        assert smart_dataframe.table_name is None
+        assert smart_dataframe.table_description is None
         assert smart_dataframe.dataframe is None
 
     def test_init_without_llm(self, sample_df):
@@ -485,33 +485,33 @@ result = {"type": None, "value": "temp_chart.png"}
             } in logs
 
     def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.verbose is False
+        assert smart_dataframe.lake.verbose is False
 
-        smart_dataframe.verbose = True
-        assert smart_dataframe.verbose
+        smart_dataframe.lake.verbose = True
+        assert smart_dataframe.lake.verbose
         assert smart_dataframe.lake._logger.verbose
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
             smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
         )
 
-        smart_dataframe.verbose = False
-        assert not smart_dataframe.verbose
+        smart_dataframe.lake.verbose = False
+        assert not smart_dataframe.lake.verbose
         assert smart_dataframe.lake._logger.verbose is False
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
     def test_updates_save_logs_config_with_setters(
         self, smart_dataframe: SmartDataframe
     ):
-        assert smart_dataframe.save_logs
+        assert smart_dataframe.lake.save_logs
 
-        smart_dataframe.save_logs = False
-        assert not smart_dataframe.save_logs
+        smart_dataframe.lake.save_logs = False
+        assert not smart_dataframe.lake.save_logs
         assert not smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 0
 
-        smart_dataframe.save_logs = True
-        assert smart_dataframe.save_logs
+        smart_dataframe.lake.save_logs = True
+        assert smart_dataframe.lake.save_logs
         assert smart_dataframe.lake._logger.save_logs
         assert len(smart_dataframe.lake._logger._logger.handlers) == 1
         assert isinstance(
@@ -521,50 +521,52 @@ result = {"type": None, "value": "temp_chart.png"}
     def test_updates_enable_cache_config_with_setters(
         self, smart_dataframe: SmartDataframe
     ):
-        assert smart_dataframe.enable_cache is False
+        assert smart_dataframe.lake.enable_cache is False
 
-        smart_dataframe.enable_cache = True
-        assert smart_dataframe.enable_cache
+        smart_dataframe.lake.enable_cache = True
+        assert smart_dataframe.lake.enable_cache
         assert smart_dataframe.lake.enable_cache
         assert smart_dataframe.lake.cache is not None
         assert isinstance(smart_dataframe.lake._cache, Cache)
 
-        smart_dataframe.enable_cache = False
-        assert not smart_dataframe.enable_cache
+        smart_dataframe.lake.enable_cache = False
+        assert not smart_dataframe.lake.enable_cache
         assert smart_dataframe.lake.enable_cache is False
         assert smart_dataframe.lake.cache is None
 
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.enforce_privacy is False
-        assert smart_dataframe.use_error_correction_framework
-        assert smart_dataframe.custom_prompts == {}
-        assert smart_dataframe.save_charts is False
-        assert smart_dataframe.save_charts_path == "exports/charts"
-        assert smart_dataframe.custom_whitelisted_dependencies == []
-        assert smart_dataframe.max_retries == 3
+        assert smart_dataframe.lake.enforce_privacy is False
+        assert smart_dataframe.lake.use_error_correction_framework
+        assert smart_dataframe.lake.custom_prompts == {}
+        assert smart_dataframe.lake.save_charts is False
+        assert smart_dataframe.lake.save_charts_path == "exports/charts"
+        assert smart_dataframe.lake.custom_whitelisted_dependencies == []
+        assert smart_dataframe.lake.max_retries == 3
 
-        smart_dataframe.enforce_privacy = True
-        assert smart_dataframe.enforce_privacy
+        smart_dataframe.lake.enforce_privacy = True
+        assert smart_dataframe.lake.enforce_privacy
 
-        smart_dataframe.use_error_correction_framework = False
-        assert not smart_dataframe.use_error_correction_framework
+        smart_dataframe.lake.use_error_correction_framework = False
+        assert not smart_dataframe.lake.use_error_correction_framework
 
-        smart_dataframe.custom_prompts = {
+        smart_dataframe.lake.custom_prompts = {
             "generate_python_code": GeneratePythonCodePrompt()
         }
-        assert smart_dataframe.custom_prompts != {}
+        assert smart_dataframe.lake.custom_prompts != {}
 
-        smart_dataframe.save_charts = True
-        assert smart_dataframe.save_charts
+        smart_dataframe.lake.save_charts = True
+        assert smart_dataframe.lake.save_charts
 
-        smart_dataframe.save_charts_path = "some/path"
-        assert smart_dataframe.save_charts_path == "some/path"
+        smart_dataframe.lake.save_charts_path = "some/path"
+        assert smart_dataframe.lake.save_charts_path == "some/path"
 
-        smart_dataframe.custom_whitelisted_dependencies = ["some_dependency"]
-        assert smart_dataframe.custom_whitelisted_dependencies == ["some_dependency"]
+        smart_dataframe.lake.custom_whitelisted_dependencies = ["some_dependency"]
+        assert smart_dataframe.lake.custom_whitelisted_dependencies == [
+            "some_dependency"
+        ]
 
-        smart_dataframe.max_retries = 5
-        assert smart_dataframe.max_retries == 5
+        smart_dataframe.lake.max_retries = 5
+        assert smart_dataframe.lake.max_retries == 5
 
     def test_custom_head_getter(self, custom_head, smart_dataframe: SmartDataframe):
         assert smart_dataframe.head_df.custom_head.equals(custom_head)

@@ -245,11 +245,11 @@ class TestSkills:
             return "SkillB Result"
 
         smart_dataframe.add_skills(skill_a)
-        assert len(smart_dataframe._lake._skills.skills) == 1
+        assert len(smart_dataframe.lake._skills.skills) == 1
 
-        smart_dataframe._lake._skills._skills = []
+        smart_dataframe.lake._skills._skills = []
         smart_dataframe.add_skills(skill_a, skill_b)
-        assert len(smart_dataframe._lake._skills.skills) == 2
+        assert len(smart_dataframe.lake._skills.skills) == 2
 
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})

@@ -35,7 +35,6 @@ from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
 from typing import List, Union, Optional
 from .abstract_df import DataframeAbstract
-from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
 from ..connectors.pandas import PandasConnector
 
@@ -52,11 +51,9 @@ class SmartDataframeCore:
 
     _df = None
     _temporary_loaded: bool = False
-    _connector: BaseConnector = None
-    _logger: Logger = None
 
     def __init__(self, df: pd.DataFrame, logger: Logger = None):
-        self._logger = logger
+        self.logger = logger
         self._load_dataframe(df)
 
     def _load_dataframe(self, df: Union[pd.DataFrame, BaseConnector]):
@@ -88,7 +85,7 @@ class SmartDataframeCore:
                 ) from e
 
         self.dataframe = None
-        self.connector.logger = self._logger
+        self.connector.logger = self.logger
 
     def _validate_and_convert_dataframe(
         self, df: Union[pd.DataFrame, str, list, dict]
@@ -161,21 +158,10 @@ class SmartDataframeCore:
         df = self._validate_and_convert_dataframe(df)
         self._df = df
 
-    @property
-    def connector(self):
-        return self._connector
-
-    @connector.setter
-    def connector(self, connector: BaseConnector):
-        self._connector = connector
-
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
-    _table_name: str
-    _table_description: str
     _original_import: any
     _core: SmartDataframeCore
-    _lake: SmartDatalake
 
     def __init__(
         self,
@@ -221,16 +207,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 description = df_config["description"]
         self._core = SmartDataframeCore(df, logger)
 
-        self._table_description = description
-        self._table_name = name
-        self._lake = SmartDatalake([self], config, logger)
+        self.table_description = description
+        self.table_name = name
+        self.lake = SmartDatalake([self], config, logger)
 
         # set instance type in SmartDataLake
-        self._lake.set_instance_type(self.__class__.__name__)
+        self.lake.set_instance_type(self.__class__.__name__)
 
         # If no name is provided, use the fallback name provided the connector
-        if self._table_name is None and self.connector:
-            self._table_name = self.connector.fallback_name
+        if self.table_name is None and self.connector:
+            self.table_name = self.connector.fallback_name
 
         self.head_df = DataframeHead(
             self._core.connector,
@@ -356,14 +342,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return df_validator.validate(schema)
 
     @property
-    def lake(self) -> SmartDatalake:
-        return self._lake
-
-    @lake.setter
-    def lake(self, lake: SmartDatalake):
-        self._lake = lake
-
-    @property
     def rows_count(self):
         return self.connector.rows_count
 
@@ -403,118 +381,16 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return self._original_import
 
     @property
-    def logger(self):
-        return self.lake.logger
-
-    @logger.setter
-    def logger(self, logger: Logger):
-        self.lake.logger = logger
-
-    @property
     def logs(self):
         return self.lake.logs
-
-    @property
-    def verbose(self):
-        return self.lake.verbose
-
-    @verbose.setter
-    def verbose(self, verbose: bool):
-        self.lake.verbose = verbose
-
-    @property
-    def save_logs(self):
-        return self.lake.save_logs
-
-    @save_logs.setter
-    def save_logs(self, save_logs: bool):
-        self.lake.save_logs = save_logs
-
-    @property
-    def enforce_privacy(self):
-        return self.lake.enforce_privacy
-
-    @enforce_privacy.setter
-    def enforce_privacy(self, enforce_privacy: bool):
-        self.lake.enforce_privacy = enforce_privacy
-
-    @property
-    def enable_cache(self):
-        return self.lake.enable_cache
-
-    @enable_cache.setter
-    def enable_cache(self, enable_cache: bool):
-        self.lake.enable_cache = enable_cache
-
-    @property
-    def use_error_correction_framework(self):
-        return self.lake.use_error_correction_framework
-
-    @use_error_correction_framework.setter
-    def use_error_correction_framework(self, use_error_correction_framework: bool):
-        self.lake.use_error_correction_framework = use_error_correction_framework
-
-    @property
-    def custom_prompts(self):
-        return self.lake.custom_prompts
-
-    @custom_prompts.setter
-    def custom_prompts(self, custom_prompts: dict):
-        self.lake.custom_prompts = custom_prompts
-
-    @property
-    def save_charts(self):
-        return self.lake.save_charts
-
-    @save_charts.setter
-    def save_charts(self, save_charts: bool):
-        self.lake.save_charts = save_charts
-
-    @property
-    def save_charts_path(self):
-        return self.lake.save_charts_path
-
-    @save_charts_path.setter
-    def save_charts_path(self, save_charts_path: str):
-        self.lake.save_charts_path = save_charts_path
-
-    @property
-    def custom_whitelisted_dependencies(self):
-        return self.lake.custom_whitelisted_dependencies
-
-    @custom_whitelisted_dependencies.setter
-    def custom_whitelisted_dependencies(
-        self, custom_whitelisted_dependencies: List[str]
-    ):
-        self.lake.custom_whitelisted_dependencies = custom_whitelisted_dependencies
-
-    @property
-    def max_retries(self):
-        return self.lake.max_retries
-
-    @max_retries.setter
-    def max_retries(self, max_retries: int):
-        self.lake.max_retries = max_retries
 
     @property
     def llm(self):
         return self.lake.llm
 
-    @llm.setter
-    def llm(self, llm: Union[LLM, LangchainLLM]):
-        self.lake.llm = llm
-
-    @property
-    def table_name(self):
-        return self._table_name
-
-    @property
-    def table_description(self):
-        return self._table_description
-
     @property
     def last_query_log_id(self):
-        return self._lake.last_query_log_id
+        return self.lake.last_query_log_id
 
     def __getattr__(self, name):
         if name in self._core.__dir__():
