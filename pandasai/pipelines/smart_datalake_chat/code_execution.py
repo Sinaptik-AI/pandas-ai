@@ -98,7 +98,6 @@ class CodeExecution(BaseLogicUnit):
         logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
 
         default_values = {
-            "engine": context.dfs[0].engine,
             "code": code,
             "error_returned": e,
             "output_type_hint": context.get_intermediate_value(

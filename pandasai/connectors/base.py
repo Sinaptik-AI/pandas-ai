@@ -2,9 +2,9 @@
 Base connector class to be extended by all connectors.
 """
 
+import pandas as pd
 from abc import ABC, abstractmethod
 import os
-from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
 from typing import Union
@@ -79,7 +79,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the
@@ -88,7 +88,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def execute(self) -> DataFrameType:
+    def execute(self) -> pd.DataFrame:
         """
         Execute the given query on the data source that the connector is
         connected to.

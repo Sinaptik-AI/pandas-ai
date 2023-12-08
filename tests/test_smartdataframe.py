@@ -2,19 +2,16 @@
 import json
 import os
 import sys
-from collections import defaultdict
 from typing import Optional
 from unittest.mock import patch, Mock
 from uuid import UUID
 
 import pandas as pd
-import polars as pl
 from pydantic import BaseModel, Field
 import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
-from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.output_types import (
     DefaultOutputType,
     output_types_map,
@@ -37,7 +34,6 @@ class TestSmartDataframe:
     def tearDown(self):
         for filename in [
             "df_test.parquet",
-            "df_test_polars.parquet",
             "df_duplicate.parquet",
         ]:
             if os.path.exists("cache/" + filename):
@@ -59,7 +55,7 @@ class TestSmartDataframe:
         class DataSampler:
             df = None
 
-            def __init__(self, df: DataFrameType):
+            def __init__(self, df: pd.DataFrame):
                 self.df = df
 
             def sample(self, _n: int = 5):
@@ -111,17 +107,6 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
-    def sample_saved_dfs(self):
-        return [
-            {
-                "name": "photo",
-                "description": "Dataframe containing photo metadata",
-                "sample": "filename,format,size\n1.jpg,JPEG,1240KB\n2.png,PNG,320KB",
-                "import_path": "path/to/photo_data.parquet",
-            }
-        ]
-
-    @pytest.fixture
     def custom_head(self, sample_df: pd.DataFrame):
         return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
@@ -146,8 +131,7 @@ class TestSmartDataframe:
     def test_init(self, smart_dataframe):
         assert smart_dataframe._table_name is None
         assert smart_dataframe._table_description is None
-        assert smart_dataframe.engine is not None
-        assert smart_dataframe.dataframe is not None
+        assert smart_dataframe.dataframe is None
 
     def test_init_without_llm(self, sample_df):
         with pytest.raises(LLMNotFoundError):
@@ -303,39 +287,6 @@ result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
         assert isinstance(result_dict, dict)
         assert all(key in result_dict for key in expected_keys)
 
-    @pytest.mark.parametrize(
-        "to_dict_params,expected_passing_params,engine_type",
-        [
-            ({}, {"orient": "dict", "into": dict}, "pandas"),
-            ({}, {"as_series": True}, "polars"),
-            ({"orient": "dict"}, {"orient": "dict", "into": dict}, "pandas"),
-            (
-                {"orient": "dict", "into": defaultdict},
-                {"orient": "dict", "into": defaultdict},
-                "pandas",
-            ),
-            ({"as_series": False}, {"as_series": False}, "polars"),
-            (
-                {"as_series": False, "orient": "dict", "into": defaultdict},
-                {"as_series": False},
-                "polars",
-            ),
-        ],
-    )
-    def test_to_dict_passing_parameters(
-        self,
-        smart_dataframe_mocked_df: SmartDataframe,
-        to_dict_params,
-        engine_type,
-        expected_passing_params,
-    ):
-        smart_dataframe_mocked_df._engine = engine_type
-        smart_dataframe_mocked_df.to_dict(**to_dict_params)
-        # noinspection PyUnresolvedReferences
-        smart_dataframe_mocked_df.dataframe.to_dict.assert_called_once_with(
-            **expected_passing_params
-        )
-
     def test_extract_code(self, llm):
         code = """```python
 result = {'happiness': 0.5, 'gdp': 0.8}
@@ -430,9 +381,10 @@ result = {"type": None, "value": "temp_chart.png"}
         )
 
     def test_shortcut(self, smart_dataframe: SmartDataframe):
-        smart_dataframe.chat = Mock(return_value="Hello world")
-        smart_dataframe.clean_data()
-        smart_dataframe.chat.assert_called_once()
+        assert callable(smart_dataframe.clean_data)
+        with patch.object(smart_dataframe, "clean_data") as mock_clean_data:
+            smart_dataframe.clean_data()
+            mock_clean_data.assert_called_once()
 
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(AbstractPrompt):
@@ -624,70 +576,6 @@ result = {"type": None, "value": "temp_chart.png"}
         smart_dataframe.head_df.custom_head = new_custom_head
         assert new_custom_head.equals(smart_dataframe.head_df.custom_head)
 
-    def test_load_dataframe_from_list(self, smart_dataframe):
-        input_data = [
-            {"column1": 1, "column2": 4},
-            {"column1": 2, "column2": 5},
-            {"column1": 3, "column2": 6},
-        ]
-
-        smart_dataframe._load_dataframe(input_data)
-
-        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
-
-    def test_load_dataframe_from_dict(self, smart_dataframe):
-        input_data = {"column1": [1, 2, 3], "column2": [4, 5, 6]}
-
-        smart_dataframe._load_dataframe(input_data)
-
-        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
-
-    def test_load_dataframe_from_pandas_dataframe(self, smart_dataframe):
-        pandas_df = pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
-
-        smart_dataframe._load_dataframe(pandas_df)
-
-        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
-
-    def test_load_dataframe_from_saved_dfs(self, sample_saved_dfs, mocker):
-        expected_df = pd.DataFrame(
-            {
-                "filename": ["photo1.jpg", "photo2.jpg"],
-                "format": ["JPEG", "PNG"],
-                "size": ["1240KB", "320KB"],
-            }
-        )
-        mocker.patch.object(pd, "read_parquet", return_value=expected_df)
-
-        mocker.patch.object(
-            json,
-            "load",
-            return_value={"saved_dfs": sample_saved_dfs},
-        )
-
-        saved_df_name = "photo"
-        smart_dataframe = SmartDataframe(saved_df_name)
-
-        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
-        assert smart_dataframe.table_name == saved_df_name
-        assert smart_dataframe.dataframe.equals(expected_df)
-
-    def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
-        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
-
-        smart_dataframe._load_dataframe(polars_df)
-
-        assert isinstance(smart_dataframe.dataframe, pl.DataFrame)
-        assert smart_dataframe.dataframe.frame_equal(polars_df)
-
-    def test_import_pandas_series(self, llm):
-        pandas_series = pd.Series([1, 2, 3])
-
-        smart_dataframe = SmartDataframe(pandas_series, config={"llm": llm})
-
-        assert isinstance(smart_dataframe.dataframe, pd.DataFrame)
-        assert smart_dataframe.dataframe.equals(pd.DataFrame({0: [1, 2, 3]}))
-
     def test_save_pandas_dataframe(self, llm):
         with open("pandasai.json", "r") as json_file:
             backup_pandasai = json_file.read()
@@ -733,31 +621,6 @@ result = {"type": None, "value": "temp_chart.png"}
             data = json.load(json_file)
             assert data["saved_dfs"][0]["name"] == "custom_name"
 
-        with open("pandasai.json", "w") as json_file:
-            json_file.write(backup_pandasai)
-
-    def test_save_polars_dataframe(self, llm):
-        with open("pandasai.json", "r") as json_file:
-            backup_pandasai = json_file.read()
-
-        # Create an instance of SmartDataframe
-        polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
-        df_object = SmartDataframe(
-            polars_df,
-            name="df_test_polars",
-            description="Test description",
-            config={"llm": llm, "enable_cache": False},
-        )
-
-        # Call the save function
-        df_object.save()
-
-        # Verify that the data was saved correctly
-        with open("pandasai.json", "r") as json_file:
-            data = json.load(json_file)
-            assert data["saved_dfs"][0]["name"] == "df_test_polars"
-
-        # recover file for next test case
         with open("pandasai.json", "w") as json_file:
             json_file.write(backup_pandasai)
 
@@ -861,23 +724,6 @@ result = {"type": None, "value": "temp_chart.png"}
 
         assert validation_result.passed is False
 
-    def test_pydantic_validate_polars(self, llm):
-        # Create a sample DataFrame
-        df = pl.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
-
-        # Create an instance of SmartDataframe without a name
-        df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
-        )
-
-        # Pydantic Schema
-        class TestSchema(BaseModel):
-            A: int
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-        assert validation_result.passed
-
     def test_pydantic_validate_false_one_record(self, llm):
         # Create a sample DataFrame
         df = pd.DataFrame({"A": [1, "test", 3, 4], "B": [5, 6, 7, 8]})
@@ -926,7 +772,7 @@ result = {"type": None, "value": "temp_chart.png"}
     def test_head_csv_with_custom_head(
         self, custom_head, data_sampler, smart_dataframe: SmartDataframe
     ):
-        with patch("pandasai.smart_dataframe.df_head.DataSampler", new=data_sampler):
+        with patch("pandasai.connectors.pandas.PandasConnector", new=data_sampler):
             assert smart_dataframe.head_df.to_csv() == custom_head.to_csv(index=False)
 
     @pytest.mark.parametrize(

@@ -1,11 +1,11 @@
 from typing import List, Optional, Union, Any
 from pandasai.helpers.cache import Cache
 
-from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.memory import Memory
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
+import pandas as pd
 
 
 class PipelineContext:
@@ -13,7 +13,7 @@ class PipelineContext:
     Pass Context to the pipeline which is accessible to each step via kwargs
     """
 
-    _dfs: List[Union[DataFrameType, Any]]
+    _dfs: List[Union[pd.DataFrame, Any]]
     _memory: Memory
     _skills: SkillsManager
     _cache: Cache
@@ -23,7 +23,7 @@ class PipelineContext:
 
     def __init__(
         self,
-        dfs: List[Union[DataFrameType, Any]],
+        dfs: List[Union[pd.DataFrame, Any]],
         config: Optional[Union[Config, dict]] = None,
         memory: Memory = None,
         skills: SkillsManager = None,
@@ -44,7 +44,7 @@ class PipelineContext:
         self._intermediate_values = {}
 
     @property
-    def dfs(self) -> List[Union[DataFrameType, Any]]:
+    def dfs(self) -> List[Union[pd.DataFrame, Any]]:
         return self._dfs
 
     @property

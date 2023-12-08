@@ -68,7 +68,7 @@ class SnowFlakeConnector(SQLConnector):
         self._connection = self._engine.connect()
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -84,7 +84,7 @@ class SnowFlakeConnector(SQLConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RANDOM()")
+        query = self._build_query(limit=n, order="RANDOM()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)

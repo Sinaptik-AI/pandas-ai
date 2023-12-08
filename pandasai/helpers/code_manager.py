@@ -124,7 +124,7 @@ class CodeManager:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
 
-        if self._config.direct_sql and all(df.is_connector() for df in dfs):
+        if self._config.direct_sql:
             if all(df == dfs[0] for df in dfs):
                 return True
             else:
@@ -224,11 +224,10 @@ Code running:
                 original_dfs.append(None)
                 continue
 
-            if df.has_connector:
-                extracted_filters = self._extract_filters(self._current_code_executed)
-                filters = extracted_filters.get(f"dfs[{index}]", [])
-                df.connector.set_additional_filters(filters)
-                df.load_connector(temporary=len(filters) > 0)
+            extracted_filters = self._extract_filters(self._current_code_executed)
+            filters = extracted_filters.get(f"dfs[{index}]", [])
+            df.connector.set_additional_filters(filters)
+            df.load_connector(temporary=len(filters) > 0)
 
             original_dfs.append(df.dataframe)
 
@@ -530,49 +529,24 @@ Code running:
 
         call_visitor = CallVisitor()
         call_visitor.visit(tree)
-        calls = call_visitor.call_nodes
 
         for node in ast.walk(tree):
-            if isinstance(node, ast.Compare):
-                is_call_on_left = isinstance(node.left, ast.Call)
-                is_polars = False
-                is_calling_col = False
-                try:
-                    is_polars = node.left.func.value.id in ("pl", "polars")
-                    is_calling_col = node.left.func.attr == "col"
-                except AttributeError:
-                    pass
-
-                if is_call_on_left and is_polars and is_calling_col:
-                    df_name = self._get_nearest_func_call(
-                        node.lineno, calls, "filter"
-                    ).func.value.id
-                    current_df = self._get_df_id_by_nearest_assignment(
-                        node.lineno, assignments, df_name
+            if isinstance(node, ast.Compare) and isinstance(node.left, ast.Subscript):
+                name, *slices = self._tokenize_operand(node.left)
+                current_df = (
+                    self._get_df_id_by_nearest_assignment(
+                        node.lineno, assignments, name
                     )
-                    left_str = node.left.args[0].value
+                    or current_df
+                )
+                left_str = slices[-1] if slices else name
 
-                    for op, right in zip(node.ops, node.comparators):
-                        op_str = self._ast_comparatos_map.get(type(op), "Unknown")
-                        right_str = right.value
+                for op, right in zip(node.ops, node.comparators):
+                    op_str = self._ast_comparatos_map.get(type(op), "Unknown")
+                    name, *slices = self._tokenize_operand(right)
+                    right_str = slices[-1] if slices else name
 
-                        comparisons[current_df].append((left_str, op_str, right_str))
-                elif isinstance(node.left, ast.Subscript):
-                    name, *slices = self._tokenize_operand(node.left)
-                    current_df = (
-                        self._get_df_id_by_nearest_assignment(
-                            node.lineno, assignments, name
-                        )
-                        or current_df
-                    )
-                    left_str = slices[-1] if slices else name
-
-                    for op, right in zip(node.ops, node.comparators):
-                        op_str = self._ast_comparatos_map.get(type(op), "Unknown")
-                        name, *slices = self._tokenize_operand(right)
-                        right_str = slices[-1] if slices else name
-
-                        comparisons[current_df].append((left_str, op_str, right_str))
+                    comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
     def _extract_filters(self, code) -> dict[str, list]:

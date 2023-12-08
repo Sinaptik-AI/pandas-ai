@@ -1,13 +1,13 @@
 import logging
 from pandasai.config import load_config
 from pandasai.exceptions import UnSupportedLogicUnit
-from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
+import pandas as pd
 
 
 class Pipeline(AbstractPipeline):
@@ -21,7 +21,7 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        context: Union[List[Union[DataFrameType, Any]], PipelineContext] = None,
+        context: Union[List[Union[pd.DataFrame, Any]], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,

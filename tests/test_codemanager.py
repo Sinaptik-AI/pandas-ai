@@ -312,87 +312,6 @@ my_custom_library.do_something()
             "__name__": "__main__",
         }
 
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_polars(self, df_name, code, code_manager: CodeManager):
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    def test_extract_filters_polars_multiple_df(self, code_manager: CodeManager):
-        code = """
-df = dfs[0]
-filtered_paid_df_male = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-num_loans_paid_off_male = len(filtered_paid_df)
-
-df = dfs[1]
-filtered_pend_df_male = df.filter(
-    (pl.col('loan_status') == 'PENDING') & (pl.col('Gender') == 'male')
-)
-num_loans_pending_male = len(filtered_pend_df)
-
-df = dfs[2]
-filtered_paid_df_female = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'female')
-)
-num_loans_paid_off_female = len(filtered_pend_df)
-
-value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
-result = {
-    'type': 'number',
-    'value': value
-}
-"""
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert "dfs[1]" in filters
-        assert "dfs[2]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-        assert len(filters["dfs[1]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
-        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "=", "female")
-
     @pytest.mark.parametrize("df_name", ["df", "foobar"])
     def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
         code = f"""
@@ -405,45 +324,6 @@ filtered_df = (
 num_loans = len(filtered_df)
 result = {{'type': 'number', 'value': num_loans}}
 """
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar[(
-    foobar['loan_status'] == 'PAIDOFF'
-) & (df['Gender'] == 'male')]
-num_loans = len(filtered_df)
-result = {'type': 'number', 'value': num_loans}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_col_index_non_default_name(
-        self, df_name, code, code_manager: CodeManager
-    ):
         filters = code_manager._extract_filters(code)
         assert isinstance(filters, dict)
         assert "dfs[0]" in filters

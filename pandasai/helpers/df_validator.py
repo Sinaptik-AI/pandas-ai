@@ -1,7 +1,7 @@
 from typing import List, Dict
 from pydantic import ValidationError
 from pydantic import BaseModel
-from pandasai.helpers.df_info import DataFrameType, df_type
+import pandas as pd
 
 
 class DfValidationResult:
@@ -59,9 +59,9 @@ class DfValidator:
         df: dataframe to be validated
     """
 
-    _df: DataFrameType
+    _df: pd.DataFrame
 
-    def __init__(self, df: DataFrameType):
+    def __init__(self, df: pd.DataFrame):
         """
         Args:
             df: dataframe to be validated
@@ -88,25 +88,6 @@ class DfValidator:
         except ValidationError as e:
             return e.errors()
 
-    def _df_to_list_of_dict(self, df: DataFrameType, dataframe_type: str) -> List[Dict]:
-        """
-        Create list of dict of dataframe rows on basis of dataframe type
-        Supports only polars and pandas dataframe
-
-        Args:
-            df: dataframe to be converted
-            dataframe_type: type of dataframe
-
-        Returns:
-            list of dict of dataframe rows
-        """
-        if dataframe_type == "pandas":
-            return df.to_dict(orient="records")
-        elif dataframe_type == "polars":
-            return df.to_dicts()
-        else:
-            return []
-
     def validate(self, schema: BaseModel) -> DfValidationResult:
         """
         Args:
@@ -115,11 +96,7 @@ class DfValidator:
         Returns:
             Validation results
         """
-        dataframe_type = df_type(self._df)
-        if dataframe_type is None:
-            raise ValueError("Unsupported DataFrame")
-
-        df_json: List[Dict] = self._df_to_list_of_dict(self._df, dataframe_type)
+        df_json: List[Dict] = self._df.to_dict(orient="records")
 
         errors = self._validate_batch(schema, df_json)
 

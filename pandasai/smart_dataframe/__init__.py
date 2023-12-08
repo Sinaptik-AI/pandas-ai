@@ -1,5 +1,5 @@
 """
-A smart dataframe class is a wrapper around the pandas/polars dataframe that allows you
+A smart dataframe class is a wrapper around the pandas dataframe that allows you
 to query it using natural language. It uses the LLMs to generate Python code from
 natural language and then executes it on the dataframe.
 
@@ -33,13 +33,13 @@ from ..schemas.df_config import Config
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from ..helpers.df_config_manager import DfConfigManager
-from typing import Any, List, Union, Optional
-from ..helpers.df_info import DataFrameType, df_type
+from typing import List, Union, Optional
 from .abstract_df import DataframeAbstract
 from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
+from ..connectors.pandas import PandasConnector
 
-from .file_importer import FileImporter
+from ..helpers.file_importer import FileImporter
 from .df_head import DataframeHead
 
 
@@ -51,67 +51,56 @@ class SmartDataframeCore:
     """
 
     _df = None
-    _df_loaded: bool = True
     _temporary_loaded: bool = False
     _connector: BaseConnector = None
-    _engine: str = None
     _logger: Logger = None
 
-    def __init__(self, df: DataFrameType, logger: Logger = None):
+    def __init__(self, df: pd.DataFrame, logger: Logger = None):
         self._logger = logger
         self._load_dataframe(df)
 
-    def _load_dataframe(self, df):
+    def _load_dataframe(self, df: Union[pd.DataFrame, BaseConnector]):
         """
         Load the dataframe from a file or a connector.
 
         Args:
-            df (Union[pd.DataFrame, pl.DataFrame, BaseConnector]):
-            Pandas or Polars dataframe or a connector.
+            df (Union[pd.DataFrame, BaseConnector]): The dataframe to load.
         """
         if isinstance(df, BaseConnector):
-            self.dataframe = None
             self.connector = df
-            self.connector.logger = self._logger
-            self._df_loaded = False
-        elif isinstance(df, str):
-            self.dataframe = FileImporter.import_from_file(df)
-        elif isinstance(df, pd.Series):
-            self.dataframe = df.to_frame()
-        elif isinstance(df, (list, dict)):
-            # if the list can be converted to a dataframe, convert it
-            # otherwise, raise an error
+        elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
+            self.connector = PandasConnector({"original_df": df})
+        else:
             try:
-                self.dataframe = pd.DataFrame(df)
-            except ValueError as e:
+                import polars as pl
+
+                if isinstance(df, pl.DataFrame):
+                    from ..connectors.polars import PolarsConnector
+
+                    self.connector = PolarsConnector({"original_df": df})
+                else:
+                    raise ValueError(
+                        "Invalid input data. We cannot convert it to a dataframe."
+                    )
+            except ImportError as e:
                 raise ValueError(
                     "Invalid input data. We cannot convert it to a dataframe."
                 ) from e
-        else:
-            self.dataframe = df
 
-    def _load_engine(self):
-        """
-        Load the engine of the dataframe (Pandas or Polars)
-        """
-        engine = df_type(self._df)
+        self.dataframe = None
+        self.connector.logger = self._logger
 
-        if engine is None:
-            raise ValueError(
-                "Invalid input data. Must be a Pandas or Polars dataframe."
-            )
-
-        self._engine = engine
-
-    def _validate_and_convert_dataframe(self, df: DataFrameType) -> DataFrameType:
+    def _validate_and_convert_dataframe(
+        self, df: Union[pd.DataFrame, str, list, dict]
+    ) -> pd.DataFrame:
         """
         Validate the dataframe and convert it to a Pandas or Polars dataframe.
 
         Args:
-            df (DataFrameType): Pandas or Polars dataframe or path to a file
+            df (Union[pd.DataFrame, str, list, dict]): The dataframe to validate and convert.
 
         Returns:
-            DataFrameType: Pandas or Polars dataframe
+            pd.DataFrame: The validated and converted dataframe.
         """
         if isinstance(df, str):
             return FileImporter.import_from_file(df)
@@ -138,7 +127,6 @@ class SmartDataframeCore:
                 been loaded.
         """
         self.dataframe = self.connector.execute()
-        self._df_loaded = True
         self._temporary_loaded = temporary
 
     def _unload_connector(self):
@@ -149,43 +137,29 @@ class SmartDataframeCore:
         partial dataframe.
         """
         self._df = None
-        self._df_loaded = False
         self._temporary_loaded = False
 
     @property
-    def dataframe(self) -> DataFrameType:
-        if self._df_loaded:
-            return_df = None
+    def dataframe(self) -> pd.DataFrame:
+        if self._df is not None:
+            return_df = self._df.copy()
 
-            if self._engine == "polars":
-                return_df = self._df.clone()
-            elif self._engine == "pandas":
-                return_df = self._df.copy()
-
-            if self.has_connector and self._df_loaded and self._temporary_loaded:
+            if self._df is not None and self._temporary_loaded:
                 self._unload_connector()
 
             return return_df
-        elif self.has_connector:
-            return None
+        return None
 
     @dataframe.setter
-    def dataframe(self, df: DataFrameType):
+    def dataframe(self, df: pd.DataFrame):
         """
         Load a dataframe into the smart dataframe
 
         Args:
-            df (DataFrameType): Pandas or Polars dataframe or path to a file
+            df (pd.DataFrame): The dataframe to load.
         """
         df = self._validate_and_convert_dataframe(df)
         self._df = df
-
-        if df is not None:
-            self._load_engine()
-
-    @property
-    def engine(self) -> str:
-        return self._engine
 
     @property
     def connector(self):
@@ -194,10 +168,6 @@ class SmartDataframeCore:
     @connector.setter
     def connector(self, connector: BaseConnector):
         self._connector = connector
-
-    @property
-    def has_connector(self):
-        return self._connector is not None
 
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
@@ -209,7 +179,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def __init__(
         self,
-        df: DataFrameType,
+        df: Union[pd.DataFrame, pd.Series, BaseConnector, str, dict, list],
         name: str = None,
         description: str = None,
         custom_head: pd.DataFrame = None,
@@ -263,7 +233,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             self._table_name = self.connector.fallback_name
 
         self.head_df = DataframeHead(
-            self._core.connector if self._core.has_connector else self.dataframe,
+            self._core.connector,
             custom_head,
             samples_amount=0 if self.lake.config.enforce_privacy else 3,
         )
@@ -286,7 +256,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -304,7 +274,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Returns:
             str: Hash of the columns of the dataframe
         """
-        if not self._core._df_loaded and self.connector:
+        if self._core.dataframe is None and self.connector:
             return self.connector.column_hash
 
         columns_str = "".join(self.dataframe.columns)
@@ -363,12 +333,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return config_manager.load(name)
 
     @property
-    def dataframe(self) -> DataFrameType:
+    def dataframe(self) -> pd.DataFrame:
         return self._core.dataframe
-
-    @property
-    def engine(self):
-        return self._core.engine
 
     @property
     def connector(self):
@@ -399,25 +365,11 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def rows_count(self):
-        if self._core._df_loaded:
-            return self.dataframe.shape[0]
-        elif self.connector is not None:
-            return self.connector.rows_count
-        else:
-            raise ValueError(
-                "Cannot determine rows_count. No dataframe or connector loaded."
-            )
+        return self.connector.rows_count
 
     @property
     def columns_count(self):
-        if self._core._df_loaded:
-            return self.dataframe.shape[1]
-        elif self.connector is not None:
-            return self.connector.columns_count
-        else:
-            raise ValueError(
-                "Cannot determine columns_count. No dataframe or connector loaded."
-            )
+        return self.connector.columns_count
 
     @property
     def last_prompt(self):
@@ -572,10 +524,41 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         else:
             return self.__getattribute__(name)
 
+    def __getattribute__(self, name):
+        """
+        This method is called whenever any attribute of the object is accessed
+
+        Args:
+            name (str): Name of the attribute
+
+        Returns:
+            Any: Attribute value
+        """
+        attr = object.__getattribute__(self, name)
+
+        # Check if the attribute is a method and
+        if callable(attr) and name != "load_connector":
+
+            def new_attr(*args, **kwargs):
+                # Call self.load_connector() before the actual method
+                self.load_connector()
+                # Then call the actual method
+                return attr(*args, **kwargs)
+
+            return new_attr
+        else:
+            return attr
+
     def __getitem__(self, key):
+        if self.dataframe is None:
+            self.load_connector()
+
         return self.dataframe.__getitem__(key)
 
     def __setitem__(self, key, value):
+        if self.dataframe is None:
+            self.load_connector()
+
         return self.dataframe.__setitem__(key, value)
 
     def __dir__(self):
@@ -585,31 +568,24 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         return self.dataframe.__repr__()
 
     def __len__(self):
-        return len(self.dataframe)
+        return self._core.connector.rows_count
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__) and (
-            self._core.has_connector and other._core.has_connector
-        ):
-            return self._core.connector.equals(other._core.connector)
-
-        return False
-
-    def is_connector(self):
-        return self._core.has_connector
+        return self._core.connector.equals(other._core.connector)
 
     def get_query_exec_func(self):
         return self._core.connector.execute_direct_sql_query
 
 
 def load_smartdataframes(
-    dfs: List[Union[DataFrameType, Any]], config: Config
+    dfs: List[Union[pd.DataFrame, BaseConnector, SmartDataframe, str, dict, list]],
+    config: Config = None,
 ) -> List[SmartDataframe]:
     """
     Load all the dataframes to be used in the smart datalake.
 
     Args:
-        dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+        dfs (List[Union[pd.DataFrame, BaseConnector, SmartDataframe, str, dict, list]]):
     """
 
     smart_dfs = []

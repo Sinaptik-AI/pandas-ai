@@ -6,7 +6,6 @@ import json
 import os
 import hashlib
 from pandasai.helpers.path import create_directory, find_closest, find_project_root
-from .df_info import df_type
 
 
 class DfConfigManager:
@@ -75,16 +74,8 @@ class DfConfigManager:
             raise ValueError("Dataframe imported from config cannot be saved")
 
         # Save df if pandas or polar
-        dataframe_type = df_type(self.original_import)
-        if dataframe_type == "pandas":
-            file_path = self._create_save_path()
-            self._sdf.dataframe.to_parquet(file_path)
-        elif dataframe_type == "polars":
-            file_path = self._create_save_path()
-            with open(file_path, "w") as f:
-                self._sdf.dataframe.write_csv(f)
-        else:
-            raise ValueError("Unknown dataframe type")
+        file_path = self._create_save_path()
+        self._sdf.dataframe.to_parquet(file_path)
 
         return file_path
 

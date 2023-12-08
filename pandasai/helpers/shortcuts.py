@@ -1,11 +1,11 @@
-from ..helpers.df_info import DataFrameType
 from typing import Union
 from abc import ABC, abstractmethod
+import pandas as pd
 
 
 class Shortcuts(ABC):
     @abstractmethod
-    def chat(self, prompt: str) -> DataFrameType:
+    def chat(self, prompt: str) -> Union[str, int, float, list, dict]:
         """
         Run method from PandasAI class.
 
@@ -13,17 +13,17 @@ class Shortcuts(ABC):
             prompt (str): A prompt to be sent to LLM.
 
         Returns:
-            DataFrameType: The response from the LLM.
+            Union[str, int, float, list, dict]: The result of the method.
         """
 
         pass
 
-    def clean_data(self) -> DataFrameType:
+    def clean_data(self) -> pd.DataFrame:
         """
         Do data cleaning and return the dataframe.
 
         Returns:
-            DataFrameType: The cleaned DataFrame.
+            pd.DataFrame: The DataFrame with cleaned data.
         """
 
         return self.chat(
@@ -34,12 +34,12 @@ class Shortcuts(ABC):
 """
         )
 
-    def impute_missing_values(self) -> DataFrameType:
+    def impute_missing_values(self) -> pd.DataFrame:
         """
         Do missing value imputation and return the dataframe.
 
         Returns:
-            DataFrameType: The DataFrame with imputed missing values.
+            pd.DataFrame: The DataFrame with imputed missing values.
         """
 
         return self.chat(
@@ -50,12 +50,12 @@ class Shortcuts(ABC):
 """
         )
 
-    def generate_features(self) -> DataFrameType:
+    def generate_features(self) -> pd.DataFrame:
         """
         Do feature generation and return the dataframe.
 
         Returns:
-            DataFrameType: The DataFrame with generated features.
+            pd.DataFrame: The DataFrame with generated features.
         """
 
         return self.chat(
@@ -260,7 +260,7 @@ y_pred = {y_pred}
 
         self.chat(prompt)
 
-    def rolling_mean(self, column: str, window: int) -> DataFrameType:
+    def rolling_mean(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling mean.
 
@@ -269,7 +269,7 @@ y_pred = {y_pred}
             window (int): The window size.
 
         Returns:
-            DataFrameType: The DataFrame containing the rolling mean.
+            pd.DataFrame: The DataFrame containing the rolling mean.
         """
 
         return self.chat(
@@ -277,7 +277,7 @@ y_pred = {y_pred}
             f" of {window}.",
         )
 
-    def rolling_median(self, column: str, window: int) -> DataFrameType:
+    def rolling_median(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling median.
 
@@ -286,7 +286,7 @@ y_pred = {y_pred}
             window (int): The window size.
 
         Returns:
-            DataFrameType: The DataFrame containing the rolling median.
+            pd.DataFrame: The DataFrame containing the rolling median.
         """
 
         return self.chat(
@@ -294,7 +294,7 @@ y_pred = {y_pred}
             f" of {window}.",
         )
 
-    def rolling_std(self, column: str, window: int) -> DataFrameType:
+    def rolling_std(self, column: str, window: int) -> pd.DataFrame:
         """
         Calculate the rolling standard deviation.
 
@@ -303,7 +303,7 @@ y_pred = {y_pred}
             window (int): The window size.
 
         Returns:
-            DataFrameType: The DataFrame containing the rolling standard deviation.
+            pd.DataFrame: The DataFrame containing the rolling standard deviation.
         """
 
         return self.chat(
@@ -311,7 +311,7 @@ y_pred = {y_pred}
             f"window of {window}.",
         )
 
-    def segment_customers(self, features: list, n_clusters: int) -> DataFrameType:
+    def segment_customers(self, features: list, n_clusters: int) -> pd.DataFrame:
         """
         Segment customers.
 
@@ -320,7 +320,7 @@ y_pred = {y_pred}
             n_clusters (int): The number of clusters.
 
         Returns:
-            DataFrameType: The DataFrame containing the segmentation.
+            pd.DataFrame: The DataFrame containing the segmentation.
         """
 
         return self.chat(

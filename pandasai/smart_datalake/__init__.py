@@ -1,5 +1,5 @@
 """
-A smart dataframe class is a wrapper around the pandas/polars dataframe that allows you
+A smart dataframe class is a wrapper around the pandas dataframe that allows you
 to query it using natural language. It uses the LLMs to generate Python code from
 natural language and then executes it on the dataframe.
 
@@ -44,13 +44,13 @@ from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
 from typing import Union, List, Any, Optional
 from ..helpers.code_manager import CodeManager
-from ..helpers.df_info import DataFrameType
 from ..helpers.path import find_project_root
 from ..helpers.viz_library_types.base import VisualizationLibrary
+import pandas as pd
 
 
 class SmartDatalake:
-    _dfs: List[DataFrameType]
+    _dfs: List[Union[pd.DataFrame, Any]]
     _config: Union[Config, dict]
     _llm: LLM
     _cache: Cache = None
@@ -71,7 +71,7 @@ class SmartDatalake:
 
     def __init__(
         self,
-        dfs: List[Union[DataFrameType, Any]],
+        dfs: List[Union[pd.DataFrame, Any]],
         config: Optional[Union[Config, dict]] = None,
         logger: Logger = None,
         memory: Memory = None,
@@ -79,7 +79,7 @@ class SmartDatalake:
     ):
         """
         Args:
-            dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+            dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
             config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
@@ -111,7 +111,7 @@ class SmartDatalake:
         elif self._config.enable_cache:
             self._cache = Cache()
 
-        context = Context(self._config, self.logger, self.engine)
+        context = Context(self._config, self.logger)
 
         if self._config.response_parser:
             self._response_parser = self._config.response_parser(context)
@@ -170,12 +170,12 @@ class SmartDatalake:
                 cache_dir = os.path.join(os.getcwd(), "cache")
             os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
-    def _load_dfs(self, dfs: List[Union[DataFrameType, Any]]):
+    def _load_dfs(self, dfs: List[Union[pd.DataFrame, Any]]):
         """
         Load all the dataframes to be used in the smart datalake.
 
         Args:
-            dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+            dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
         """
 
         from ..smart_dataframe import SmartDataframe
@@ -316,7 +316,7 @@ class SmartDatalake:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -364,7 +364,7 @@ class SmartDatalake:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -423,7 +423,7 @@ class SmartDatalake:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -508,7 +508,6 @@ class SmartDatalake:
         self.logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
 
         default_values = {
-            "engine": self._dfs[0].engine,
             "code": code,
             "error_returned": e,
         }
@@ -526,10 +525,6 @@ class SmartDatalake:
         """
         self._memory.clear()
         self._conversation_id = uuid.uuid4()
-
-    @property
-    def engine(self):
-        return self._dfs[0].engine
 
     @property
     def last_prompt(self):

@@ -54,8 +54,6 @@ class DirectSQLPrompt(FileBasedPrompt):
 
     def on_prompt_generation(self) -> None:
         default_import = "import pandas as pd"
-        engine_df_name = "pd.DataFrame"
 
         self.set_var("default_import", default_import)
-        self.set_var("engine_df_name", engine_df_name)
         self.set_var("reasoning", SimpleReasoningPrompt())

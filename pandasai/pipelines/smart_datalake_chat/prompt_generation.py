@@ -42,8 +42,6 @@ class PromptGeneration(BaseLogicUnit):
         pipeline_context: PipelineContext = kwargs.get("context")
 
         default_values = {
-            # TODO: find a better way to determine the engine,
-            "engine": pipeline_context.dfs[0].engine,
             "output_type_hint": pipeline_context.get_intermediate_value(
                 "output_type_helper"
             ).template_hint,

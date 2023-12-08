@@ -1,8 +1,7 @@
 import json
 from typing import Union, List, Optional
-
+import pandas as pd
 from pandasai.skills import skill
-from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..prompts.base import AbstractPrompt
@@ -26,14 +25,14 @@ class Agent:
 
     def __init__(
         self,
-        dfs: Union[DataFrameType, List[DataFrameType]],
+        dfs: Union[pd.DataFrame, List[pd.DataFrame]],
         config: Optional[Union[Config, dict]] = None,
         logger: Optional[Logger] = None,
         memory_size: int = 10,
     ):
         """
         Args:
-            df (Union[DataFrameType, List[DataFrameType]]): DataFrame can be Pandas,
+            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas dataframe
             Polars or Database connectors
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.

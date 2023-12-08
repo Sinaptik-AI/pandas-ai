@@ -1,5 +1,5 @@
 import pandas as pd
-from ..helpers.from_google_sheets import from_google_sheets
+from .from_google_sheets import from_google_sheets
 
 
 class FileImporter:

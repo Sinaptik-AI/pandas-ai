@@ -20,7 +20,7 @@ class MockConnector(BaseConnector):
     def _init_connection(self, config: BaseConnectorConfig):
         pass
 
-    def head(self):
+    def head(self, n: int = 5):
         pass
 
     def execute(self):

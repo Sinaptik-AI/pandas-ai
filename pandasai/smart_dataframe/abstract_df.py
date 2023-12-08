@@ -2,8 +2,6 @@ from abc import ABC
 
 
 class DataframeAbstract(ABC):
-    _engine: str
-
     @property
     def dataframe(self):
         raise NotImplementedError("This method must be implemented in the child class")
@@ -293,18 +291,11 @@ class DataframeAbstract(ABC):
         """
         return self.dataframe.to_sql(name=name, con=con)
 
-    def to_dict(self, orient="dict", into=dict, as_series=True):
+    def to_dict(self, orient="dict", into=dict):
         """
         A proxy-call to the dataframe's `.to_dict()`.
         """
-        if self._engine == "pandas":
-            return self.dataframe.to_dict(orient=orient, into=into)
-        elif self._engine == "polars":
-            return self.dataframe.to_dict(as_series=as_series)
-        raise RuntimeError(
-            f"{self.__class__} object has unknown engine type. "
-            f"Possible engines: 'pandas', 'polars'. Actual '{self._engine}'."
-        )
+        return self.dataframe.to_dict(orient=orient, into=into)
 
     def to_numpy(self):
         """
