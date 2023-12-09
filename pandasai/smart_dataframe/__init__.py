@@ -32,7 +32,6 @@ from ..schemas.df_config import Config
 
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
-from ..helpers.df_config_manager import DfConfigManager
 from typing import List, Union, Optional
 from .abstract_df import DataframeAbstract
 from ..connectors.base import BaseConnector
@@ -160,7 +159,6 @@ class SmartDataframeCore:
 
 
 class SmartDataframe(DataframeAbstract, Shortcuts):
-    _original_import: any
     _core: SmartDataframeCore
 
     def __init__(
@@ -181,30 +179,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
-        self._original_import = df
-
-        if (
-            isinstance(df, str)
-            and not df.endswith(".csv")
-            and not df.endswith(".parquet")
-            and not df.endswith(".xlsx")
-            and not df.startswith("https://docs.google.com/spreadsheets/")
-        ):
-            if not (df_config := self._load_from_config(df)):
-                raise ValueError(
-                    "Could not find a saved dataframe configuration "
-                    "with the given name."
-                )
-
-            if "://" in df_config["import_path"]:
-                df = self._instantiate_connector(df_config["import_path"])
-            else:
-                df = df_config["import_path"]
-
-            if name is None:
-                name = df_config["name"]
-            if description is None:
-                description = df_config["description"]
+        self.original_import = df
         self._core = SmartDataframeCore(df, logger)
 
         self.table_description = description
@@ -267,17 +242,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 
-    def save(self, name: str = None):
-        """
-        Saves the dataframe configuration to be used for later
-
-        Args:
-            name (str, optional): Name of the dataframe configuration. Defaults to None.
-        """
-
-        config_manager = DfConfigManager(self)
-        config_manager.save(name)
-
     def load_connector(self, temporary: bool = False):
         """
         Load a connector into the smart dataframe
@@ -309,14 +273,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             __import__("pandasai.connectors", fromlist=[connector_name]),
             connector_name,
         )(config=connector_data)
-
-    def _load_from_config(self, name: str):
-        """
-        Loads a saved dataframe configuration
-        """
-
-        config_manager = DfConfigManager(self)
-        return config_manager.load(name)
 
     @property
     def dataframe(self) -> pd.DataFrame:
@@ -376,9 +332,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def cache(self):
         return self.lake.cache
-
-    def original_import(self):
-        return self._original_import
 
     @property
     def logs(self):
