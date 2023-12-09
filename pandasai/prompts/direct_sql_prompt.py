@@ -26,4 +26,3 @@ class DirectSQLPrompt(GeneratePythonCodePrompt):
         super(DirectSQLPrompt, self).setup(**kwargs)
 
         self.set_var("current_code", kwargs.pop("current_code", CurrentCodePrompt()))
-
