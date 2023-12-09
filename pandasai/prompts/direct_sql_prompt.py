@@ -1,12 +1,8 @@
 """ Prompt to explain code generation by the LLM"""
-from .file_based_prompt import FileBasedPrompt
-from .generate_python_code import (
-    CurrentCodePrompt,
-    SimpleReasoningPrompt,
-)
+from .generate_python_code import CurrentCodePrompt, GeneratePythonCodePrompt
 
 
-class DirectSQLPrompt(FileBasedPrompt):
+class DirectSQLPrompt(GeneratePythonCodePrompt):
     """Prompt to explain code generation by the LLM"""
 
     _path_to_template = "assets/prompt_templates/direct_sql_connector.tmpl"
@@ -27,35 +23,7 @@ class DirectSQLPrompt(FileBasedPrompt):
     def setup(self, tables, **kwargs) -> None:
         self.set_var("tables", self._prepare_tables_data(tables))
 
-        if "custom_instructions" in kwargs:
-            self.set_var("instructions", kwargs["custom_instructions"])
-        else:
-            self.set_var("instructions", "")
+        super(DirectSQLPrompt, self).setup(**kwargs)
 
-        if "current_code" in kwargs:
-            self.set_var("current_code", kwargs["current_code"])
-        else:
-            self.set_var("current_code", CurrentCodePrompt())
+        self.set_var("current_code", kwargs.pop("current_code", CurrentCodePrompt()))
 
-        if "code_description" in kwargs:
-            self.set_var("code_description", kwargs["code_description"])
-        else:
-            self.set_var("code_description", "Update this initial code:")
-
-        if "last_message" in kwargs:
-            self.set_var("last_message", kwargs["last_message"])
-        else:
-            self.set_var("last_message", "")
-
-        if "prev_conversation" in kwargs:
-            self.set_var("prev_conversation", kwargs["prev_conversation"])
-        else:
-            self.set_var("prev_conversation", "")
-
-    def on_prompt_generation(self) -> None:
-        default_import = "import pandas as pd"
-        engine_df_name = "pd.DataFrame"
-
-        self.set_var("default_import", default_import)
-        self.set_var("engine_df_name", engine_df_name)
-        self.set_var("reasoning", SimpleReasoningPrompt())
