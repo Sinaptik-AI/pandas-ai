@@ -59,20 +59,18 @@ class DfValidator:
         df: dataframe to be validated
     """
 
-    _df: pd.DataFrame
-
     def __init__(self, df: pd.DataFrame):
         """
         Args:
             df: dataframe to be validated
         """
-        self._df = df
+        self.df = df
 
     def _validate_batch(self, schema, df_json: List[Dict]):
         """
         Args:
             schema: Pydantic schema
-            batch_df: dataframe batch
+            batchdf: dataframe batch
 
         Returns:
             list of errors
@@ -96,7 +94,7 @@ class DfValidator:
         Returns:
             Validation results
         """
-        df_json: List[Dict] = self._df.to_dict(orient="records")
+        df_json: List[Dict] = self.df.to_dict(orient="records")
 
         errors = self._validate_batch(schema, df_json)
 

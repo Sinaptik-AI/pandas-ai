@@ -227,7 +227,7 @@ Code running:
             extracted_filters = self._extract_filters(self._current_code_executed)
             filters = extracted_filters.get(f"dfs[{index}]", [])
             df.connector.set_additional_filters(filters)
-            df.load_connector(temporary=len(filters) > 0)
+            df.load_connector(partial=len(filters) > 0)
 
             original_dfs.append(df.dataframe)
 
