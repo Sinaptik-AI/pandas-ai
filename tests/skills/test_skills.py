@@ -228,11 +228,11 @@ class TestSkills:
             return "SkillB Result"
 
         agent.add_skills(skill_a)
-        assert len(agent._lake._skills.skills) == 1
+        assert len(agent.lake._skills.skills) == 1
 
-        agent._lake._skills._skills = []
+        agent.lake._skills._skills = []
         agent.add_skills(skill_a, skill_b)
-        assert len(agent._lake._skills.skills) == 2
+        assert len(agent.lake._skills.skills) == 2
 
     def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
         # Define skills using the decorator
@@ -303,14 +303,14 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         agent.add_skills(plot_salaries)
 
         agent.chat("How many countries are in the dataframe?")
-        last_prompt = agent._lake.last_prompt
+        last_prompt = agent.lake.last_prompt
 
         assert function_def in last_prompt
 
     def test_run_prompt_without_skills(self, agent):
         agent.chat("How many countries are in the dataframe?")
 
-        last_prompt = agent._lake.last_prompt
+        last_prompt = agent.lake.last_prompt
 
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
