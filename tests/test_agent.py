@@ -76,11 +76,11 @@ class TestAgent:
         assert isinstance(agent_2.lake, SmartDatalake)
 
         # test multiple agents instances data overlap
-        agent_1.lake._memory.add("Which country has the highest gdp?", True)
-        memory = agent_1.lake._memory.all()
+        agent_1.lake.memory.add("Which country has the highest gdp?", True)
+        memory = agent_1.lake.memory.all()
         assert len(memory) == 1
 
-        memory = agent_2.lake._memory.all()
+        memory = agent_2.lake.memory.all()
         assert len(memory) == 0
 
     def test_chat(self, sample_df, config):
@@ -96,11 +96,11 @@ class TestAgent:
 
     def test_start_new_conversation(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
-        agent.lake._memory.add("Which country has the highest gdp?", True)
-        memory = agent.lake._memory.all()
+        agent.lake.memory.add("Which country has the highest gdp?", True)
+        memory = agent.lake.memory.all()
         assert len(memory) == 1
         agent.start_new_conversation()
-        memory = agent.lake._memory.all()
+        memory = agent.lake.memory.all()
         assert len(memory) == 0
 
     def test_clarification_questions(self, sample_df, config):

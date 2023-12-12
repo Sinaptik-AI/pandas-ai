@@ -306,7 +306,7 @@ class TestQueryExecTracker:
         # Create a mock function
         mock_func = Mock()
         mock_func.return_value = "code"
-        mock_func.__name__ = "_retry_run_code"
+        mock_func.__name__ = "retry_run_code"
 
         # Execute the mock function using execute_func
         result = tracker.execute_func(mock_func)
@@ -485,8 +485,8 @@ class TestQueryExecTracker:
         # Create a mock function
         mock_func2 = Mock()
         mock_func2.return_value = "code"
-        mock_func2.__name__ = "_retry_run_code"
-        tracker2.execute_func(mock_func2, tag="_retry_run_code")
+        mock_func2.__name__ = "retry_run_code"
+        tracker2.execute_func(mock_func2, tag="retry_run_code")
         assert len(tracker._steps) == 1
         assert len(tracker2._steps) == 2
 
@@ -518,9 +518,9 @@ class TestQueryExecTracker:
         # Create a mock function
         mock_func2 = Mock()
         mock_func2.return_value = "code"
-        mock_func2.__name__ = "_retry_run_code"
+        mock_func2.__name__ = "retry_run_code"
 
-        tracker.execute_func(mock_func2, tag="_retry_run_code")
+        tracker.execute_func(mock_func2, tag="retry_run_code")
 
         summary2 = tracker.get_summary()
 

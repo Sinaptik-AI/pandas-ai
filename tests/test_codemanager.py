@@ -77,7 +77,7 @@ class TestCodeManager:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake._code_manager
+        return smart_dataframe.lake.code_manager
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:

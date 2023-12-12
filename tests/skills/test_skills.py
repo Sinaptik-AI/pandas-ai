@@ -67,7 +67,7 @@ class TestSkills:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake._code_manager
+        return smart_dataframe.lake.code_manager
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -159,7 +159,7 @@ class TestSkills:
         )
 
         # Test prompt_display method when no skills exist
-        skills_manager._skills = []
+        skills_manager.skills = []
         prompt = skills_manager.prompt_display()
         assert prompt is None
 
@@ -228,11 +228,11 @@ class TestSkills:
             return "SkillB Result"
 
         agent.add_skills(skill_a)
-        assert len(agent.lake._skills.skills) == 1
+        assert len(agent.lake.skills_manager.skills) == 1
 
-        agent.lake._skills._skills = []
+        agent.lake.skills_manager.skills = []
         agent.add_skills(skill_a, skill_b)
-        assert len(agent.lake._skills.skills) == 2
+        assert len(agent.lake.skills_manager.skills) == 2
 
     def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
         # Define skills using the decorator
@@ -245,11 +245,11 @@ class TestSkills:
             return "SkillB Result"
 
         smart_dataframe.add_skills(skill_a)
-        assert len(smart_dataframe.lake._skills.skills) == 1
+        assert len(smart_dataframe.lake.skills_manager.skills) == 1
 
-        smart_dataframe.lake._skills._skills = []
+        smart_dataframe.lake.skills_manager.skills = []
         smart_dataframe.add_skills(skill_a, skill_b)
-        assert len(smart_dataframe.lake._skills.skills) == 2
+        assert len(smart_dataframe.lake.skills_manager.skills) == 2
 
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})

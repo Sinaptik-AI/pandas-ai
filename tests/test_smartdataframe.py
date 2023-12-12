@@ -19,7 +19,6 @@ from pandasai.helpers.output_types import (
 )
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
-from pandasai.helpers.cache import Cache
 from pandasai.helpers.viz_library_types import (
     NoVizLibraryType,
     viz_lib_map,
@@ -302,12 +301,11 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
 
     def test_last_prompt_id(self, smart_dataframe: SmartDataframe):
         smart_dataframe.chat("How many countries are in the dataframe?")
-        prompt_id = smart_dataframe.last_prompt_id
+        prompt_id = smart_dataframe.lake.last_prompt_id
         assert isinstance(prompt_id, UUID)
 
     def test_last_prompt_id_no_prompt(self, smart_dataframe: SmartDataframe):
-        with pytest.raises(AttributeError):
-            smart_dataframe.last_prompt_id
+        assert smart_dataframe.lake.last_prompt_id is None
 
     def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
         llm._output = "result = {'type': 'number', 'value': 1}"
@@ -377,7 +375,7 @@ result = {"type": None, "value": "temp_chart.png"}
         assert plt_mock.savefig.called
         assert (
             plt_mock.savefig.call_args.args[0]
-            == f"charts/{smart_dataframe.last_prompt_id}.png"
+            == f"charts/{smart_dataframe.lake.last_prompt_id}.png"
         )
 
     def test_shortcut(self, smart_dataframe: SmartDataframe):
@@ -424,7 +422,7 @@ result = {"type": None, "value": "temp_chart.png"}
             },
         )
 
-        df.lake._retry_run_code("wrong code", Exception())
+        df.lake.retry_run_code("wrong code", Exception())
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 
@@ -484,89 +482,41 @@ result = {"type": None, "value": "temp_chart.png"}
                 "source": "TestSmartDataframe",
             } in logs
 
-    def test_updates_verbose_config_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.lake.verbose is False
-
-        smart_dataframe.lake.verbose = True
-        assert smart_dataframe.lake.verbose
-        assert smart_dataframe.lake._logger.verbose
-        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
-        assert isinstance(
-            smart_dataframe.lake._logger._logger.handlers[0], logging.StreamHandler
-        )
-
-        smart_dataframe.lake.verbose = False
-        assert not smart_dataframe.lake.verbose
-        assert smart_dataframe.lake._logger.verbose is False
-        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
-
-    def test_updates_save_logs_config_with_setters(
-        self, smart_dataframe: SmartDataframe
-    ):
-        assert smart_dataframe.lake.save_logs
-
-        smart_dataframe.lake.save_logs = False
-        assert not smart_dataframe.lake.save_logs
-        assert not smart_dataframe.lake._logger.save_logs
-        assert len(smart_dataframe.lake._logger._logger.handlers) == 0
-
-        smart_dataframe.lake.save_logs = True
-        assert smart_dataframe.lake.save_logs
-        assert smart_dataframe.lake._logger.save_logs
-        assert len(smart_dataframe.lake._logger._logger.handlers) == 1
-        assert isinstance(
-            smart_dataframe.lake._logger._logger.handlers[0], logging.FileHandler
-        )
-
-    def test_updates_enable_cache_config_with_setters(
-        self, smart_dataframe: SmartDataframe
-    ):
-        assert smart_dataframe.lake.enable_cache is False
-
-        smart_dataframe.lake.enable_cache = True
-        assert smart_dataframe.lake.enable_cache
-        assert smart_dataframe.lake.enable_cache
-        assert smart_dataframe.lake.cache is not None
-        assert isinstance(smart_dataframe.lake._cache, Cache)
-
-        smart_dataframe.lake.enable_cache = False
-        assert not smart_dataframe.lake.enable_cache
-        assert smart_dataframe.lake.enable_cache is False
-        assert smart_dataframe.lake.cache is None
-
     def test_updates_configs_with_setters(self, smart_dataframe: SmartDataframe):
-        assert smart_dataframe.lake.enforce_privacy is False
-        assert smart_dataframe.lake.use_error_correction_framework
-        assert smart_dataframe.lake.custom_prompts == {}
-        assert smart_dataframe.lake.save_charts is False
-        assert smart_dataframe.lake.save_charts_path == "exports/charts"
-        assert smart_dataframe.lake.custom_whitelisted_dependencies == []
-        assert smart_dataframe.lake.max_retries == 3
+        assert smart_dataframe.lake.config.enforce_privacy is False
+        assert smart_dataframe.lake.config.use_error_correction_framework
+        assert smart_dataframe.lake.config.custom_prompts == {}
+        assert smart_dataframe.lake.config.save_charts is False
+        assert smart_dataframe.lake.config.save_charts_path == "exports/charts"
+        assert smart_dataframe.lake.config.custom_whitelisted_dependencies == []
+        assert smart_dataframe.lake.config.max_retries == 3
 
-        smart_dataframe.lake.enforce_privacy = True
-        assert smart_dataframe.lake.enforce_privacy
+        smart_dataframe.lake.config.enforce_privacy = True
+        assert smart_dataframe.lake.config.enforce_privacy
 
-        smart_dataframe.lake.use_error_correction_framework = False
-        assert not smart_dataframe.lake.use_error_correction_framework
+        smart_dataframe.lake.config.use_error_correction_framework = False
+        assert not smart_dataframe.lake.config.use_error_correction_framework
 
-        smart_dataframe.lake.custom_prompts = {
+        smart_dataframe.lake.config.custom_prompts = {
             "generate_python_code": GeneratePythonCodePrompt()
         }
-        assert smart_dataframe.lake.custom_prompts != {}
+        assert smart_dataframe.lake.config.custom_prompts != {}
 
-        smart_dataframe.lake.save_charts = True
-        assert smart_dataframe.lake.save_charts
+        smart_dataframe.lake.config.save_charts = True
+        assert smart_dataframe.lake.config.save_charts
 
-        smart_dataframe.lake.save_charts_path = "some/path"
-        assert smart_dataframe.lake.save_charts_path == "some/path"
+        smart_dataframe.lake.config.save_charts_path = "some/path"
+        assert smart_dataframe.lake.config.save_charts_path == "some/path"
 
-        smart_dataframe.lake.custom_whitelisted_dependencies = ["some_dependency"]
-        assert smart_dataframe.lake.custom_whitelisted_dependencies == [
+        smart_dataframe.lake.config.custom_whitelisted_dependencies = [
+            "some_dependency"
+        ]
+        assert smart_dataframe.lake.config.custom_whitelisted_dependencies == [
             "some_dependency"
         ]
 
-        smart_dataframe.lake.max_retries = 5
-        assert smart_dataframe.lake.max_retries == 5
+        smart_dataframe.lake.config.max_retries = 5
+        assert smart_dataframe.lake.config.max_retries == 5
 
     def test_custom_head_getter(self, custom_head, smart_dataframe: SmartDataframe):
         assert smart_dataframe.head_df.custom_head.equals(custom_head)

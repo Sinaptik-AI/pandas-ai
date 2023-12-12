@@ -67,7 +67,7 @@ class Agent:
                     raise Exception("Response validation failed!")
             except Exception:
                 if (
-                    not self.lake.use_error_correction_framework
+                    not self.lake.config.use_error_correction_framework
                     or retry_count >= self.lake.config.max_retries - 1
                 ):
                     raise
@@ -94,17 +94,17 @@ class Agent:
         to the memory without calling the chat function (for example, when you
         need to add a message from the agent).
         """
-        self.lake._memory.add(message, is_user=is_user)
+        self.lake.memory.add(message, is_user=is_user)
 
     def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation
         """
-        if self.lake._memory.count() == 0:
+        if self.lake.memory.count() == 0:
             return
 
         prompt = CheckIfRelevantToConversationPrompt(
-            conversation=self.lake._memory.get_conversation(),
+            conversation=self.lake.memory.get_conversation(),
             query=query,
         )
 
@@ -126,7 +126,7 @@ class Agent:
         """
         prompt = ClarificationQuestionPrompt(
             dataframes=self.lake.dfs,
-            conversation=self.lake._memory.get_conversation(),
+            conversation=self.lake.memory.get_conversation(),
             query=query,
         )
 
@@ -150,7 +150,7 @@ class Agent:
         """
         try:
             prompt = ExplainPrompt(
-                conversation=self.lake._memory.get_conversation(),
+                conversation=self.lake.memory.get_conversation(),
                 code=self.lake.last_code_executed,
             )
             response = self.call_llm_with_prompt(prompt)
@@ -171,7 +171,7 @@ class Agent:
             prompt = RephraseQueryPrompt(
                 query=query,
                 dataframes=self.lake.dfs,
-                conversation=self.lake._memory.get_conversation(),
+                conversation=self.lake.memory.get_conversation(),
             )
             response = self.call_llm_with_prompt(prompt)
             self.logger.log(

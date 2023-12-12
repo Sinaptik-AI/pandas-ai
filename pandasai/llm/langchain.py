@@ -8,15 +8,15 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
-    _langchain_llm = None
+    langchain_llm = None
 
     def __init__(self, langchain_llm):
-        self._langchain_llm = langchain_llm
+        self.langchain_llm = langchain_llm
 
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
-        return self._langchain_llm.predict(prompt)
+        return self.langchain_llm.predict(prompt)
 
     @property
     def type(self) -> str:
-        return f"langchain_{self._langchain_llm._llm_type}"
+        return f"langchain_{self.langchain_llm._llm_type}"

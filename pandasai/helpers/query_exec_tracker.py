@@ -19,7 +19,7 @@ exec_steps = {
     "_get_prompt": "Generate Prompt",
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
-    "_retry_run_code": "Retry Code Generation",
+    "retry_run_code": "Retry Code Generation",
     "parse": "Parse Output",
 }
 
@@ -168,12 +168,12 @@ class QueryExecTracker:
             step["prompt_class"] = result.__class__.__name__
             step["generated_prompt"] = result.to_string()
 
-        elif func_name == "_retry_run_code":
-            self._func_exec_count["_retry_run_code"] += 1
+        elif func_name == "retry_run_code":
+            self._func_exec_count["retry_run_code"] += 1
 
             step[
                 "type"
-            ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
+            ] = f"{exec_steps[func_name]} ({self._func_exec_count['retry_run_code']})"
             step["code_generated"] = result[0]
 
         elif func_name == "cache_hit":

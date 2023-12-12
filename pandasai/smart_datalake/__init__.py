@@ -50,25 +50,6 @@ import pandas as pd
 
 
 class SmartDatalake:
-    _dfs: List[Union[pd.DataFrame, Any]]
-    _config: Union[Config, dict]
-    _llm: LLM
-    _cache: Cache = None
-    _logger: Logger
-    _last_prompt_id: uuid.UUID
-    _conversation_id: uuid.UUID
-    _code_manager: CodeManager
-    _memory: Memory
-    _skills: SkillsManager
-    _instance: str
-    _query_exec_tracker: QueryExecTracker
-
-    _last_code_generated: str = None
-    _last_result: str = None
-    _last_error: str = None
-
-    _viz_lib: str = None
-
     def __init__(
         self,
         dfs: List[Union[pd.DataFrame, Any]],
@@ -83,57 +64,55 @@ class SmartDatalake:
             config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self.last_result = None
+        self.viz_lib = VisualizationLibrary.DEFAULT.value
+        self.last_code_generated = None
+        self.last_prompt_id = None
 
-        self._load_config(config)
-
+        self.load_config(config)
         self.initialize()
 
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = Logger(
-                save_logs=self._config.save_logs, verbose=self._config.verbose
-            )
+        self.logger = logger or Logger(
+            save_logs=self.config.save_logs, verbose=self.config.verbose
+        )
+        self.load_dfs(dfs)
 
-        self._load_dfs(dfs)
-
-        self._memory = memory or Memory()
-        self._code_manager = CodeManager(
-            dfs=self._dfs,
-            config=self._config,
+        self.memory = memory or Memory()
+        self.code_manager = CodeManager(
+            dfs=self.dfs,
+            config=self.config,
             logger=self.logger,
         )
 
-        self._skills = SkillsManager()
+        self.skills_manager = SkillsManager()
 
-        if cache:
-            self._cache = cache
-        elif self._config.enable_cache:
-            self._cache = Cache()
+        self.cache = cache or None
+        if cache is None and self.config.enable_cache:
+            self.cache = Cache()
 
-        context = Context(self._config, self.logger)
+        context = Context(self.config, self.logger)
 
-        if self._config.response_parser:
-            self._response_parser = self._config.response_parser(context)
+        if self.config.response_parser:
+            self.response_parser = self.config.response_parser(context)
         else:
-            self._response_parser = ResponseParser(context)
+            self.response_parser = ResponseParser(context)
 
-        if self._config.data_viz_library:
-            self._viz_lib = self._config.data_viz_library.value
+        if self.config.data_viz_library:
+            self.viz_lib = self.config.data_viz_library.value
 
-        self._conversation_id = uuid.uuid4()
+        self.conversation_id = uuid.uuid4()
 
-        self._instance = self.__class__.__name__
+        self.instance = self.__class__.__name__
 
-        self._query_exec_tracker = QueryExecTracker(
-            server_config=self._config.log_server,
+        self.query_exec_tracker = QueryExecTracker(
+            server_config=self.config.log_server,
         )
 
     def set_instance_type(self, type: str):
-        self._instance = type
+        self.instance = type
 
     def is_related_query(self, flag: bool):
-        self._query_exec_tracker.set_related_query(flag)
+        self.query_exec_tracker.set_related_query(flag)
 
     def initialize(self):
         """Initialize the SmartDatalake, create auxiliary directories.
@@ -147,30 +126,28 @@ class SmartDatalake:
             None
         """
 
-        if self._config.save_charts:
-            charts_dir = self._config.save_charts_path
+        if self.config.save_charts:
+            charts_dir = self.config.save_charts_path
 
             # Add project root path if save_charts_path is default
-            if self._config.save_charts_path == DEFAULT_CHART_DIRECTORY:
+            if self.config.save_charts_path == DEFAULT_CHART_DIRECTORY:
                 try:
                     charts_dir = os.path.join(
-                        (find_project_root()), self._config.save_charts_path
+                        (find_project_root()), self.config.save_charts_path
                     )
-                    self._config.save_charts_path = charts_dir
+                    self.config.save_charts_path = charts_dir
                 except ValueError:
-                    charts_dir = os.path.join(
-                        os.getcwd(), self._config.save_charts_path
-                    )
+                    charts_dir = os.path.join(os.getcwd(), self.config.save_charts_path)
             os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
-        if self._config.enable_cache:
+        if self.config.enable_cache:
             try:
                 cache_dir = os.path.join((find_project_root()), "cache")
             except ValueError:
                 cache_dir = os.path.join(os.getcwd(), "cache")
             os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
-    def _load_dfs(self, dfs: List[Union[pd.DataFrame, Any]]):
+    def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]]):
         """
         Load all the dataframes to be used in the smart datalake.
 
@@ -184,13 +161,13 @@ class SmartDatalake:
         for df in dfs:
             if not isinstance(df, SmartDataframe):
                 smart_dfs.append(
-                    SmartDataframe(df, config=self._config, logger=self.logger)
+                    SmartDataframe(df, config=self.config, logger=self.logger)
                 )
             else:
                 smart_dfs.append(df)
-        self._dfs = smart_dfs
+        self.dfs = smart_dfs
 
-    def _load_config(self, config: Union[Config, dict]):
+    def load_config(self, config: Union[Config, dict]):
         """
         Load a config to be used to run the queries.
 
@@ -201,16 +178,16 @@ class SmartDatalake:
         config = load_config(config)
 
         if config.get("llm"):
-            self._load_llm(config["llm"])
-            config["llm"] = self._llm
+            self.load_llm(config["llm"])
+            config["llm"] = self.llm
 
         if config.get("data_viz_library"):
-            self._load_data_viz_library(config["data_viz_library"])
-            config["data_viz_library"] = self._data_viz_library
+            self.load_data_viz_library(config["data_viz_library"])
+            config["data_viz_library"] = self.data_viz_library
 
-        self._config = Config(**config)
+        self.config = Config(**config)
 
-    def _load_llm(self, llm: LLM):
+    def load_llm(self, llm: LLM):
         """
         Load a LLM to be used to run the queries.
         Check if it is a PandasAI LLM or a Langchain LLM.
@@ -226,9 +203,9 @@ class SmartDatalake:
         if hasattr(llm, "_llm_type"):
             llm = LangchainLLM(llm)
 
-        self._llm = llm
+        self.llm = llm
 
-    def _load_data_viz_library(self, data_viz_library: str):
+    def load_data_viz_library(self, data_viz_library: str):
         """
         Load the appropriate instance for viz library type to use.
 
@@ -239,25 +216,25 @@ class SmartDatalake:
             TODO
         """
 
-        self._data_viz_library = VisualizationLibrary.DEFAULT.value
+        self.data_viz_library = VisualizationLibrary.DEFAULT.value
         if data_viz_library in (item.value for item in VisualizationLibrary):
-            self._data_viz_library = data_viz_library
+            self.data_viz_library = data_viz_library
 
     def add_skills(self, *skills: List[skill]):
         """
         Add Skills to PandasAI
         """
-        self._skills.add_skills(*skills)
+        self.skills_manager.add_skills(*skills)
 
-    def _assign_prompt_id(self):
+    def assign_prompt_id(self):
         """Assign a prompt ID"""
 
-        self._last_prompt_id = uuid.uuid4()
+        self.last_prompt_id = uuid.uuid4()
 
         if self.logger:
-            self.logger.log(f"Prompt ID: {self._last_prompt_id}")
+            self.logger.log(f"Prompt ID: {self.last_prompt_id}")
 
-    def _get_prompt(
+    def get_prompt(
         self,
         key: str,
         default_prompt: AbstractPrompt,
@@ -278,24 +255,22 @@ class SmartDatalake:
         if default_values is None:
             default_values = {}
 
-        custom_prompt = self._config.custom_prompts.get(key)
+        custom_prompt = self.config.custom_prompts.get(key)
         prompt = custom_prompt or default_prompt
 
         # set default values for the prompt
-        prompt.set_config(self._config)
+        prompt.set_config(self.config)
         if "dfs" not in default_values:
-            prompt.set_var("dfs", self._dfs)
+            prompt.set_var("dfs", self.dfs)
         if "conversation" not in default_values:
-            prompt.set_var("conversation", self._memory.get_conversation())
+            prompt.set_var("conversation", self.memory.get_conversation())
         if "prev_conversation" not in default_values:
-            prompt.set_var(
-                "prev_conversation", self._memory.get_previous_conversation()
-            )
+            prompt.set_var("prev_conversation", self.memory.get_previous_conversation())
         if "last_message" not in default_values:
-            prompt.set_var("last_message", self._memory.get_last_message())
+            prompt.set_var("last_message", self.memory.get_last_message())
 
         # Adds the skills to prompt if exist else display nothing
-        skills_prompt = self._skills.prompt_display()
+        skills_prompt = self.skills_manager.prompt_display()
         prompt.set_var("skills", skills_prompt if skills_prompt is not None else "")
 
         for key, value in default_values.items():
@@ -336,8 +311,8 @@ class SmartDatalake:
             result = GenerateSmartDatalakePipeline(pipeline_context, self.logger).run()
         except Exception as exception:
             self.last_error = str(exception)
-            self._query_exec_tracker.success = False
-            self._query_exec_tracker.publish()
+            self.query_exec_tracker.success = False
+            self.query_exec_tracker.publish()
 
             return (
                 "Unfortunately, I was not able to answer your question, "
@@ -348,11 +323,11 @@ class SmartDatalake:
         self.update_intermediate_value_post_pipeline_execution(pipeline_context)
 
         # publish query tracker
-        self._query_exec_tracker.publish()
+        self.query_exec_tracker.publish()
 
         return result
 
-    def _validate_output(self, result: dict, output_type: Optional[str] = None):
+    def validate_output(self, result: dict, output_type: Optional[str] = None):
         """
         Validate the output of the code execution.
 
@@ -380,7 +355,7 @@ class SmartDatalake:
         result_is_valid, validation_logs = output_type_helper.validate(result)
 
         if result_is_valid:
-            self._query_exec_tracker.add_step(
+            self.query_exec_tracker.add_step(
                 {
                     "type": "Validating Output",
                     "success": True,
@@ -389,7 +364,7 @@ class SmartDatalake:
             )
         else:
             self.logger.log("\n".join(validation_logs), level=logging.WARNING)
-            self._query_exec_tracker.add_step(
+            self.query_exec_tracker.add_step(
                 {
                     "type": "Validating Output",
                     "success": False,
@@ -397,17 +372,6 @@ class SmartDatalake:
                 }
             )
             raise ValueError("Output validation failed")
-
-    def _get_viz_library_type(self) -> str:
-        """
-        Get the visualization library type based on the configured library.
-
-        Returns:
-            (str): Visualization library type
-        """
-
-        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
-        return viz_lib_helper.template_hint
 
     def prepare_context_for_smart_datalake_pipeline(
         self, query: str, output_type: Optional[str] = None
@@ -435,30 +399,30 @@ class SmartDatalake:
             PipelineContext: The Pipeline Context to be used by Smart Data Lake Pipeline.
         """
 
-        self._query_exec_tracker.start_new_track()
+        self.query_exec_tracker.start_new_track()
 
         self.logger.log(f"Question: {query}")
-        self.logger.log(f"Running PandasAI with {self._llm.type} LLM...")
+        self.logger.log(f"Running PandasAI with {self.llm.type} LLM...")
 
-        self._assign_prompt_id()
+        self.assign_prompt_id()
 
-        self._query_exec_tracker.add_query_info(
-            self._conversation_id, self._instance, query, output_type
+        self.query_exec_tracker.add_query_info(
+            self.conversation_id, self.instance, query, output_type
         )
 
-        self._query_exec_tracker.add_dataframes(self._dfs)
+        self.query_exec_tracker.add_dataframes(self.dfs)
 
-        self._memory.add(query, True)
+        self.memory.add(query, True)
 
         output_type_helper = output_type_factory(output_type, logger=self.logger)
-        viz_lib_helper = viz_lib_type_factory(self._viz_lib, logger=self.logger)
+        viz_lib_helper = viz_lib_type_factory(self.viz_lib, logger=self.logger)
 
         pipeline_context = PipelineContext(
             dfs=self.dfs,
             config=self.config,
             memory=self.memory,
             cache=self.cache,
-            query_exec_tracker=self._query_exec_tracker,
+            query_exec_tracker=self.query_exec_tracker,
         )
         pipeline_context.add_intermediate_value("is_present_in_cache", False)
         pipeline_context.add_intermediate_value(
@@ -466,15 +430,13 @@ class SmartDatalake:
         )
         pipeline_context.add_intermediate_value("viz_lib_helper", viz_lib_helper)
         pipeline_context.add_intermediate_value(
-            "last_code_generated", self._last_code_generated
+            "last_code_generated", self.last_code_generated
         )
-        pipeline_context.add_intermediate_value("get_prompt", self._get_prompt)
+        pipeline_context.add_intermediate_value("get_prompt", self.get_prompt)
         pipeline_context.add_intermediate_value("last_prompt_id", self.last_prompt_id)
-        pipeline_context.add_intermediate_value("skills", self._skills)
-        pipeline_context.add_intermediate_value("code_manager", self._code_manager)
-        pipeline_context.add_intermediate_value(
-            "response_parser", self._response_parser
-        )
+        pipeline_context.add_intermediate_value("skills", self.skills_manager)
+        pipeline_context.add_intermediate_value("code_manager", self.code_manager)
+        pipeline_context.add_intermediate_value("response_parser", self.response_parser)
 
         return pipeline_context
 
@@ -488,12 +450,12 @@ class SmartDatalake:
             pipeline_context (PipelineContext): Pipeline Context after the Smart Data Lake pipeline execution
 
         """
-        self._last_code_generated = pipeline_context.get_intermediate_value(
+        self.last_code_generated = pipeline_context.get_intermediate_value(
             "last_code_generated"
         )
-        self._last_result = pipeline_context.get_intermediate_value("last_result")
+        self.last_result = pipeline_context.get_intermediate_value("last_result")
 
-    def _retry_run_code(self, code: str, e: Exception) -> List:
+    def retry_run_code(self, code: str, e: Exception) -> List:
         """
         A method to retry the code execution with error correction framework.
 
@@ -511,189 +473,33 @@ class SmartDatalake:
             "code": code,
             "error_returned": e,
         }
-        error_correcting_instruction = self._get_prompt(
+        error_correcting_instruction = self.get_prompt(
             "correct_error",
             default_prompt=CorrectErrorPrompt(),
             default_values=default_values,
         )
 
-        return self._llm.generate_code(error_correcting_instruction)
+        return self.llm.generate_code(error_correcting_instruction)
 
     def clear_memory(self):
         """
         Clears the memory
         """
-        self._memory.clear()
-        self._conversation_id = uuid.uuid4()
+        self.memory.clear()
+        self.conversation_id = uuid.uuid4()
 
     @property
     def last_prompt(self):
-        return self._llm.last_prompt
-
-    @property
-    def last_prompt_id(self) -> uuid.UUID:
-        """Return the id of the last prompt that was run."""
-        if self._last_prompt_id is None:
-            raise ValueError("Pandas AI has not been run yet.")
-        return self._last_prompt_id
+        return self.llm.last_prompt
 
     @property
     def logs(self):
         return self.logger.logs
 
     @property
-    def logger(self):
-        return self._logger
-
-    @logger.setter
-    def logger(self, logger):
-        self._logger = logger
-
-    @property
-    def config(self):
-        return self._config
-
-    @property
-    def cache(self):
-        return self._cache
-
-    @property
-    def verbose(self):
-        return self._config.verbose
-
-    @verbose.setter
-    def verbose(self, verbose: bool):
-        self._config.verbose = verbose
-        self._logger.verbose = verbose
-
-    @property
-    def save_logs(self):
-        return self._config.save_logs
-
-    @save_logs.setter
-    def save_logs(self, save_logs: bool):
-        self._config.save_logs = save_logs
-        self._logger.save_logs = save_logs
-
-    @property
-    def enforce_privacy(self):
-        return self._config.enforce_privacy
-
-    @enforce_privacy.setter
-    def enforce_privacy(self, enforce_privacy: bool):
-        self._config.enforce_privacy = enforce_privacy
-
-    @property
-    def enable_cache(self):
-        return self._config.enable_cache
-
-    @enable_cache.setter
-    def enable_cache(self, enable_cache: bool):
-        self._config.enable_cache = enable_cache
-        if enable_cache:
-            if self.cache is None:
-                self._cache = Cache()
-        else:
-            self._cache = None
-
-    @property
-    def use_error_correction_framework(self):
-        return self._config.use_error_correction_framework
-
-    @use_error_correction_framework.setter
-    def use_error_correction_framework(self, use_error_correction_framework: bool):
-        self._config.use_error_correction_framework = use_error_correction_framework
-
-    @property
-    def custom_prompts(self):
-        return self._config.custom_prompts
-
-    @custom_prompts.setter
-    def custom_prompts(self, custom_prompts: dict):
-        self._config.custom_prompts = custom_prompts
-
-    @property
-    def save_charts(self):
-        return self._config.save_charts
-
-    @save_charts.setter
-    def save_charts(self, save_charts: bool):
-        self._config.save_charts = save_charts
-
-    @property
-    def save_charts_path(self):
-        return self._config.save_charts_path
-
-    @save_charts_path.setter
-    def save_charts_path(self, save_charts_path: str):
-        self._config.save_charts_path = save_charts_path
-
-    @property
-    def custom_whitelisted_dependencies(self):
-        return self._config.custom_whitelisted_dependencies
-
-    @custom_whitelisted_dependencies.setter
-    def custom_whitelisted_dependencies(
-        self, custom_whitelisted_dependencies: List[str]
-    ):
-        self._config.custom_whitelisted_dependencies = custom_whitelisted_dependencies
-
-    @property
-    def max_retries(self):
-        return self._config.max_retries
-
-    @max_retries.setter
-    def max_retries(self, max_retries: int):
-        self._config.max_retries = max_retries
-
-    @property
-    def llm(self):
-        return self._llm
-
-    @llm.setter
-    def llm(self, llm: LLM):
-        self._load_llm(llm)
-
-    @property
-    def last_code_generated(self):
-        return self._last_code_generated
-
-    @last_code_generated.setter
-    def last_code_generated(self, last_code_generated: str):
-        self._last_code_generated = last_code_generated
-
-    @property
     def last_code_executed(self):
-        return self._code_manager.last_code_executed
-
-    @property
-    def last_result(self):
-        return self._last_result
-
-    @last_result.setter
-    def last_result(self, last_result: str):
-        self._last_result = last_result
-
-    @property
-    def last_error(self):
-        return self._last_error
-
-    @last_error.setter
-    def last_error(self, last_error: str):
-        self._last_error = last_error
-
-    @property
-    def dfs(self):
-        return self._dfs
-
-    @property
-    def memory(self):
-        return self._memory
-
-    @property
-    def instance(self):
-        return self._instance
+        return self.code_manager.last_code_executed
 
     @property
     def last_query_log_id(self):
-        return self._query_exec_tracker.last_log_id
+        return self.query_exec_tracker.last_log_id

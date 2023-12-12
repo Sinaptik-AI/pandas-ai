@@ -70,7 +70,7 @@ class CodeExecution(BaseLogicUnit):
 
                 traceback_error = traceback.format_exc()
                 code_to_run = pipeline_context.query_exec_tracker.execute_func(
-                    self._retry_run_code,
+                    self.retry_run_code,
                     code,
                     pipeline_context,
                     logger,
@@ -79,7 +79,7 @@ class CodeExecution(BaseLogicUnit):
 
         return result
 
-    def _retry_run_code(
+    def retry_run_code(
         self, code: str, context: PipelineContext, logger: Logger, e: Exception
     ) -> List:
         """

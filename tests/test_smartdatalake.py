@@ -118,20 +118,20 @@ class TestSmartDatalake:
         return smart_dataframe.lake
 
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
-        smart_datalake._llm = None
-        assert smart_datalake._llm is None
+        smart_datalake.llm = None
+        assert smart_datalake.llm is None
 
-        smart_datalake._load_llm(llm)
-        assert smart_datalake._llm == llm
+        smart_datalake.load_llm(llm)
+        assert smart_datalake.llm == llm
 
     def test_load_llm_with_langchain_llm(self, smart_datalake: SmartDatalake, llm):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        smart_datalake._llm = None
-        assert smart_datalake._llm is None
+        smart_datalake.llm = None
+        assert smart_datalake.llm is None
 
-        smart_datalake._load_llm(langchain_llm)
-        assert smart_datalake._llm._langchain_llm == langchain_llm
+        smart_datalake.load_llm(langchain_llm)
+        assert smart_datalake.llm.langchain_llm == langchain_llm
 
     @patch.object(
         CodeManager,
@@ -184,7 +184,7 @@ Spain,8446903488,6.38
 """
         )
 
-        smart_datalake._retry_run_code(
+        smart_datalake.retry_run_code(
             code=code,
             e=Exception("Test error"),
         )

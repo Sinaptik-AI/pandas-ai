@@ -19,7 +19,6 @@ Example:
 """
 
 import hashlib
-import uuid
 
 import pandas as pd
 import pydantic
@@ -157,10 +156,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def last_prompt(self):
         return self.lake.last_prompt
-
-    @property
-    def last_prompt_id(self) -> uuid.UUID:
-        return self.lake.last_prompt_id
 
     @property
     def last_code_generated(self):
