@@ -12,7 +12,7 @@ Example:
 """
 
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Callable
 
 import openai
 from ..helpers import load_dotenv
@@ -39,7 +39,7 @@ class AzureOpenAI(BaseOpenAI):
     """A function that returns an Azure Active Directory token.
         Will be invoked on every request.
     """
-    azure_ad_token_provider: Union[str, None] = None
+    azure_ad_token_provider: Union[Callable[[], str], None] = None
     deployment_name: str
     api_version: str = ""
     """Legacy, for openai<1.0.0 support."""
@@ -52,7 +52,7 @@ class AzureOpenAI(BaseOpenAI):
         api_token: Optional[str] = None,
         azure_endpoint: Union[str, None] = None,
         azure_ad_token: Union[str, None] = None,
-        azure_ad_token_provider: Union[str, None] = None,
+        azure_ad_token_provider: Union[Callable[[], str], None] = None,
         api_base: Optional[str] = None,
         api_version: Optional[str] = None,
         deployment_name: str = None,
