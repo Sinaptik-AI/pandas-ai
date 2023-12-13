@@ -1,6 +1,6 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 import uuid
 
 import pandas as pd
@@ -77,7 +77,11 @@ class TestCodeManager:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake.code_manager
+        return CodeManager(
+            dfs=[smart_dataframe],
+            config=smart_dataframe.lake.config,
+            logger=smart_dataframe.lake.logger,
+        )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -203,14 +207,14 @@ print(dfs)"""
             == """print(dfs)"""
         )
 
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
     def test_exception_handling(
-        self, smart_dataframe: SmartDataframe, code_manager: CodeManager
+        self, mock_execute_code: MagicMock, smart_dataframe: SmartDataframe
     ):
-        code_manager.execute_code = Mock(
-            side_effect=NoCodeFoundError("No code found in the answer.")
-        )
-        code_manager.execute_code.__name__ = "execute_code"
-
+        mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
         result = smart_dataframe.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "

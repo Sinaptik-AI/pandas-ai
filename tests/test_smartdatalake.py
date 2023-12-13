@@ -171,10 +171,31 @@ class TestSmartDatalake:
         smart_datalake.chat("How many countries are in the dataframe?")
         mock_query_tracker_publish.assert_called()
 
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_generator.CodeGenerator.execute",
+        autospec=True,
+    )
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.traceback.format_exc",
+        autospec=True,
+    )
     def test_retry_on_error_with_single_df(
-        self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe
+        self,
+        mock_traceback,
+        mock_generate,
+        mock_execute,
+        smart_datalake: SmartDatalake,
+        smart_dataframe: SmartDataframe,
     ):
-        code = """result = 'Hello World'"""
+        mock_traceback.return_value = "Test error"
+        mock_generate.return_value = (
+            "result = {'type': 'string', 'value': 'Hello World'}"
+        )
+        mock_execute.side_effect = [Exception("Test error"), None]
 
         smart_dataframe.head_df.to_csv = Mock(
             return_value="""country,gdp,happiness_index
@@ -184,10 +205,7 @@ Spain,8446903488,6.38
 """
         )
 
-        smart_datalake.retry_run_code(
-            code=code,
-            e=Exception("Test error"),
-        )
+        smart_datalake.chat("Hello world")
 
         last_prompt = smart_datalake.last_prompt
         if sys.platform.startswith("win"):
@@ -204,10 +222,10 @@ Spain,8446903488,6.38
 </dataframe>
 
 The user asked the following question:
-
+Q: Hello world
 
 You generated this python code:
-result = 'Hello World'
+result = {'type': 'string', 'value': 'Hello World'}
 
 It fails with the following error:
 Test error

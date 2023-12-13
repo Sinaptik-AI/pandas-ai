@@ -12,38 +12,39 @@ from .result_validation import ResultValidation
 
 
 class GenerateSmartDatalakePipeline:
-    _pipeline: Pipeline
+    pipeline: Pipeline
 
     def __init__(
         self,
         context: Optional[PipelineContext] = None,
         logger: Optional[Logger] = None,
+        on_code_generation=None,
+        on_code_execution=None,
+        on_result=None,
     ):
-        self._pipeline = Pipeline(
+        self.pipeline = Pipeline(
             context=context,
             logger=logger,
             steps=[
                 CacheLookup(),
                 PromptGeneration(
-                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
-                        "is_present_in_cache"
-                    )
+                    skip_if=self.is_cached,
                 ),
                 CodeGenerator(
-                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
-                        "is_present_in_cache"
-                    )
+                    skip_if=self.is_cached,
+                    on_execution=on_code_generation,
                 ),
-                CachePopulation(
-                    skip_if=lambda pipeline_context: pipeline_context.get_intermediate_value(
-                        "is_present_in_cache"
-                    )
-                ),
-                CodeExecution(),
+                CachePopulation(skip_if=self.is_cached),
+                CodeExecution(before_execution=on_code_execution),
                 ResultValidation(),
-                ResultParsing(),
+                ResultParsing(
+                    before_execution=on_result,
+                ),
             ],
         )
 
+    def is_cached(self, context: PipelineContext):
+        return context.get("found_in_cache")
+
     def run(self):
-        return self._pipeline.run()
+        return self.pipeline.run()

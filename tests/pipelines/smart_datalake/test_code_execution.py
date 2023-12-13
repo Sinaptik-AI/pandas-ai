@@ -99,7 +99,7 @@ class TestCodeExecution:
             elif key == "code_manager":
                 return mock_code_manager
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
@@ -137,7 +137,7 @@ class TestCodeExecution:
             elif key == "code_manager":
                 return mock_code_manager
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         assert isinstance(code_execution, CodeExecution)
 
@@ -161,14 +161,7 @@ class TestCodeExecution:
 
         # Conditional return of execute_func method based arguments it is called with
         def mock_execute_func(*args, **kwargs):
-            if isinstance(args[0], Mock) and args[0].name == "execute_code":
-                return mock_execute_code(*args, **kwargs)
-            else:
-                return [
-                    "Interuppted Code",
-                    "Exception Testing",
-                    "Successful after Retry",
-                ]
+            return mock_execute_code(*args, **kwargs)
 
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock()
@@ -177,16 +170,6 @@ class TestCodeExecution:
         context._query_exec_tracker = Mock()
 
         context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
-
-        def mock_intermediate_values(key: str):
-            if key == "last_prompt_id":
-                return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
-            elif key == "code_manager":
-                return mock_code_manager
-
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
 
         result = code_execution.execute(
             input="Test Code", context=context, logger=logger

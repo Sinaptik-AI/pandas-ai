@@ -34,16 +34,8 @@ class CodeExecutionContext:
             skills_manager (SkillsManager): Skills Manager
             can_direct_sql (bool, optional): Whether the code can be executed as SQL query. Defaults to False.
         """
-        self._skills_manager = skills_manager
-        self._prompt_id = prompt_id
-
-    @property
-    def prompt_id(self):
-        return self._prompt_id
-
-    @property
-    def skills_manager(self):
-        return self._skills_manager
+        self.skills_manager = skills_manager
+        self.prompt_id = prompt_id
 
 
 class CodeManager:

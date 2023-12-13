@@ -1,6 +1,8 @@
 from typing import Any
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
+from ...responses.context import Context
+from ...responses.response_parser import ResponseParser
 
 
 class ResultParsing(BaseLogicUnit):
@@ -10,6 +12,14 @@ class ResultParsing(BaseLogicUnit):
     """
 
     pass
+
+    def response_parser(self, context: PipelineContext, logger) -> ResponseParser:
+        context = Context(context.config, logger=logger)
+        return (
+            context.config.response_parser(context)
+            if context.config.response_parser
+            else ResponseParser(context)
+        )
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -30,9 +40,8 @@ class ResultParsing(BaseLogicUnit):
 
         self._add_result_to_memory(result=result, context=pipeline_context)
 
-        result = pipeline_context.query_exec_tracker.execute_func(
-            pipeline_context.get_intermediate_value("response_parser").parse, result
-        )
+        parser = self.response_parser(pipeline_context, logger=kwargs.get("logger"))
+        result = pipeline_context.query_exec_tracker.execute_func(parser.parse, result)
         return result
 
     def _add_result_to_memory(self, result: dict, context: PipelineContext):

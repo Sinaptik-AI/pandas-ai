@@ -77,17 +77,26 @@ class Pipeline(AbstractPipeline):
         """
         try:
             for index, logic in enumerate(self._steps):
+                # Callback function before execution
+                if logic.before_execution is not None:
+                    logic.before_execution(data)
+
                 self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
                     continue
 
+                # Execute the logic unit
                 data = logic.execute(
                     data,
                     logger=self._logger,
                     config=self._context.config,
                     context=self._context,
                 )
+
+                # Callback function after execution
+                if logic.on_execution is not None:
+                    logic.on_execution(data)
 
         except Exception as e:
             self._logger.log(f"Pipeline failed on step {index}: {e}", logging.ERROR)

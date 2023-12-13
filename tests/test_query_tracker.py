@@ -240,10 +240,10 @@ class TestQueryExecTracker:
 
         mock_func = Mock()
         mock_func.return_value = mock_return_value
-        mock_func.__name__ = "_get_prompt"
+        mock_func.__name__ = "get_prompt"
 
         # Execute the mock function using execute_func
-        result = tracker.execute_func(mock_func, tag="_get_prompt")
+        result = tracker.execute_func(mock_func, tag="get_prompt")
 
         # Check if the result is as expected
         assert result.to_string() == "Mock Result"

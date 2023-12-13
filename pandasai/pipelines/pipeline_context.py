@@ -13,14 +13,6 @@ class PipelineContext:
     Pass Context to the pipeline which is accessible to each step via kwargs
     """
 
-    _dfs: List[Union[pd.DataFrame, Any]]
-    _memory: Memory
-    _skills: SkillsManager
-    _cache: Cache
-    _config: Config
-    _query_exec_tracker: QueryExecTracker
-    _intermediate_values: dict
-
     def __init__(
         self,
         dfs: List[Union[pd.DataFrame, Any]],
@@ -35,40 +27,19 @@ class PipelineContext:
         if isinstance(config, dict):
             config = Config(**config)
 
-        self._dfs = load_smartdataframes(dfs, config)
-        self._memory = memory if memory is not None else Memory()
-        self._skills = skills if skills is not None else SkillsManager()
-        self._cache = cache if cache is not None else Cache()
-        self._config = config
-        self._query_exec_tracker = query_exec_tracker
-        self._intermediate_values = {}
+        self.dfs = load_smartdataframes(dfs, config)
+        self.memory = memory or Memory()
+        self.skills = skills or SkillsManager()
+        self.cache = cache or Cache()
+        self.config = config
+        self.query_exec_tracker = query_exec_tracker or QueryExecTracker()
+        self.intermediate_values = {}
 
-    @property
-    def dfs(self) -> List[Union[pd.DataFrame, Any]]:
-        return self._dfs
+    def add(self, key: str, value: Any):
+        self.intermediate_values[key] = value
 
-    @property
-    def memory(self):
-        return self._memory
+    def add_many(self, values: dict):
+        self.intermediate_values.update(values)
 
-    @property
-    def skills(self):
-        return self._skills
-
-    @property
-    def cache(self):
-        return self._cache
-
-    @property
-    def config(self):
-        return self._config
-
-    @property
-    def query_exec_tracker(self):
-        return self._query_exec_tracker
-
-    def add_intermediate_value(self, key: str, value: Any):
-        self._intermediate_values[key] = value
-
-    def get_intermediate_value(self, key: str):
-        return self._intermediate_values.get(key, "")
+    def get(self, key: str):
+        return self.intermediate_values.get(key, "")

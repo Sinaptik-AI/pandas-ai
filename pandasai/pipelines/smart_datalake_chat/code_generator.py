@@ -33,7 +33,7 @@ class CodeGenerator(BaseLogicUnit):
             pipeline_context.config.llm.generate_code,
             generate_python_code_instruction,
         )
-        pipeline_context.add_intermediate_value("last_code_generated", code)
+        pipeline_context.add("last_code_generated", code)
         logger.log(
             f"""Code generated:
             ```

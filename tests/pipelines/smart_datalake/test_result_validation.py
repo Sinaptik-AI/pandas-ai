@@ -118,9 +118,9 @@ class TestResultValidation:
         result_validation = ResultValidation()
         output_type_helper = Mock()
 
-        context._query_exec_tracker = Mock()
+        context.query_exec_tracker = Mock()
         context.query_exec_tracker.get_execution_time = Mock()
-        context.get_intermediate_value = Mock(return_value=output_type_helper)
+        context.get = Mock(return_value=output_type_helper)
         output_type_helper.validate = Mock(return_value=(True, "Mocked Logs"))
 
         result = result_validation.execute(
@@ -142,9 +142,9 @@ class TestResultValidation:
         result_validation = ResultValidation()
         output_type_helper = Mock()
 
-        context._query_exec_tracker = Mock()
+        context.query_exec_tracker = Mock()
         context.query_exec_tracker.get_execution_time = Mock()
-        context.get_intermediate_value = Mock(return_value=output_type_helper)
+        context.get = Mock(return_value=output_type_helper)
         output_type_helper.validate = Mock(return_value=(False, "Mocked Logs"))
 
         result = result_validation.execute(

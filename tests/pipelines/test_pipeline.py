@@ -81,7 +81,7 @@ class TestPipeline:
         # Test the initialization of the Pipeline
         pipeline = Pipeline(context)
         assert isinstance(pipeline, Pipeline)
-        assert pipeline._context._config == Config(**config)
+        assert pipeline._context.config == Config(**config)
         assert pipeline._context == context
         assert pipeline._steps == []
 

@@ -89,6 +89,10 @@ class AbstractPrompt(ABC):
     def set_vars(self, vars):
         if self._args is None:
             self._args = {}
+
+        if "dfs" in vars:
+            self._args["dataframes"] = self._generate_dataframes(vars["dfs"])
+
         self._args.update(vars)
 
     def to_string(self):

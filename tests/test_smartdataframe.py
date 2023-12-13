@@ -307,13 +307,17 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
     def test_last_prompt_id_no_prompt(self, smart_dataframe: SmartDataframe):
         assert smart_dataframe.lake.last_prompt_id is None
 
-    def test_getters_are_accessible(self, smart_dataframe: SmartDataframe, llm):
-        llm._output = "result = {'type': 'number', 'value': 1}"
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_generator.CodeGenerator.execute",
+        autospec=True,
+    )
+    def test_getters_are_accessible(
+        self, mock_generate_code: Mock, smart_dataframe: SmartDataframe
+    ):
+        expected_code = "result = {'type': 'number', 'value': 1}"
+        mock_generate_code.return_value = expected_code
         smart_dataframe.chat("What number comes before 2?")
-        assert (
-            smart_dataframe.last_code_generated
-            == "result = {'type': 'number', 'value': 1}"
-        )
+        assert smart_dataframe.last_code_generated == expected_code
 
     def test_save_chart_non_default_dir(
         self, smart_dataframe: SmartDataframe, llm, sample_df
@@ -406,7 +410,14 @@ result = {"type": None, "value": "temp_chart.png"}
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 
-    def test_replace_correct_error_prompt(self, llm):
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
+    def test_replace_correct_error_prompt(self, mock_execute, llm):
+        # mock_execute should raise an exception only once
+        mock_execute.side_effect = [Exception, None]
+
         class ReplacementPrompt(AbstractPrompt):
             @property
             def template(self):
@@ -421,8 +432,7 @@ result = {"type": None, "value": "temp_chart.png"}
                 "enable_cache": False,
             },
         )
-
-        df.lake.retry_run_code("wrong code", Exception())
+        df.chat("Will this work?")
         expected_last_prompt = replacement_prompt.to_string()
         assert llm.last_prompt == expected_last_prompt
 

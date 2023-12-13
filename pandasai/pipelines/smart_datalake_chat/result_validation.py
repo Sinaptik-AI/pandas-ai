@@ -34,9 +34,7 @@ class ResultValidation(BaseLogicUnit):
                 (
                     validation_ok,
                     validation_logs,
-                ) = pipeline_context.get_intermediate_value(
-                    "output_type_helper"
-                ).validate(result)
+                ) = pipeline_context.get("output_type_helper").validate(result)
                 if not validation_ok:
                     logger.log("\n".join(validation_logs), level=logging.WARNING)
                     pipeline_context.query_exec_tracker.add_step(
@@ -55,7 +53,7 @@ class ResultValidation(BaseLogicUnit):
                         }
                     )
 
-            pipeline_context.add_intermediate_value("last_result", result)
+            pipeline_context.add("last_result", result)
             logger.log(f"Answer: {result}")
 
         logger.log(

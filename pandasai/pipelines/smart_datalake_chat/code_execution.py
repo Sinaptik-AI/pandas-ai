@@ -1,11 +1,12 @@
 import logging
 import traceback
 from typing import Any, List
-from ...helpers.code_manager import CodeExecutionContext
+from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...prompts.correct_error_prompt import CorrectErrorPrompt
+from ...prompts.base import AbstractPrompt
 
 
 class CodeExecution(BaseLogicUnit):
@@ -28,25 +29,28 @@ class CodeExecution(BaseLogicUnit):
 
         :return: The result of the execution.
         """
-        pipeline_context: PipelineContext = kwargs.get("context")
-        logger: Logger = kwargs.get("logger")
+        self.context: PipelineContext = kwargs.get("context")
+        self.logger: Logger = kwargs.get("logger")
+
+        # Execute the code
+        code_context = CodeExecutionContext(
+            self.context.get("last_prompt_id"), self.context.skills
+        )
+
+        code_manager = CodeManager(
+            dfs=self.context.dfs,
+            config=self.context.config,
+            logger=self.logger,
+        )
 
         code = input
         retry_count = 0
         code_to_run = code
         result = None
-        while retry_count < pipeline_context.config.max_retries:
+        while retry_count < self.context.config.max_retries:
             try:
-                # Execute the code
-                code_context = CodeExecutionContext(
-                    pipeline_context.get_intermediate_value("last_prompt_id"),
-                    pipeline_context.get_intermediate_value("skills"),
-                )
-
-                result = pipeline_context.query_exec_tracker.execute_func(
-                    pipeline_context.get_intermediate_value(
-                        "code_manager"
-                    ).execute_code,
+                result = self.context.query_exec_tracker.execute_func(
+                    code_manager.execute_code,
                     code=code_to_run,
                     context=code_context,
                 )
@@ -55,25 +59,25 @@ class CodeExecution(BaseLogicUnit):
 
             except Exception as e:
                 if (
-                    not pipeline_context.config.use_error_correction_framework
-                    or retry_count >= pipeline_context.config.max_retries - 1
+                    not self.context.config.use_error_correction_framework
+                    or retry_count >= self.context.config.max_retries - 1
                 ):
                     raise e
 
                 retry_count += 1
 
-                logger.log(
+                self.logger.log(
                     f"Failed to execute code with a correction framework "
                     f"[retry number: {retry_count}]",
                     level=logging.WARNING,
                 )
 
                 traceback_error = traceback.format_exc()
-                code_to_run = pipeline_context.query_exec_tracker.execute_func(
+                code_to_run = self.context.query_exec_tracker.execute_func(
                     self.retry_run_code,
                     code,
-                    pipeline_context,
-                    logger,
+                    self.context,
+                    self.logger,
                     traceback_error,
                 )
 
@@ -100,14 +104,42 @@ class CodeExecution(BaseLogicUnit):
         default_values = {
             "code": code,
             "error_returned": e,
-            "output_type_hint": context.get_intermediate_value(
-                "output_type_helper"
-            ).template_hint,
+            "output_type_hint": context.get("output_type_helper").template_hint,
         }
-        error_correcting_instruction = context.get_intermediate_value("get_prompt")(
-            "correct_error",
-            default_prompt=CorrectErrorPrompt(),
-            default_values=default_values,
+        error_correcting_instruction = self.get_prompt(
+            default_values,
         )
 
         return context.config.llm.generate_code(error_correcting_instruction)
+
+    def get_prompt(self, default_values) -> AbstractPrompt:
+        """
+        Return a prompt by key.
+
+        Args:
+            values (dict): The values to use for the prompt
+
+        Returns:
+            AbstractPrompt: The prompt
+        """
+        prompt = (
+            self.context.config.custom_prompts.get("correct_error")
+            or CorrectErrorPrompt()
+        )
+
+        # Set default values for the prompt
+        prompt.set_config(self.context.config)
+
+        # Set the variables for the prompt
+        values = {
+            "dfs": self.context.dfs,
+            "conversation": self.context.memory.get_conversation(),
+            "prev_conversation": self.context.memory.get_previous_conversation(),
+            "last_message": self.context.memory.get_last_message(),
+            "skills": self.context.skills.prompt_display() or "",
+        }
+        values |= default_values
+        prompt.set_vars(values)
+
+        self.logger.log(f"Using prompt: {prompt}")
+        return prompt

@@ -16,7 +16,7 @@ class ResponseType(TypedDict):
 
 exec_steps = {
     "cache_hit": "Cache Hit",
-    "_get_prompt": "Generate Prompt",
+    "get_prompt": "Generate Prompt",
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
     "retry_run_code": "Retry Code Generation",
@@ -164,7 +164,7 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "_get_prompt":
+        if func_name == "get_prompt":
             step["prompt_class"] = result.__class__.__name__
             step["generated_prompt"] = result.to_string()
 

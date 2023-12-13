@@ -67,7 +67,11 @@ class TestSkills:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake.code_manager
+        return CodeManager(
+            dfs=[smart_dataframe],
+            config=smart_dataframe.lake.config,
+            logger=smart_dataframe.lake.logger,
+        )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -325,9 +329,9 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
         skill1.name = "SkillA"
-        exec_context._skills_manager._skills = [skill1]
+        exec_context.skills_manager.skills = [skill1]
         code_manager.execute_code(code, exec_context)
-        assert len(exec_context._skills_manager.used_skills) == 0
+        assert len(exec_context.skills_manager.used_skills) == 0
 
     def test_code_exec_with_skills(self, code_manager: CodeManager):
         code = """plot_salaries()
@@ -342,6 +346,6 @@ result = {'type': 'number', 'value': 1 + 1}"""
         exec_context = CodeExecutionContext(uuid.uuid4(), sm)
         result = code_manager.execute_code(code, exec_context)
 
-        assert len(exec_context._skills_manager.used_skills) == 1
-        assert exec_context._skills_manager.used_skills[0] == "plot_salaries"
+        assert len(exec_context.skills_manager.used_skills) == 1
+        assert exec_context.skills_manager.used_skills[0] == "plot_salaries"
         assert result == {"type": "number", "value": 1 + 1}
