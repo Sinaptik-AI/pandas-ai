@@ -80,7 +80,10 @@ class ResponseParser(IResponseParser):
 
     def format_plot(self, result: dict) -> Any:
         """
-        Display matplotlib plot against a user query
+        Display matplotlib plot against a user query.
+
+        If `open_charts` option set to `False`, the chart won't be displayed.
+
         Args:
             result (dict): result contains type and value
         Returns:
