@@ -99,7 +99,7 @@ import pandas as pd
 Q: Question
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
-At the end, declare "result" var dict: {output_type_hint}
+At the end, declare "result" variable as a dictionary of type and value.
 {viz_library_type_hint}
 
 

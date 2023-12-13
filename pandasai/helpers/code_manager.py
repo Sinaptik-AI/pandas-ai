@@ -96,6 +96,10 @@ class CodeManager:
             the code.
         """
 
+        # Sometimes GPT-3.5/4 use a for loop to iterate over the dfs (even if there is only one)
+        if "for df in dfs" in code:
+            return self._dfs
+
         required_dfs = []
         for i, df in enumerate(self._dfs):
             if f"dfs[{i}]" in code:
