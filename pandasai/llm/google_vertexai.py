@@ -26,12 +26,17 @@ class GoogleVertexAI(BaseGoogle):
     _supported_code_models = [
         "code-bison",
         "code-bison-32k",
+        "code-bison-32k@002",
         "code-bison@001",
+        "code-bison@002",
     ]
     _supported_text_models = [
         "text-bison",
         "text-bison-32k",
+        "text-bison-32k@002",
         "text-bison@001",
+        "text-bison@002",
+        "text-unicorn@001",
     ]
 
     def __init__(
