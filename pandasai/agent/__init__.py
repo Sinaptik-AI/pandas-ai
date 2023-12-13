@@ -139,6 +139,7 @@ class Agent:
             f"""Clarification Questions:  {result}
             """
         )
+        result = result.replace("```json", "").replace("```", "")
         questions: list[str] = json.loads(result)
         return questions[:3]
 
