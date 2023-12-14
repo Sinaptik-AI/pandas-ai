@@ -95,6 +95,8 @@ class ResponseParser(IResponseParser):
         with Image.open(result["value"]) as img:
             img.show()
 
+        return result["value"]
+
     def format_other(self, result) -> Any:
         """
         Returns the result generated against a user query other than dataframes
