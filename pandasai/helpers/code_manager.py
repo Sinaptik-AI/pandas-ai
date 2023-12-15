@@ -97,7 +97,8 @@ class CodeManager:
         """
 
         # Sometimes GPT-3.5/4 use a for loop to iterate over the dfs (even if there is only one)
-        if "for df in dfs" in code:
+        # or they concatenate the dfs. In this case we need all the dfs
+        if "for df in dfs" in code or "pd.concat(dfs)" in code:
             return self._dfs
 
         required_dfs = []
