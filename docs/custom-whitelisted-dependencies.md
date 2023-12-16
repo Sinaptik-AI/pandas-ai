@@ -4,7 +4,7 @@ By default, PandasAI only allows to run code that uses some whitelisted modules.
 
 ```python
 from pandasai import SmartDataframe
-df = SmartDataframe("data.csv", {
+df = SmartDataframe("data.csv", config={
     "custom_whitelisted_dependencies": ["any_module"]
 })
 ```

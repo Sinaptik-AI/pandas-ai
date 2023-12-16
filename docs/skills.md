@@ -28,17 +28,17 @@ salaries_df = pd.DataFrame(salaries_data)
 
 # Function doc string to give more context to the model for use this skill
 @skill
-def plot_salaries(name: list[str], salaries: list[int]):
+def plot_salaries(names: list[str], salaries: list[int]):
     """
-    Displays the bar chart  having name on x axis and salaries on y axis
+    Displays the bar chart  having name on x-axis and salaries on y-axis
     Args:
-        name (list[str]): Employee name
+        names (list[str]): Employees' names
         salaries (list[int]): Salaries
     """
     # plot bars
     import matplotlib.pyplot as plt
 
-    plt.bar(name, salaries)
+    plt.bar(names, salaries)
     plt.xlabel("Employee Name")
     plt.ylabel("Salary")
     plt.title("Employee Salaries")
@@ -83,16 +83,16 @@ salaries_df = pd.DataFrame(salaries_data)
 
 # Function doc string to give more context to the model for use this skill
 @skill
-def plot_salaries(name: list[str], salary: list[int]):
+def plot_salaries(names: list[str], salaries: list[int]):
     """
-    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Displays the bar chart having name on x-axis and salaries on y-axis using streamlit
     Args:
-        name (list[str]): Employee name
+        names (list[str]): Employees' names
         salaries (list[int]): Salaries
     """
     import matplotlib.pyplot as plt
 
-    plt.bar(name, salary)
+    plt.bar(names, salaries)
     plt.xlabel("Employee Name")
     plt.ylabel("Salary")
     plt.title("Employee Salaries")
@@ -105,7 +105,7 @@ def plot_salaries(name: list[str], salary: list[int]):
 llm = OpenAI("YOUR_API_KEY")
 agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
 
-agent.add_skills(plot_salaries_using_streamlit)
+agent.add_skills(plot_salaries)
 
 # Chat with the agent
 response = agent.chat("Plot the employee salaries against names")

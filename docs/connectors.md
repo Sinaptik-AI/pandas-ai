@@ -38,6 +38,7 @@ The PostgreSQL connector allows you to connect to a PostgreSQL database. It is d
 To use the PostgreSQL connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
+from pandasai import SmartDataframe
 from pandasai.connectors import PostgreSQLConnector
 
 postgres_connector = PostgreSQLConnector(
@@ -67,6 +68,7 @@ Similarly to the PostgreSQL connector, the MySQL connector allows you to connect
 To use the MySQL connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
+from pandasai import SmartDataframe
 from pandasai.connectors import MySQLConnector
 
 mysql_connector = MySQLConnector(
@@ -96,6 +98,7 @@ Similarly to the PostgreSQL and MySQL connectors, the Sqlite connector allows yo
 To use the Sqlite connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
+from pandasai import SmartDataframe
 from pandasai.connectors import SqliteConnector
 
 connector = SqliteConnector(config={
@@ -146,6 +149,7 @@ The Snowflake connector allows you to connect to Snowflake. It is very similar t
 To use the Snowflake connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
+from pandasai import SmartDataframe
 from pandasai.connectors import SnowFlakeConnector
 
 snowflake_connector = SnowFlakeConnector(
@@ -176,7 +180,7 @@ The DataBricks connector allows you to connect to DataBricks. It is very similar
 To use the DataBricks connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors import DataBricksConnector
+from pandasai.connectors import DatabricksConnector
 
 databricks_connector = DatabricksConnector(
     config={
@@ -202,6 +206,7 @@ The Yahoo Finance connector allows you to connect to Yahoo Finance, by simply pa
 To use the Yahoo Finance connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
+from pandasai import SmartDataframe
 from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 
 yahoo_connector = YahooFinanceConnector("MSFT")

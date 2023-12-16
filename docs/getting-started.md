@@ -44,6 +44,8 @@ Below is simple example to get started with `pandasai`.
 ```python
 import pandas as pd
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
 
 # Sample DataFrame
 df = pd.DataFrame({
@@ -53,7 +55,6 @@ df = pd.DataFrame({
 })
 
 # Instantiate a LLM
-from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 df = SmartDataframe(df, config={"llm": llm})
@@ -124,6 +125,8 @@ PandasAI also supports agents. While a `SmartDataframe` or a `SmartDatalake` can
 ```python
 from pandasai import Agent
 import pandas as pd
+from pandasai.llm import OpenAI
+
 
 # Sample DataFrames
 df1 = pd.DataFrame({
@@ -132,7 +135,9 @@ df1 = pd.DataFrame({
     "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
 })
 
-agent = Agent([df1])
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+agent = Agent([df1], config={"llm": llm})
 ```
 
 Then, you can use the agent as follows:
@@ -214,6 +219,3 @@ Try out PandasAI in your browser:
 
 You can find some examples [here](examples.md).
 
-```
-
-```
