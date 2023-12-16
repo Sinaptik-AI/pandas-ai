@@ -10,6 +10,7 @@ Example of using PandasAI with a Pandas DataFrame
 ```python
 from pandasai import SmartDataframe
 import pandas as pd
+from pandasai.llm import OpenAI
 
 # pandas dataframe
 df = pd.DataFrame({
@@ -18,10 +19,12 @@ df = pd.DataFrame({
     "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
 })
 
-# convert to SmartDataframe
-df = SmartDataframe(df)
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df.chat('Calculate the sum of the gdp of north american countries')
+# convert to SmartDataframe
+df = SmartDataframe(df, config={"llm": llm})
+
+response = df.chat('Calculate the sum of the gdp of north american countries')
 print(response)
 # Output: 20901884461056
 ```
@@ -32,11 +35,14 @@ Example of using PandasAI with a CSV file
 
 ```python
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 # You can instantiate a SmartDataframe with a path to a CSV file
-df = Smartdataframe("data/Loan payments data.csv")
+df = SmartDataframe("data/Loan payments data.csv", config={"llm": llm})
 
-df.chat("How many loans are from men and have been paid off?")
+response = df.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -53,11 +59,14 @@ Then, you can use PandasAI with an Excel file as follows:
 
 ```python
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 # You can instantiate a SmartDataframe with a path to an Excel file
-df = Smartdataframe("data/Loan payments data.xlsx")
+df = SmartDataframe("data/Loan payments data.xlsx", config={"llm": llm})
 
-df.chat("How many loans are from men and have been paid off?")
+response = df.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -74,10 +83,13 @@ Then, you can use PandasAI with a Google Sheet as follows:
 
 ```python
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 # You can instantiate a SmartDataframe with a path to a Google Sheet
-df = Smartdataframe("https://docs.google.com/spreadsheets/d/fake/edit#gid=0")
-df.chat("How many loans are from men and have been paid off?")
+df = SmartDataframe("https://docs.google.com/spreadsheets/d/fake/edit#gid=0", config={"llm": llm})
+response = df.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -97,15 +109,21 @@ Then, you can use PandasAI with a Polars DataFrame as follows:
 ```python
 from pandasai import SmartDataframe
 import polars as pl
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
 
 # You can instantiate a SmartDataframe with a Polars DataFrame
 
-df = pd.DataFrame([
+df = pl.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
     "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
     "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
-])
-df.chat("How many loans are from men and have been paid off?")
+})
+
+df = SmartDataframe(df, config={"llm": llm})
+response = df.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -116,10 +134,13 @@ Example of using PandasAI to generate a chart from a Pandas DataFrame
 
 ```python
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
-df = SmartDataframe("data/Countries.csv")
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+df = SmartDataframe("data/Countries.csv", config={"llm": llm})
 response = df.chat(
-    "Plot the histogram of countries showing for each the gpd, using different colors for each bar"
+    "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
 )
 print(response)
 # Output: check out images/histogram-chart.png
@@ -131,12 +152,17 @@ You can pass a custom path to save the charts. The path must be a valid global p
 Below is the example to Save Charts with user defined location.
 
 ```python
+import os
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 user_defined_path = os.getcwd()
-df = SmartDataframe("data/Countries.csv", {
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+df = SmartDataframe("data/Countries.csv", config={
     "save_charts": True,
     "save_charts_path": user_defined_path,
+    "llm": llm
 })
 response = df.chat(
     "Plot the histogram of countries showing for each the gpd,"
@@ -153,6 +179,7 @@ Example of using PandasAI with multiple dataframes. In order to use multiple dat
 ```python
 from pandasai import SmartDatalake
 import pandas as pd
+from pandasai.llm import OpenAI
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -168,7 +195,9 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-df = SmartDatalake([employees_df, salaries_df])
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+df = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
 response = df.chat("Who gets paid the most?")
 print(response)
 # Output: Olivia gets paid the most.
@@ -181,8 +210,10 @@ dataframe by gender and then by loans that have been paid off.
 
 ```python
 from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
-df = SmartDataframe("data/Loan payments data.csv")
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+df = SmartDataframe("data/Loan payments data.csv", config={"llm": llm})
 
 # We filter by males only
 from_males_df = df.chat("Filter the dataframe by women")
@@ -222,7 +253,7 @@ With the chat agent, you can engage in dynamic conversations where the agent ret
 
 Feel free to initiate conversations, seek clarifications, and explore explanations to enhance your interactions with the chat agent!
 
-```
+```python
 import pandas as pd
 from pandasai import Agent
 
@@ -265,7 +296,7 @@ print(response)
 
 You can add customs functions for the agent to use, allowing the agent to expand its capabilities. These custom functions can be seamlessly integrated with the agent's skills, enabling a wide range of user-defined operations.
 
-```
+```python
 import pandas as pd
 from pandasai import Agent
 
@@ -288,12 +319,9 @@ salaries_df = pd.DataFrame(salaries_data)
 
 
 @skill
-def plot_salaries(merged_df: pd.DataFrame) -> str:
+def plot_salaries(merged_df: pd.DataFrame):
     """
-    Displays the bar chart having name on x axis and salaries on y axis using streamlit
-    Args:
-        name (list[str]): Employee name
-        salaries (list[int]): Salaries
+    Displays the bar chart having name on x-axis and salaries on y-axis using streamlit
     """
     import matplotlib.pyplot as plt
 

@@ -9,7 +9,7 @@ With PandasAI, you can easily customize the instructions that are used by the li
 ```python
 from pandasai import SmartDataframe
 
-df = SmartDataframe("data.csv", {
+df = SmartDataframe("data.csv", config={
     "custom_instructions": "Custom instructions for the generation of Python code"
 })
 ```

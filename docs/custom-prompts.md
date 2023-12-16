@@ -31,7 +31,7 @@ class MyCustomPrompt(AbstractPrompt):
         self.set_var("my_custom_value", kwargs["my_custom_value"])
 
 
-df = SmartDataframe("data.csv", {
+df = SmartDataframe("data.csv", config={
     "custom_prompts": {
         "generate_python_code": MyCustomPrompt(
             my_custom_value="my custom value")
@@ -58,7 +58,7 @@ class MyCustomFileBasedPrompt(FileBasedPrompt):
     _path_to_template = "path/to/my_prompt_template.tmpl"
 
 
-df = SmartDataframe("data.csv", {
+df = SmartDataframe("data.csv", config={
     "custom_prompts": {
         "generate_python_code": MyCustomFileBasedPrompt(
             my_custom_value="my custom value")
@@ -85,7 +85,7 @@ Here's the conversation:
 """
 
 
-df = SmartDataframe("data.csv", {
+df = SmartDataframe("data.csv", config={
     "custom_prompts": {
         "generate_python_code": MyCustomPrompt()
     }

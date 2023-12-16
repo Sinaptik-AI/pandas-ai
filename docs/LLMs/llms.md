@@ -58,7 +58,7 @@ import pandas as pd
 llm = OpenAI()
 
 # conversational=False is supposed to display lower usage and cost
-df = SmartDataframe("data.csv", {"llm": llm, "conversational": False})
+df = SmartDataframe("data.csv", config={"llm": llm, "conversational": False})
 
 with get_openai_callback() as cb:
     response = df.chat("Calculate the sum of the gdp of north american countries")
@@ -175,7 +175,7 @@ from pandasai import SmartDataframe
 from langchain.llms import OpenAI
 
 langchain_llm = OpenAI(openai_api_key="my-openai-api-key")
-df = SmartDataframe("data.csv", {"llm": langchain_llm})
+df = SmartDataframe("data.csv", config={"llm": langchain_llm})
 ```
 
 PandasAI will automatically detect that you are using a LangChain LLM and will convert it to a PandasAI LLM.
