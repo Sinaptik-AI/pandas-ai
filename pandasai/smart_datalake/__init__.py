@@ -29,7 +29,6 @@ from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
 
 from pandasai.helpers.output_types import output_type_factory
 from ..llm.base import LLM
-from ..prompts import FileBasedPrompt
 from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
@@ -39,6 +38,7 @@ from ..config import load_config
 from typing import Union, List, Any, Optional
 from ..helpers.path import find_project_root
 import pandas as pd
+from .callbacks import Callbacks
 
 
 class SmartDatalake:
@@ -71,6 +71,8 @@ class SmartDatalake:
 
         self.conversation_id = uuid.uuid4()
         self.instance = self.__class__.__name__
+
+        self.callbacks = Callbacks(self)
 
         query_exec_tracker = QueryExecTracker(
             server_config=config.log_server,
@@ -222,10 +224,10 @@ class SmartDatalake:
             result = GenerateSmartDatalakePipeline(
                 self.context,
                 self.logger,
-                on_prompt_generation=self.on_prompt_generation,
-                on_code_generation=self.on_code_generation,
-                on_code_execution=self.on_code_execution,
-                on_result=self.on_result,
+                on_prompt_generation=self.callbacks.on_prompt_generation,
+                on_code_generation=self.callbacks.on_code_generation,
+                on_code_execution=self.callbacks.on_code_execution,
+                on_result=self.callbacks.on_result,
             ).run()
         except Exception as exception:
             self.last_error = str(exception)
@@ -282,42 +284,6 @@ class SmartDatalake:
         """
         self.context.memory.clear()
         self.conversation_id = uuid.uuid4()
-
-    def on_prompt_generation(self, prompt: FileBasedPrompt) -> str:
-        """
-        A method to be called after prompt generation.
-
-        Args:
-            prompt (str): A prompt
-        """
-        self.last_prompt = str(prompt)
-
-    def on_code_generation(self, code: str):
-        """
-        A method to be called after code generation.
-
-        Args:
-            code (str): A python code
-        """
-        self.last_code_generated = code
-
-    def on_code_execution(self, code: str):
-        """
-        A method to be called after code execution.
-
-        Args:
-            code (str): A python code
-        """
-        self.last_code_executed = code
-
-    def on_result(self, result: Any):
-        """
-        A method to be called after code execution.
-
-        Args:
-            result (Any): A python code
-        """
-        self.last_result = result
 
     @property
     def logs(self):
