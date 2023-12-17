@@ -159,7 +159,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     @property
     def last_code_generated(self):
-        return self.lake.last_code_executed
+        return self.lake.last_code_generated
 
     @property
     def last_code_executed(self):

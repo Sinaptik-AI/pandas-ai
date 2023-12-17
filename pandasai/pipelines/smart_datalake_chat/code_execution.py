@@ -14,7 +14,9 @@ class CodeExecution(BaseLogicUnit):
     Code Execution Stage
     """
 
-    pass
+    def __init__(self, on_failure=None, **kwargs):
+        super().__init__()
+        self.on_failure = on_failure
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -34,7 +36,7 @@ class CodeExecution(BaseLogicUnit):
 
         # Execute the code
         code_context = CodeExecutionContext(
-            self.context.get("last_prompt_id"), self.context.skills
+            self.context.get("last_prompt_id"), self.context.skills_manager
         )
 
         code_manager = CodeManager(
@@ -109,6 +111,8 @@ class CodeExecution(BaseLogicUnit):
         error_correcting_instruction = self.get_prompt(
             default_values,
         )
+        if self.on_failure:
+            self.on_failure(error_correcting_instruction)
 
         return context.config.llm.generate_code(error_correcting_instruction)
 
@@ -136,7 +140,7 @@ class CodeExecution(BaseLogicUnit):
             "conversation": self.context.memory.get_conversation(),
             "prev_conversation": self.context.memory.get_previous_conversation(),
             "last_message": self.context.memory.get_last_message(),
-            "skills": self.context.skills.prompt_display() or "",
+            "skills": self.context.skills_manager.prompt_display() or "",
         }
         values |= default_values
         prompt.set_vars(values)

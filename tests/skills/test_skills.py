@@ -199,7 +199,7 @@ class TestSkills:
         )
 
     @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
-    def test_skill_decorator_test_codc(self, llm):
+    def test_skill_decorator_test_codc(self, _mock_inspect_signature, llm):
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
@@ -314,7 +314,7 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
     def test_run_prompt_without_skills(self, agent):
         agent.chat("How many countries are in the dataframe?")
 
-        last_prompt = agent.lake.last_prompt
+        last_prompt = agent.last_prompt
 
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt

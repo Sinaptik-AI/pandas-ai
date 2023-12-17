@@ -20,7 +20,6 @@ Example:
 import uuid
 import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
-from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.skills import skill
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
@@ -30,6 +29,7 @@ from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
 
 from pandasai.helpers.output_types import output_type_factory
 from ..llm.base import LLM
+from ..prompts import FileBasedPrompt
 from ..llm.langchain import LangchainLLM
 from ..helpers.logger import Logger
 from ..helpers.cache import Cache
@@ -56,75 +56,41 @@ class SmartDatalake:
             config (Union[Config, dict], optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
+        self.last_prompt = None
+        self.last_prompt_id = None
         self.last_result = None
         self.last_code_generated = None
         self.last_code_executed = None
-        self.last_prompt_id = None
 
-        self.load_config(config)
-        self.initialize()
+        config = self.load_config(config)
 
         self.logger = logger or Logger(
-            save_logs=self.config.save_logs, verbose=self.config.verbose
+            save_logs=config.save_logs, verbose=config.verbose
         )
-        self.load_dfs(dfs)
-
-        self.memory = memory or Memory()
-
-        self.skills_manager = SkillsManager()
-
-        self.cache = cache or None
-        if cache is None and self.config.enable_cache:
-            self.cache = Cache()
+        dfs = self.load_dfs(dfs, config)
 
         self.conversation_id = uuid.uuid4()
-
         self.instance = self.__class__.__name__
 
-        self.query_exec_tracker = QueryExecTracker(
-            server_config=self.config.log_server,
+        query_exec_tracker = QueryExecTracker(
+            server_config=config.log_server,
+        )
+
+        self.context = PipelineContext(
+            dfs=self.dfs,
+            config=config,
+            memory=memory,
+            cache=cache,
+            query_exec_tracker=query_exec_tracker,
         )
 
     def set_instance_type(self, type: str):
         self.instance = type
 
     def is_related_query(self, flag: bool):
-        self.query_exec_tracker.set_related_query(flag)
+        self.context.query_exec_tracker.set_related_query(flag)
 
-    def initialize(self):
-        """Initialize the SmartDatalake, create auxiliary directories.
-
-        If 'save_charts' option is enabled, create '.exports/charts directory'
-        in case if it doesn't exist.
-        If 'enable_cache' option is enabled, Create './cache' in case if it
-        doesn't exist.
-
-        Returns:
-            None
-        """
-
-        if self.config.save_charts:
-            charts_dir = self.config.save_charts_path
-
-            # Add project root path if save_charts_path is default
-            if self.config.save_charts_path == DEFAULT_CHART_DIRECTORY:
-                try:
-                    charts_dir = os.path.join(
-                        (find_project_root()), self.config.save_charts_path
-                    )
-                    self.config.save_charts_path = charts_dir
-                except ValueError:
-                    charts_dir = os.path.join(os.getcwd(), self.config.save_charts_path)
-            os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
-
-        if self.config.enable_cache:
-            try:
-                cache_dir = os.path.join((find_project_root()), "cache")
-            except ValueError:
-                cache_dir = os.path.join(os.getcwd(), "cache")
-            os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
-
-    def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]]):
+    def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]], config: Config = None):
         """
         Load all the dataframes to be used in the smart datalake.
 
@@ -137,9 +103,7 @@ class SmartDatalake:
         smart_dfs = []
         for df in dfs:
             if not isinstance(df, SmartDataframe):
-                smart_dfs.append(
-                    SmartDataframe(df, config=self.config, logger=self.logger)
-                )
+                smart_dfs.append(SmartDataframe(df, config=config, logger=self.logger))
             else:
                 smart_dfs.append(df)
         self.dfs = smart_dfs
@@ -154,13 +118,35 @@ class SmartDatalake:
 
         config = load_config(config)
 
-        if config.get("llm"):
-            self.load_llm(config["llm"])
-            config["llm"] = self.llm
+        if isinstance(config, dict) and config.get("llm") is None:
+            config["llm"] = self.load_llm(config["llm"])
 
-        self.config = Config(**config)
+        config = Config(**config)
 
-    def load_llm(self, llm: LLM):
+        if config.save_charts:
+            charts_dir = config.save_charts_path
+
+            # Add project root path if save_charts_path is default
+            if config.save_charts_path == DEFAULT_CHART_DIRECTORY:
+                try:
+                    charts_dir = os.path.join(
+                        (find_project_root()), config.save_charts_path
+                    )
+                    config.save_charts_path = charts_dir
+                except ValueError:
+                    charts_dir = os.path.join(os.getcwd(), config.save_charts_path)
+            os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
+
+        if config.enable_cache:
+            try:
+                cache_dir = os.path.join((find_project_root()), "cache")
+            except ValueError:
+                cache_dir = os.path.join(os.getcwd(), "cache")
+            os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
+
+        return config
+
+    def load_llm(self, llm: LLM) -> LLM:
         """
         Load a LLM to be used to run the queries.
         Check if it is a PandasAI LLM or a Langchain LLM.
@@ -175,14 +161,13 @@ class SmartDatalake:
         """
         if hasattr(llm, "_llm_type"):
             llm = LangchainLLM(llm)
-
-        self.llm = llm
+        return llm
 
     def add_skills(self, *skills: List[skill]):
         """
         Add Skills to PandasAI
         """
-        self.skills_manager.add_skills(*skills)
+        self.context.skills_manager.add_skills(*skills)
 
     def assign_prompt_id(self):
         """Assign a prompt ID"""
@@ -216,22 +201,36 @@ class SmartDatalake:
             ValueError: If the query is empty
         """
 
-        pipeline_context = self.prepare_context_for_smart_datalake_pipeline(
-            query=query, output_type=output_type
+        self.context.query_exec_tracker.start_new_track()
+
+        self.logger.log(f"Question: {query}")
+        self.logger.log(f"Running PandasAI with {self.context.config.llm.type} LLM...")
+
+        self.assign_prompt_id()
+
+        self.context.query_exec_tracker.add_query_info(
+            self.conversation_id, self.instance, query, output_type
         )
+
+        self.context.query_exec_tracker.add_dataframes(self.dfs)
+
+        self.context.memory.add(query, True)
+
+        self.prepare_context_for_smart_datalake_pipeline(output_type=output_type)
 
         try:
             result = GenerateSmartDatalakePipeline(
-                pipeline_context,
+                self.context,
                 self.logger,
+                on_prompt_generation=self.on_prompt_generation,
                 on_code_generation=self.on_code_generation,
                 on_code_execution=self.on_code_execution,
                 on_result=self.on_result,
             ).run()
         except Exception as exception:
             self.last_error = str(exception)
-            self.query_exec_tracker.success = False
-            self.query_exec_tracker.publish()
+            self.context.query_exec_tracker.success = False
+            self.context.query_exec_tracker.publish()
 
             return (
                 "Unfortunately, I was not able to answer your question, "
@@ -239,19 +238,18 @@ class SmartDatalake:
                 f"\n{exception}\n"
             )
 
-        # publish query tracker
-        self.query_exec_tracker.publish()
+        # Publish query tracker
+        self.context.query_exec_tracker.publish()
 
         return result
 
     def prepare_context_for_smart_datalake_pipeline(
-        self, query: str, output_type: Optional[str] = None
+        self, output_type: Optional[str] = None
     ) -> PipelineContext:
         """
         Prepare Pipeline Context to initiate Smart Data Lake Pipeline.
 
         Args:
-            query (str): Query to run on the dataframe
             output_type (Optional[str]): Add a hint for LLM which
                 type should be returned by `analyze_data()` in generated
                 code. Possible values: "number", "dataframe", "plot", "string":
@@ -269,47 +267,30 @@ class SmartDatalake:
         Returns:
             PipelineContext: The Pipeline Context to be used by Smart Data Lake Pipeline.
         """
-
-        self.query_exec_tracker.start_new_track()
-
-        self.logger.log(f"Question: {query}")
-        self.logger.log(f"Running PandasAI with {self.llm.type} LLM...")
-
-        self.assign_prompt_id()
-
-        self.query_exec_tracker.add_query_info(
-            self.conversation_id, self.instance, query, output_type
-        )
-
-        self.query_exec_tracker.add_dataframes(self.dfs)
-
-        self.memory.add(query, True)
-
-        output_type_helper = output_type_factory(output_type, logger=self.logger)
-
-        pipeline_context = PipelineContext(
-            dfs=self.dfs,
-            config=self.config,
-            memory=self.memory,
-            cache=self.cache,
-            query_exec_tracker=self.query_exec_tracker,
-            skills=self.skills_manager,
-        )
-        pipeline_context.add_many(
+        self.context.add_many(
             {
-                "output_type_helper": output_type_helper,
+                "output_type_helper": output_type_factory(
+                    output_type, logger=self.logger
+                ),
                 "last_prompt_id": self.last_prompt_id,
             }
         )
-
-        return pipeline_context
 
     def clear_memory(self):
         """
         Clears the memory
         """
-        self.memory.clear()
+        self.context.memory.clear()
         self.conversation_id = uuid.uuid4()
+
+    def on_prompt_generation(self, prompt: FileBasedPrompt) -> str:
+        """
+        A method to be called after prompt generation.
+
+        Args:
+            prompt (str): A prompt
+        """
+        self.last_prompt = str(prompt)
 
     def on_code_generation(self, code: str):
         """
@@ -339,13 +320,29 @@ class SmartDatalake:
         self.last_result = result
 
     @property
-    def last_prompt(self):
-        return self.llm.last_prompt
-
-    @property
     def logs(self):
         return self.logger.logs
 
     @property
     def last_query_log_id(self):
-        return self.query_exec_tracker.last_log_id
+        return self.context.query_exec_tracker.last_log_id
+
+    @property
+    def config(self):
+        return self.context.config
+
+    @property
+    def llm(self):
+        return self.context.config.llm
+
+    @property
+    def cache(self):
+        return self.context.cache
+
+    @property
+    def memory(self):
+        return self.context.memory
+
+    @property
+    def skills_manager(self):
+        return self.context.skills_manager

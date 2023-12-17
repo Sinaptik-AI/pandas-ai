@@ -104,7 +104,7 @@ class PromptGeneration(BaseLogicUnit):
             "conversation": self.context.memory.get_conversation(),
             "prev_conversation": self.context.memory.get_previous_conversation(),
             "last_message": self.context.memory.get_last_message(),
-            "skills": self.context.skills.prompt_display() or "",
+            "skills": self.context.skills_manager.prompt_display() or "",
         }
         values |= default_values
         prompt.set_vars(values)

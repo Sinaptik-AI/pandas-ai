@@ -19,6 +19,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
 from langchain import OpenAI
+from pandasai.llm.langchain import LangchainLLM
 
 
 class TestSmartDatalake:
@@ -118,20 +119,14 @@ class TestSmartDatalake:
         return smart_dataframe.lake
 
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
-        smart_datalake.llm = None
-        assert smart_datalake.llm is None
-
-        smart_datalake.load_llm(llm)
-        assert smart_datalake.llm == llm
+        assert smart_datalake.load_llm(llm) == llm
 
     def test_load_llm_with_langchain_llm(self, smart_datalake: SmartDatalake, llm):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        smart_datalake.llm = None
-        assert smart_datalake.llm is None
-
-        smart_datalake.load_llm(langchain_llm)
-        assert smart_datalake.llm.langchain_llm == langchain_llm
+        llm = smart_datalake.load_llm(langchain_llm)
+        assert isinstance(llm, LangchainLLM)
+        assert llm.langchain_llm == langchain_llm
 
     @patch.object(
         CodeManager,
@@ -234,13 +229,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
-    def test_initialize_with_cache(self, mock_makedirs, smart_datalake):
+    def test_load_config_with_cache(self, mock_makedirs, smart_datalake):
         # Modify the smart_datalake's configuration
         smart_datalake.config.save_charts = True
         smart_datalake.config.enable_cache = True
 
         # Call the initialize method
-        smart_datalake.initialize()
+        smart_datalake.load_config(smart_datalake.config)
 
         # Assertions for enabling cache
         cache_dir = os.path.join(os.getcwd(), "cache")
@@ -255,13 +250,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
-    def test_initialize_without_cache(self, mock_makedirs, smart_datalake):
+    def test_load_config_without_cache(self, mock_makedirs, smart_datalake):
         # Modify the smart_datalake's configuration
         smart_datalake.config.save_charts = True
         smart_datalake.config.enable_cache = False
 
         # Call the initialize method
-        smart_datalake.initialize()
+        smart_datalake.load_config(smart_datalake.config)
 
         # Assertions for saving charts
         charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)

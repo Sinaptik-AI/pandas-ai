@@ -18,6 +18,7 @@ class GenerateSmartDatalakePipeline:
         self,
         context: Optional[PipelineContext] = None,
         logger: Optional[Logger] = None,
+        on_prompt_generation=None,
         on_code_generation=None,
         on_code_execution=None,
         on_result=None,
@@ -29,13 +30,17 @@ class GenerateSmartDatalakePipeline:
                 CacheLookup(),
                 PromptGeneration(
                     skip_if=self.is_cached,
+                    on_execution=on_prompt_generation,
                 ),
                 CodeGenerator(
                     skip_if=self.is_cached,
                     on_execution=on_code_generation,
                 ),
                 CachePopulation(skip_if=self.is_cached),
-                CodeExecution(before_execution=on_code_execution),
+                CodeExecution(
+                    before_execution=on_code_execution,
+                    on_failure=on_prompt_generation,
+                ),
                 ResultValidation(),
                 ResultParsing(
                     before_execution=on_result,
