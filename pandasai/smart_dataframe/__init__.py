@@ -115,6 +115,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Returns:
             str: Hash of the columns of the dataframe
         """
+        if self.dataframe is None:
+            self.load_connector()
+
         if self.dataframe_proxy is None and self.connector:
             return self.connector.column_hash
 
