@@ -163,3 +163,6 @@ class BaseConnector(ABC):
         Return the name of the table that the connector is connected to.
         """
         raise NotImplementedError
+
+    def equals(self, other):
+        return self.__dict__ == other.__dict__

@@ -14,6 +14,7 @@ from .save_chart import add_save_chart
 from .optional import import_dependency
 from ..exceptions import BadImportError, NoResultFoundError, InvalidConfigError
 from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
+from ..connectors.sql import SQLConnector
 from typing import Union, List, Generator, Any
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
@@ -117,7 +118,7 @@ class CodeManager:
         """
 
         if self._config.direct_sql:
-            if all(df == dfs[0] for df in dfs):
+            if all((isinstance(df, SQLConnector) and df == dfs[0]) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(

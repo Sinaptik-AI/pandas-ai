@@ -139,3 +139,10 @@ class PandasConnector(BaseConnector):
         Return the name of the table that the connector is connected to.
         """
         pass
+
+    def equals(self, other: BaseConnector):
+        """
+        Return whether the data source that the connector is connected to is
+        equal to the other data source.
+        """
+        return self._original_df.equals(other._original_df)
