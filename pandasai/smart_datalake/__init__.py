@@ -23,7 +23,7 @@ import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.skills import skill
+from pandasai.skills import Skill
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
@@ -243,7 +243,7 @@ class SmartDatalake:
         if data_viz_library in (item.value for item in VisualizationLibrary):
             self._data_viz_library = data_viz_library
 
-    def add_skills(self, *skills: List[skill]):
+    def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """

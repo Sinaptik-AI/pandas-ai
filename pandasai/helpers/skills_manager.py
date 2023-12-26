@@ -1,6 +1,5 @@
-from typing import List
-
-# from pandasai.skills import skill
+from typing import List, Optional
+from pandasai.skills import Skill
 
 
 class SkillsManager:
@@ -15,7 +14,7 @@ class SkillsManager:
         self._skills = []
         self._used_skills = []
 
-    def add_skills(self, *skills):
+    def add_skills(self, *skills: Skill):
         """
         Add skills to the list of skills. If a skill with the same name
              already exists, raise an error.
@@ -67,19 +66,19 @@ class SkillsManager:
         """
         skills_repr = ""
         for skill in self._skills:
-            skills_repr = skills_repr + skill.print
+            skills_repr += str(skill)
 
         return skills_repr
 
-    def prompt_display(self) -> str:
+    def prompt_display(self) -> Optional[str]:
         """
         Displays skills for prompt
         """
         if len(self._skills) == 0:
-            return
+            return None
 
-        return """You can call the following functions that have been pre-defined for you:
-""" + self.__str__()
+        return f"You can call the following functions that have been pre-defined for you:\n{self}"
+
 
     @property
     def used_skills(self):

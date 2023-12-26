@@ -27,7 +27,7 @@ from functools import cached_property
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
-from pandasai.skills import skill
+from ..skills import Skill
 
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
@@ -233,7 +233,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
     def __init__(
         self,
-        df: DataFrameType,
+        df: Union[DataFrameType, BaseConnector],
         name: str = None,
         description: str = None,
         custom_head: pd.DataFrame = None,
@@ -242,7 +242,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     ):
         """
         Args:
-            df (Union[pd.DataFrame, pl.DataFrame]): Pandas or Polars dataframe
+            df: A supported dataframe type, or a pandasai Connector
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
             custom_head (pd.DataFrame, optional): Sample head of the dataframe.
@@ -289,7 +289,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         if custom_head is not None:
             self._custom_head = custom_head.to_csv(index=False)
 
-    def add_skills(self, *skills: List[skill]):
+    def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """
