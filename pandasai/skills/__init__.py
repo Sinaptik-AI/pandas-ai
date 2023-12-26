@@ -18,10 +18,10 @@ class Skill(BaseModel):
 
     @classmethod
     def from_function(
-            cls,
-            func: Callable,
-            name: Optional[str] = None,
-            description: Optional[str] = None,
+        cls,
+        func: Callable,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> "Skill":
         """
         Creates a skill object from a function

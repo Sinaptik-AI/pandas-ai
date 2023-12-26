@@ -79,7 +79,6 @@ class SkillsManager:
 
         return f"You can call the following functions that have been pre-defined for you:\n{self}"
 
-
     @property
     def used_skills(self):
         return self._used_skills
