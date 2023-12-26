@@ -64,11 +64,7 @@ class SkillsManager:
         Returns:
             str: _description_
         """
-        skills_repr = ""
-        for skill in self._skills:
-            skills_repr += str(skill)
-
-        return skills_repr
+        return "".join(str(skill) for skill in self._skills)
 
     def prompt_display(self) -> Optional[str]:
         """
