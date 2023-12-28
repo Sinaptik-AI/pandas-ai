@@ -80,7 +80,7 @@ class TestSkills:
     def test_add_skills(self):
         skills_manager = SkillsManager()
 
-        @skill("SkillA")
+        @skill
         def skill1():
             """SkillA docstring"""
             pass
@@ -231,7 +231,7 @@ class TestSkills:
 
         function_def = """
 <function>
-def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame)
+def plot_salaries(merged_df: pandas.core.frame.DataFrame):
     \"\"\"Plot salaries given a dataframe of employees and their salaries\"\"\"
 </function>
 """  # noqa: E501
@@ -258,7 +258,7 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame)
     def test_run_prompt_agent(self, agent):
         function_def = """
 <function>
-def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame)
+def plot_salaries(merged_df: pandas.core.frame.DataFrame):
     \"\"\"Plot salaries given a dataframe of employees and their salaries\"\"\"
 </function>
 """  # noqa: E501
