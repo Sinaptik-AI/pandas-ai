@@ -23,7 +23,7 @@ salaries_df = pd.DataFrame(salaries_data)
 @skill
 def plot_salaries(names: list[str], salaries: list[int]):
     """
-    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Displays the bar chart having name on x-axis and salaries on y-axis using matplotlib
     Args:
         names (list[str]): Employees' names
         salaries (list[int]): Salaries

@@ -9,7 +9,7 @@ from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.skills import skill
+from pandasai.skills import skill, Skill
 from pandasai.smart_dataframe import SmartDataframe
 
 
@@ -79,8 +79,14 @@ class TestSkills:
 
     def test_add_skills(self):
         skills_manager = SkillsManager()
-        skill1 = Mock(name="SkillA", print="SkillA Print")
-        skill2 = Mock(name="SkillB", print="SkillB Print")
+
+        @skill
+        def skill1():
+            """SkillA docstring"""
+            pass
+
+        skill2 = Skill.from_function(func=lambda _: None, description="Skill B")
+
         skills_manager.add_skills(skill1, skill2)
 
         # Ensure that skills are added
@@ -154,8 +160,8 @@ class TestSkills:
         # Test prompt_display method when skills exist
         prompt = skills_manager.prompt_display()
         assert (
-            "You can call the following functions that have been pre-defined for you:"
-            in prompt
+                "You can call the following functions that have been pre-defined for you:"
+                in prompt
         )
 
         # Test prompt_display method when no skills exist
@@ -164,41 +170,7 @@ class TestSkills:
         assert prompt is None
 
     @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
-    def test_skill_decorator(self, mock_inspect_signature):
-        # Define skills using the decorator
-        @skill
-        def skill_a(*args, **kwargs):
-            return "SkillA Result"
-
-        @skill
-        def skill_b(*args, **kwargs):
-            return "SkillB Result"
-
-        # Test the wrapped functions
-        assert skill_a() == "SkillA Result"
-        assert skill_b() == "SkillB Result"
-
-        # Test the additional attributes added by the decorator
-        assert skill_a.name == "skill_a"
-        assert skill_b.name == "skill_b"
-
-        assert skill_a.func_def == "def pandasai.skills.skill_a(a, b, c)"
-        assert skill_b.func_def == "def pandasai.skills.skill_b(a, b, c)"
-
-        assert (
-            skill_a.print
-            == """\n<function>\ndef pandasai.skills.skill_a(a, b, c)\n\n</function>\n"""  # noqa: E501
-        )
-        assert (
-            skill_b.print
-            == """\n<function>\ndef pandasai.skills.skill_b(a, b, c)\n\n</function>\n"""  # noqa: E501
-        )
-
-    @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
-    def test_skill_decorator_test_codc(self, llm):
-        df = pd.DataFrame({"country": []})
-        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
-
+    def test_skill_decorator_test_code(self, llm):
         # Define skills using the decorator
         @skill
         def plot_salaries(*args, **kwargs):
@@ -215,17 +187,18 @@ class TestSkills:
                 arg(str)
 """  # noqa: E501
 
-        assert function_def in plot_salaries.print
+        assert function_def in str(plot_salaries)
 
     def test_add_skills_with_agent(self, agent: Agent):
-        # Define skills using the decorator
         @skill
         def skill_a(*args, **kwargs):
+            """Skill A"""
             return "SkillA Result"
 
-        @skill
-        def skill_b(*args, **kwargs):
-            return "SkillB Result"
+        skill_b = Skill.from_function(
+            func=lambda _: "SkillB Result",
+            description="Skill B"
+        )
 
         agent.add_skills(skill_a)
         assert len(agent._lake._skills.skills) == 1
@@ -235,14 +208,15 @@ class TestSkills:
         assert len(agent._lake._skills.skills) == 2
 
     def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
-        # Define skills using the decorator
         @skill
         def skill_a(*args, **kwargs):
+            """Skill A"""
             return "SkillA Result"
 
-        @skill
-        def skill_b(*args, **kwargs):
-            return "SkillB Result"
+        skill_b = Skill.from_function(
+            func=lambda _: "SkillB Result",
+            description="Skill B"
+        )
 
         smart_dataframe.add_skills(skill_a)
         assert len(smart_dataframe._lake._skills.skills) == 1
@@ -257,13 +231,14 @@ class TestSkills:
 
         function_def = """
 <function>
-def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
-
+def plot_salaries(merged_df: pandas.core.frame.DataFrame):
+    \"\"\"Plot salaries given a dataframe of employees and their salaries\"\"\"
 </function>
 """  # noqa: E501
 
         @skill
-        def plot_salaries(merged_df: pd.DataFrame) -> str:
+        def plot_salaries(merged_df: pd.DataFrame):
+            """Plot salaries given a dataframe of employees and their salaries"""
             import matplotlib.pyplot as plt
 
             plt.bar(merged_df["Name"], merged_df["Salary"])
@@ -283,13 +258,14 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
     def test_run_prompt_agent(self, agent):
         function_def = """
 <function>
-def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
-
+def plot_salaries(merged_df: pandas.core.frame.DataFrame):
+    \"\"\"Plot salaries given a dataframe of employees and their salaries\"\"\"
 </function>
 """  # noqa: E501
 
         @skill
-        def plot_salaries(merged_df: pd.DataFrame) -> str:
+        def plot_salaries(merged_df: pd.DataFrame):
+            """Plot salaries given a dataframe of employees and their salaries"""
             import matplotlib.pyplot as plt
 
             plt.bar(merged_df["Name"], merged_df["Salary"])
@@ -315,12 +291,12 @@ def pandasai.skills.plot_salaries(merged_df: pandas.core.frame.DataFrame) -> str
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
         assert (
-            "You can call the following functions that have been pre-defined for you:"
-            not in last_prompt
+                "You can call the following functions that have been pre-defined for you:"
+                not in last_prompt
         )
 
     def test_code_exec_with_skills_no_use(
-        self, code_manager: CodeManager, exec_context
+            self, code_manager: CodeManager, exec_context
     ):
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
@@ -335,6 +311,7 @@ result = {'type': 'number', 'value': 1 + 1}"""
 
         @skill
         def plot_salaries() -> str:
+            """Plots salaries"""
             return "return {'type': 'number', 'value': 1 + 1}"
 
         sm = SkillsManager()
