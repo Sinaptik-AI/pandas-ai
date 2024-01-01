@@ -7,10 +7,10 @@ Example:
     ```python
     from pandasai.smart_dataframe import SmartDataframe
     from pandasai.llm.openai import OpenAI
-    
+
     df = pd.read_csv("examples/data/Loan payments data.csv")
     llm = OpenAI()
-    
+
     df = SmartDataframe(df, config={"llm": llm})
     response = df.chat("What is the average loan amount?")
     print(response)
@@ -73,9 +73,9 @@ class SmartDatalake:
         self,
         dfs: List[Union[DataFrameType, Any]],
         config: Optional[Union[Config, dict]] = None,
-        logger: Logger = None,
-        memory: Memory = None,
-        cache: Cache = None,
+        logger: Optional[Logger] = None,
+        memory: Optional[Memory] = None,
+        cache: Optional[Cache] = None,
     ):
         """
         Args:

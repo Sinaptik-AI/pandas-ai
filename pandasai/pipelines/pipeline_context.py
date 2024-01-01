@@ -16,7 +16,7 @@ class PipelineContext:
     _dfs: List[Union[DataFrameType, Any]]
     _memory: Memory
     _skills: SkillsManager
-    _cache: Cache
+    _cache: Optional[Cache]
     _config: Config
     _query_exec_tracker: QueryExecTracker
     _intermediate_values: dict
@@ -25,10 +25,10 @@ class PipelineContext:
         self,
         dfs: List[Union[DataFrameType, Any]],
         config: Optional[Union[Config, dict]] = None,
-        memory: Memory = None,
-        skills: SkillsManager = None,
-        cache: Cache = None,
-        query_exec_tracker: QueryExecTracker = None,
+        memory: Optional[Memory] = None,
+        skills: Optional[SkillsManager] = None,
+        cache: Optional[Cache] = None,
+        query_exec_tracker: Optional[QueryExecTracker] = None,
     ) -> None:
         from pandasai.smart_dataframe import load_smartdataframes
 
@@ -38,7 +38,10 @@ class PipelineContext:
         self._dfs = load_smartdataframes(dfs, config)
         self._memory = memory if memory is not None else Memory()
         self._skills = skills if skills is not None else SkillsManager()
-        self._cache = cache if cache is not None else Cache()
+        if config.enable_cache:
+            self._cache = cache if cache is not None else Cache()
+        else:
+            self._cache = None
         self._config = config
         self._query_exec_tracker = query_exec_tracker
         self._intermediate_values = {}
