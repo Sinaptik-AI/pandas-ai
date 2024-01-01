@@ -114,6 +114,7 @@ def skill(*args: Union[str, Callable]) -> Callable:
         # with the intended behavior of "@skill"
         def _func_wrapper(fn: Callable) -> Skill:
             return _make_skill_with_name(fn.__name__)(fn)
+
         return _func_wrapper
     else:
         raise ValueError(
