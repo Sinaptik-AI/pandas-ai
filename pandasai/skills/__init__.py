@@ -80,10 +80,12 @@ def skill(*args: Union[str, Callable]) -> Callable:
 
     Examples:
         .. code-block:: python
+
             @skill
             def compute_flight_prices(offers: pd.Dataframe) -> List[float]:
                 \"\"\"Computes the flight prices\"\"\"
                 return
+
             @skill("custom_name")
             def compute_flight_prices(offers: pd.Dataframe) -> List[float]:
                 \"\"\"Computes the flight prices\"\"\"
@@ -107,5 +109,11 @@ def skill(*args: Union[str, Callable]) -> Callable:
     elif len(args) == 1 and callable(args[0]):
         # Example: @skill
         return _make_skill_with_name(args[0].__name__)(args[0])
+    elif len(args) == 0:
+        # Covers the case in which a function is decorated with "@skill()"
+        # with the intended behavior of "@skill"
+        def _func_wrapper(fn: Callable) -> Skill:
+            return _make_skill_with_name(fn.__name__)(fn)
+        return _func_wrapper
     else:
-        raise ValueError("Too many arguments for skill decorator")
+        raise ValueError(f"Too many arguments for skill decorator. Received: {len(args)}")
