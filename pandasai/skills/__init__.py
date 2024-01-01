@@ -116,4 +116,6 @@ def skill(*args: Union[str, Callable]) -> Callable:
             return _make_skill_with_name(fn.__name__)(fn)
         return _func_wrapper
     else:
-        raise ValueError(f"Too many arguments for skill decorator. Received: {len(args)}")
+        raise ValueError(
+            f"Too many arguments for skill decorator. Received: {len(args)}"
+        )
