@@ -109,7 +109,7 @@ def skill(*args: Union[str, Callable]) -> Callable:
     elif len(args) == 1 and callable(args[0]):
         # Example: @skill
         return _make_skill_with_name(args[0].__name__)(args[0])
-    elif len(args) == 0:
+    elif not args:
         # Covers the case in which a function is decorated with "@skill()"
         # with the intended behavior of "@skill"
         def _func_wrapper(fn: Callable) -> Skill:
