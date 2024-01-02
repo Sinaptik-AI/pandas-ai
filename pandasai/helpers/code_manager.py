@@ -118,7 +118,9 @@ class CodeManager:
         """
 
         if self._config.direct_sql:
-            if all((isinstance(df, SQLConnector) and df == dfs[0]) for df in dfs):
+            if all(
+                (isinstance(df.connector, SQLConnector) and df == dfs[0]) for df in dfs
+            ):
                 return True
             else:
                 raise InvalidConfigError(
