@@ -7,10 +7,10 @@ Example:
     ```python
     from pandasai.smart_dataframe import SmartDataframe
     from pandasai.llm.openai import OpenAI
-    
+
     df = pd.read_csv("examples/data/Loan payments data.csv")
     llm = OpenAI()
-    
+
     df = SmartDataframe(df, config={"llm": llm})
     response = df.chat("What is the average loan amount?")
     print(response)
@@ -21,7 +21,7 @@ import uuid
 import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.skills import skill
+from pandasai.skills import Skill
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
@@ -46,9 +46,9 @@ class SmartDatalake:
         self,
         dfs: List[Union[pd.DataFrame, Any]],
         config: Optional[Union[Config, dict]] = None,
-        logger: Logger = None,
-        memory: Memory = None,
-        cache: Cache = None,
+        logger: Optional[Logger] = None,
+        memory: Optional[Memory] = None,
+        cache: Optional[Cache] = None,
     ):
         """
         Args:
@@ -165,7 +165,7 @@ class SmartDatalake:
             llm = LangchainLLM(llm)
         return llm
 
-    def add_skills(self, *skills: List[skill]):
+    def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """

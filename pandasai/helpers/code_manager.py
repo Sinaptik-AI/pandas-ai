@@ -33,7 +33,6 @@ class CodeExecutionContext:
         Args:
             prompt_id (uuid.UUID): Prompt ID
             skills_manager (SkillsManager): Skills Manager
-            can_direct_sql (bool, optional): Whether the code can be executed as SQL query. Defaults to False.
         """
         self.skills_manager = skills_manager
         self.prompt_id = prompt_id
@@ -44,7 +43,7 @@ class CodeManager:
     _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
-    _ast_comparatos_map: dict = {
+    _ast_comparator_map: dict = {
         ast.Eq: "=",
         ast.NotEq: "!=",
         ast.Lt: "<",
@@ -89,6 +88,11 @@ class CodeManager:
             the code.
         """
 
+        # Sometimes GPT-3.5/4 use a for loop to iterate over the dfs (even if there is only one)
+        # or they concatenate the dfs. In this case we need all the dfs
+        if "for df in dfs" in code or "pd.concat(dfs)" in code:
+            return self._dfs
+
         required_dfs = []
         for i, df in enumerate(self._dfs):
             if f"dfs[{i}]" in code:
@@ -107,7 +111,7 @@ class CodeManager:
         """
         return re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
 
-    def _validate_direct_sql(self, dfs: List) -> None:
+    def _validate_direct_sql(self, dfs: List) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
         Args:
@@ -188,7 +192,7 @@ Code running:
         if self._validate_direct_sql(self._dfs):
             environment["execute_sql_query"] = self._dfs[0].get_query_exec_func()
 
-        # Add Skills in the env
+        # Add skills to the env
         if context.skills_manager.used_skills:
             for skill_func_name in context.skills_manager.used_skills:
                 skill = context.skills_manager.get_skill_by_func_name(skill_func_name)
@@ -537,7 +541,7 @@ Code running:
                 left_str = slices[-1] if slices else name
 
                 for op, right in zip(node.ops, node.comparators):
-                    op_str = self._ast_comparatos_map.get(type(op), "Unknown")
+                    op_str = self._ast_comparator_map.get(type(op), "Unknown")
                     name, *slices = self._tokenize_operand(right)
                     right_str = slices[-1] if slices else name
 

@@ -108,7 +108,7 @@ import pandas as pd
 
 
 
-At the end, declare "result" var dict: {output_type_hint}
+At the end, declare "result" variable as a dictionary of type and value.
 {viz_library_type_hint}
 
 

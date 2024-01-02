@@ -21,16 +21,16 @@ salaries_df = pd.DataFrame(salaries_data)
 
 # Add function docstring to give more context to model
 @skill
-def plot_salaries(name: list[str], salary: list[int]) -> str:
+def plot_salaries(names: list[str], salaries: list[int]):
     """
-    Displays the bar chart having name on x axis and salaries on y axis using streamlit
+    Displays the bar chart having name on x-axis and salaries on y-axis using matplotlib
     Args:
-        name (list[str]): Employee name
+        names (list[str]): Employees' names
         salaries (list[int]): Salaries
     """
     import matplotlib.pyplot as plt
 
-    plt.bar(name, salary)
+    plt.bar(names, salaries)
     plt.xlabel("Employee Name")
     plt.ylabel("Salary")
     plt.title("Employee Salaries")

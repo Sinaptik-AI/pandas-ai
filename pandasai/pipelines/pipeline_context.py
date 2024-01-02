@@ -17,10 +17,10 @@ class PipelineContext:
         self,
         dfs: List[Union[pd.DataFrame, Any]],
         config: Optional[Union[Config, dict]] = None,
-        memory: Memory = None,
-        skills_manager: SkillsManager = None,
-        cache: Cache = None,
-        query_exec_tracker: QueryExecTracker = None,
+        memory: Optional[Memory] = None,
+        skills_manager: Optional[SkillsManager] = None,
+        cache: Optional[Cache] = None,
+        query_exec_tracker: Optional[QueryExecTracker] = None,
         initial_values: dict = None,
     ) -> None:
         from pandasai.smart_dataframe import load_smartdataframes
@@ -32,9 +32,10 @@ class PipelineContext:
         self.memory = memory or Memory()
         self.skills_manager = skills_manager or SkillsManager()
 
-        self.cache = None
-        if cache is None and config.enable_cache:
-            self.cache = cache or Cache()
+        if config.enable_cache:
+            self._cache = cache if cache is not None else Cache()
+        else:
+            self._cache = None
 
         self.config = config
         self.query_exec_tracker = query_exec_tracker or QueryExecTracker()

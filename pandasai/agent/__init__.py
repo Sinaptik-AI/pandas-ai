@@ -1,7 +1,6 @@
 import json
 from typing import Union, List, Optional
 import pandas as pd
-from pandasai.skills import skill
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..prompts.base import AbstractPrompt
@@ -12,6 +11,7 @@ from ..prompts.check_if_relevant_to_conversation import (
     CheckIfRelevantToConversationPrompt,
 )
 from ..schemas.df_config import Config
+from ..skills import Skill
 from ..smart_datalake import SmartDatalake
 
 
@@ -45,7 +45,7 @@ class Agent:
 
         self.logger = self.lake.logger
 
-    def add_skills(self, *skills: List[skill]):
+    def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """
@@ -135,6 +135,7 @@ class Agent:
             f"""Clarification Questions:  {result}
             """
         )
+        result = result.replace("```json", "").replace("```", "")
         questions: list[str] = json.loads(result)
         return questions[:3]
 

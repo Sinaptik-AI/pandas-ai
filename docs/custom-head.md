@@ -13,7 +13,7 @@ head_df = pd.DataFrame({
     "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
 })
 
-df = SmartDataframe("data/country_gdp.csv", {
+df = SmartDataframe("data/country_gdp.csv", config={
     "custom_head": head_df
 })
 ```

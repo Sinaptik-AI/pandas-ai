@@ -1,3 +1,7 @@
+from typing import Optional
+from pandasai.skills import Skill
+
+
 class SkillsManager:
     """
     Manages Custom added Skills and tracks used skills for the query
@@ -7,7 +11,7 @@ class SkillsManager:
         self.skills = []
         self.used_skills = []
 
-    def add_skills(self, *skills):
+    def add_skills(self, *skills: Skill):
         """
         Add skills to the list of skills. If a skill with the same name
              already exists, raise an error.
@@ -55,18 +59,13 @@ class SkillsManager:
         Returns:
             str: _description_
         """
-        skills_repr = ""
-        for skill in self.skills:
-            skills_repr = skills_repr + skill.print
+        return "".join(str(skill) for skill in self.skills)
 
-        return skills_repr
-
-    def prompt_display(self) -> str:
+    def prompt_display(self) -> Optional[str]:
         """
         Displays skills for prompt
         """
         if len(self.skills) == 0:
-            return
+            return None
 
-        return """You can call the following functions that have been pre-defined for you:
-""" + self.__str__()
+        return f"You can call the following functions that have been pre-defined for you:\n{self}"

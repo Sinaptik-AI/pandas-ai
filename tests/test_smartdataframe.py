@@ -186,7 +186,7 @@ import pandas as pd
 Q: How many countries are in the dataframe?
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
-At the end, declare "result" var dict: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+At the end, declare "result" variable as a dictionary of type and value.
 
 
 
@@ -233,7 +233,7 @@ import pandas as pd
 Q: How many countries are in the dataframe?
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
-At the end, declare "result" var dict: {output_type_hint}
+At the end, declare "result" variable as a dictionary of type and value.
 
 
 
@@ -670,7 +670,7 @@ import pandas as pd
 Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
-At the end, declare "result" var dict: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+At the end, declare "result" variable as a dictionary of type and value.
 %s
 
 

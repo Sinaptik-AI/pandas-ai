@@ -35,6 +35,7 @@ class ClarificationQuestionPrompt(FileBasedPrompt):
 
     def validate(self, output) -> bool:
         try:
+            output = output.replace("```json", "").replace("```", "")
             json_data = json.loads(output)
             return isinstance(json_data, List)
         except json.JSONDecodeError:

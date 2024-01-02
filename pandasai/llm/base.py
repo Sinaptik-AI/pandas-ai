@@ -178,7 +178,7 @@ class BaseOpenAI(LLM):
     """
 
     api_token: str
-    api_base: str
+    api_base: str = "https://api.openai.com/v1"
     temperature: float = 0
     max_tokens: int = 1000
     top_p: float = 1

@@ -11,7 +11,8 @@ import pandas as pd
 
 
 class Anonymizer:
-    def _is_valid_email(self) -> bool:
+    @staticmethod
+    def _is_valid_email(email) -> bool:
         """Check if the given email is valid based on regex pattern.
 
         Args:
@@ -21,9 +22,10 @@ class Anonymizer:
         """
 
         email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        return re.match(email_regex, self) is not None
+        return re.match(email_regex, email) is not None
 
-    def _is_valid_phone_number(self) -> bool:
+    @staticmethod
+    def _is_valid_phone_number(phone_number) -> bool:
         """Check if the given phone number is valid based on regex pattern.
 
         Args:
@@ -33,20 +35,22 @@ class Anonymizer:
         """
 
         pattern = r"\b(?:\+?\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}\b"
-        return re.search(pattern, self) is not None
+        return re.search(pattern, phone_number) is not None
 
-    def _is_valid_credit_card(self) -> bool:
+    @staticmethod
+    def _is_valid_credit_card(card_number) -> bool:
         """Check if the given credit card number is valid based on regex pattern.
 
         Args:
-            credit_card_number (str): credit card number to be checked.
+            card_number (str): credit card number to be checked.
 
         Returns (str): True if the credit card number is valid, otherwise False.
         """
 
         pattern = r"^\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}$"
-        return re.search(pattern, self) is not None
+        return re.search(pattern, card_number) is not None
 
+    @staticmethod
     def _generate_random_email() -> str:
         """Generates a random email address using predefined domains.
 
@@ -69,20 +73,22 @@ class Anonymizer:
         username = "".join(random.choice(letters) for _ in range(name_length))
         return f"{username}@" + domain
 
-    def _generate_random_phone_number(self) -> str:
+    @staticmethod
+    def _generate_random_phone_number(original: str) -> str:
         """Generate a random phone number with country code if originally present.
 
         Args:
-            original_field (str): original phone number field.
+            original (str): original phone number field.
 
         Returns (str): generated random phone number.
         """
 
-        country_code = self.split()[0] if self.startswith("+") else ""
+        country_code = original.split()[0] if original.startswith("+") else ""
         number = "".join(random.choices("0123456789", k=10))
 
         return f"{country_code} {number}" if country_code else number
 
+    @staticmethod
     def _generate_random_credit_card() -> str:
         """Generate a random credit card number.
 
@@ -97,7 +103,8 @@ class Anonymizer:
         return separator.join(groups)
 
     # static method to anonymize a dataframe head
-    def anonymize_dataframe_head(self) -> pd.DataFrame:
+    @staticmethod
+    def anonymize_dataframe_head(df: pd.DataFrame) -> pd.DataFrame:
         """
         Anonymize a dataframe head by replacing the values of the columns
         that contain personal or sensitive information with random values.
@@ -109,11 +116,11 @@ class Anonymizer:
             pd.DataFrame: Anonymized dataframe.
         """
 
-        if len(self) == 0:
-            return self
+        if len(df) == 0:
+            return df
 
         # create a copy of the dataframe head
-        df_head = self.head().copy()
+        df_head = df.head().copy()
 
         # for each column, check if it contains personal or sensitive information
         # and if so, replace the values with random values

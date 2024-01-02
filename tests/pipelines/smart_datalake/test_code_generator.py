@@ -106,7 +106,7 @@ class TestCodeGenerator:
 
         context.get = Mock(side_effect=mock_intermediate_values)
         context._cache = Mock()
-        context.cache.get = Mock(return_value=None)
+        context._cache.get = Mock(return_value=None)
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
 

@@ -26,12 +26,20 @@ class GoogleVertexAI(BaseGoogle):
     _supported_code_models = [
         "code-bison",
         "code-bison-32k",
+        "code-bison-32k@002",
         "code-bison@001",
+        "code-bison@002",
     ]
     _supported_text_models = [
         "text-bison",
         "text-bison-32k",
+        "text-bison-32k@002",
         "text-bison@001",
+        "text-bison@002",
+        "text-unicorn@001",
+    ]
+    _supported_generative_models = [
+        "gemini-pro",
     ]
 
     def __init__(
@@ -47,7 +55,8 @@ class GoogleVertexAI(BaseGoogle):
             **kwargs: Arguments to control the Model Parameters
         """
 
-        self.model = "text-bison@001" if model is None else model
+        self.model = model or "text-bison@001"
+
         self._configure(project_id, location)
         self.project_id = project_id
         self.location = location
@@ -103,6 +112,7 @@ class GoogleVertexAI(BaseGoogle):
             CodeGenerationModel,
             TextGenerationModel,
         )
+        from vertexai.preview.generative_models import GenerativeModel
 
         if self.model in self._supported_code_models:
             code_generation = CodeGenerationModel.from_pretrained(self.model)
@@ -122,6 +132,19 @@ class GoogleVertexAI(BaseGoogle):
                 top_k=self.top_k,
                 max_output_tokens=self.max_output_tokens,
             )
+        elif self.model in self._supported_generative_models:
+            model = GenerativeModel(self.model)
+            responses = model.generate_content(
+                [prompt],
+                generation_config={
+                    "max_output_tokens": self.max_output_tokens,
+                    "temperature": self.temperature,
+                    "top_p": self.top_p,
+                    "top_k": self.top_k,
+                },
+            )
+
+            completion = responses.candidates[0].content.parts[0]
         else:
             raise UnsupportedModelError(self.model)
 
