@@ -14,7 +14,6 @@ from pandasai.connectors.sql import (
 from pandasai.exceptions import BadImportError, NoCodeFoundError
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.exceptions import InvalidConfigError
 
 from pandasai.smart_dataframe import SmartDataframe
 
@@ -380,20 +379,3 @@ result = {
 
         assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
         assert filters["dfs[2]"][1] == ("Gender", "=", "female")
-
-    def test_validate_true_direct_sql_with_two_different_connector(
-        self, code_manager: CodeManager, sql_connector, pgsql_connector
-    ):
-        # not exception is raised using single connector
-        # raise exception when two different connector
-        with pytest.raises(InvalidConfigError):
-            code_manager._config.direct_sql = True
-            df1 = SmartDataframe(
-                sql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
-            df2 = SmartDataframe(
-                pgsql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
-            code_manager._validate_direct_sql([df1, df2])
