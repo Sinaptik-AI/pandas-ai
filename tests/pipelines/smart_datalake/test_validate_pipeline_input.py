@@ -20,8 +20,8 @@ from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
 from pandasai.smart_dataframe import SmartDataframe
 
 
-class TestCodeGenerator:
-    "Unit test for Smart Data Lake Code Generator"
+class TestValidatePipelineInput:
+    "Unit test for Validate Pipeline Input"
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):

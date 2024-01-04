@@ -24,8 +24,6 @@ class ValidatePipelineInput(BaseLogicUnit):
         """
 
         if self.context.config.direct_sql:
-            for df in dfs:
-                print((isinstance(df.connector, SQLConnector) and df == dfs[0]))
             if all(
                 (isinstance(df.connector, SQLConnector) and df == dfs[0]) for df in dfs
             ):
