@@ -182,7 +182,7 @@ class Agent:
             return response
         except Exception as exception:
             return (
-                "Unfortunately, I was not able to repharse query, "
+                "Unfortunately, I was not able to rephrase query, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
