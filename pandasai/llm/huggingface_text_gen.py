@@ -22,7 +22,7 @@ class HuggingFaceTextGen(LLM):
         stop_sequences: A stop sequence is a string that stops the model from generating tokens.
         seed: The seed to use for random generation.
         do_sample: Whether or not to use sampling.
-        timeout: adding timeout restricts huggingface from waiting indefinetly for model's response.
+        timeout: adding timeout restricts huggingface from waiting indefinitely for model's response.
     """
 
     max_new_tokens: int = 1024
