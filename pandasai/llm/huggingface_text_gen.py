@@ -8,7 +8,22 @@ load_dotenv()
 
 
 class HuggingFaceTextGen(LLM):
-    """HuggingFace Text Generation Inference LLM"""
+    """HuggingFace Text Generation Inference LLM
+       Generates text using HuggingFace inference API.
+
+    Attributes:
+        max_new_tokens: Max number of tokens to generate.
+        top_k: Sample from top k tokens.
+        top_p: Sample from top p probability.
+        typical_p: typical probability of a token.
+        temperature: Controls randomness in the model. Lower values will make the model more deterministic and higher values will make the model more random.
+        repetition_penalty: controls the likelihood of repeating same tokens based on value.
+        truncate: truncate the input to the maximum length of the model.
+        stop_sequences: A stop sequence is a string that stops the model from generating tokens.
+        seed: The seed to use for random generation.
+        do_sample: Whether or not to use sampling.
+        timeout: adding timeout restricts huggingface from waiting indifinetly for model's response.
+    """
 
     max_new_tokens: int = 1024
     top_k: Optional[int] = None
