@@ -32,7 +32,7 @@ class HuggingFaceTextGen(LLM):
     temperature: float = 1e-3  # must be strictly positive
     repetition_penalty: Optional[float] = None
     truncate: Optional[int] = None
-    stop_sequences: List[str] = None
+    stop_sequences: List[str] = []
     seed: Optional[int] = None
     do_sample: Optional[bool] = False
     inference_server_url: str = ""
