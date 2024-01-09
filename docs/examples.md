@@ -73,12 +73,6 @@ print(response)
 
 ## Working with Parquet files
 
-Example of using PandasAI with a Parquet. In order to use Parquet as a data source, you need to install the `pandasai[parquet]` extra dependency.
-
-```console
-pip install pandasai[parquet]
-```
-
 Example of using PandasAI with a Parquet file
 
 ```python
