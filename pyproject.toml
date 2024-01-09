@@ -16,7 +16,7 @@ openai = "<2"
 ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = "^1"
-sqlalchemy = "^1.4.49,<3"
+sqlalchemy = ">=1.4,<3"
 duckdb = "^0.8.1"
 faker = "^19.12.0"
 beautifulsoup4 = {version="^4.12.2", optional = true}
