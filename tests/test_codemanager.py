@@ -510,3 +510,51 @@ result = {
                 config={"llm": FakeLLM(output="")},
             )
             code_manager._validate_direct_sql([df1, df2])
+
+    def test_clean_code_direct_sql_code(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = df.lake._code_manager
+        """Test that an installed whitelisted library is added to the environment."""
+        safe_code = """
+import numpy as np
+def execute_sql_query(sql_query: str) -> pd.DataFrame:
+    # code to connect to the database and execute the query
+    # ...
+    # return the result as a dataframe
+    return pd.DataFrame()
+np.array()
+"""
+        assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
+
+    def test_clean_code_direct_sql_code_false(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": False},
+        )
+        code_manager = df.lake._code_manager
+        """Test that an installed whitelisted library is added to the environment."""
+        safe_code = """
+import numpy as np
+def execute_sql_query(sql_query: str) -> pd.DataFrame:
+    # code to connect to the database and execute the query
+    # ...
+    # return the result as a dataframe
+    return pd.DataFrame()
+np.array()
+"""
+        print(code_manager._clean_code(safe_code, exec_context))
+        assert (
+            code_manager._clean_code(safe_code, exec_context)
+            == """def execute_sql_query(sql_query: str) ->pd.DataFrame:
+    return pd.DataFrame()
+
+
+np.array()"""
+        )
