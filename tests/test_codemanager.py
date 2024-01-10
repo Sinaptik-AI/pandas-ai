@@ -514,12 +514,12 @@ result = {
     def test_clean_code_direct_sql_code(
         self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
     ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
         df = SmartDataframe(
             pgsql_connector,
             config={"llm": FakeLLM(output=""), "direct_sql": True},
         )
         code_manager = df.lake._code_manager
-        """Test that an installed whitelisted library is added to the environment."""
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:
@@ -534,12 +534,13 @@ np.array()
     def test_clean_code_direct_sql_code_false(
         self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
     ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
         df = SmartDataframe(
             pgsql_connector,
             config={"llm": FakeLLM(output=""), "direct_sql": False},
         )
         code_manager = df.lake._code_manager
-        """Test that an installed whitelisted library is added to the environment."""
+
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:
