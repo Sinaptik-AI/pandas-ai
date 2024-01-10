@@ -118,6 +118,8 @@ class StringOutputType(BaseOutputType):
 
 
 class DefaultOutputType(BaseOutputType):
+    default_types = ["string", "number", "dataframe", "plot"]
+
     @property
     def template_hint(self):
         return """type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }"""  # noqa E501
@@ -140,4 +142,4 @@ class DefaultOutputType(BaseOutputType):
              (bool): True since the `DefaultOutputType`
                 is supposed to have no validation
         """
-        return True, ()
+        return result["type"] in self.default_types, ()
