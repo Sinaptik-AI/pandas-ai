@@ -33,9 +33,9 @@ class PipelineContext:
         self.skills_manager = skills_manager or SkillsManager()
 
         if config.enable_cache:
-            self._cache = cache if cache is not None else Cache()
+            self.cache = cache if cache is not None else Cache()
         else:
-            self._cache = None
+            self.cache = None
 
         self.config = config
         self.query_exec_tracker = query_exec_tracker or QueryExecTracker()

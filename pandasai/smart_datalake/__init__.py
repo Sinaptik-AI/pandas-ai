@@ -87,7 +87,7 @@ class SmartDatalake:
         )
 
     def set_instance_type(self, type_: str):
-        self._instance = type_
+        self.instance = type_
 
     def is_related_query(self, flag: bool):
         self.context.query_exec_tracker.set_related_query(flag)

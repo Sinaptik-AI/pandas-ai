@@ -11,10 +11,9 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.exceptions import BadImportError, NoCodeFoundError
+from pandasai.exceptions import BadImportError, NoCodeFoundError, InvalidConfigError
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.exceptions import InvalidConfigError
 
 from pandasai.smart_dataframe import SmartDataframe
 

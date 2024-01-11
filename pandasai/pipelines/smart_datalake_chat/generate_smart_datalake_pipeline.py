@@ -1,4 +1,8 @@
 from typing import Optional
+
+from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
+    ValidatePipelineInput,
+)
 from ...helpers.logger import Logger
 from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext
@@ -27,6 +31,7 @@ class GenerateSmartDatalakePipeline:
             context=context,
             logger=logger,
             steps=[
+                ValidatePipelineInput(),
                 CacheLookup(),
                 PromptGeneration(
                     skip_if=self.is_cached,
