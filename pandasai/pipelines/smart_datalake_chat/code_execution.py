@@ -57,9 +57,6 @@ class CodeExecution(BaseLogicUnit):
                     context=code_context,
                 )
 
-                output_helper = pipeline_context.get_intermediate_value(
-                    "output_type_helper"
-                )
                 if output_helper := pipeline_context.get_intermediate_value(
                     "output_type_helper"
                 ):

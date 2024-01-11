@@ -182,7 +182,7 @@ class MaliciousQueryError(Exception):
 
 class InvalidLLMOutputType(Exception):
     """
-    Raise error if malicious query is generated
+    Raise error if the output type is invalid
     Args:
-        Exception (Exception): MaliciousQueryError
+        Exception (Exception): InvalidLLMOutputType
     """
