@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "1.5.14"
+version = "1.5.15a"
 description = "PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -17,7 +17,7 @@ ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = "^1"
 sqlalchemy = ">=1.4,<3"
-duckdb = "^0.8.1"
+duckdb = "^0.9.2"
 faker = "^19.12.0"
 beautifulsoup4 = {version="^4.12.2", optional = true}
 google-generativeai = {version = "^0.1.0rc2", optional = true}
