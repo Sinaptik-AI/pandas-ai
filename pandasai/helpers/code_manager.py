@@ -346,7 +346,7 @@ Code running:
                     table_name not in allowed_table_names for table_name in table_names
                 ):
                     raise MaliciousQueryError(
-                        "Query uses tables you don't provided, add new datatable or update query"
+                        "Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
                     )
 
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
