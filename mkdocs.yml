@@ -42,7 +42,7 @@ nav:
       - Documents Building: building_docs.md
       - License: license.md
 extra:
-  version: "1.5.15a"
+  version: "1.5.15"
 plugins:
   - search
   - mkdocstrings:
