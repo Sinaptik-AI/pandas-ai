@@ -32,13 +32,13 @@ class TestAzureOpenAILLM:
 
     def test_type_with_token(self):
         assert (
-                AzureOpenAI(
-                    api_token="test",
-                    azure_endpoint="test",
-                    api_version="test",
-                    deployment_name="test",
-                ).type
-                == "azure-openai"
+            AzureOpenAI(
+                api_token="test",
+                azure_endpoint="test",
+                api_version="test",
+                deployment_name="test",
+            ).type
+            == "azure-openai"
         )
 
     def test_proxy(self):

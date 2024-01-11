@@ -160,8 +160,8 @@ class TestSkills:
         # Test prompt_display method when skills exist
         prompt = skills_manager.prompt_display()
         assert (
-                "You can call the following functions that have been pre-defined for you:"
-                in prompt
+            "You can call the following functions that have been pre-defined for you:"
+            in prompt
         )
 
         # Test prompt_display method when no skills exist
@@ -196,8 +196,7 @@ class TestSkills:
             return "SkillA Result"
 
         skill_b = Skill.from_function(
-            func=lambda _: "SkillB Result",
-            description="Skill B"
+            func=lambda _: "SkillB Result", description="Skill B"
         )
 
         agent.add_skills(skill_a)
@@ -214,8 +213,7 @@ class TestSkills:
             return "SkillA Result"
 
         skill_b = Skill.from_function(
-            func=lambda _: "SkillB Result",
-            description="Skill B"
+            func=lambda _: "SkillB Result", description="Skill B"
         )
 
         smart_dataframe.add_skills(skill_a)
@@ -291,12 +289,12 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
         assert (
-                "You can call the following functions that have been pre-defined for you:"
-                not in last_prompt
+            "You can call the following functions that have been pre-defined for you:"
+            not in last_prompt
         )
 
     def test_code_exec_with_skills_no_use(
-            self, code_manager: CodeManager, exec_context
+        self, code_manager: CodeManager, exec_context
     ):
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
