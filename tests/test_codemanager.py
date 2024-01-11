@@ -76,6 +76,13 @@ class TestCodeManager:
         return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
+    def smart_dataframe_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+        return SmartDataframe(
+            pgsql_connector,
+            config={"llm": llm, "enable_cache": False, "direct_sql": True},
+        )
+
+    @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
         return CodeManager(
             dfs=[smart_dataframe],
@@ -397,3 +404,46 @@ result = {
                 config={"llm": FakeLLM(output="")},
             )
             code_manager._validate_direct_sql([df1, df2])
+
+    def test_clean_code_direct_sql_code(
+        self, exec_context: MagicMock, smart_dataframe_with_connector
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
+        code_manager = CodeManager(
+            dfs=[smart_dataframe_with_connector],
+            config=smart_dataframe_with_connector.lake.config,
+            logger=smart_dataframe_with_connector.lake.logger,
+        )
+        safe_code = """
+import numpy as np
+def execute_sql_query(sql_query: str) -> pd.DataFrame:
+    # code to connect to the database and execute the query
+    # ...
+    # return the result as a dataframe
+    return pd.DataFrame()
+np.array()
+"""
+        assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
+
+    def test_clean_code_direct_sql_code_false(
+        self, exec_context: MagicMock, code_manager
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        safe_code = """
+import numpy as np
+def execute_sql_query(sql_query: str) -> pd.DataFrame:
+    # code to connect to the database and execute the query
+    # ...
+    # return the result as a dataframe
+    return pd.DataFrame()
+np.array()
+"""
+        print(code_manager._clean_code(safe_code, exec_context))
+        assert (
+            code_manager._clean_code(safe_code, exec_context)
+            == """def execute_sql_query(sql_query: str) ->pd.DataFrame:
+    return pd.DataFrame()
+
+
+np.array()"""
+        )

@@ -1,6 +1,15 @@
 from pandasai.prompts.base import AbstractPrompt
 from .base import LLM
 
+"""Langchain LLM 
+
+This module is to run LLM using LangChain framework.
+
+Example:
+    Use below example to call LLM
+    >>> from pandasai.llm.langchain import LangchainLLm
+"""
+
 
 class LangchainLLM(LLM):
     """
