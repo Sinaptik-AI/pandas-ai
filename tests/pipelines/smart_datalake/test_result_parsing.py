@@ -97,7 +97,7 @@ class TestResultParsing:
             if key == "response_parser":
                 return mock_response_parser
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         result = result_parsing.execute(
             input="Test Result", context=context, logger=logger
@@ -122,7 +122,7 @@ class TestResultParsing:
             if key == "response_parser":
                 return mock_response_parser
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         result = None
         try:

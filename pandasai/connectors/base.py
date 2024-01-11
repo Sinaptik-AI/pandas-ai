@@ -2,12 +2,12 @@
 Base connector class to be extended by all connectors.
 """
 
+import pandas as pd
 from abc import ABC, abstractmethod
 import os
-from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from pydantic import BaseModel
-from typing import Optional, Union
+from typing import Union
 
 
 class BaseConnectorConfig(BaseModel):
@@ -18,80 +18,6 @@ class BaseConnectorConfig(BaseModel):
     database: str
     table: str
     where: list[list[str]] = None
-
-
-class AirtableConnectorConfig(BaseConnectorConfig):
-    """
-    Connecter configuration for Airtable data.
-    """
-
-    api_key: str
-    base_id: str
-    database: str = "airtable_data"
-
-
-class SQLBaseConnectorConfig(BaseConnectorConfig):
-    """
-    Base Connector configuration.
-    """
-
-    driver: Optional[str] = None
-    dialect: Optional[str] = None
-
-
-class SqliteConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configurations for sqlite db.
-    """
-
-    table: str
-    database: str
-
-
-class YahooFinanceConnectorConfig(BaseConnectorConfig):
-    """
-    Connector configuration for Yahoo Finance.
-    """
-
-    dialect: str = "yahoo_finance"
-    host: str = "yahoo.finance.com"
-    database: str = "stock_data"
-    host: str
-
-
-class SQLConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration.
-    """
-
-    host: str
-    port: int
-    username: str
-    password: str
-
-
-class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for SnowFlake.
-    """
-
-    account: str
-    database: str
-    username: str
-    password: str
-    dbSchema: str
-    warehouse: str
-
-
-class DatabricksConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for DataBricks.
-    """
-
-    host: str
-    port: int
-    token: str
-    httpPath: str
 
 
 class BaseConnector(ABC):
@@ -153,7 +79,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the
@@ -162,7 +88,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def execute(self) -> DataFrameType:
+    def execute(self) -> pd.DataFrame:
         """
         Execute the given query on the data source that the connector is
         connected to.
@@ -237,3 +163,6 @@ class BaseConnector(ABC):
         Return the name of the table that the connector is connected to.
         """
         raise NotImplementedError
+
+    def equals(self, other):
+        return self.__dict__ == other.__dict__

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from ..helpers.df_info import polars_imported
 from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
@@ -29,7 +28,7 @@ class ResponseParser(IResponseParser):
         """
         Initialize the ResponseParser with Context from SmartDataLake
         Args:
-            context (Context): context contains the config, logger and engine
+            context (Context): context contains the config and logger
         """
         self._context = context
 
@@ -67,10 +66,6 @@ class ResponseParser(IResponseParser):
         from ..smart_dataframe import SmartDataframe
 
         df = result["value"]
-        if self._context.engine == "polars" and polars_imported:
-            import polars as pl
-
-            df = pl.from_pandas(df)
 
         return SmartDataframe(
             df,

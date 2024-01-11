@@ -9,13 +9,17 @@ import pandas as pd
 import pytest
 
 from pandasai import SmartDataframe, SmartDatalake
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai.connectors.sql import (
+    PostgreSQLConnector,
+    SQLConnector,
+    SQLConnectorConfig,
+)
 from pandasai.helpers.code_manager import CodeManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
 from langchain import OpenAI
+from pandasai.llm.langchain import LangchainLLM
 
 
 class TestSmartDatalake:
@@ -115,20 +119,14 @@ class TestSmartDatalake:
         return smart_dataframe.lake
 
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
-        smart_datalake._llm = None
-        assert smart_datalake._llm is None
-
-        smart_datalake._load_llm(llm)
-        assert smart_datalake._llm == llm
+        assert smart_datalake.load_llm(llm) == llm
 
     def test_load_llm_with_langchain_llm(self, smart_datalake: SmartDatalake, llm):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        smart_datalake._llm = None
-        assert smart_datalake._llm is None
-
-        smart_datalake._load_llm(langchain_llm)
-        assert smart_datalake._llm._langchain_llm == langchain_llm
+        llm = smart_datalake.load_llm(langchain_llm)
+        assert isinstance(llm, LangchainLLM)
+        assert llm.langchain_llm == langchain_llm
 
     @patch.object(
         CodeManager,
@@ -168,25 +166,41 @@ class TestSmartDatalake:
         smart_datalake.chat("How many countries are in the dataframe?")
         mock_query_tracker_publish.assert_called()
 
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_generator.CodeGenerator.execute",
+        autospec=True,
+    )
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.traceback.format_exc",
+        autospec=True,
+    )
     def test_retry_on_error_with_single_df(
-        self, smart_datalake: SmartDatalake, smart_dataframe: SmartDataframe
+        self,
+        mock_traceback,
+        mock_generate,
+        mock_execute,
+        smart_datalake: SmartDatalake,
+        smart_dataframe: SmartDataframe,
     ):
-        code = """result = 'Hello World'"""
+        mock_traceback.return_value = "Test error"
+        mock_generate.return_value = (
+            "result = {'type': 'string', 'value': 'Hello World'}"
+        )
+        mock_execute.side_effect = [Exception("Test error"), None]
 
-        smart_dataframe._get_sample_head = Mock(
-            return_value=pd.DataFrame(
-                {
-                    "country": ["China", "Japan", "Spain"],
-                    "gdp": [654881226, 9009692259, 8446903488],
-                    "happiness_index": [6.66, 7.16, 6.38],
-                }
-            )
+        smart_dataframe.head_df.to_csv = Mock(
+            return_value="""country,gdp,happiness_index
+China,654881226,6.66
+Japan,9009692259,7.16
+Spain,8446903488,6.38
+"""
         )
 
-        smart_datalake._retry_run_code(
-            code=code,
-            e=Exception("Test error"),
-        )
+        smart_datalake.chat("Hello world")
 
         last_prompt = smart_datalake.last_prompt
         if sys.platform.startswith("win"):
@@ -203,10 +217,10 @@ Spain,8446903488,6.38
 </dataframe>
 
 The user asked the following question:
-
+Q: Hello world
 
 You generated this python code:
-result = 'Hello World'
+result = {'type': 'string', 'value': 'Hello World'}
 
 It fails with the following error:
 Test error
@@ -215,13 +229,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
-    def test_initialize_with_cache(self, mock_makedirs, smart_datalake):
+    def test_load_config_with_cache(self, mock_makedirs, smart_datalake):
         # Modify the smart_datalake's configuration
         smart_datalake.config.save_charts = True
         smart_datalake.config.enable_cache = True
 
         # Call the initialize method
-        smart_datalake.initialize()
+        smart_datalake.load_config(smart_datalake.config)
 
         # Assertions for enabling cache
         cache_dir = os.path.join(os.getcwd(), "cache")
@@ -236,13 +250,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
-    def test_initialize_without_cache(self, mock_makedirs, smart_datalake):
+    def test_load_config_without_cache(self, mock_makedirs, smart_datalake):
         # Modify the smart_datalake's configuration
         smart_datalake.config.save_charts = True
         smart_datalake.config.enable_cache = False
 
         # Call the initialize method
-        smart_datalake.initialize()
+        smart_datalake.load_config(smart_datalake.config)
 
         # Assertions for saving charts
         charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)

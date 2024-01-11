@@ -1,13 +1,13 @@
 import logging
 from pandasai.config import load_config
 from pandasai.exceptions import UnSupportedLogicUnit
-from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
+import pandas as pd
 
 
 class Pipeline(AbstractPipeline):
@@ -21,7 +21,7 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        context: Union[List[Union[DataFrameType, Any]], PipelineContext] = None,
+        context: Union[List[Union[pd.DataFrame, Any]], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,
@@ -77,17 +77,26 @@ class Pipeline(AbstractPipeline):
         """
         try:
             for index, logic in enumerate(self._steps):
+                # Callback function before execution
+                if logic.before_execution is not None:
+                    logic.before_execution(data)
+
                 self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
                     continue
 
+                # Execute the logic unit
                 data = logic.execute(
                     data,
                     logger=self._logger,
                     config=self._context.config,
                     context=self._context,
                 )
+
+                # Callback function after execution
+                if logic.on_execution is not None:
+                    logic.on_execution(data)
 
         except Exception as e:
             self._logger.log(f"Pipeline failed on step {index}: {e}", logging.ERROR)

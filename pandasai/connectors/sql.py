@@ -7,8 +7,7 @@ import os
 import pandas as pd
 
 from pandasai.exceptions import MaliciousQueryError
-from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
-from .base import BaseConnectorConfig
+from .base import BaseConnector, BaseConnectorConfig
 from sqlalchemy import create_engine, text, select, asc
 from sqlalchemy.engine import Connection
 
@@ -16,8 +15,37 @@ from functools import cached_property, cache
 import hashlib
 from ..helpers.path import find_project_root
 from ..constants import DEFAULT_FILE_PERMISSIONS
-from typing import Union
+from typing import Optional, Union
 import time
+
+
+class SQLBaseConnectorConfig(BaseConnectorConfig):
+    """
+    Base Connector configuration.
+    """
+
+    driver: Optional[str] = None
+    dialect: Optional[str] = None
+
+
+class SqliteConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configurations for sqlite db.
+    """
+
+    table: str
+    database: str
+
+
+class SQLConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration.
+    """
+
+    host: str
+    port: int
+    username: str
+    password: str
 
 
 class SQLConnector(BaseConnector):
@@ -148,7 +176,7 @@ class SQLConnector(BaseConnector):
         return base_query
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -164,7 +192,7 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RAND()")
+        query = self._build_query(limit=n, order="RAND()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
@@ -454,7 +482,7 @@ class SqliteConnector(SQLConnector):
         self._connection.close()
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -470,7 +498,7 @@ class SqliteConnector(SQLConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RANDOM()")
+        query = self._build_query(limit=n, order="RANDOM()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
@@ -545,7 +573,7 @@ class PostgreSQLConnector(SQLConnector):
         super().__init__(config)
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -561,7 +589,7 @@ class PostgreSQLConnector(SQLConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RANDOM()")
+        query = self._build_query(limit=n, order="RANDOM()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)

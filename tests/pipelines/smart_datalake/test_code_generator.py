@@ -104,9 +104,9 @@ class TestCodeGenerator:
                 return mock_get_promt()
             return "Mocked LLM Generated Code"
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
         context._cache = Mock()
-        context.cache.get = Mock(return_value=None)
+        context._cache.get = Mock(return_value=None)
         context._query_exec_tracker = Mock()
         context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
 

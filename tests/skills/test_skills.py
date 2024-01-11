@@ -67,7 +67,11 @@ class TestSkills:
 
     @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake._code_manager
+        return CodeManager(
+            dfs=[smart_dataframe],
+            config=smart_dataframe.lake.config,
+            logger=smart_dataframe.lake.logger,
+        )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -165,12 +169,45 @@ class TestSkills:
         )
 
         # Test prompt_display method when no skills exist
-        skills_manager._skills = []
+        skills_manager.skills = []
         prompt = skills_manager.prompt_display()
         assert prompt is None
 
     @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
-    def test_skill_decorator_test_code(self, llm):
+    def test_skill_decorator(self, _mock_inspect_signature):
+        # Define skills using the decorator
+        @skill
+        def skill_a(*args, **kwargs):
+            """
+            Test skill A
+            Args:
+                arg(str)
+            """
+            return "SkillA Result"
+
+        @skill
+        def skill_b(*args, **kwargs):
+            """
+            Test skill B
+            Args:
+                arg(str)
+            """
+            return "SkillB Result"
+
+        # Test the wrapped functions
+        assert skill_a() == "SkillA Result"
+        assert skill_b() == "SkillB Result"
+
+        # Test the additional attributes added by the decorator
+        assert skill_a.name == "skill_a"
+        assert skill_b.name == "skill_b"
+
+        # check the function definition
+        assert skill_a._signature == "def skill_a(a, b, c):"
+        assert skill_b._signature == "def skill_b(a, b, c):"
+
+    @patch("pandasai.skills.inspect.signature", return_value="(a, b, c)")
+    def test_skill_decorator_test_code(self, _mock_inspect_signature):
         # Define skills using the decorator
         @skill
         def plot_salaries(*args, **kwargs):
@@ -200,11 +237,11 @@ class TestSkills:
         )
 
         agent.add_skills(skill_a)
-        assert len(agent._lake._skills.skills) == 1
+        assert len(agent.lake.skills_manager.skills) == 1
 
-        agent._lake._skills._skills = []
+        agent.lake.skills_manager.skills = []
         agent.add_skills(skill_a, skill_b)
-        assert len(agent._lake._skills.skills) == 2
+        assert len(agent.lake.skills_manager.skills) == 2
 
     def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
         @skill
@@ -217,11 +254,11 @@ class TestSkills:
         )
 
         smart_dataframe.add_skills(skill_a)
-        assert len(smart_dataframe._lake._skills.skills) == 1
+        assert len(smart_dataframe.lake.skills_manager.skills) == 1
 
-        smart_dataframe._lake._skills._skills = []
+        smart_dataframe.lake.skills_manager.skills = []
         smart_dataframe.add_skills(skill_a, skill_b)
-        assert len(smart_dataframe._lake._skills.skills) == 2
+        assert len(smart_dataframe.lake.skills_manager.skills) == 2
 
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})
@@ -277,14 +314,14 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         agent.add_skills(plot_salaries)
 
         agent.chat("How many countries are in the dataframe?")
-        last_prompt = agent._lake.last_prompt
+        last_prompt = agent.lake.last_prompt
 
         assert function_def in last_prompt
 
     def test_run_prompt_without_skills(self, agent):
         agent.chat("How many countries are in the dataframe?")
 
-        last_prompt = agent._lake.last_prompt
+        last_prompt = agent.last_prompt
 
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
@@ -299,9 +336,9 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
         skill1.name = "SkillA"
-        exec_context._skills_manager._skills = [skill1]
+        exec_context.skills_manager.skills = [skill1]
         code_manager.execute_code(code, exec_context)
-        assert len(exec_context._skills_manager.used_skills) == 0
+        assert len(exec_context.skills_manager.used_skills) == 0
 
     def test_code_exec_with_skills(self, code_manager: CodeManager):
         code = """plot_salaries()
@@ -317,6 +354,6 @@ result = {'type': 'number', 'value': 1 + 1}"""
         exec_context = CodeExecutionContext(uuid.uuid4(), sm)
         result = code_manager.execute_code(code, exec_context)
 
-        assert len(exec_context._skills_manager.used_skills) == 1
-        assert exec_context._skills_manager.used_skills[0] == "plot_salaries"
+        assert len(exec_context.skills_manager.used_skills) == 1
+        assert exec_context.skills_manager.used_skills[0] == "plot_salaries"
         assert result == {"type": "number", "value": 1 + 1}

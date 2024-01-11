@@ -255,12 +255,10 @@ class BaseOpenAI(LLM):
         """Get the parameters used to invoke the model."""
         openai_creds: Dict[str, Any] = {}
         if not is_openai_v1():
-            openai_creds.update(
-                {
-                    "api_key": self.api_token,
-                    "api_base": self.api_base,
-                }
-            )
+            openai_creds |= {
+                "api_key": self.api_token,
+                "api_base": self.api_base,
+            }
 
         return {**openai_creds, **self._default_params}
 

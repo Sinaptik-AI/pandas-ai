@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.base import DatabricksConnectorConfig
+from pandasai.connectors.databricks import DatabricksConnectorConfig
 from pandasai.connectors import DatabricksConnector
 
 

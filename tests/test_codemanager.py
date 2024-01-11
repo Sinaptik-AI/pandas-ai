@@ -1,17 +1,19 @@
 """Unit tests for the CodeManager class"""
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 import uuid
 
 import pandas as pd
 import pytest
 
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
-from pandasai.exceptions import BadImportError, NoCodeFoundError
+from pandasai.connectors.sql import (
+    PostgreSQLConnector,
+    SQLConnector,
+    SQLConnectorConfig,
+)
+from pandasai.exceptions import BadImportError, NoCodeFoundError, InvalidConfigError
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.exceptions import InvalidConfigError
 
 from pandasai.smart_dataframe import SmartDataframe
 
@@ -73,8 +75,19 @@ class TestCodeManager:
         return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
+    def smart_dataframe_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+        return SmartDataframe(
+            pgsql_connector,
+            config={"llm": llm, "enable_cache": False, "direct_sql": True},
+        )
+
+    @pytest.fixture
     def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake._code_manager
+        return CodeManager(
+            dfs=[smart_dataframe],
+            config=smart_dataframe.lake.config,
+            logger=smart_dataframe.lake.logger,
+        )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -200,14 +213,14 @@ print(dfs)"""
             == """print(dfs)"""
         )
 
+    @patch(
+        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
     def test_exception_handling(
-        self, smart_dataframe: SmartDataframe, code_manager: CodeManager
+        self, mock_execute_code: MagicMock, smart_dataframe: SmartDataframe
     ):
-        code_manager.execute_code = Mock(
-            side_effect=NoCodeFoundError("No code found in the answer.")
-        )
-        code_manager.execute_code.__name__ = "execute_code"
-
+        mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
         result = smart_dataframe.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "
@@ -309,87 +322,6 @@ my_custom_library.do_something()
             "__name__": "__main__",
         }
 
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_polars(self, df_name, code, code_manager: CodeManager):
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    def test_extract_filters_polars_multiple_df(self, code_manager: CodeManager):
-        code = """
-df = dfs[0]
-filtered_paid_df_male = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-num_loans_paid_off_male = len(filtered_paid_df)
-
-df = dfs[1]
-filtered_pend_df_male = df.filter(
-    (pl.col('loan_status') == 'PENDING') & (pl.col('Gender') == 'male')
-)
-num_loans_pending_male = len(filtered_pend_df)
-
-df = dfs[2]
-filtered_paid_df_female = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'female')
-)
-num_loans_paid_off_female = len(filtered_pend_df)
-
-value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
-result = {
-    'type': 'number',
-    'value': value
-}
-"""
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert "dfs[1]" in filters
-        assert "dfs[2]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-        assert len(filters["dfs[1]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
-        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "=", "female")
-
     @pytest.mark.parametrize("df_name", ["df", "foobar"])
     def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
         code = f"""
@@ -402,45 +334,6 @@ filtered_df = (
 num_loans = len(filtered_df)
 result = {{'type': 'number', 'value': num_loans}}
 """
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar[(
-    foobar['loan_status'] == 'PAIDOFF'
-) & (df['Gender'] == 'male')]
-num_loans = len(filtered_df)
-result = {'type': 'number', 'value': num_loans}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_col_index_non_default_name(
-        self, df_name, code, code_manager: CodeManager
-    ):
         filters = code_manager._extract_filters(code)
         assert isinstance(filters, dict)
         assert "dfs[0]" in filters
@@ -512,14 +405,14 @@ result = {
             code_manager._validate_direct_sql([df1, df2])
 
     def test_clean_code_direct_sql_code(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self, exec_context: MagicMock, smart_dataframe_with_connector
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        code_manager = CodeManager(
+            dfs=[smart_dataframe_with_connector],
+            config=smart_dataframe_with_connector.lake.config,
+            logger=smart_dataframe_with_connector.lake.logger,
         )
-        code_manager = df.lake._code_manager
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:
@@ -532,15 +425,9 @@ np.array()
         assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
 
     def test_clean_code_direct_sql_code_false(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self, exec_context: MagicMock, code_manager
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": False},
-        )
-        code_manager = df.lake._code_manager
-
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:

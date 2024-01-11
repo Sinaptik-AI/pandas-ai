@@ -15,8 +15,6 @@ class ProcessOutput(BaseLogicUnit):
         self._response_parser = response_parser
 
     def execute(self, input: Any, **kwargs) -> Any:
-        dfs = kwargs["context"].dfs
-
-        context = Context(kwargs["config"], kwargs["logger"], dfs[0].engine)
+        context = Context(kwargs["config"], kwargs["logger"])
 
         return self._response_parser(context).parse(input)

@@ -2,7 +2,7 @@
 Airtable connectors are used to connect airtable records.
 """
 
-from .base import AirtableConnectorConfig, BaseConnector, BaseConnectorConfig
+from .base import BaseConnector, BaseConnectorConfig
 from typing import Union, Optional
 import requests
 import pandas as pd
@@ -12,6 +12,16 @@ import time
 import hashlib
 from ..exceptions import InvalidRequestError
 from functools import cache, cached_property
+
+
+class AirtableConnectorConfig(BaseConnectorConfig):
+    """
+    Connecter configuration for Airtable data.
+    """
+
+    api_key: str
+    base_id: str
+    database: str = "airtable_data"
 
 
 class AirtableConnector(BaseConnector):
@@ -136,12 +146,12 @@ class AirtableConnector(BaseConnector):
         """
         return self._config.table
 
-    def execute(self):
+    def execute(self) -> pd.DataFrame:
         """
         Execute the connector and return the result.
 
         Returns:
-            DataFrameType: The result of the connector.
+            pd.DataFrame: The result of the connector.
         """
         if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
@@ -206,7 +216,7 @@ class AirtableConnector(BaseConnector):
         return pd.DataFrame(data)
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the table that
           the connector is connected to.
@@ -215,7 +225,7 @@ class AirtableConnector(BaseConnector):
             DatFrameType: The head of the data source
                  that the connector is connected to .
         """
-        data = self._request_api(params={"maxRecords": 5})
+        data = self._request_api(params={"maxRecords": n})
         return pd.DataFrame(
             [
                 {"id": record["id"], **record["fields"]}

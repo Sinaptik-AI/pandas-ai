@@ -3,11 +3,24 @@ SnowFlake connectors are used to connect to SnowFlake Data Cloud.
 """
 
 import pandas as pd
-from .base import BaseConnectorConfig, SnowFlakeConnectorConfig
+from .base import BaseConnectorConfig
 from sqlalchemy import create_engine
 from functools import cache
 from typing import Union
-from .sql import SQLConnector
+from .sql import SQLConnector, SQLBaseConnectorConfig
+
+
+class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
+
+    account: str
+    database: str
+    username: str
+    password: str
+    dbSchema: str
+    warehouse: str
 
 
 class SnowFlakeConnector(SQLConnector):
@@ -55,7 +68,7 @@ class SnowFlakeConnector(SQLConnector):
         self._connection = self._engine.connect()
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -71,7 +84,7 @@ class SnowFlakeConnector(SQLConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RANDOM()")
+        query = self._build_query(limit=n, order="RANDOM()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)

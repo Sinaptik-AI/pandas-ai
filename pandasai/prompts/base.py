@@ -53,9 +53,7 @@ class AbstractPrompt(ABC):
             dataframe_info += ">"
 
             # Add dataframe details
-            dataframe_info += (
-                f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_csv}"
-            )
+            dataframe_info += f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_df.to_csv()}"
 
             # Close the dataframe tag
             dataframe_info += "</dataframe>"
@@ -91,6 +89,10 @@ class AbstractPrompt(ABC):
     def set_vars(self, vars):
         if self._args is None:
             self._args = {}
+
+        if "dfs" in vars:
+            self._args["dataframes"] = self._generate_dataframes(vars["dfs"])
+
         self._args.update(vars)
 
     def to_string(self):

@@ -39,5 +39,5 @@ class CacheLookup(BaseLogicUnit):
                 pipeline_context.cache.get_cache_key(pipeline_context),
                 tag="cache_hit",
             )
-            pipeline_context.add_intermediate_value("is_present_in_cache", True)
+            pipeline_context.add("found_in_cache", True)
             return code

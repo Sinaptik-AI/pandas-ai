@@ -1,9 +1,8 @@
+import pandas as pd
 import re
 from decimal import Decimal
 from abc import abstractmethod, ABC
 from typing import Any, Iterable
-
-from ..df_info import df_type
 
 
 class BaseOutputType(ABC):
@@ -84,7 +83,7 @@ class DataFrameOutputType(BaseOutputType):
         return "dataframe"
 
     def _validate_value(self, actual_value: Any) -> bool:
-        return bool(df_type(actual_value))
+        return isinstance(actual_value, (pd.DataFrame, pd.Series))
 
 
 class PlotOutputType(BaseOutputType):

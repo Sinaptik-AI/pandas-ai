@@ -16,10 +16,10 @@ class ResponseType(TypedDict):
 
 exec_steps = {
     "cache_hit": "Cache Hit",
-    "_get_prompt": "Generate Prompt",
+    "get_prompt": "Generate Prompt",
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
-    "_retry_run_code": "Retry Code Generation",
+    "retry_run_code": "Retry Code Generation",
     "parse": "Parse Output",
 }
 
@@ -99,7 +99,7 @@ class QueryExecTracker:
             dfs (List[SmartDataFrame]): List of dataframes
         """
         for df in dfs:
-            head = df.head_df
+            head = df.head_df.sample()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_step(self, step: dict) -> None:
@@ -164,16 +164,16 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "_get_prompt":
+        if func_name == "get_prompt":
             step["prompt_class"] = result.__class__.__name__
             step["generated_prompt"] = result.to_string()
 
-        elif func_name == "_retry_run_code":
-            self._func_exec_count["_retry_run_code"] += 1
+        elif func_name == "retry_run_code":
+            self._func_exec_count["retry_run_code"] += 1
 
             step[
                 "type"
-            ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
+            ] = f"{exec_steps[func_name]} ({self._func_exec_count['retry_run_code']})"
             step["code_generated"] = result
 
         elif func_name in {"cache_hit", "generate_code"}:

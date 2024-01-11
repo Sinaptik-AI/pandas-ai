@@ -20,9 +20,7 @@ class TestCorrectErrorPrompt:
                 config={"llm": llm},
             )
         ]
-        prompt = CorrectErrorPrompt(
-            engine="pandas", code="df.head()", error_returned="Error message"
-        )
+        prompt = CorrectErrorPrompt(code="df.head()", error_returned="Error message")
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "What is the correct code?")
         prompt_content = prompt.to_string()

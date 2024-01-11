@@ -2,11 +2,22 @@ import os
 import pandas as pd
 from typing import Optional, Union
 
-from .base import YahooFinanceConnectorConfig, BaseConnector
+from .base import BaseConnector, BaseConnectorConfig
 import time
 from ..helpers.path import find_project_root
 from ..constants import DEFAULT_FILE_PERMISSIONS
 import hashlib
+
+
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Yahoo Finance.
+    """
+
+    dialect: str = "yahoo_finance"
+    host: str = "yahoo.finance.com"
+    database: str = "stock_data"
+    host: str
 
 
 class YahooFinanceConnector(BaseConnector):
@@ -50,15 +61,15 @@ class YahooFinanceConnector(BaseConnector):
         super().__init__(yahoo_finance_config)
         self.ticker = yfinance.Ticker(self._config.table)
 
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
 
         Returns:
-            DataFrameType: The head of the data source that the connector is
+            DataFrame: The head of the data source that the connector is connected to.
             connected to.
         """
-        return self.ticker.history(period="5d")
+        return self.ticker.history(period=f"{n}d")
 
     def _get_cache_path(self, include_additional_filters: bool = False):
         """
@@ -118,7 +129,7 @@ class YahooFinanceConnector(BaseConnector):
         Execute the connector and return the result.
 
         Returns:
-            DataFrameType: The result of the connector.
+            DataFrame: The result of the connector.
         """
         if cached_path := self._cached():
             return pd.read_parquet(cached_path)
