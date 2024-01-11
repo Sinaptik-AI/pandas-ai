@@ -319,6 +319,13 @@ Code running:
         for child_node in ast.iter_child_nodes(node):
             self.find_function_calls(child_node, context)
 
+    def check_direct_sql_func_def_exists(self, node: ast.AST):
+        return (
+            self._validate_direct_sql(self._dfs)
+            and isinstance(node, ast.FunctionDef)
+            and node.name == "execute_sql_query"
+        )
+
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
         """
         A method to clean the code to prevent malicious code execution.
@@ -350,7 +357,13 @@ Code running:
             ):
                 continue
 
+            # if generated code contain execute_sql_query def remove it
+            # function already defined
+            if self.check_direct_sql_func_def_exists(node):
+                continue
+
             self.find_function_calls(node, context)
+
             new_body.append(node)
 
         new_tree = ast.Module(body=new_body)

@@ -102,11 +102,11 @@ class TestOpenAILLM:
 
     def test_call_with_unsupported_model(self, prompt):
         with pytest.raises(
-                UnsupportedModelError,
-                match=(
-                        "Unsupported model: The model 'not a model' doesn't exist "
-                        "or is not supported yet."
-                ),
+            UnsupportedModelError,
+            match=(
+                "Unsupported model: The model 'not a model' doesn't exist "
+                "or is not supported yet."
+            ),
         ):
             llm = OpenAI(api_token="test", model="not a model")
             llm.call(instruction=prompt)
@@ -126,7 +126,9 @@ class TestOpenAILLM:
         assert result == "response"
 
     def test_call_finetuned_model(self, mocker, prompt):
-        openai = OpenAI(api_token="test", model="ft:gpt-3.5-turbo:my-org:custom_suffix:id")
+        openai = OpenAI(
+            api_token="test", model="ft:gpt-3.5-turbo:my-org:custom_suffix:id"
+        )
         mocker.patch.object(openai, "chat_completion", return_value="response")
 
         result = openai.call(instruction=prompt)
