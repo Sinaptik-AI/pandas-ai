@@ -1,12 +1,17 @@
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 import pandas as pd
 import pytest
+from pandasai.exceptions import InvalidLLMOutputType
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
+from pandasai.prompts.correct_output_type_error_prompt import (
+    CorrectOutputTypeErrorPrompt,
+)
 from pandasai.smart_dataframe import SmartDataframe
 from pandasai.pipelines.smart_datalake_chat.code_execution import CodeExecution
 
@@ -194,3 +199,27 @@ class TestCodeExecution:
 
         assert isinstance(code_execution, CodeExecution)
         assert result == "Mocked Result after retry"
+
+    def test_get_error_prompt_invalid_llm_output_type(self):
+        code_execution = CodeExecution()
+
+        # Mock the InvalidLLMOutputType exception
+        mock_exception = MagicMock(spec=InvalidLLMOutputType)
+
+        # Call the method with the mock exception
+        result = code_execution._get_error_prompt(mock_exception)
+
+        # Assert that the CorrectOutputTypeErrorPrompt is returned
+        assert isinstance(result, CorrectOutputTypeErrorPrompt)
+
+    def test_get_error_prompt_other_exception(self):
+        code_execution = CodeExecution()
+
+        # Mock a generic exception
+        mock_exception = MagicMock(spec=Exception)
+
+        # Call the method with the mock exception
+        result = code_execution._get_error_prompt(mock_exception)
+
+        # Assert that the CorrectErrorPrompt is returned
+        assert isinstance(result, CorrectErrorPrompt)

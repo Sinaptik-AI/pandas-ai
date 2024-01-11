@@ -1,6 +1,12 @@
 import logging
 import traceback
 from typing import Any, List
+
+from pandasai.exceptions import InvalidLLMOutputType
+from pandasai.prompts.base import AbstractPrompt
+from pandasai.prompts.correct_output_type_error_prompt import (
+    CorrectOutputTypeErrorPrompt,
+)
 from ...helpers.code_manager import CodeExecutionContext
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
@@ -51,6 +57,14 @@ class CodeExecution(BaseLogicUnit):
                     context=code_context,
                 )
 
+                if output_helper := pipeline_context.get_intermediate_value(
+                    "output_type_helper"
+                ):
+                    (validation_ok, validation_errors) = output_helper.validate(result)
+
+                    if not validation_ok:
+                        raise InvalidLLMOutputType(validation_errors)
+
                 break
 
             except Exception as e:
@@ -69,18 +83,33 @@ class CodeExecution(BaseLogicUnit):
                 )
 
                 traceback_error = traceback.format_exc()
+
+                # Get Error Prompt for retry
+                error_prompt = self._get_error_prompt(e)
                 code_to_run = pipeline_context.query_exec_tracker.execute_func(
                     self._retry_run_code,
                     code,
                     pipeline_context,
                     logger,
                     traceback_error,
+                    error_prompt,
                 )
 
         return result
 
+    def _get_error_prompt(self, e: Exception) -> AbstractPrompt:
+        if isinstance(e, InvalidLLMOutputType):
+            return CorrectOutputTypeErrorPrompt()
+        else:
+            return CorrectErrorPrompt()
+
     def _retry_run_code(
-        self, code: str, context: PipelineContext, logger: Logger, e: Exception
+        self,
+        code: str,
+        context: PipelineContext,
+        logger: Logger,
+        e: Exception,
+        error_prompt=CorrectErrorPrompt(),
     ) -> List:
         """
         A method to retry the code execution with error correction framework.
@@ -94,7 +123,6 @@ class CodeExecution(BaseLogicUnit):
 
         Returns (str): A python code
         """
-
         logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
 
         default_values = {
@@ -107,7 +135,7 @@ class CodeExecution(BaseLogicUnit):
         }
         error_correcting_instruction = context.get_intermediate_value("get_prompt")(
             "correct_error",
-            default_prompt=CorrectErrorPrompt(),
+            default_prompt=error_prompt,
             default_values=default_values,
         )
 

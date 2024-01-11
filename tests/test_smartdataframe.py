@@ -134,6 +134,17 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
+    def llm_result_mocks(self, custom_head):
+        result_template = "result = {{ 'type': '{type}', 'value': {value} }}"
+
+        return {
+            "number": result_template.format(type="number", value=1),
+            "string": result_template.format(type="string", value="'Test'"),
+            "plot": result_template.format(type="plot", value="'temp_plot.png'"),
+            "dataframe": result_template.format(type="dataframe", value=custom_head),
+        }
+
+    @pytest.fixture
     def smart_dataframe_mocked_df(self, llm, sample_df, custom_head):
         smart_df = SmartDataframe(
             sample_df,
@@ -225,7 +236,17 @@ Generate python code and return full updated code:"""  # noqa: E501
             ],
         ],
     )
-    def test_run_passing_output_type(self, llm, output_type, output_type_hint):
+    @patch("pandasai.responses.response_parser.ResponseParser.parse", autospec=True)
+    @patch("pandasai.helpers.query_exec_tracker.QueryExecTracker._format_response")
+    def test_run_passing_output_type(
+        self,
+        _format_response_mock,
+        parser_mock,
+        llm,
+        llm_result_mocks,
+        output_type,
+        output_type_hint,
+    ):
         df = pd.DataFrame({"country": []})
         df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
 
@@ -255,12 +276,15 @@ At the end, declare "result" variable as a dictionary of type and value.
 
 
 Generate python code and return full updated code:"""
+        parser_mock.return_value = Mock()
+        _format_response_mock.return_value = Mock()
+        type_ = output_type if output_type is not None else "string"
+        llm._output = llm_result_mocks[type_]
 
         df.chat("How many countries are in the dataframe?", output_type=output_type)
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
-
         assert last_prompt == expected_prompt
 
     @pytest.mark.parametrize(
