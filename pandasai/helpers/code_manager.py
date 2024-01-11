@@ -358,7 +358,7 @@ Code running:
                 continue
 
             # if generated code contain execute_sql_query def remove it
-            # functioin already defined
+            # function already defined
             if self.check_direct_sql_func_def_exists(node):
                 continue
 
