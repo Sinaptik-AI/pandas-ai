@@ -1,4 +1,5 @@
 """Unit tests for the CodeManager class"""
+import ast
 from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 import uuid
@@ -8,7 +9,7 @@ import pytest
 
 from pandasai.connectors.base import SQLConnectorConfig
 from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
-from pandasai.exceptions import BadImportError, NoCodeFoundError
+from pandasai.exceptions import BadImportError, MaliciousQueryError, NoCodeFoundError
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.exceptions import InvalidConfigError
@@ -550,7 +551,6 @@ def execute_sql_query(sql_query: str) -> pd.DataFrame:
     return pd.DataFrame()
 np.array()
 """
-        print(code_manager._clean_code(safe_code, exec_context))
         assert (
             code_manager._clean_code(safe_code, exec_context)
             == """def execute_sql_query(sql_query: str) ->pd.DataFrame:
@@ -559,3 +559,81 @@ np.array()
 
 np.array()"""
         )
+
+    def test_check_is_query_using_relevant_table_invalid_query(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM your_table'").body[0]
+
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._check_is_query_using_relevant_table(mock_node)
+
+        assert str(excinfo.value) == (
+            "Query uses tables you don't provided, add new datatable or update query"
+        )
+
+    def test_check_is_query_using_relevant_table_valid_query(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+        code_manager._dfs = [MockObject()]
+
+        code_manager._check_is_query_using_relevant_table(mock_node)
+
+    def test_check_is_query_using_relevant_table_multiple_tables(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.table_name = table_name
+
+        code_manager._dfs = [MockObject("table1"), MockObject("table2")]
+
+        # The function should not raise an exception for a query with multiple valid tables
+        code_manager._check_is_query_using_relevant_table(mock_node)
+
+    def test_check_is_query_using_relevant_table_unknown_table(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+        code_manager._dfs = [MockObject()]
+
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._check_is_query_using_relevant_table(mock_node)
+
+        assert str(excinfo.value) == (
+            "Query uses tables you don't provided, add new datatable or update query"
+        )
+
+    def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.table_name = table_name
+
+        code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
+
+        # The function should not raise an exception for a query with multiple valid tables
+        with pytest.raises(MaliciousQueryError):
+            code_manager._check_is_query_using_relevant_table(mock_node)
