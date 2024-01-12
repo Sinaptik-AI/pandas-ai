@@ -79,8 +79,9 @@ class Agent:
         """
         try:
             is_related = self.check_if_related_to_conversation(query)
-            self.lake.is_related_query(is_related)
-            return self.lake.chat(query, output_type=output_type)
+            return self.lake.chat(
+                query, output_type=output_type, is_related_query=is_related
+            )
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your answers, "

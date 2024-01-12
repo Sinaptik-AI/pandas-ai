@@ -3,10 +3,13 @@ import json
 import os
 import time
 from typing import Any, List, TypedDict, Union
-import uuid
 
 import requests
 from collections import defaultdict
+
+from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
+    SmartDatalakePipelineInput,
+)
 
 
 class ResponseType(TypedDict):
@@ -53,30 +56,7 @@ class QueryExecTracker:
         """
         self._is_related_query = flag
 
-    def add_query_info(
-        self,
-        conversation_id: uuid.UUID,
-        instance: str,
-        query: str,
-        output_type: str,
-    ):
-        """
-        Adds query information for new track
-        Args:
-            conversation_id (str): conversation id
-            instance (str): instance like Agent or SmartDataframe
-            query (str): chat query given by user
-            output_type (str): output type expected by user
-        """
-        self._query_info = {
-            "conversation_id": str(conversation_id),
-            "instance": instance,
-            "query": query,
-            "output_type": output_type,
-            "is_related_query": self._is_related_query,
-        }
-
-    def start_new_track(self):
+    def start_new_track(self, input: SmartDatalakePipelineInput):
         """
         Resets tracking variables to start new track
         """
@@ -87,6 +67,14 @@ class QueryExecTracker:
         self._steps: List = []
         self._query_info = {}
         self._func_exec_count: dict = defaultdict(int)
+
+        self._query_info = {
+            "conversation_id": str(input.conversation_id),
+            "instance": input.instance,
+            "query": input.query,
+            "output_type": input.output_type.name,
+            "is_related_query": input.is_related_query,
+        }
 
     def convert_dataframe_to_dict(self, df):
         json_data = json.loads(df.to_json(orient="split", date_format="iso"))

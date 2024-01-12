@@ -38,7 +38,10 @@ class PipelineContext:
             self.cache = None
 
         self.config = config
-        self.query_exec_tracker = query_exec_tracker or QueryExecTracker()
+        self.query_exec_tracker = query_exec_tracker or QueryExecTracker(
+            server_config=config.log_server
+        )
+
         self.intermediate_values = initial_values or {}
 
     def add(self, key: str, value: Any):

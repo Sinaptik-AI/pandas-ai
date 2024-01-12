@@ -1,4 +1,7 @@
 from typing import Optional
+from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
+    SmartDatalakePipelineInput,
+)
 
 from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
     ValidatePipelineInput,
@@ -17,6 +20,7 @@ from .result_validation import ResultValidation
 
 class GenerateSmartDatalakePipeline:
     pipeline: Pipeline
+    context: PipelineContext
 
     def __init__(
         self,
@@ -52,9 +56,25 @@ class GenerateSmartDatalakePipeline:
                 ),
             ],
         )
+        self.context = context
 
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")
 
-    def run(self):
+    def run(self, input: SmartDatalakePipelineInput):
+        # Start New Tracking for Query
+        self.context.query_exec_tracker.start_new_track(input)
+
+        self.context.query_exec_tracker.add_dataframes(self.context.dfs)
+
+        # Add Query to memory
+        self.context.memory.add(input.query, True)
+
+        self.context.add_many(
+            {
+                "output_type_helper": input.output_type,
+                "last_prompt_id": input.prompt_id,
+            }
+        )
+
         return self.pipeline.run()

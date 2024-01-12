@@ -21,8 +21,10 @@ import uuid
 import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
+    SmartDatalakePipelineInput,
+)
 from pandasai.skills import Skill
-from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
 )
@@ -74,23 +76,21 @@ class SmartDatalake:
 
         self.callbacks = Callbacks(self)
 
-        query_exec_tracker = QueryExecTracker(
-            server_config=config.log_server,
+        self.context = PipelineContext(
+            dfs=self.dfs, config=config, memory=memory, cache=cache
         )
 
-        self.context = PipelineContext(
-            dfs=self.dfs,
-            config=config,
-            memory=memory,
-            cache=cache,
-            query_exec_tracker=query_exec_tracker,
+        self._pipeline = GenerateSmartDatalakePipeline(
+            self.context,
+            self.logger,
+            on_prompt_generation=self.callbacks.on_prompt_generation,
+            on_code_generation=self.callbacks.on_code_generation,
+            on_code_execution=self.callbacks.on_code_execution,
+            on_result=self.callbacks.on_result,
         )
 
     def set_instance_type(self, type_: str):
         self.instance = type_
-
-    def is_related_query(self, flag: bool):
-        self.context.query_exec_tracker.set_related_query(flag)
 
     def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]], config: Config = None):
         """
@@ -179,7 +179,12 @@ class SmartDatalake:
         if self.logger:
             self.logger.log(f"Prompt ID: {self.last_prompt_id}")
 
-    def chat(self, query: str, output_type: Optional[str] = None):
+    def chat(
+        self,
+        query: str,
+        output_type: Optional[str] = None,
+        is_related_query: bool = True,
+    ):
         """
         Run a query on the dataframe.
 
@@ -202,33 +207,23 @@ class SmartDatalake:
         Raises:
             ValueError: If the query is empty
         """
-
-        self.context.query_exec_tracker.start_new_track()
-
         self.logger.log(f"Question: {query}")
         self.logger.log(f"Running PandasAI with {self.context.config.llm.type} LLM...")
 
         self.assign_prompt_id()
 
-        self.context.query_exec_tracker.add_query_info(
-            self.conversation_id, self.instance, query, output_type
+        pipeline_input = SmartDatalakePipelineInput(
+            query,
+            output_type_factory(output_type, logger=self.logger),
+            self.instance,
+            self.conversation_id,
+            self.last_prompt_id,
+            is_related_query,
         )
 
-        self.context.query_exec_tracker.add_dataframes(self.dfs)
-
-        self.context.memory.add(query, True)
-
-        self.prepare_context_for_smart_datalake_pipeline(output_type=output_type)
-
         try:
-            result = GenerateSmartDatalakePipeline(
-                self.context,
-                self.logger,
-                on_prompt_generation=self.callbacks.on_prompt_generation,
-                on_code_generation=self.callbacks.on_code_generation,
-                on_code_execution=self.callbacks.on_code_execution,
-                on_result=self.callbacks.on_result,
-            ).run()
+            result = self._pipeline.run(pipeline_input)
+
         except Exception as exception:
             self.last_error = str(exception)
             self.context.query_exec_tracker.success = False
@@ -244,39 +239,6 @@ class SmartDatalake:
         self.context.query_exec_tracker.publish()
 
         return result
-
-    def prepare_context_for_smart_datalake_pipeline(
-        self, output_type: Optional[str] = None
-    ) -> PipelineContext:
-        """
-        Prepare Pipeline Context to initiate Smart Data Lake Pipeline.
-
-        Args:
-            output_type (Optional[str]): Add a hint for LLM which
-                type should be returned by `analyze_data()` in generated
-                code. Possible values: "number", "dataframe", "plot", "string":
-                    * number - specifies that user expects to get a number
-                        as a response object
-                    * dataframe - specifies that user expects to get
-                        pandas dataframe as a response object
-                    * plot - specifies that user expects LLM to build
-                        a plot
-                    * string - specifies that user expects to get text
-                        as a response object
-                If none `output_type` is specified, the type can be any
-                of the above or "text".
-
-        Returns:
-            PipelineContext: The Pipeline Context to be used by Smart Data Lake Pipeline.
-        """
-        self.context.add_many(
-            {
-                "output_type_helper": output_type_factory(
-                    output_type, logger=self.logger
-                ),
-                "last_prompt_id": self.last_prompt_id,
-            }
-        )
 
     def clear_memory(self):
         """
