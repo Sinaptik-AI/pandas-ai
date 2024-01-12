@@ -61,7 +61,17 @@ class GenerateSmartDatalakePipeline:
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")
 
-    def run(self, input: SmartDatalakePipelineInput):
+    def run(self, input: SmartDatalakePipelineInput) -> dict:
+        """
+        Executes the smartdatalake pipeline with user input and return the result
+        Args:
+            input (SmartDatalakePipelineInput): _description_
+
+        Returns:
+            The `output` dictionary is expected to have the following keys:
+            - 'type': The type of the output.
+            - 'value': The value of the output.
+        """
         # Start New Tracking for Query
         self.context.query_exec_tracker.start_new_track(input)
 
