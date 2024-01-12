@@ -331,7 +331,7 @@ Code running:
             and node.name == "execute_sql_query"
         )
 
-    def _check_is_query_using_relevant_table(self, node: ast.Assign):
+    def _get_sql_irrelevant_tables(self, node: ast.Assign):
         for target in node.targets:
             if (
                 isinstance(target, ast.Name)
@@ -342,12 +342,11 @@ Code running:
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
                 allowed_table_names = [df.table_name for df in self._dfs]
-                if any(
-                    table_name not in allowed_table_names for table_name in table_names
-                ):
-                    raise MaliciousQueryError(
-                        "Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
-                    )
+                return [
+                    table_name
+                    for table_name in table_names
+                    if table_name not in allowed_table_names
+                ]
 
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
         """
@@ -386,8 +385,14 @@ Code running:
                 continue
 
             # Sanity for sql query the code should only use allowed tables
-            if isinstance(node, ast.Assign) and self._config.direct_sql:
-                self._check_is_query_using_relevant_table(node)
+            if (
+                isinstance(node, ast.Assign)
+                and self._config.direct_sql
+                and (unauthorized_tables := self._get_sql_irrelevant_tables(node))
+            ):
+                raise MaliciousQueryError(
+                    f"Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
+                )
 
             self.find_function_calls(node, context)
 

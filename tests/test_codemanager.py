@@ -565,12 +565,9 @@ np.array()"""
     ):
         mock_node = ast.parse("sql_query = 'SELECT * FROM your_table'").body[0]
 
-        with pytest.raises(MaliciousQueryError) as excinfo:
-            code_manager._check_is_query_using_relevant_table(mock_node)
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
 
-        assert str(excinfo.value) == (
-            "Query uses tables you don't provided, add new datatable or update query"
-        )
+        assert len(irrelevant_tables) > 0
 
     def test_check_is_query_using_relevant_table_valid_query(
         self, code_manager: CodeManager
@@ -582,7 +579,9 @@ np.array()"""
 
         code_manager._dfs = [MockObject()]
 
-        code_manager._check_is_query_using_relevant_table(mock_node)
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 0
 
     def test_check_is_query_using_relevant_table_multiple_tables(
         self, code_manager: CodeManager
@@ -599,8 +598,9 @@ np.array()"""
 
         code_manager._dfs = [MockObject("table1"), MockObject("table2")]
 
-        # The function should not raise an exception for a query with multiple valid tables
-        code_manager._check_is_query_using_relevant_table(mock_node)
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 0
 
     def test_check_is_query_using_relevant_table_unknown_table(
         self, code_manager: CodeManager
@@ -612,12 +612,9 @@ np.array()"""
 
         code_manager._dfs = [MockObject()]
 
-        with pytest.raises(MaliciousQueryError) as excinfo:
-            code_manager._check_is_query_using_relevant_table(mock_node)
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
 
-        assert str(excinfo.value) == (
-            "Query uses tables you don't provided, add new datatable or update query"
-        )
+        assert len(irrelevant_tables) == 1
 
     def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
         self, code_manager: CodeManager
@@ -634,6 +631,53 @@ np.array()"""
 
         code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
 
-        # The function should not raise an exception for a query with multiple valid tables
-        with pytest.raises(MaliciousQueryError):
-            code_manager._check_is_query_using_relevant_table(mock_node)
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 1
+
+    def test_clean_code_using_correct_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = df.lake._code_manager
+        safe_code = """sql_query = 'SELECT * FROM your_table'"""
+        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+
+    def test_clean_code_using_incorrect_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = df.lake._code_manager
+        safe_code = """sql_query = 'SELECT * FROM unknown_table'
+    """
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+
+        assert str(excinfo.value) == (
+            "Query uses unauthorized tables: ['unknown_table']. Please add them as new datatables or update the query."
+        )
+
+    def test_clean_code_using_multi_incorrect_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = df.lake._code_manager
+        safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+
+        assert str(excinfo.value) == (
+            "Query uses unauthorized tables: ['table1', 'table2']. Please add them as new datatables or update the query."
+        )
