@@ -283,7 +283,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._lake.set_instance_type(self.__class__.__name__)
 
         # If no name is provided, use the fallback name provided the connector
-        if self._table_name is None and self.connector:
+        if self.connector:
             self._table_name = self.connector.fallback_name
 
         if custom_head is not None:
