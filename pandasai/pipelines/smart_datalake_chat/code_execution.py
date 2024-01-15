@@ -2,7 +2,7 @@ import logging
 import traceback
 from typing import Any, Callable, List
 
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.responses.response_serializer import ResponseSerializer
 from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
@@ -77,7 +77,7 @@ class CodeExecution(BaseLogicUnit):
                     code_to_run, self.context, self.logger, traceback_error
                 )
 
-        return StepOutput(
+        return LogicUnitOutput(
             result,
             True,
             "Code Executed Successfully",

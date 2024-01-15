@@ -6,7 +6,7 @@ from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.prompts.base import AbstractPrompt
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 
@@ -54,7 +54,7 @@ class ErrorPromptGeneration(BaseLogicUnit):
         if self.on_prompt_generation:
             self.on_prompt_generation(error_correcting_instruction)
 
-        return StepOutput(
+        return LogicUnitOutput(
             error_correcting_instruction,
             True,
             "Prompt Generated Successfully",

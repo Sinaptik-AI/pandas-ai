@@ -1,6 +1,6 @@
 from typing import Any
 
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...prompts.generate_python_code import GeneratePythonCodePrompt
@@ -68,7 +68,7 @@ class PromptGeneration(BaseLogicUnit):
 
         prompt = self.get_prompt(default_values)
 
-        return StepOutput(
+        return LogicUnitOutput(
             prompt,
             True,
             "Prompt Generated Successfully",

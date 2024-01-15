@@ -1,6 +1,6 @@
 from typing import Any
 
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ...helpers.logger import Logger
 from ..pipeline_context import PipelineContext
 from ..base_logic_unit import BaseLogicUnit
@@ -40,6 +40,6 @@ class CodeGenerator(BaseLogicUnit):
             """
         )
 
-        return StepOutput(
+        return LogicUnitOutput(
             code, True, "Code Generated Successfully", {"code_generated": code}
         )

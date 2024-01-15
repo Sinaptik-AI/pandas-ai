@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 from pandasai.helpers.logger import Logger
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -50,4 +50,4 @@ class ResultValidation(BaseLogicUnit):
             pipeline_context.add("last_result", result)
             logger.log(f"Answer: {result}")
 
-        return StepOutput(result, success, message)
+        return LogicUnitOutput(result, success, message)

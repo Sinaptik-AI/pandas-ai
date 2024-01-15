@@ -3,7 +3,7 @@ from typing import Any
 
 
 @dataclass
-class StepOutput:
+class LogicUnitOutput:
     """
     Pipeline step output
     """

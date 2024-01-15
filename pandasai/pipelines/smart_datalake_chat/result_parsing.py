@@ -1,6 +1,6 @@
 from typing import Any
 
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...responses.context import Context
@@ -44,7 +44,7 @@ class ResultParsing(BaseLogicUnit):
 
         parser = self.response_parser(pipeline_context, logger=kwargs.get("logger"))
         result = parser.parse(result)
-        return StepOutput(result, True, "Results parsed successfully")
+        return LogicUnitOutput(result, True, "Results parsed successfully")
 
     def _add_result_to_memory(self, result: dict, context: PipelineContext):
         """

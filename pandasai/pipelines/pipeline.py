@@ -6,7 +6,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
@@ -108,7 +108,7 @@ class Pipeline(AbstractPipeline):
                 execution_time = time.time() - start_time
 
                 # Track the execution step of pipeline
-                if isinstance(step_output, StepOutput):
+                if isinstance(step_output, LogicUnitOutput):
                     self._query_exec_tracker.add_step(
                         {
                             "type": logic.__class__.__name__,

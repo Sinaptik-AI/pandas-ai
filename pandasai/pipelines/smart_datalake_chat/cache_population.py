@@ -1,6 +1,6 @@
 from typing import Any
 
-from pandasai.pipelines.step_output import StepOutput
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -34,7 +34,7 @@ class CachePopulation(BaseLogicUnit):
                 pipeline_context.cache.get_cache_key(pipeline_context), code
             )
 
-        return StepOutput(
+        return LogicUnitOutput(
             code,
             True,
             "Prompt Cached Successfully"

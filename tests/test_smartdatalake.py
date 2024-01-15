@@ -206,7 +206,6 @@ Spain,8446903488,6.38
         if sys.platform.startswith("win"):
             last_prompt = last_prompt.replace("\r\n", "\n")
 
-        print(last_prompt)
         assert (
             last_prompt
             == """<dataframe>
