@@ -1,4 +1,6 @@
 from typing import Any
+
+from pandasai.pipelines.step_output import StepOutput
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
@@ -34,10 +36,16 @@ class CacheLookup(BaseLogicUnit):
             )
         ):
             logger.log("Using cached response")
-            code = pipeline_context.query_exec_tracker.execute_func(
-                pipeline_context.cache.get,
-                pipeline_context.cache.get_cache_key(pipeline_context),
-                tag="cache_hit",
+            # code = pipeline_context.query_exec_tracker.execute_func(
+            #     pipeline_context.cache.get,
+            #     pipeline_context.cache.get_cache_key(pipeline_context),
+            #     tag="cache_hit",
+            # )
+
+            code = pipeline_context.cache.get(
+                pipeline_context.cache.get_cache_key(pipeline_context)
             )
+
             pipeline_context.add("found_in_cache", True)
-            return code
+
+            return StepOutput(code, True, "Cache Hit")

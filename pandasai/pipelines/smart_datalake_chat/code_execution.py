@@ -1,6 +1,9 @@
 import logging
 import traceback
 from typing import Any, List
+
+from pandasai.pipelines.step_output import StepOutput
+from pandasai.responses.response_serializer import ResponseSerializer
 from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
@@ -45,18 +48,18 @@ class CodeExecution(BaseLogicUnit):
             logger=self.logger,
         )
 
-        code = input
+        # code = input.input
         retry_count = 0
-        code_to_run = code
+        code_to_run = input
         result = None
         while retry_count < self.context.config.max_retries:
             try:
-                result = self.context.query_exec_tracker.execute_func(
-                    code_manager.execute_code,
-                    code=code_to_run,
-                    context=code_context,
-                )
-
+                # result = self.context.query_exec_tracker.execute_func(
+                #     code_manager.execute_code,
+                #     code=code_to_run,
+                #     context=code_context,
+                # )
+                result = code_manager.execute_code(code_to_run, code_context)
                 break
 
             except Exception as e:
@@ -75,15 +78,24 @@ class CodeExecution(BaseLogicUnit):
                 )
 
                 traceback_error = traceback.format_exc()
-                code_to_run = self.context.query_exec_tracker.execute_func(
-                    self.retry_run_code,
-                    code,
-                    self.context,
-                    self.logger,
-                    traceback_error,
+                # code_to_run = self.context.query_exec_tracker.execute_func(
+                #     self.retry_run_code,
+                #     code_to_run,
+                #     self.context,
+                #     self.logger,
+                #     traceback_error,
+                # )
+
+                code_to_run = self.retry_run_code(
+                    code_to_run, self.context, self.logger, traceback_error
                 )
 
-        return result
+        return StepOutput(
+            result,
+            True,
+            "Code Executed Successfully",
+            {"result": ResponseSerializer.serialize(result)},
+        )
 
     def retry_run_code(
         self, code: str, context: PipelineContext, logger: Logger, e: Exception

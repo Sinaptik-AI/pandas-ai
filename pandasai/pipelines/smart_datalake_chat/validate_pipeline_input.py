@@ -2,6 +2,7 @@ from typing import Any, List
 from pandasai.connectors.sql import SQLConnector
 
 from pandasai.exceptions import InvalidConfigError
+from pandasai.pipelines.step_output import StepOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -49,4 +50,4 @@ class ValidatePipelineInput(BaseLogicUnit):
         """
         self.context: PipelineContext = kwargs.get("context")
         self._validate_direct_sql(self.context.dfs)
-        return input
+        return StepOutput(input, True, "Input Validation Successful")

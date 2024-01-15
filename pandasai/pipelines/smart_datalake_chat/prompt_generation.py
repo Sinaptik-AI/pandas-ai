@@ -1,4 +1,6 @@
 from typing import Any
+
+from pandasai.pipelines.step_output import StepOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...prompts.generate_python_code import GeneratePythonCodePrompt
@@ -64,10 +66,19 @@ class PromptGeneration(BaseLogicUnit):
             default_values["current_code"] = self.context.get("last_code_generated")
             default_values["code_description"] = ""
 
-        return self.context.query_exec_tracker.execute_func(
-            self.get_prompt,
-            default_values=default_values,
+        prompt = self.get_prompt(default_values)
+
+        return StepOutput(
+            prompt,
+            True,
+            "Prompt Generated Successfully",
+            {"generated_prompt": prompt.to_string()},
         )
+
+        # return self.context.query_exec_tracker.execute_func(
+        #     self.get_prompt,
+        #     default_values=default_values,
+        # )
 
     def get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
         custom_prompt_key = (

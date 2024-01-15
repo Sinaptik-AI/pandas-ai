@@ -100,15 +100,19 @@ class TestCodeExecution:
                 return mock_code_manager
 
         context.get = Mock(side_effect=mock_intermediate_values)
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
+        # context._query_exec_tracker = Mock()
+        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         result = code_execution.execute(
-            input="Test Code", context=context, logger=logger
+            input='result={"type":"string", "value":"5"}',
+            context=context,
+            logger=logger,
         )
 
         assert isinstance(code_execution, CodeExecution)
-        assert result == "Mocked Result"
+        assert result.output == {"type": "string", "value": "5"}
+        assert result.message == "Code Executed Successfully"
+        assert result.success is True
 
     def test_code_execution_unsuccessful_after_retries(self, context, logger):
         # Test Flow : Code Execution Successful after retry
@@ -120,14 +124,14 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
 
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(
-            return_value=[
-                "Interuppted Code",
-                "Exception Testing",
-                "Unsuccessful after Retries",
-            ]
-        )
+        # context._query_exec_tracker = Mock()
+        # context.query_exec_tracker.execute_func = Mock(
+        #     return_value=[
+        #         "Interuppted Code",
+        #         "Exception Testing",
+        #         "Unsuccessful after Retries",
+        #     ]
+        # )
 
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
@@ -164,16 +168,17 @@ class TestCodeExecution:
             return mock_execute_code(*args, **kwargs)
 
         mock_code_manager = Mock()
-        mock_code_manager.execute_code = Mock()
+        mock_code_manager.execute_code = mock_execute_func
         mock_code_manager.execute_code.name = "execute_code"
 
-        context._query_exec_tracker = Mock()
-
-        context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
-
-        result = code_execution.execute(
-            input="Test Code", context=context, logger=logger
+        code_execution.retry_run_code = Mock(
+            return_value='result={"type":"string", "value":"5"}'
         )
 
+        result = code_execution.execute(input="x=5", context=context, logger=logger)
+
+        assert code_execution.retry_run_code.assert_called
         assert isinstance(code_execution, CodeExecution)
-        assert result == "Mocked Result after retry"
+        assert result.output == {"type": "string", "value": "5"}
+        assert result.message == "Code Executed Successfully"
+        assert result.success is True

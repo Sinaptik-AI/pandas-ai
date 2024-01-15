@@ -1,4 +1,6 @@
 from typing import Any
+
+from pandasai.pipelines.step_output import StepOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...responses.context import Context
@@ -41,8 +43,8 @@ class ResultParsing(BaseLogicUnit):
         self._add_result_to_memory(result=result, context=pipeline_context)
 
         parser = self.response_parser(pipeline_context, logger=kwargs.get("logger"))
-        result = pipeline_context.query_exec_tracker.execute_func(parser.parse, result)
-        return result
+        result = parser.parse(result)
+        return StepOutput(result, True, "Results parsed successfully")
 
     def _add_result_to_memory(self, result: dict, context: PipelineContext):
         """

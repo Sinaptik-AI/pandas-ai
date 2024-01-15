@@ -16,6 +16,7 @@ from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
     ValidatePipelineInput,
 )
+from pandasai.pipelines.step_output import StepOutput
 
 from pandasai.smart_dataframe import SmartDataframe
 
@@ -136,7 +137,7 @@ class TestValidatePipelineInput:
 
         result = input_validator.execute(input="test", context=context, logger=logger)
 
-        assert result == "test"
+        assert result.output == "test"
 
     def test_validate_input_with_direct_sql_true_and_non_connector(
         self, sample_df, llm, logger
@@ -160,8 +161,8 @@ class TestValidatePipelineInput:
 
         context = PipelineContext([sample_df, sql_connector], config)
         result = input_validator.execute(input="test", context=context, logger=logger)
-
-        assert result == "test"
+        assert isinstance(result, StepOutput)
+        assert result.output == "test"
 
     def test_validate_input_with_direct_sql_true_and_connector(
         self, sample_df, llm, logger, sql_connector
@@ -173,8 +174,8 @@ class TestValidatePipelineInput:
 
         context = PipelineContext([sql_connector], config)
         result = input_validator.execute(input="test", context=context, logger=logger)
-
-        assert result == "test"
+        assert isinstance(result, StepOutput)
+        assert result.output == "test"
 
     def test_validate_input_with_direct_sql_true_and_connector_pandasdf(
         self, sample_df, llm, logger, sql_connector

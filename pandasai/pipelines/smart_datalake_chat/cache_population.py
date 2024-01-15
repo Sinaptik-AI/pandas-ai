@@ -1,4 +1,6 @@
 from typing import Any
+
+from pandasai.pipelines.step_output import StepOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -32,4 +34,10 @@ class CachePopulation(BaseLogicUnit):
                 pipeline_context.cache.get_cache_key(pipeline_context), code
             )
 
-        return code
+        return StepOutput(
+            code,
+            True,
+            "Prompt Cached Successfully"
+            if pipeline_context.config.enable_cache
+            else "Caching disables",
+        )

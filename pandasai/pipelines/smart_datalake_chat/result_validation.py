@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 from pandasai.helpers.logger import Logger
+from pandasai.pipelines.step_output import StepOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -29,6 +30,8 @@ class ResultValidation(BaseLogicUnit):
         logger: Logger = kwargs.get("logger")
 
         result = input
+        success = False
+        message = None
         if result is not None:
             if isinstance(result, dict):
                 (
@@ -37,27 +40,14 @@ class ResultValidation(BaseLogicUnit):
                 ) = pipeline_context.get("output_type_helper").validate(result)
                 if not validation_ok:
                     logger.log("\n".join(validation_logs), level=logging.WARNING)
-                    pipeline_context.query_exec_tracker.add_step(
-                        {
-                            "type": "Validating Output",
-                            "success": False,
-                            "message": "Output Validation Failed",
-                        }
-                    )
+                    success = False
+                    message = "Output Validation Failed"
+
                 else:
-                    pipeline_context.query_exec_tracker.add_step(
-                        {
-                            "type": "Validating Output",
-                            "success": True,
-                            "message": "Output Validation Successful",
-                        }
-                    )
+                    success = True
+                    message = "Output Validation Successful"
 
             pipeline_context.add("last_result", result)
             logger.log(f"Answer: {result}")
 
-        logger.log(
-            f"Executed in: {pipeline_context.query_exec_tracker.get_execution_time()}s"
-        )
-
-        return result
+        return StepOutput(result, success, message)

@@ -1,4 +1,6 @@
 from typing import Any
+
+from pandasai.pipelines.step_output import StepOutput
 from ...helpers.logger import Logger
 from ..pipeline_context import PipelineContext
 from ..base_logic_unit import BaseLogicUnit
@@ -27,12 +29,14 @@ class CodeGenerator(BaseLogicUnit):
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")
 
-        generate_python_code_instruction = input
+        # generate_python_code_instruction = input
 
-        code = pipeline_context.query_exec_tracker.execute_func(
-            pipeline_context.config.llm.generate_code,
-            generate_python_code_instruction,
-        )
+        # code = pipeline_context.query_exec_tracker.execute_func(
+        #     pipeline_context.config.llm.generate_code,
+        #     generate_python_code_instruction,
+        # )
+        code = pipeline_context.config.llm.generate_code(input)
+
         pipeline_context.add("last_code_generated", code)
         logger.log(
             f"""Code generated:
@@ -42,4 +46,6 @@ class CodeGenerator(BaseLogicUnit):
             """
         )
 
-        return code
+        return StepOutput(
+            code, True, "Code Generated Successfully", {"code_generated": code}
+        )

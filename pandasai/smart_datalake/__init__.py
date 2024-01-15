@@ -221,24 +221,7 @@ class SmartDatalake:
             is_related_query,
         )
 
-        try:
-            result = self._pipeline.run(pipeline_input)
-
-        except Exception as exception:
-            self.last_error = str(exception)
-            self.context.query_exec_tracker.success = False
-            self.context.query_exec_tracker.publish()
-
-            return (
-                "Unfortunately, I was not able to answer your question, "
-                "because of the following error:\n"
-                f"\n{exception}\n"
-            )
-
-        # Publish query tracker
-        self.context.query_exec_tracker.publish()
-
-        return result
+        return self._pipeline.run(pipeline_input)
 
     def clear_memory(self):
         """
@@ -253,7 +236,7 @@ class SmartDatalake:
 
     @property
     def last_query_log_id(self):
-        return self.context.query_exec_tracker.last_log_id
+        return self._pipeline.get_last_track_log_id()
 
     @property
     def config(self):
@@ -274,3 +257,7 @@ class SmartDatalake:
     @property
     def skills_manager(self):
         return self.context.skills_manager
+
+    @property
+    def last_error(self):
+        return self._pipeline.last_error

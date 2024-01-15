@@ -1,4 +1,5 @@
 from typing import Optional
+from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
     SmartDatalakePipelineInput,
 )
@@ -21,6 +22,7 @@ from .result_validation import ResultValidation
 class GenerateSmartDatalakePipeline:
     pipeline: Pipeline
     context: PipelineContext
+    last_error: str
 
     def __init__(
         self,
@@ -31,9 +33,14 @@ class GenerateSmartDatalakePipeline:
         on_code_execution=None,
         on_result=None,
     ):
+        self.query_exec_tracker = QueryExecTracker(
+            server_config=context.config.log_server
+        )
+
         self.pipeline = Pipeline(
             context=context,
             logger=logger,
+            query_exec_tracker=self.query_exec_tracker,
             steps=[
                 ValidatePipelineInput(),
                 CacheLookup(),
@@ -57,9 +64,13 @@ class GenerateSmartDatalakePipeline:
             ],
         )
         self.context = context
+        self.last_error = None
 
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")
+
+    def get_last_track_log_id(self):
+        return self.query_exec_tracker.last_log_id
 
     def run(self, input: SmartDatalakePipelineInput) -> dict:
         """
@@ -73,9 +84,9 @@ class GenerateSmartDatalakePipeline:
             - 'value': The value of the output.
         """
         # Start New Tracking for Query
-        self.context.query_exec_tracker.start_new_track(input)
+        self.query_exec_tracker.start_new_track(input)
 
-        self.context.query_exec_tracker.add_dataframes(self.context.dfs)
+        self.query_exec_tracker.add_dataframes(self.context.dfs)
 
         # Add Query to memory
         self.context.memory.add(input.query, True)
@@ -86,5 +97,22 @@ class GenerateSmartDatalakePipeline:
                 "last_prompt_id": input.prompt_id,
             }
         )
+        try:
+            output = self.pipeline.run(input)
 
-        return self.pipeline.run()
+            self.query_exec_tracker.success = True
+
+            self.query_exec_tracker.publish()
+
+            return output
+
+        except Exception as e:
+            self.last_error = str(e)
+            self.query_exec_tracker.success = False
+            self.query_exec_tracker.publish()
+
+            return (
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{e}\n"
+            )

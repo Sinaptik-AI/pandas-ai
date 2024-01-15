@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from pandasai.pipelines.step_output import StepOutput
+
 
 class BaseLogicUnit(ABC):
     """
@@ -14,7 +16,7 @@ class BaseLogicUnit(ABC):
         self.before_execution = before_execution
 
     @abstractmethod
-    def execute(self, input: Any, **kwargs) -> Any:
+    def execute(self, input: Any, **kwargs) -> StepOutput:
         """
         This method will return output according to
         Implementation.

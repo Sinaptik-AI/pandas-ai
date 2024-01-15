@@ -87,39 +87,31 @@ class TestResultValidation:
         # Test Flow : Code Execution Successful with no exceptions
         result_validation = ResultValidation()
 
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.get_execution_time = Mock()
-        context.query_exec_tracker.add_step = Mock()
-
         result = result_validation.execute(input=None, context=context, logger=logger)
 
-        assert not context.query_exec_tracker.add_step.called
+        print(result)
+
         assert isinstance(result_validation, ResultValidation)
-        assert result is None
+        assert result.output is None
 
     def test_result_is_not_of_dict_type(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         result_validation = ResultValidation()
 
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.get_execution_time = Mock()
-        context.query_exec_tracker.add_step = Mock()
-
         result = result_validation.execute(
             input="Not Dict Type Result", context=context, logger=logger
         )
 
-        assert not context.query_exec_tracker.add_step.called
         assert isinstance(result_validation, ResultValidation)
-        assert result == "Not Dict Type Result"
+        assert result.output == "Not Dict Type Result"
+        assert result.success is False
+        assert result.message is None
 
     def test_result_is_of_dict_type_and_valid(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         result_validation = ResultValidation()
         output_type_helper = Mock()
 
-        context.query_exec_tracker = Mock()
-        context.query_exec_tracker.get_execution_time = Mock()
         context.get = Mock(return_value=output_type_helper)
         output_type_helper.validate = Mock(return_value=(True, "Mocked Logs"))
 
@@ -127,23 +119,16 @@ class TestResultValidation:
             input={"Mocked": "Result"}, context=context, logger=logger
         )
 
-        context.query_exec_tracker.add_step.assert_called_with(
-            {
-                "type": "Validating Output",
-                "success": True,
-                "message": "Output Validation Successful",
-            }
-        )
         assert isinstance(result_validation, ResultValidation)
-        assert result == {"Mocked": "Result"}
+        assert result.output == {"Mocked": "Result"}
+        assert result.success is True
+        assert result.message == "Output Validation Successful"
 
     def test_result_is_of_dict_type_and_not_valid(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         result_validation = ResultValidation()
         output_type_helper = Mock()
 
-        context.query_exec_tracker = Mock()
-        context.query_exec_tracker.get_execution_time = Mock()
         context.get = Mock(return_value=output_type_helper)
         output_type_helper.validate = Mock(return_value=(False, "Mocked Logs"))
 
@@ -151,12 +136,7 @@ class TestResultValidation:
             input={"Mocked": "Result"}, context=context, logger=logger
         )
 
-        context.query_exec_tracker.add_step.assert_called_with(
-            {
-                "type": "Validating Output",
-                "success": False,
-                "message": "Output Validation Failed",
-            }
-        )
         assert isinstance(result_validation, ResultValidation)
-        assert result == {"Mocked": "Result"}
+        assert result.output == {"Mocked": "Result"}
+        assert result.success is False
+        assert result.message == "Output Validation Failed"
