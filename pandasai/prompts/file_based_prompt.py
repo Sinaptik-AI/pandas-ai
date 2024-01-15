@@ -14,7 +14,6 @@ class FileBasedPrompt(AbstractPrompt):
     _path_to_template: str
 
     def __init__(self, **kwargs):
-        # print("KWARGS: ", str(kwargs))
         if (template_path := kwargs.pop("path_to_template", None)) is not None:
             self._path_to_template = template_path
         else:
