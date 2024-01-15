@@ -178,6 +178,7 @@ class Agent:
                 dataframes=self._lake.dfs,
                 conversation=self._lake._memory.get_conversation(),
             )
+
             response = self._call_llm_with_prompt(prompt)
             self._logger.log(
                 f"""Rephrased Response:  {response}
