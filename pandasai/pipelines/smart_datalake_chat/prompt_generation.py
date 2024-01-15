@@ -75,11 +75,6 @@ class PromptGeneration(BaseLogicUnit):
             {"generated_prompt": prompt.to_string()},
         )
 
-        # return self.context.query_exec_tracker.execute_func(
-        #     self.get_prompt,
-        #     default_values=default_values,
-        # )
-
     def get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
         custom_prompt_key = (
             "direct_sql_prompt" if context.config.direct_sql else "generate_python_code"
