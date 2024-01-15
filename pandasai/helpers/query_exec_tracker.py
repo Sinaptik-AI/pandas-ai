@@ -96,6 +96,10 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
+        # Exception step to store serializable output response from the generated code
+        if "type" in step and step["type"] == "CodeExecution":
+            self._response = step["data"]["result"]
+
         self._steps.append(step)
 
     def execute_func(self, function, *args, **kwargs) -> Any:

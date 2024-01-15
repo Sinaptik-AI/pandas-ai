@@ -1,6 +1,6 @@
 import logging
 import traceback
-from typing import Any, List
+from typing import Any, Callable, List
 
 from pandasai.pipelines.step_output import StepOutput
 from pandasai.responses.response_serializer import ResponseSerializer
@@ -8,8 +8,6 @@ from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
-from ...prompts.correct_error_prompt import CorrectErrorPrompt
-from ...prompts.base import AbstractPrompt
 
 
 class CodeExecution(BaseLogicUnit):
@@ -17,7 +15,7 @@ class CodeExecution(BaseLogicUnit):
     Code Execution Stage
     """
 
-    def __init__(self, on_failure=None, **kwargs):
+    def __init__(self, on_failure: Callable[[str, Exception], None] = None, **kwargs):
         super().__init__()
         self.on_failure = on_failure
 
@@ -54,11 +52,6 @@ class CodeExecution(BaseLogicUnit):
         result = None
         while retry_count < self.context.config.max_retries:
             try:
-                # result = self.context.query_exec_tracker.execute_func(
-                #     code_manager.execute_code,
-                #     code=code_to_run,
-                #     context=code_context,
-                # )
                 result = code_manager.execute_code(code_to_run, code_context)
                 break
 
@@ -78,14 +71,8 @@ class CodeExecution(BaseLogicUnit):
                 )
 
                 traceback_error = traceback.format_exc()
-                # code_to_run = self.context.query_exec_tracker.execute_func(
-                #     self.retry_run_code,
-                #     code_to_run,
-                #     self.context,
-                #     self.logger,
-                #     traceback_error,
-                # )
-
+                # TODO - Move this implement to main execute function
+                # Temporarily done for test cases this is to be fixed move to the main function
                 code_to_run = self.retry_run_code(
                     code_to_run, self.context, self.logger, traceback_error
                 )
@@ -112,50 +99,7 @@ class CodeExecution(BaseLogicUnit):
 
         Returns (str): A python code
         """
-
-        logger.log(f"Failed with error: {e}. Retrying", logging.ERROR)
-
-        default_values = {
-            "code": code,
-            "error_returned": e,
-            "output_type_hint": context.get("output_type_helper").template_hint,
-        }
-        error_correcting_instruction = self.get_prompt(
-            default_values,
-        )
         if self.on_failure:
-            self.on_failure(error_correcting_instruction)
-
-        return context.config.llm.generate_code(error_correcting_instruction)
-
-    def get_prompt(self, default_values) -> AbstractPrompt:
-        """
-        Return a prompt by key.
-
-        Args:
-            values (dict): The values to use for the prompt
-
-        Returns:
-            AbstractPrompt: The prompt
-        """
-        prompt = (
-            self.context.config.custom_prompts.get("correct_error")
-            or CorrectErrorPrompt()
-        )
-
-        # Set default values for the prompt
-        prompt.set_config(self.context.config)
-
-        # Set the variables for the prompt
-        values = {
-            "dfs": self.context.dfs,
-            "conversation": self.context.memory.get_conversation(),
-            "prev_conversation": self.context.memory.get_previous_conversation(),
-            "last_message": self.context.memory.get_last_message(),
-            "skills": self.context.skills_manager.prompt_display() or "",
-        }
-        values |= default_values
-        prompt.set_vars(values)
-
-        self.logger.log(f"Using prompt: {prompt}")
-        return prompt
+            return self.on_failure(code, e)
+        else:
+            raise e

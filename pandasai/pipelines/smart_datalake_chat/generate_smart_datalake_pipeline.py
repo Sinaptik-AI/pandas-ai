@@ -1,5 +1,11 @@
 from typing import Optional
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline import (
+    ErrorCorrectionPipeline,
+)
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
+    ErrorCorrectionPipelineInput,
+)
 from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
     SmartDatalakePipelineInput,
 )
@@ -55,7 +61,7 @@ class GenerateSmartDatalakePipeline:
                 CachePopulation(skip_if=self.is_cached),
                 CodeExecution(
                     before_execution=on_code_execution,
-                    on_failure=on_prompt_generation,
+                    on_failure=self.on_code_execution_failure,
                 ),
                 ResultValidation(),
                 ResultParsing(
@@ -63,8 +69,20 @@ class GenerateSmartDatalakePipeline:
                 ),
             ],
         )
+
+        self.code_exec_error_pipeline = ErrorCorrectionPipeline(
+            context=context,
+            logger=logger,
+            query_exec_tracker=self.query_exec_tracker,
+            on_prompt_generation=on_prompt_generation,
+        )
+
         self.context = context
         self.last_error = None
+
+    def on_code_execution_failure(self, code: str, exception: Exception):
+        correction_input = ErrorCorrectionPipelineInput(code, exception)
+        return self.code_exec_error_pipeline.run(correction_input)
 
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")
@@ -109,6 +127,7 @@ class GenerateSmartDatalakePipeline:
         except Exception as e:
             self.last_error = str(e)
             self.query_exec_tracker.success = False
+            print(self.query_exec_tracker.get_summary())
             self.query_exec_tracker.publish()
 
             return (
