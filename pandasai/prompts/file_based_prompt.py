@@ -28,7 +28,7 @@ class FileBasedPrompt(AbstractPrompt):
     @property
     def template(self) -> str:
         try:
-            with open(self._path_to_template) as fp:
+            with open(self._path_to_template, encoding="utf-8") as fp:
                 return fp.read()
         except FileNotFoundError as e:
             raise TemplateFileNotFoundError(
