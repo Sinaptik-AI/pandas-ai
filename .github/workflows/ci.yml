@@ -30,7 +30,7 @@ jobs:
       - name: Spellcheck
         run: poetry run codespell pandasai docs examples tests
       - name: Run tests
-        run: poetry run pytest
+        run: poetry run pytest tests
       - name: Run code coverage
         run: |
           poetry run coverage run --source=pandasai -m pytest
