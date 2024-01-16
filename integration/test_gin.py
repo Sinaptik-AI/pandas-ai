@@ -7,7 +7,7 @@ from pandasai.llm import OpenAI
 class TestGin(unittest.TestCase):
     def setUp(self) -> None:
         llm = OpenAI(os.environ.get("API_KEY"))
-        self.df = SmartDataframe("examples/data/Gins_List.csv", config={"llm": llm})
+        self.df = SmartDataframe("integration/Gins_List.csv", config={"llm": llm})
 
     def test_number_response(self):
         response = self.df.chat("Average price of Gin rounded off", "number")

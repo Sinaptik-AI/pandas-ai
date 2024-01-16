@@ -8,7 +8,7 @@ class TestNewYorkHousing(unittest.TestCase):
     def setUp(self) -> None:
         llm = OpenAI(os.environ.get("API_KEY"))
         self.df = SmartDataframe(
-            "examples/data/NY-House-Dataset.csv", config={"llm": llm}
+            "integration/NY-House-Dataset.csv", config={"llm": llm}
         )
 
     def test_number_response(self):

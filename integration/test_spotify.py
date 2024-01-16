@@ -7,7 +7,7 @@ from pandasai.llm import OpenAI
 class TestSpotify(unittest.TestCase):
     def setUp(self) -> None:
         llm = OpenAI(os.environ.get("API_KEY"))
-        self.df = SmartDataframe("examples/data/artists.csv", config={"llm": llm})
+        self.df = SmartDataframe("integration/artists.csv", config={"llm": llm})
 
     def test_number_response(self):
         response = self.df.chat("streams of Imagine Dragons", "number")
