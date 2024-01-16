@@ -1,5 +1,5 @@
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import pandas as pd
 
 import pytest
@@ -85,7 +85,8 @@ class TestCodeGenerator:
         code_generator = CodeGenerator()
         assert isinstance(code_generator, CodeGenerator)
 
-    def test_code_not_found_in_cache(self, context, logger):
+    @patch("pandasai.llm.fake.FakeLLM.call")
+    def test_code_not_found_in_cache(self, mock_call, context, logger):
         # Test Flow : Code Not found in the cache
         code_generator = CodeGenerator()
 
@@ -107,10 +108,12 @@ class TestCodeGenerator:
         context.get = Mock(side_effect=mock_intermediate_values)
         context._cache = Mock()
         context._cache.get = Mock(return_value=None)
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
 
-        code = code_generator.execute(input=None, context=context, logger=logger)
+        mock_call.return_value = "test_output"
+
+        result = code_generator.execute(
+            input="test_input", context=context, logger=logger
+        )
 
         assert isinstance(code_generator, CodeGenerator)
-        assert code == "Mocked LLM Generated Code"
+        assert result.output == "test_output"

@@ -1,0 +1,40 @@
+from typing import Optional
+from pandasai.helpers.logger import Logger
+from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.pipeline import Pipeline
+from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.pipelines.smart_datalake_chat.code_generator import CodeGenerator
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
+    ErrorCorrectionPipelineInput,
+)
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_prompt_generation import (
+    ErrorPromptGeneration,
+)
+
+
+class ErrorCorrectionPipeline:
+    """
+    Error Correction Pipeline to regenerate prompt and code
+    """
+
+    context: PipelineContext
+
+    def __init__(
+        self,
+        context: Optional[PipelineContext] = None,
+        logger: Optional[Logger] = None,
+        query_exec_tracker: QueryExecTracker = None,
+        on_prompt_generation=None,
+    ):
+        self.pipeline = Pipeline(
+            context=context,
+            logger=logger,
+            query_exec_tracker=query_exec_tracker,
+            steps=[
+                ErrorPromptGeneration(on_prompt_generation=on_prompt_generation),
+                CodeGenerator(),
+            ],
+        )
+
+    def run(self, input: ErrorCorrectionPipelineInput):
+        return self.pipeline.run(input)

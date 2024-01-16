@@ -2,7 +2,6 @@ from typing import List, Optional, Union, Any
 from pandasai.helpers.cache import Cache
 
 from pandasai.helpers.memory import Memory
-from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
 import pandas as pd
@@ -20,7 +19,6 @@ class PipelineContext:
         memory: Optional[Memory] = None,
         skills_manager: Optional[SkillsManager] = None,
         cache: Optional[Cache] = None,
-        query_exec_tracker: Optional[QueryExecTracker] = None,
         initial_values: dict = None,
     ) -> None:
         from pandasai.smart_dataframe import load_smartdataframes
@@ -38,7 +36,7 @@ class PipelineContext:
             self.cache = None
 
         self.config = config
-        self.query_exec_tracker = query_exec_tracker or QueryExecTracker()
+
         self.intermediate_values = initial_values or {}
 
     def add(self, key: str, value: Any):

@@ -276,6 +276,7 @@ result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
             f"Expected '{output_type_to_pass}', actual "
             f"'{output_type_returned}'"
         )
+
         assert any((expected_log in log.get("msg") for log in smart_dataframe.logs))
 
     def test_to_dict(self, smart_dataframe: SmartDataframe):

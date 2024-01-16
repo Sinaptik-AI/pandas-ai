@@ -5,9 +5,13 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
+from pandasai.helpers.output_types import output_type_factory
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
+    SmartDatalakePipelineInput,
+)
 from pandasai.smart_dataframe import SmartDataframe
 from unittest import TestCase
 from datetime import datetime, timedelta
@@ -73,16 +77,21 @@ class TestQueryExecTracker:
         return smart_dataframe.lake
 
     @pytest.fixture
-    def tracker(self):
+    def tracker(self, tracking_info):
         tracker = QueryExecTracker()
-        tracker.start_new_track()
-        tracker.add_query_info(
-            conversation_id="123",
-            instance="SmartDatalake",
-            query="which country has the highest GDP?",
-            output_type="json",
-        )
+        tracker.start_new_track(tracking_info)
         return tracker
+
+    @pytest.fixture
+    def tracking_info(self):
+        return SmartDatalakePipelineInput(
+            "which country has the highest GDP?",
+            output_type_factory("string"),
+            instance="SmartDatalake",
+            conversation_id="123",
+            prompt_id="1234",
+            is_related_query=False,
+        )
 
     def test_add_dataframes(
         self, smart_dataframe: SmartDataframe, tracker: QueryExecTracker
@@ -159,21 +168,14 @@ class TestQueryExecTracker:
         assert formatted_response["type"] == "other_type"
         assert formatted_response["value"] == "SomeValue"
 
-    def test_get_summary(self):
+    def test_get_summary(self, tracking_info):
         # Execute a mock function to generate some steps and response
         def mock_function(*args, **kwargs):
             return "Mock Result"
 
         tracker = QueryExecTracker()
 
-        tracker.start_new_track()
-
-        tracker.add_query_info(
-            conversation_id="123",
-            instance="SmartDatalake",
-            query="which country has the highest GDP?",
-            output_type="json",
-        )
+        tracker.start_new_track(tracking_info)
 
         # Get the summary
         summary = tracker.get_summary()
@@ -188,23 +190,14 @@ class TestQueryExecTracker:
         assert "execution_time" in summary
         assert "is_related_query" in summary["query_info"]
 
-    def test_related_query_in_summary(self):
+    def test_related_query_in_summary(self, tracking_info):
         # Execute a mock function to generate some steps and response
         def mock_function(*args, **kwargs):
             return "Mock Result"
 
         tracker = QueryExecTracker()
 
-        tracker.set_related_query(False)
-
-        tracker.start_new_track()
-
-        tracker.add_query_info(
-            conversation_id="123",
-            instance="SmartDatalake",
-            query="which country has the highest GDP?",
-            output_type="json",
-        )
+        tracker.start_new_track(tracking_info)
 
         # Get the summary
         summary = tracker.get_summary()
@@ -456,7 +449,9 @@ class TestQueryExecTracker:
         # Check the result
         assert result is None  # The function should return None
 
-    def test_multiple_instance_of_tracker(self, tracker: QueryExecTracker):
+    def test_multiple_instance_of_tracker(
+        self, tracker: QueryExecTracker, tracking_info: SmartDatalakePipelineInput
+    ):
         # Create a mock function
         mock_func = Mock()
         mock_func.return_value = "code"
@@ -466,13 +461,15 @@ class TestQueryExecTracker:
         tracker.execute_func(mock_func, tag="generate_code")
 
         tracker2 = QueryExecTracker()
-        tracker2.start_new_track()
-        tracker2.add_query_info(
-            conversation_id="12345",
+        track_input = SmartDatalakePipelineInput(
+            "which country has the highest GDP?",
+            output_type_factory("string"),
             instance="SmartDatalake",
-            query="which country has the highest GDP?",
-            output_type="json",
+            conversation_id="1234",
+            prompt_id="1234",
+            is_related_query=False,
         )
+        tracker2.start_new_track(track_input)
 
         assert len(tracker._steps) == 1
         assert len(tracker2._steps) == 0
@@ -495,7 +492,9 @@ class TestQueryExecTracker:
             != tracker2._query_info["conversation_id"]
         )
 
-    def test_conversation_id_in_different_tracks(self, tracker: QueryExecTracker):
+    def test_conversation_id_in_different_tracks(
+        self, tracker: QueryExecTracker, tracking_info: SmartDatalakePipelineInput
+    ):
         # Create a mock function
         mock_func = Mock()
         mock_func.return_value = "code"
@@ -506,14 +505,7 @@ class TestQueryExecTracker:
 
         summary = tracker.get_summary()
 
-        tracker.start_new_track()
-
-        tracker.add_query_info(
-            conversation_id="123",
-            instance="SmartDatalake",
-            query="Plot the GDP's?",
-            output_type="json",
-        )
+        tracker.start_new_track(tracking_info)
 
         # Create a mock function
         mock_func2 = Mock()

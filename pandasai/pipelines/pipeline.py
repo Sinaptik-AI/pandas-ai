@@ -1,9 +1,12 @@
 import logging
+import time
 from pandasai.config import load_config
 from pandasai.exceptions import UnSupportedLogicUnit
 from pandasai.helpers.logger import Logger
+from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
@@ -18,11 +21,13 @@ class Pipeline(AbstractPipeline):
     _context: PipelineContext
     _logger: Logger
     _steps: List[BaseLogicUnit]
+    _query_exec_tracker: Optional[QueryExecTracker]
 
     def __init__(
         self,
         context: Union[List[Union[pd.DataFrame, Any]], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
+        query_exec_tracker: Optional[QueryExecTracker] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,
     ):
@@ -51,6 +56,9 @@ class Pipeline(AbstractPipeline):
 
         self._context = context
         self._steps = steps or []
+        self._query_exec_tracker = query_exec_tracker or QueryExecTracker(
+            server_config=self._context.config.log_server
+        )
 
     def add_step(self, logic: BaseLogicUnit):
         """
@@ -84,15 +92,36 @@ class Pipeline(AbstractPipeline):
                 self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
+                    self._logger.log(f"Executing Step {index}: Skipping...")
                     continue
 
+                start_time = time.time()
+
                 # Execute the logic unit
-                data = logic.execute(
+                step_output = logic.execute(
                     data,
                     logger=self._logger,
                     config=self._context.config,
                     context=self._context,
                 )
+
+                execution_time = time.time() - start_time
+
+                # Track the execution step of pipeline
+                if isinstance(step_output, LogicUnitOutput):
+                    self._query_exec_tracker.add_step(
+                        {
+                            "type": logic.__class__.__name__,
+                            "success": step_output.success,
+                            "message": step_output.message,
+                            "execution_time": execution_time,
+                            "data": step_output.metadata,
+                        }
+                    )
+
+                    data = step_output.output
+                else:
+                    data = step_output
 
                 # Callback function after execution
                 if logic.on_execution is not None:

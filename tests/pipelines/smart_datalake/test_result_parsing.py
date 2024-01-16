@@ -88,10 +88,6 @@ class TestResultParsing:
         result_parsing = ResultParsing()
         result_parsing._add_result_to_memory = Mock()
         mock_response_parser = Mock()
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(
-            return_value="Mocked Parsed Result"
-        )
 
         def mock_intermediate_values(key: str):
             if key == "response_parser":
@@ -100,11 +96,16 @@ class TestResultParsing:
         context.get = Mock(side_effect=mock_intermediate_values)
 
         result = result_parsing.execute(
-            input="Test Result", context=context, logger=logger
+            input={"type": "string", "value": "Test Result"},
+            context=context,
+            logger=logger,
         )
 
         assert isinstance(result_parsing, ResultParsing)
-        assert result == "Mocked Parsed Result"
+        assert result.output == "Test Result"
+        assert result.success is True
+        assert result.message == "Results parsed successfully"
+        assert result.metadata is None
 
     def test_result_parsing_unsuccessful_with_exceptions(self, context, logger):
         # Test Flow : Code Execution Unsuccessful with exceptions
@@ -114,9 +115,6 @@ class TestResultParsing:
 
         def mock_result_parsing(*args, **kwargs):
             raise Exception("Unit test exception")
-
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(side_effect=mock_result_parsing)
 
         def mock_intermediate_values(key: str):
             if key == "response_parser":

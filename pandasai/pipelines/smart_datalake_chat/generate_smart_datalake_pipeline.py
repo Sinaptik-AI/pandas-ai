@@ -1,4 +1,14 @@
 from typing import Optional
+from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline import (
+    ErrorCorrectionPipeline,
+)
+from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
+    ErrorCorrectionPipelineInput,
+)
+from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
+    SmartDatalakePipelineInput,
+)
 
 from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
     ValidatePipelineInput,
@@ -17,6 +27,8 @@ from .result_validation import ResultValidation
 
 class GenerateSmartDatalakePipeline:
     pipeline: Pipeline
+    context: PipelineContext
+    last_error: str
 
     def __init__(
         self,
@@ -27,9 +39,14 @@ class GenerateSmartDatalakePipeline:
         on_code_execution=None,
         on_result=None,
     ):
+        self.query_exec_tracker = QueryExecTracker(
+            server_config=context.config.log_server
+        )
+
         self.pipeline = Pipeline(
             context=context,
             logger=logger,
+            query_exec_tracker=self.query_exec_tracker,
             steps=[
                 ValidatePipelineInput(),
                 CacheLookup(),
@@ -44,7 +61,7 @@ class GenerateSmartDatalakePipeline:
                 CachePopulation(skip_if=self.is_cached),
                 CodeExecution(
                     before_execution=on_code_execution,
-                    on_failure=on_prompt_generation,
+                    on_failure=self.on_code_execution_failure,
                 ),
                 ResultValidation(),
                 ResultParsing(
@@ -53,8 +70,68 @@ class GenerateSmartDatalakePipeline:
             ],
         )
 
+        self.code_exec_error_pipeline = ErrorCorrectionPipeline(
+            context=context,
+            logger=logger,
+            query_exec_tracker=self.query_exec_tracker,
+            on_prompt_generation=on_prompt_generation,
+        )
+
+        self.context = context
+        self.last_error = None
+
+    def on_code_execution_failure(self, code: str, exception: Exception):
+        correction_input = ErrorCorrectionPipelineInput(code, exception)
+        return self.code_exec_error_pipeline.run(correction_input)
+
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")
 
-    def run(self):
-        return self.pipeline.run()
+    def get_last_track_log_id(self):
+        return self.query_exec_tracker.last_log_id
+
+    def run(self, input: SmartDatalakePipelineInput) -> dict:
+        """
+        Executes the smartdatalake pipeline with user input and return the result
+        Args:
+            input (SmartDatalakePipelineInput): _description_
+
+        Returns:
+            The `output` dictionary is expected to have the following keys:
+            - 'type': The type of the output.
+            - 'value': The value of the output.
+        """
+        # Start New Tracking for Query
+        self.query_exec_tracker.start_new_track(input)
+
+        self.query_exec_tracker.add_dataframes(self.context.dfs)
+
+        # Add Query to memory
+        self.context.memory.add(input.query, True)
+
+        self.context.add_many(
+            {
+                "output_type_helper": input.output_type,
+                "last_prompt_id": input.prompt_id,
+            }
+        )
+        try:
+            output = self.pipeline.run(input)
+
+            self.query_exec_tracker.success = True
+
+            self.query_exec_tracker.publish()
+
+            return output
+
+        except Exception as e:
+            self.last_error = str(e)
+            self.query_exec_tracker.success = False
+            print(self.query_exec_tracker.get_summary())
+            self.query_exec_tracker.publish()
+
+            return (
+                "Unfortunately, I was not able to answer your question, "
+                "because of the following error:\n"
+                f"\n{e}\n"
+            )
