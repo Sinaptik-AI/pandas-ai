@@ -1,11 +1,12 @@
+import os
 import unittest
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
 
-class TestLoadPayments(unittest.TestCase):
+class TestLoanPayments(unittest.TestCase):
     def setUp(self) -> None:
-        llm = OpenAI("open-ai-key")
+        llm = OpenAI(os.environ.get("API_KEY"))
         self.df = SmartDataframe(
             "examples/data/Loan payments data.csv", config={"llm": llm}
         )
@@ -17,8 +18,10 @@ class TestLoadPayments(unittest.TestCase):
         self.assertEqual(response, 247)
 
     def test_plot_response(self):
-        self.df.chat("Plot of age against loan_status ")
-        # self.assertEqual(response, )
+        response = self.df.chat("Plot of age against loan_status ")
+        self.assertTrue(
+            response.lower().find("pandas-ai/exports/charts/temp_chart.png") != -1
+        )
 
     def test_string_response(self):
         response = self.df.chat(
