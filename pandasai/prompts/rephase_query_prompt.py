@@ -23,8 +23,10 @@ class RephraseQueryPrompt(FileBasedPrompt):
         self, query: str, dataframes: List[pd.DataFrame], conversation: str
     ) -> None:
         conversation_content = (
-            self.conversation_text.format(conversation=conversation)
-            if conversation
+            self.conversation_text.format(
+                conversation=conversation, dataframes=dataframes, query=query
+            )
+            if conversation and dataframes and query
             else ""
         )
         self.set_var("conversation", conversation_content)
