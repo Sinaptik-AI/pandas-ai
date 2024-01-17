@@ -178,3 +178,11 @@ class MaliciousQueryError(Exception):
     Args:
         Exception (Exception): MaliciousQueryError
     """
+
+
+class InvalidLLMOutputType(Exception):
+    """
+    Raise error if the output type is invalid
+    Args:
+        Exception (Exception): InvalidLLMOutputType
+    """

@@ -28,6 +28,7 @@ from .result_validation import ResultValidation
 class GenerateSmartDatalakePipeline:
     pipeline: Pipeline
     context: PipelineContext
+    _logger: Logger
     last_error: str
 
     def __init__(
@@ -78,6 +79,7 @@ class GenerateSmartDatalakePipeline:
         )
 
         self.context = context
+        self._logger = logger
         self.last_error = None
 
     def on_code_execution_failure(self, code: str, exception: Exception):
@@ -101,6 +103,8 @@ class GenerateSmartDatalakePipeline:
             - 'type': The type of the output.
             - 'value': The value of the output.
         """
+        self._logger.log(f"Executing Pipeline: {self.__class__.__name__}")
+
         # Start New Tracking for Query
         self.query_exec_tracker.start_new_track(input)
 
@@ -127,7 +131,6 @@ class GenerateSmartDatalakePipeline:
         except Exception as e:
             self.last_error = str(e)
             self.query_exec_tracker.success = False
-            print(self.query_exec_tracker.get_summary())
             self.query_exec_tracker.publish()
 
             return (

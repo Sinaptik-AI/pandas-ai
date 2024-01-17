@@ -1,4 +1,5 @@
 """Unit tests for the CodeManager class"""
+import ast
 from typing import Optional
 from unittest.mock import MagicMock, patch
 import uuid
@@ -11,7 +12,13 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.exceptions import BadImportError, NoCodeFoundError, InvalidConfigError
+
+from pandasai.exceptions import (
+    BadImportError,
+    MaliciousQueryError,
+    NoCodeFoundError,
+    InvalidConfigError,
+)
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 
@@ -437,7 +444,6 @@ def execute_sql_query(sql_query: str) -> pd.DataFrame:
     return pd.DataFrame()
 np.array()
 """
-        print(code_manager._clean_code(safe_code, exec_context))
         assert (
             code_manager._clean_code(safe_code, exec_context)
             == """def execute_sql_query(sql_query: str) ->pd.DataFrame:
@@ -445,4 +451,127 @@ np.array()
 
 
 np.array()"""
+        )
+
+    def test_check_is_query_using_relevant_table_invalid_query(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM your_table'").body[0]
+
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) > 0
+
+    def test_check_is_query_using_relevant_table_valid_query(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+        code_manager._dfs = [MockObject()]
+
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 0
+
+    def test_check_is_query_using_relevant_table_multiple_tables(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.table_name = table_name
+
+        code_manager._dfs = [MockObject("table1"), MockObject("table2")]
+
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 0
+
+    def test_check_is_query_using_relevant_table_unknown_table(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+        code_manager._dfs = [MockObject()]
+
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 1
+
+    def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.table_name = table_name
+
+        code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
+
+        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+
+        assert len(irrelevant_tables) == 1
+
+    def test_clean_code_using_correct_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        safe_code = """sql_query = 'SELECT * FROM your_table'"""
+        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+
+    def test_clean_code_using_incorrect_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        safe_code = """sql_query = 'SELECT * FROM unknown_table'
+    """
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+
+        assert str(excinfo.value) == (
+            "Query uses unauthorized tables: ['unknown_table']. Please add them as new datatables or update the query."
+        )
+
+    def test_clean_code_using_multi_incorrect_sql_table(
+        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+    ):
+        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        df = SmartDataframe(
+            pgsql_connector,
+            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        )
+
+        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
+        with pytest.raises(MaliciousQueryError) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+
+        assert str(excinfo.value) == (
+            "Query uses unauthorized tables: ['table1', 'table2']. Please add them as new datatables or update the query."
         )

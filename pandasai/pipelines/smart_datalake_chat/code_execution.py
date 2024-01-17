@@ -1,8 +1,10 @@
 import logging
 import traceback
-from typing import Any, Callable, List
+from typing import Any, Callable
+from pandasai.exceptions import InvalidLLMOutputType
 
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+
 from pandasai.responses.response_serializer import ResponseSerializer
 from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
@@ -53,6 +55,12 @@ class CodeExecution(BaseLogicUnit):
         while retry_count < self.context.config.max_retries:
             try:
                 result = code_manager.execute_code(code_to_run, code_context)
+
+                if output_helper := self.context.get("output_type_helper"):
+                    (validation_ok, validation_errors) = output_helper.validate(result)
+
+                    if not validation_ok:
+                        raise InvalidLLMOutputType(validation_errors)
                 break
 
             except Exception as e:
@@ -64,17 +72,22 @@ class CodeExecution(BaseLogicUnit):
 
                 retry_count += 1
 
+                traceback_errors = traceback.format_exc()
+                print(traceback_errors)
                 self.logger.log(
-                    f"Failed to execute code with a correction framework "
+                    f"Failed with error: {traceback_errors}. Retrying", logging.ERROR
+                )
+
+                self.logger.log(
+                    f"Failed to execute code retrying with a correction framework "
                     f"[retry number: {retry_count}]",
                     level=logging.WARNING,
                 )
 
-                traceback_error = traceback.format_exc()
                 # TODO - Move this implement to main execute function
                 # Temporarily done for test cases this is to be fixed move to the main function
-                code_to_run = self.retry_run_code(
-                    code_to_run, self.context, self.logger, traceback_error
+                code_to_run = self._retry_run_code(
+                    code_to_run, self.context, self.logger, e
                 )
 
         return LogicUnitOutput(
@@ -84,9 +97,13 @@ class CodeExecution(BaseLogicUnit):
             {"result": ResponseSerializer.serialize(result)},
         )
 
-    def retry_run_code(
-        self, code: str, context: PipelineContext, logger: Logger, e: Exception
-    ) -> List:
+    def _retry_run_code(
+        self,
+        code: str,
+        context: PipelineContext,
+        logger: Logger,
+        e: Exception,
+    ) -> str:
         """
         A method to retry the code execution with error correction framework.
 
@@ -100,6 +117,9 @@ class CodeExecution(BaseLogicUnit):
         Returns (str): A python code
         """
         if self.on_failure:
+            print("before")
+            print("code...", self.on_failure(code, e))
+            print("end")
             return self.on_failure(code, e)
         else:
             raise e

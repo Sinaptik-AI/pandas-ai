@@ -190,7 +190,10 @@ class TestSmartDatalake:
         mock_generate.return_value = (
             "result = {'type': 'string', 'value': 'Hello World'}"
         )
-        mock_execute.side_effect = [Exception("Test error"), None]
+        mock_execute.side_effect = [
+            Exception("Test error"),
+            {"type": "string", "value": "Hello World"},
+        ]
 
         smart_dataframe.head_df.to_csv = Mock(
             return_value="""country,gdp,happiness_index

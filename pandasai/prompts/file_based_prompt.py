@@ -22,12 +22,13 @@ class FileBasedPrompt(AbstractPrompt):
                 current_dir_path, "..", self._path_to_template
             )
 
+        self.conversation_text = self.template
         super().__init__(**kwargs)
 
     @property
     def template(self) -> str:
         try:
-            with open(self._path_to_template) as fp:
+            with open(self._path_to_template, encoding="utf-8") as fp:
                 return fp.read()
         except FileNotFoundError as e:
             raise TemplateFileNotFoundError(

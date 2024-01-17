@@ -70,6 +70,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self.table_name = name
         if self.table_name is None and self.connector:
             self.table_name = self.connector.fallback_name
+        if self.connector:
+            self._table_name = self.connector.fallback_name
 
         self.table_description = description
 
