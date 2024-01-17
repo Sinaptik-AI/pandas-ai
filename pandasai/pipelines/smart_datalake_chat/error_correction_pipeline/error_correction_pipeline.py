@@ -17,7 +17,8 @@ class ErrorCorrectionPipeline:
     Error Correction Pipeline to regenerate prompt and code
     """
 
-    context: PipelineContext
+    _context: PipelineContext
+    _logger: Logger
 
     def __init__(
         self,
@@ -35,6 +36,9 @@ class ErrorCorrectionPipeline:
                 CodeGenerator(),
             ],
         )
+        self._context = context
+        self._logger = logger
 
     def run(self, input: ErrorCorrectionPipelineInput):
+        self._logger.log(f"Executing Pipeline: {self.__class__.__name__}")
         return self.pipeline.run(input)

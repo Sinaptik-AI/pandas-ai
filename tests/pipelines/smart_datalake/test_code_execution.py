@@ -2,6 +2,7 @@ from typing import Optional
 from unittest.mock import Mock
 import pandas as pd
 import pytest
+
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 
@@ -124,15 +125,6 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
 
-        # context._query_exec_tracker = Mock()
-        # context.query_exec_tracker.execute_func = Mock(
-        #     return_value=[
-        #         "Interuppted Code",
-        #         "Exception Testing",
-        #         "Unsuccessful after Retries",
-        #     ]
-        # )
-
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
@@ -171,13 +163,13 @@ class TestCodeExecution:
         mock_code_manager.execute_code = mock_execute_func
         mock_code_manager.execute_code.name = "execute_code"
 
-        code_execution.retry_run_code = Mock(
+        code_execution._retry_run_code = Mock(
             return_value='result={"type":"string", "value":"5"}'
         )
 
         result = code_execution.execute(input="x=5", context=context, logger=logger)
 
-        assert code_execution.retry_run_code.assert_called
+        assert code_execution._retry_run_code.assert_called
         assert isinstance(code_execution, CodeExecution)
         assert result.output == {"type": "string", "value": "5"}
         assert result.message == "Code Executed Successfully"

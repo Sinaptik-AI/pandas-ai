@@ -8,11 +8,17 @@ import pandas as pd
 from pandasai.helpers.path import find_project_root
 
 from pandasai.helpers.skills_manager import SkillsManager
+from pandasai.helpers.sql import extract_table_names
 
 from .node_visitors import AssignmentVisitor, CallVisitor
 from .save_chart import add_save_chart
 from .optional import import_dependency
-from ..exceptions import BadImportError, NoResultFoundError, InvalidConfigError
+from ..exceptions import (
+    BadImportError,
+    MaliciousQueryError,
+    NoResultFoundError,
+    InvalidConfigError,
+)
 from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ..connectors.sql import SQLConnector
 from typing import Union, List, Generator, Any
@@ -320,6 +326,23 @@ Code running:
                 )
         return False
 
+    def _get_sql_irrelevant_tables(self, node: ast.Assign):
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Name)
+                and target.id in "sql_query"
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, str)
+            ):
+                sql_query = node.value.value
+                table_names = extract_table_names(sql_query)
+                allowed_table_names = [df.table_name for df in self._dfs]
+                return [
+                    table_name
+                    for table_name in table_names
+                    if table_name not in allowed_table_names
+                ]
+
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
         """
         A method to clean the code to prevent malicious code execution.
@@ -355,6 +378,16 @@ Code running:
             # function already defined
             if self.check_direct_sql_func_def_exists(node):
                 continue
+
+            # Sanity for sql query the code should only use allowed tables
+            if (
+                isinstance(node, ast.Assign)
+                and self._config.direct_sql
+                and (unauthorized_tables := self._get_sql_irrelevant_tables(node))
+            ):
+                raise MaliciousQueryError(
+                    f"Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
+                )
 
             self.find_function_calls(node, context)
 
