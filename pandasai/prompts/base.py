@@ -4,6 +4,8 @@ In order to better handle the instructions, this prompt module is written.
 from abc import ABC, abstractmethod
 import string
 
+from pandasai.helpers.dataframe_serializer import DataframeSerializer
+
 
 class AbstractPrompt(ABC):
     """Base class to implement a new Prompt.
@@ -39,25 +41,12 @@ class AbstractPrompt(ABC):
             dfs: List of Dataframes
         """
         dataframes = []
-        for index, df in enumerate(dfs, start=1):
-            dataframe_info = "<dataframe"
-
-            # Add name attribute if available
-            if df.table_name is not None:
-                dataframe_info += f' name="{df.table_name}"'
-
-            # Add description attribute if available
-            if df.table_description is not None:
-                dataframe_info += f' description="{df.table_description}"'
-
-            dataframe_info += ">"
-
-            # Add dataframe details
-            dataframe_info += f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_df.to_csv()}"
-
-            # Close the dataframe tag
-            dataframe_info += "</dataframe>"
-
+        for index, df in enumerate(dfs):
+            print("OOPPPPPPPPKMMMM", self._config)
+            dataframe_info = DataframeSerializer().serialize(
+                df, extras={"index": index}, type_=self._config.dataframe_serializer
+            )
+            print(dataframe_info)
             dataframes.append(dataframe_info)
 
         return "\n".join(dataframes)
