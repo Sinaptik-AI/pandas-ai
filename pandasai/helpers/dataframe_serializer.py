@@ -124,8 +124,8 @@ class DataframeSerializer:
             }
 
             # Add column description if available
-            if "field_descriptions" in extras:
-                if col_description := extras["field_descriptions"].get(col_name, None):
+            if df.field_descriptions and isinstance(df.field_descriptions, dict):
+                if col_description := df.field_descriptions.get(col_name, None):
                     col_info["description"] = col_description
 
             result[df_number_key][0]["data"]["schema"]["fields"].append(col_info)

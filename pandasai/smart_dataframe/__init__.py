@@ -45,6 +45,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         df: Union[pd.DataFrame, pd.Series, BaseConnector, str, dict, list],
         name: str = None,
         description: str = None,
+        field_descriptions: dict = None,
         custom_head: pd.DataFrame = None,
         config: Config = None,
         logger: Logger = None,
@@ -54,6 +55,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             df: A supported dataframe type, or a pandasai Connector
             name (str, optional): Name of the dataframe. Defaults to None.
             description (str, optional): Description of the dataframe. Defaults to "".
+            field_descriptions (dictionary, optional): Description of dataframe fields in dict format {"field_name": "description"}.
             custom_head (pd.DataFrame, optional): Sample head of the dataframe.
             config (Config, optional): Config to be used. Defaults to None.
             logger (Logger, optional): Logger to be used. Defaults to None.
@@ -74,6 +76,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
             self._table_name = self.connector.fallback_name
 
         self.table_description = description
+        self.field_descriptions = field_descriptions
 
         self.head_df = DataframeHead(
             self.dataframe_proxy.connector,

@@ -127,3 +127,108 @@ Generate python code and return full updated code:"""  # noqa E501
 3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
 4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
         )
+
+    @pytest.mark.parametrize(
+        "save_charts_path,output_type_hint,viz_library_type_hint",
+        [
+            (
+                "exports/charts",
+                DefaultOutputType().template_hint,
+                MatplotlibVizLibraryType().template_hint,
+            ),
+            (
+                "custom/dir/for/charts",
+                DefaultOutputType().template_hint,
+                MatplotlibVizLibraryType().template_hint,
+            ),
+            *[
+                (
+                    "exports/charts",
+                    output_type_factory(type_).template_hint,
+                    viz_lib_type_factory(viz_type_).template_hint,
+                )
+                for type_ in output_types_map
+                for viz_type_ in viz_lib_map
+            ],
+        ],
+    )
+    def test_yml_with_field_descriptions(
+        self, save_charts_path, output_type_hint, viz_library_type_hint
+    ):
+        """Test casting of prompt to string and interpolation of context.
+
+        Parameterized for the following cases:
+        * `save_charts_path` is "exports/charts", `output_type_hint` is default,
+        `viz_library_type_hint` is default
+        * `save_charts_path` is "custom/dir/for/charts", `output_type_hint`
+            is default, `viz_library_type_hint` is default
+        * `save_charts_path` is "exports/charts", `output_type_hint` any of
+            possible types in `pandasai.helpers.output_types.output_types_map`,
+            `viz_library_type_hint` any of
+            possible types in `pandasai.helpers.viz_library_types.viz_library_types_map`
+        """
+
+        llm = FakeLLM("plt.show()")
+        dfs = [
+            SmartDataframe(
+                pd.DataFrame({"a": [1], "b": [4]}),
+                config={"llm": llm},
+                field_descriptions={"a": "test description"},
+            )
+        ]
+        prompt = GeneratePythonCodePrompt()
+        prompt.set_config(dfs[0].lake.config)
+        prompt.set_var("dfs", dfs)
+        prompt.set_var("last_message", "Q: Question")
+        prompt.set_var("save_charts_path", save_charts_path)
+        prompt.set_var("output_type_hint", output_type_hint)
+        prompt.set_var("viz_library_type", viz_library_type_hint)
+        prompt.set_var("skills", "")
+
+        expected_prompt_content = f"""dfs[0]:
+- name: null
+  description: null
+  type: pandas
+  data:
+    rows: 1
+    columns: 2
+    schema:
+      fields:
+      - name: a
+        type: int64
+        samples:
+        - 1
+        description: test description
+      - name: b
+        type: int64
+        samples:
+        - 4
+
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: {output_type_hint}
+```
+
+Q: Question
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+{viz_library_type_hint}
+
+
+Generate python code and return full updated code:"""  # noqa E501
+        actual_prompt_content = prompt.to_string()
+        if sys.platform.startswith("win"):
+            actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
+
+        print(actual_prompt_content)
+        assert actual_prompt_content == expected_prompt_content
