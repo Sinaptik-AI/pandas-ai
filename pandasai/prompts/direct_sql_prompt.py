@@ -18,16 +18,14 @@ class DirectSQLPrompt(GeneratePythonCodePrompt):
     def _prepare_tables_data(self, tables):
         tables_join = []
         for index, table in enumerate(tables):
-            print(
-                (
-                    self._config.dataframe_serializer
-                    if self._config
-                    else DataframeSerializerType.SQL
-                )
-            )
             table_serialized = DataframeSerializer().serialize(
                 table,
-                {"index": index},
+                {
+                    "index": index,
+                    "type": "sql"
+                    if self._config and self._config.direct_sql
+                    else "pandas",
+                },
                 (
                     self._config.dataframe_serializer
                     if self._config

@@ -94,7 +94,12 @@ class DataframeSerializer:
         df_number_key = f"dfs[{extras['index']}]"
         result = {
             df_number_key: [
-                {"name": df.table_name, "description": df.table_description, "data": {}}
+                {
+                    "name": df.table_name,
+                    "description": df.table_description,
+                    "type": extras["type"],
+                    "data": {},
+                }
             ]
         }
 

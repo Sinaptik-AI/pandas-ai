@@ -783,6 +783,7 @@ Generate python code and return full updated code:"""  # noqa: E501
             """dfs[0]:
 - name: null
   description: null
+  type: pandas
   data:
     rows: 0
     columns: 1
@@ -824,6 +825,5 @@ Generate python code and return full updated code:"""  # noqa: E501
         last_prompt = df.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = df.last_prompt.replace("\r\n", "\n")
-        print(last_prompt)
 
         assert last_prompt == expected_prompt

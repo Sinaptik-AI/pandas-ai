@@ -44,10 +44,14 @@ class AbstractPrompt(ABC):
         for index, df in enumerate(dfs):
             dataframe_info = DataframeSerializer().serialize(
                 df,
-                extras={"index": index},
+                extras={
+                    "index": index,
+                    "type": "sql"
+                    if self._config and self._config.direct_sql
+                    else "pandas",
+                },
                 type_=self._config.dataframe_serializer if self._config else None,
             )
-            print(dataframe_info)
             dataframes.append(dataframe_info)
 
         return "\n".join(dataframes)
