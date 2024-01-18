@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import pytest
 from pandasai import SmartDataframe
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.helpers.viz_library_types import (
@@ -54,11 +55,15 @@ class TestDirectSqlPrompt:
         dfs = [
             SmartDataframe(
                 pd.DataFrame({}),
-                config={"llm": llm},
+                config={
+                    "llm": llm,
+                    "dataframe_serializer": DataframeSerializerType.SQL,
+                },
             )
         ]
 
         prompt = DirectSQLPrompt(tables=dfs)
+        # prompt.set_config(dfs[0].lake.config)
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "What is the correct code?")
         prompt.set_var("output_type_hint", output_type_hint)

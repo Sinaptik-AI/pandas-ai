@@ -42,9 +42,10 @@ class AbstractPrompt(ABC):
         """
         dataframes = []
         for index, df in enumerate(dfs):
-            print("OOPPPPPPPPKMMMM", self._config)
             dataframe_info = DataframeSerializer().serialize(
-                df, extras={"index": index}, type_=self._config.dataframe_serializer
+                df,
+                extras={"index": index},
+                type_=self._config.dataframe_serializer if self._config else None,
             )
             print(dataframe_info)
             dataframes.append(dataframe_info)

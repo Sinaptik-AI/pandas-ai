@@ -15,6 +15,7 @@ from pandasai.connectors.sql import (
     SQLConnectorConfig,
 )
 from pandasai.helpers.code_manager import CodeManager
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 
@@ -112,7 +113,14 @@ class TestSmartDatalake:
 
     @pytest.fixture
     def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+        return SmartDataframe(
+            sample_df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
+        )
 
     @pytest.fixture
     def smart_datalake(self, smart_dataframe: SmartDataframe):

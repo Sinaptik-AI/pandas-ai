@@ -113,7 +113,9 @@ class DataframeSerializer:
             col_info = {
                 "name": col_name,
                 "type": str(col_dtype),
-                "samples": df[col_name].sample(3).tolist(),
+                "samples": df[col_name].sample(3).tolist()
+                if num_rows > 5
+                else df[col_name].head().tolist(),
             }
 
             # Add column description if available
@@ -139,4 +141,5 @@ class DataframeSerializer:
 
     def convert_df_to_yml(self, df: pd.DataFrame, extras: dict) -> str:
         json_df = self.convert_df_to_json(df, extras)
+
         return yaml.dump(json_df, sort_keys=False)
