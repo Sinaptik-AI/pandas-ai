@@ -15,28 +15,26 @@ class DirectSQLPrompt(GeneratePythonCodePrompt):
 
     _path_to_template = "assets/prompt_templates/direct_sql_connector.tmpl"
 
-    def _prepare_tables_data(self, tables):
+    def _prepare_tables_data(self, tables, config):
         tables_join = []
         for index, table in enumerate(tables):
             table_serialized = DataframeSerializer().serialize(
                 table,
                 {
                     "index": index,
-                    "type": "sql"
-                    if self._config and self._config.direct_sql
-                    else "pandas",
+                    "type": "sql" if config and config.direct_sql else "pandas",
                 },
                 (
-                    self._config.dataframe_serializer
-                    if self._config
+                    config.dataframe_serializer
+                    if config
                     else DataframeSerializerType.SQL
                 ),
             )
             tables_join.append(table_serialized)
         return "\n\n".join(tables_join)
 
-    def setup(self, tables, **kwargs) -> None:
-        self.set_var("tables", self._prepare_tables_data(tables))
+    def setup(self, tables, config=None, **kwargs) -> None:
+        self.set_var("tables", self._prepare_tables_data(tables, config))
 
         super(DirectSQLPrompt, self).setup(**kwargs)
 

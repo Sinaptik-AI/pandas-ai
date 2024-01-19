@@ -230,5 +230,4 @@ Generate python code and return full updated code:"""  # noqa E501
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
 
-        print(actual_prompt_content)
         assert actual_prompt_content == expected_prompt_content
