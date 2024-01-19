@@ -53,8 +53,6 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
     _path_to_template = "assets/prompt_templates/generate_python_code.tmpl"
 
     def setup(self, **kwargs) -> None:
-        self.set_var("instructions", kwargs.pop("custom_instructions", ""))
-
         self.set_var(
             "current_code",
             kwargs.pop("current_code", CurrentCodePrompt(dfs_declared=True)),

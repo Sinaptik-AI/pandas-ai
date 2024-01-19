@@ -108,22 +108,3 @@ Generate python code and return full updated code:"""  # noqa E501
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
         assert actual_prompt_content == expected_prompt_content
-
-    def test_custom_instructions(self):
-        custom_instructions = """Analyze the data.
-1. Load: Load the data from a file or database
-2. Prepare: Preprocessing and cleaning data if necessary
-3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
-
-        prompt = GeneratePythonCodePrompt(custom_instructions=custom_instructions)
-        actual_instructions = prompt._args["instructions"]
-
-        assert (
-            actual_instructions
-            == """Analyze the data.
-1. Load: Load the data from a file or database
-2. Prepare: Preprocessing and cleaning data if necessary
-3. Process: Manipulating data for analysis (grouping, filtering, aggregating, etc.)
-4. Analyze: Conducting the actual analysis (if the user asks to plot a chart you must save it as an image in temp_chart.png and not show the chart.)"""  # noqa: E501
-        )
