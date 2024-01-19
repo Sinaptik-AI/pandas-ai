@@ -4,13 +4,12 @@ import uuid
 import pandas as pd
 
 import pytest
-from pandasai.agent import Agent
+from pandasai import Agent
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.skills import skill, Skill
-from pandasai.smart_datalake import SmartDatalake
 
 
 class TestSkills:
@@ -62,15 +61,11 @@ class TestSkills:
         )
 
     @pytest.fixture
-    def smart_datalake(self, llm, sample_df):
-        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
-
-    @pytest.fixture
-    def code_manager(self, smart_datalake: SmartDatalake):
+    def code_manager(self, agent: Agent):
         return CodeManager(
-            smart_datalake.dfs,
-            config=smart_datalake.config,
-            logger=smart_datalake.logger,
+            agent.core.dfs,
+            config=agent.core.config,
+            logger=agent.core.logger,
         )
 
     @pytest.fixture
@@ -237,15 +232,15 @@ class TestSkills:
         )
 
         agent.add_skills(skill_a)
-        assert len(agent.lake.skills_manager.skills) == 1
+        assert len(agent.core.skills_manager.skills) == 1
 
-        agent.lake.skills_manager.skills = []
+        agent.core.skills_manager.skills = []
         agent.add_skills(skill_a, skill_b)
-        assert len(agent.lake.skills_manager.skills) == 2
+        assert len(agent.core.skills_manager.skills) == 2
 
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})
-        df = SmartDatalake([df], config={"llm": llm, "enable_cache": False})
+        df = Agent([df], config={"llm": llm, "enable_cache": False})
 
         function_def = """
 <function>
@@ -297,7 +292,7 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         agent.add_skills(plot_salaries)
 
         agent.chat("How many countries are in the dataframe?")
-        last_prompt = agent.lake.last_prompt
+        last_prompt = agent.core.last_prompt
 
         assert function_def in last_prompt
 

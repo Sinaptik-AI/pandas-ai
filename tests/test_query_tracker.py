@@ -83,7 +83,6 @@ class TestQueryExecTracker:
         return SmartDatalakePipelineInput(
             "which country has the highest GDP?",
             output_type_factory("string"),
-            instance="SmartDatalake",
             conversation_id="123",
             prompt_id="1234",
             is_related_query=False,
@@ -460,7 +459,6 @@ class TestQueryExecTracker:
         track_input = SmartDatalakePipelineInput(
             "which country has the highest GDP?",
             output_type_factory("string"),
-            instance="SmartDatalake",
             conversation_id="1234",
             prompt_id="1234",
             is_related_query=False,

@@ -1,9 +1,8 @@
 """Example of using PandasAI with a CSV file."""
 
-from pandasai import SmartDatalake
+from pandasai import Agent
 from pandasai.llm import OpenAI
 from pandasai.connectors import PostgreSQLConnector
-from pandasai.smart_dataframe import Agent
 
 
 # With a PostgreSQL database
@@ -51,7 +50,7 @@ order_details_smart_df = Agent(
 )
 
 
-df = SmartDatalake(
+df = Agent(
     [order_details_smart_df, order, products],
     config={"llm": llm, "direct_sql": True},
 )

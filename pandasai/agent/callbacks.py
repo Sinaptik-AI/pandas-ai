@@ -2,8 +2,8 @@ from ..prompts import FileBasedPrompt
 
 
 class Callbacks:
-    def __init__(self, smart_datalake):
-        self.lake = smart_datalake
+    def __init__(self, agent_core):
+        self.core = agent_core
 
     def on_prompt_generation(self, prompt: FileBasedPrompt) -> str:
         """
@@ -12,7 +12,7 @@ class Callbacks:
         Args:
             prompt (str): A prompt
         """
-        self.lake.last_prompt = str(prompt)
+        self.core.last_prompt = str(prompt)
 
     def on_code_generation(self, code: str):
         """
@@ -21,7 +21,7 @@ class Callbacks:
         Args:
             code (str): A python code
         """
-        self.lake.last_code_generated = code
+        self.core.last_code_generated = code
 
     def on_code_execution(self, code: str):
         """
@@ -30,7 +30,7 @@ class Callbacks:
         Args:
             code (str): A python code
         """
-        self.lake.last_code_executed = code
+        self.core.last_code_executed = code
 
     def on_result(self, result):
         """
@@ -39,4 +39,4 @@ class Callbacks:
         Args:
             result (Any): A python code
         """
-        self.lake.last_result = result
+        self.core.last_result = result

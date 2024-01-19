@@ -22,7 +22,7 @@ from pandasai.exceptions import (
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 
-from pandasai.smart_datalake import SmartDatalake
+from pandasai import Agent
 
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 from pandasai.schemas.df_config import Config
@@ -92,22 +92,22 @@ class TestCodeManager:
         )
 
     @pytest.fixture
-    def smart_datalake(self, llm, sample_df):
-        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
+    def agent(self, llm, sample_df):
+        return Agent([sample_df], config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
-    def smart_datalake_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
-        return SmartDatalake(
+    def agent_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+        return Agent(
             [pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
         )
 
     @pytest.fixture
-    def code_manager(self, smart_datalake: SmartDatalake):
+    def code_manager(self, agent: Agent):
         return CodeManager(
-            dfs=smart_datalake.dfs,
-            config=smart_datalake.config,
-            logger=smart_datalake.logger,
+            dfs=agent.core.dfs,
+            config=agent.core.config,
+            logger=agent.core.logger,
         )
 
     @pytest.fixture
@@ -238,17 +238,15 @@ print(dfs)"""
         "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
         autospec=True,
     )
-    def test_exception_handling(
-        self, mock_execute_code: MagicMock, smart_datalake: SmartDatalake
-    ):
+    def test_exception_handling(self, mock_execute_code: MagicMock, agent: Agent):
         mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
-        result = smart_datalake.chat("How many countries are in the dataframe?")
+        result = agent.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "
             "because of the following error:\n"
             "\nNo code found in the answer.\n"
         )
-        assert smart_datalake.last_error == "No code found in the answer."
+        assert agent.last_error == "No code found in the answer."
 
     def test_custom_whitelisted_dependencies(
         self, code_manager: CodeManager, llm, exec_context: MagicMock
@@ -418,13 +416,13 @@ result = {
             code_manager._validate_direct_sql([sql_connector, pgsql_connector])
 
     def test_clean_code_direct_sql_code(
-        self, exec_context: MagicMock, smart_datalake_with_connector
+        self, exec_context: MagicMock, agent_with_connector: Agent
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
         code_manager = CodeManager(
-            dfs=smart_datalake_with_connector.dfs,
-            config=smart_datalake_with_connector.config,
-            logger=smart_datalake_with_connector.logger,
+            dfs=agent_with_connector.core.dfs,
+            config=agent_with_connector.core.config,
+            logger=agent_with_connector.core.logger,
         )
         safe_code = """
 import numpy as np

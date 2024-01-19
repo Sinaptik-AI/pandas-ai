@@ -12,7 +12,8 @@ from ..prompts.check_if_relevant_to_conversation import (
 )
 from ..schemas.df_config import Config
 from ..skills import Skill
-from ..smart_datalake import SmartDatalake
+from .core import AgentCore
+from ..connectors import BaseConnector
 
 
 class Agent:
@@ -22,7 +23,9 @@ class Agent:
 
     def __init__(
         self,
-        dfs: Union[pd.DataFrame, List[pd.DataFrame]],
+        dfs: Union[
+            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
+        ],
         config: Optional[Union[Config, dict]] = None,
         logger: Optional[Logger] = None,
         memory_size: int = 10,
@@ -40,16 +43,13 @@ class Agent:
             dfs = [dfs]
 
         # Configure the smart datalake
-        self.lake = SmartDatalake(dfs, config, logger, memory=Memory(memory_size))
-        self.lake.set_instance_type(self.__class__.__name__)
-
-        self.logger = self.lake.logger
+        self.core = AgentCore(dfs, config, logger, memory=Memory(memory_size))
 
     def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """
-        self.lake.add_skills(*skills)
+        self.core.add_skills(*skills)
 
     def call_llm_with_prompt(self, prompt: AbstractPrompt):
         """
@@ -58,17 +58,17 @@ class Agent:
             prompt (AbstractPrompt): AbstractPrompt to pass to LLM's
         """
         retry_count = 0
-        while retry_count < self.lake.config.max_retries:
+        while retry_count < self.core.config.max_retries:
             try:
-                result: str = self.lake.llm.call(prompt)
+                result: str = self.core.llm.call(prompt)
                 if prompt.validate(result):
                     return result
                 else:
                     raise Exception("Response validation failed!")
             except Exception:
                 if (
-                    not self.lake.config.use_error_correction_framework
-                    or retry_count >= self.lake.config.max_retries - 1
+                    not self.core.config.use_error_correction_framework
+                    or retry_count >= self.core.config.max_retries - 1
                 ):
                     raise
                 retry_count += 1
@@ -79,7 +79,7 @@ class Agent:
         """
         try:
             is_related = self.check_if_related_to_conversation(query)
-            return self.lake.chat(
+            return self.core.chat(
                 query, output_type=output_type, is_related_query=is_related
             )
         except Exception as exception:
@@ -95,29 +95,29 @@ class Agent:
         to the memory without calling the chat function (for example, when you
         need to add a message from the agent).
         """
-        self.lake.memory.add(message, is_user=is_user)
+        self.core.memory.add(message, is_user=is_user)
 
     def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation
         """
-        if self.lake.memory.count() == 0:
+        if self.core.memory.count() == 0:
             return
 
         prompt = CheckIfRelevantToConversationPrompt(
-            conversation=self.lake.memory.get_conversation(),
+            conversation=self.core.memory.get_conversation(),
             query=query,
         )
 
         result = self.call_llm_with_prompt(prompt)
 
         is_related = "true" in result
-        self.logger.log(
+        self.core.logger.log(
             f"""Check if the new message is related to the conversation: {is_related}"""
         )
 
         if not is_related:
-            self.lake.clear_memory()
+            self.core.clear_memory()
 
         return is_related
 
@@ -126,13 +126,13 @@ class Agent:
         Generate clarification questions based on the data
         """
         prompt = ClarificationQuestionPrompt(
-            dataframes=self.lake.dfs,
-            conversation=self.lake.memory.get_conversation(),
+            dataframes=self.core.dfs,
+            conversation=self.core.memory.get_conversation(),
             query=query,
         )
 
         result = self.call_llm_with_prompt(prompt)
-        self.logger.log(
+        self.core.logger.log(
             f"""Clarification Questions:  {result}
             """
         )
@@ -144,7 +144,7 @@ class Agent:
         """
         Clears the previous conversation
         """
-        self.lake.clear_memory()
+        self.core.clear_memory()
 
     def explain(self) -> str:
         """
@@ -152,11 +152,11 @@ class Agent:
         """
         try:
             prompt = ExplainPrompt(
-                conversation=self.lake.memory.get_conversation(),
-                code=self.lake.last_code_executed,
+                conversation=self.core.memory.get_conversation(),
+                code=self.core.last_code_executed,
             )
             response = self.call_llm_with_prompt(prompt)
-            self.logger.log(
+            self.core.logger.log(
                 f"""Explanation:  {response}
                 """
             )
@@ -172,11 +172,11 @@ class Agent:
         try:
             prompt = RephraseQueryPrompt(
                 query=query,
-                dataframes=self.lake.dfs,
-                conversation=self.lake.memory.get_conversation(),
+                dataframes=self.core.dfs,
+                conversation=self.core.memory.get_conversation(),
             )
             response = self.call_llm_with_prompt(prompt)
-            self.logger.log(
+            self.core.logger.log(
                 f"""Rephrased Response:  {response}
                 """
             )
@@ -190,16 +190,20 @@ class Agent:
 
     @property
     def last_code_generated(self):
-        return self.lake.last_code_generated
+        return self.core.last_code_generated
 
     @property
     def last_code_executed(self):
-        return self.lake.last_code_executed
+        return self.core.last_code_executed
 
     @property
     def last_prompt(self):
-        return self.lake.last_prompt
+        return self.core.last_prompt
 
     @property
     def last_query_log_id(self):
-        return self.lake.last_query_log_id
+        return self.core.last_query_log_id
+
+    @property
+    def last_error(self):
+        return self.core.last_error

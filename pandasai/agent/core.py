@@ -1,22 +1,3 @@
-"""
-A smart dataframe class is a wrapper around the pandas dataframe that allows you
-to query it using natural language. It uses the LLMs to generate Python code from
-natural language and then executes it on the dataframe.
-
-Example:
-    ```python
-    from pandasai.smart_dataframe import SmartDataframe
-    from pandasai.llm.openai import OpenAI
-
-    df = pd.read_csv("examples/data/Loan payments data.csv")
-    llm = OpenAI()
-
-    df = SmartDataframe(df, config={"llm": llm})
-    response = df.chat("What is the average loan amount?")
-    print(response)
-    # The average loan amount is $15,000.
-    ```
-"""
 import uuid
 import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
@@ -44,7 +25,7 @@ from .callbacks import Callbacks
 from ..connectors import BaseConnector, PandasConnector
 
 
-class SmartDatalake:
+class AgentCore:
     def __init__(
         self,
         dfs: List[Union[BaseConnector, pd.DataFrame, pd.Series, str, dict, list]],
@@ -73,7 +54,6 @@ class SmartDatalake:
         dfs = self.load_dfs(dfs, config)
 
         self.conversation_id = uuid.uuid4()
-        self.instance = self.__class__.__name__
 
         self.callbacks = Callbacks(self)
 
@@ -89,9 +69,6 @@ class SmartDatalake:
             on_code_execution=self.callbacks.on_code_execution,
             on_result=self.callbacks.on_result,
         )
-
-    def set_instance_type(self, type_: str):
-        self.instance = type_
 
     def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]], config: Config = None):
         """
@@ -230,7 +207,6 @@ class SmartDatalake:
         pipeline_input = SmartDatalakePipelineInput(
             query,
             output_type_factory(output_type, logger=self.logger),
-            self.instance,
             self.conversation_id,
             self.last_prompt_id,
             is_related_query,

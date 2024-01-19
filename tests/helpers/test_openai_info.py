@@ -1,13 +1,10 @@
 import pytest
-
-
-from pandasai import SmartDatalake
+from pandasai.agent.core import AgentCore
 from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
 )
 import pandas as pd
-
 from pandasai.llm.openai import OpenAI
 
 
@@ -201,9 +198,9 @@ class TestOpenAIInfo:
         )
         mocker.patch.object(llm.client, "create", return_value=llm_response)
 
-        sdf = SmartDatalake([df], config={"llm": llm, "enable_cache": False})
+        agent = AgentCore([df], config={"llm": llm, "enable_cache": False})
         with get_openai_callback() as cb:
-            sdf.chat("some question 1")
+            agent.chat("some question 1")
             assert cb.total_tokens == 3
             assert cb.prompt_tokens == 2
             assert cb.completion_tokens == 1
@@ -212,14 +209,14 @@ class TestOpenAIInfo:
         total_tokens = cb.total_tokens
 
         with get_openai_callback() as cb:
-            sdf.chat("some question 2")
-            sdf.chat("some question 3")
+            agent.chat("some question 2")
+            agent.chat("some question 3")
 
         assert cb.total_tokens == total_tokens * 2
 
         with get_openai_callback() as cb:
-            sdf.chat("some question 4")
-            sdf.chat("some question 5")
-            sdf.chat("some question 6")
+            agent.chat("some question 4")
+            agent.chat("some question 5")
+            agent.chat("some question 6")
 
         assert cb.total_tokens == total_tokens * 3

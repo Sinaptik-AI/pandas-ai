@@ -1,4 +1,4 @@
-"""Unit tests for the SmartDatalake class"""
+"""Unit tests for the AgentCore class"""
 import os
 import sys
 
@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 
-from pandasai import SmartDatalake
+from pandasai.agent.core import AgentCore
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -22,7 +22,7 @@ from langchain import OpenAI
 from pandasai.llm.langchain import LangchainLLM
 
 
-class TestSmartDatalake:
+class TestAgentCore:
     """Unit tests for the SmartDatlake class"""
 
     @pytest.fixture
@@ -111,16 +111,16 @@ class TestSmartDatalake:
         return PostgreSQLConnector(self.config)
 
     @pytest.fixture
-    def smart_datalake(self, llm, sample_df):
-        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
+    def core(self, llm, sample_df):
+        return AgentCore([sample_df], config={"llm": llm, "enable_cache": False})
 
-    def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
-        assert smart_datalake.load_llm(llm) == llm
+    def test_load_llm_with_pandasai_llm(self, core: AgentCore, llm):
+        assert core.load_llm(llm) == llm
 
-    def test_load_llm_with_langchain_llm(self, smart_datalake: SmartDatalake, llm):
+    def test_load_llm_with_langchain_llm(self, core: AgentCore, llm):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        llm = smart_datalake.load_llm(langchain_llm)
+        llm = core.load_llm(langchain_llm)
         assert isinstance(llm, LangchainLLM)
         assert llm.langchain_llm == langchain_llm
 
@@ -132,13 +132,13 @@ class TestSmartDatalake:
             "value": "There are 10 countries in the dataframe.",
         },
     )
-    def test_last_result_is_saved(self, _mocked_method, smart_datalake: SmartDatalake):
-        assert smart_datalake.last_result is None
+    def test_last_result_is_saved(self, _mocked_method, core: AgentCore):
+        assert core.last_result is None
 
         _mocked_method.__name__ = "execute_code"
 
-        smart_datalake.chat("How many countries are in the dataframe?")
-        assert smart_datalake.last_result == {
+        core.chat("How many countries are in the dataframe?")
+        assert core.last_result == {
             "type": "string",
             "value": "There are 10 countries in the dataframe.",
         }
@@ -153,13 +153,13 @@ class TestSmartDatalake:
     )
     @patch("pandasai.helpers.query_exec_tracker.QueryExecTracker.publish")
     def test_query_tracker_publish_called_in_chat_method(
-        self, mock_query_tracker_publish, _mocked_method, smart_datalake: SmartDatalake
+        self, mock_query_tracker_publish, _mocked_method, core: AgentCore
     ):
-        assert smart_datalake.last_result is None
+        assert core.last_result is None
 
         _mocked_method.__name__ = "execute_code"
 
-        smart_datalake.chat("How many countries are in the dataframe?")
+        core.chat("How many countries are in the dataframe?")
         mock_query_tracker_publish.assert_called()
 
     @patch(
@@ -179,7 +179,7 @@ class TestSmartDatalake:
         mock_traceback,
         mock_generate,
         mock_execute,
-        smart_datalake: SmartDatalake,
+        core: AgentCore,
     ):
         mock_traceback.return_value = "Test error"
         mock_generate.return_value = (
@@ -190,7 +190,7 @@ class TestSmartDatalake:
             {"type": "string", "value": "Hello World"},
         ]
 
-        smart_datalake.dfs[0].to_csv = Mock(
+        core.dfs[0].to_csv = Mock(
             return_value="""country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16
@@ -198,9 +198,9 @@ Spain,8446903488,6.38
 """
         )
 
-        smart_datalake.chat("Hello world")
+        core.chat("Hello world")
 
-        last_prompt = smart_datalake.last_prompt
+        last_prompt = core.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = last_prompt.replace("\r\n", "\n")
 
@@ -227,13 +227,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
     @patch("os.makedirs")
-    def test_load_config_with_cache(self, mock_makedirs, smart_datalake):
-        # Modify the smart_datalake's configuration
-        smart_datalake.config.save_charts = True
-        smart_datalake.config.enable_cache = True
+    def test_load_config_with_cache(self, mock_makedirs, core):
+        # Modify the core's configuration
+        core.config.save_charts = True
+        core.config.enable_cache = True
 
         # Call the initialize method
-        smart_datalake.load_config(smart_datalake.config)
+        core.load_config(core.config)
 
         # Assertions for enabling cache
         cache_dir = os.path.join(os.getcwd(), "cache")
@@ -242,43 +242,43 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
         # Assertions for saving charts
-        charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
+        charts_dir = os.path.join(os.getcwd(), core.config.save_charts_path)
         mock_makedirs.assert_any_call(
             charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
         )
 
     @patch("os.makedirs")
-    def test_load_config_without_cache(self, mock_makedirs, smart_datalake):
-        # Modify the smart_datalake's configuration
-        smart_datalake.config.save_charts = True
-        smart_datalake.config.enable_cache = False
+    def test_load_config_without_cache(self, mock_makedirs, core):
+        # Modify the core's configuration
+        core.config.save_charts = True
+        core.config.enable_cache = False
 
         # Call the initialize method
-        smart_datalake.load_config(smart_datalake.config)
+        core.load_config(core.config)
 
         # Assertions for saving charts
-        charts_dir = os.path.join(os.getcwd(), smart_datalake.config.save_charts_path)
+        charts_dir = os.path.join(os.getcwd(), core.config.save_charts_path)
         mock_makedirs.assert_called_once_with(
             charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
         )
 
     def test_validate_true_direct_sql_with_non_connector(self, llm, sample_df):
         # raise exception with non connector
-        SmartDatalake(
+        AgentCore(
             [sample_df],
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
         )
 
     def test_validate_direct_sql_with_connector(self, llm, sql_connector):
         # not exception is raised using single connector
-        SmartDatalake(
+        AgentCore(
             [sql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
         )
 
     def test_validate_false_direct_sql_with_connector(self, llm, sql_connector):
         # not exception is raised using single connector
-        SmartDatalake(
+        AgentCore(
             [sql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": False},
         )
@@ -287,7 +287,7 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         self, llm, sql_connector, pgsql_connector
     ):
         # not exception is raised using single connector
-        SmartDatalake(
+        AgentCore(
             [sql_connector, pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": False},
         )

@@ -71,7 +71,7 @@ class QueryExecTracker:
 
         self._query_info = {
             "conversation_id": str(input.conversation_id),
-            "instance": input.instance,
+            "instance": "Agent",
             "query": input.query,
             "output_type": input.output_type.name,
             "is_related_query": input.is_related_query,
