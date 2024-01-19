@@ -32,14 +32,13 @@ from ..schemas.df_config import Config
 from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from typing import List, Union, Optional
-from .abstract_df import DataframeAbstract
 from ..connectors.base import BaseConnector
 
 from .df_head import DataframeHead
 from .dataframe_proxy import DataframeProxy
 
 
-class SmartDataframe(DataframeAbstract, Shortcuts):
+class SmartDataframe(Shortcuts):
     def __init__(
         self,
         df: Union[pd.DataFrame, pd.Series, BaseConnector, str, dict, list],
@@ -193,27 +192,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
     @property
     def last_query_log_id(self):
         return self.lake.last_query_log_id
-
-    def __getattr__(self, name):
-        return self.dataframe_proxy.__getattribute__(name)
-
-    def __getitem__(self, key):
-        return self.dataframe_proxy.__getitem__(key)
-
-    def __setitem__(self, key, value):
-        return self.dataframe_proxy.__setitem__(key, value)
-
-    def __dir__(self):
-        return dir(self.dataframe_proxy) + dir(self.__class__)
-
-    def __repr__(self):
-        return self.dataframe_proxy.__repr__()
-
-    def __len__(self):
-        return self.dataframe_proxy.connector.rows_count
-
-    def __eq__(self, other):
-        return self.dataframe_proxy.connector.equals(other.dataframe_proxy.connector)
 
     def get_query_exec_func(self):
         return self.dataframe_proxy.connector.execute_direct_sql_query

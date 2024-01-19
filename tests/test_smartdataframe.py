@@ -168,8 +168,9 @@ result = { 'type': 'dataframe', 'value': df }
         )
 
         output_df = smart_dataframe.chat("Set column b to column a + 1")
-        assert output_df["a"].tolist() == [1, 2, 3]
-        assert output_df["b"].tolist() == [2, 3, 4]
+        output_df.dataframe_proxy.load_connector()
+        assert output_df.dataframe["a"].equals(pd.Series([1, 2, 3]))
+        assert output_df.dataframe["b"].equals(pd.Series([2, 3, 4]))
 
     def test_run_with_privacy_enforcement(self, llm):
         df = pd.DataFrame({"country": []})
@@ -303,14 +304,6 @@ result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
 
         assert any((expected_log in log.get("msg") for log in smart_dataframe.logs))
 
-    def test_to_dict(self, smart_dataframe: SmartDataframe):
-        expected_keys = ("country", "gdp", "happiness_index")
-
-        result_dict = smart_dataframe.to_dict()
-
-        assert isinstance(result_dict, dict)
-        assert all(key in result_dict for key in expected_keys)
-
     def test_extract_code(self, llm):
         code = """```python
 result = {'happiness': 0.5, 'gdp': 0.8}
@@ -415,7 +408,7 @@ result = {"type": None, "value": "temp_chart.png"}
 
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(AbstractPrompt):
-            template: str = """{test} || {dfs[0].shape[1]} || {conversation}"""
+            template: str = """{test} || {conversation}"""
 
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
