@@ -29,7 +29,6 @@ from ..skills import Skill
 from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
 
-from ..helpers.shortcuts import Shortcuts
 from ..helpers.logger import Logger
 from typing import List, Union, Optional
 from ..connectors.base import BaseConnector
@@ -38,7 +37,7 @@ from .df_head import DataframeHead
 from .dataframe_proxy import DataframeProxy
 
 
-class SmartDataframe(Shortcuts):
+class SmartDataframe:
     def __init__(
         self,
         df: Union[pd.DataFrame, pd.Series, BaseConnector, str, dict, list],

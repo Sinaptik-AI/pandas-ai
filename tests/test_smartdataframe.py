@@ -400,12 +400,6 @@ result = {"type": None, "value": "temp_chart.png"}
             == f"charts/{smart_dataframe.lake.last_prompt_id}.png"
         )
 
-    def test_shortcut(self, smart_dataframe: SmartDataframe):
-        assert callable(smart_dataframe.clean_data)
-        with patch.object(smart_dataframe, "clean_data") as mock_clean_data:
-            smart_dataframe.clean_data()
-            mock_clean_data.assert_called_once()
-
     def test_replace_generate_code_prompt(self, llm):
         class CustomPrompt(AbstractPrompt):
             template: str = """{test} || {conversation}"""
