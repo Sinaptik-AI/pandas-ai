@@ -21,9 +21,7 @@ Example:
 import hashlib
 
 import pandas as pd
-import pydantic
 
-from pandasai.helpers.df_validator import DfValidator
 from ..schemas.df_config import Config
 
 from ..helpers.logger import Logger
@@ -95,16 +93,6 @@ class SmartDataframe:
         columns_str = "".join(self.dataframe.columns)
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
-
-    def validate(self, schema: pydantic.BaseModel):
-        """
-        Validates Dataframe rows on the basis Pydantic schema input
-        (Args):
-            schema: Pydantic schema class
-            verbose: Print Errors
-        """
-        df_validator = DfValidator(self.dataframe_proxy)
-        return df_validator.validate(schema)
 
     @property
     def dataframe(self):

@@ -5,7 +5,6 @@ from typing import Optional
 from unittest.mock import patch, Mock
 
 import pandas as pd
-from pydantic import BaseModel, Field
 import pytest
 
 from pandasai import SmartDataframe
@@ -155,87 +154,6 @@ result = {'happiness': 1, 'gdp': 0.43}```"""
         )
         smart_dataframe.head_df.custom_head = new_custom_head
         assert new_custom_head.equals(smart_dataframe.head_df.custom_head)
-
-    def test_pydantic_validate(self, llm):
-        # Create a sample DataFrame
-        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
-
-        # Create an instance of SmartDataframe without a name
-        df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
-        )
-
-        # Pydantic Schema
-        class TestSchema(BaseModel):
-            A: int
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-
-        assert validation_result.passed
-
-    def test_pydantic_validate_false(self, llm):
-        # Create a sample DataFrame
-        df = pd.DataFrame({"A": ["Test", "Test2", "Test3", "Test4"], "B": [5, 6, 7, 8]})
-
-        # Create an instance of SmartDataframe without a name
-        df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
-        )
-
-        # Pydantic Schema
-        class TestSchema(BaseModel):
-            A: int
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-
-        assert validation_result.passed is False
-
-    def test_pydantic_validate_false_one_record(self, llm):
-        # Create a sample DataFrame
-        df = pd.DataFrame({"A": [1, "test", 3, 4], "B": [5, 6, 7, 8]})
-
-        # Create an instance of SmartDataframe without a name
-        df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
-        )
-
-        # Pydantic Schema
-        class TestSchema(BaseModel):
-            A: int
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-        assert (
-            validation_result.passed is False and len(validation_result.errors()) == 1
-        )
-
-    def test_pydantic_validate_complex_schema(self, llm):
-        # Create a sample DataFrame
-        df = pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
-
-        # Create an instance of SmartDataframe without a name
-        df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
-        )
-
-        # Pydantic Schema
-        class TestSchema(BaseModel):
-            A: int = Field(..., gt=5)
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-
-        assert validation_result.passed is False
-
-        class TestSchema(BaseModel):
-            A: int = Field(..., lt=5)
-            B: int
-
-        validation_result = df_object.validate(TestSchema)
-
-        assert validation_result.passed
 
     def test_head_csv_with_custom_head(
         self, custom_head, data_sampler, smart_dataframe: SmartDataframe

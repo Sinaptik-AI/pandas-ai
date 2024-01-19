@@ -69,18 +69,3 @@ class DataframeProxy:
 
         self.df = self.connector.execute()
         self.partial = partial
-
-    def __getitem__(self, key):
-        self.load_connector()
-        return self.df.__getitem__(key)
-
-    def __setitem__(self, key, value):
-        self.load_connector()
-        return self.df.__setitem__(key, value)
-
-    def __getattribute__(self, name):
-        if name in pd.DataFrame.__dict__:
-            self.load_connector()
-            return object.__getattribute__(self.df, name)
-
-        return object.__getattribute__(self, name)
