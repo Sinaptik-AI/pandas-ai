@@ -18,7 +18,7 @@ class DataSampler:
     def __init__(self, df: pd.DataFrame):
         """
         Args:
-            df (SmartDataframe): SmartDataframe to sample from.
+            df (pd.DataFrame): pd.DataFrame to sample from.
         """
         self.df = df
 

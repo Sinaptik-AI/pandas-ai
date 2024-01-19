@@ -1,6 +1,6 @@
 """Example of using PandasAI with a Snowflake"""
 
-from pandasai import SmartDataframe
+from pandasai import Agent
 from pandasai.llm import OpenAI
 from pandasai.connectors import SnowFlakeConnector
 
@@ -22,7 +22,7 @@ snowflake_connector = SnowFlakeConnector(
 )
 
 llm = OpenAI(api_token="OPEN_API_KEY")
-df = SmartDataframe(snowflake_connector, config={"llm": llm})
+df = Agent([snowflake_connector], config={"llm": llm})
 
 response = df.chat("How many records has status 'F'?")
 print(response)

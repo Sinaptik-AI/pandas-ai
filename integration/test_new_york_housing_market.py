@@ -1,15 +1,13 @@
 import os
 import unittest
-from pandasai import SmartDataframe
+from pandasai import Agent
 from pandasai.llm import OpenAI
 
 
 class TestNewYorkHousing(unittest.TestCase):
     def setUp(self) -> None:
         llm = OpenAI(os.environ.get("API_KEY"))
-        self.df = SmartDataframe(
-            "integration/NY-House-Dataset.csv", config={"llm": llm}
-        )
+        self.df = Agent(["integration/NY-House-Dataset.csv"], config={"llm": llm})
 
     def test_number_response(self):
         response = self.df.chat("Average price of Condo for sale", "number")

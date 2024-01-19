@@ -8,6 +8,7 @@ from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 from pandasai.pipelines.smart_datalake_chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.connectors import PandasConnector
 
 
 class TestPromptGeneration:
@@ -61,12 +62,16 @@ class TestPromptGeneration:
         )
 
     @pytest.fixture
+    def dataframe(self, sample_df):
+        return PandasConnector({"original_df": sample_df})
+
+    @pytest.fixture
     def config(self, llm):
         return {"llm": llm, "enable_cache": True}
 
     @pytest.fixture
-    def context(self, sample_df, config):
-        return PipelineContext([sample_df], config)
+    def context(self, dataframe, config):
+        return PipelineContext([dataframe], config)
 
     def test_init(self):
         # Test the initialization of the PromptGeneration

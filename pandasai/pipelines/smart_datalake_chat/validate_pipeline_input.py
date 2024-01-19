@@ -5,6 +5,7 @@ from pandasai.exceptions import InvalidConfigError
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
+from ...connectors import BaseConnector
 
 
 class ValidatePipelineInput(BaseLogicUnit):
@@ -14,20 +15,18 @@ class ValidatePipelineInput(BaseLogicUnit):
 
     pass
 
-    def _validate_direct_sql(self, dfs: List) -> bool:
+    def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
         Args:
-            dfs (List[SmartDataframe]): list of SmartDataframes
+            dfs (List[BaseConnector]): list of BaseConnectors
 
         Raises:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
 
         if self.context.config.direct_sql:
-            if all(
-                (isinstance(df.connector, SQLConnector) and df == dfs[0]) for df in dfs
-            ):
+            if all((isinstance(df, SQLConnector) and df == dfs[0]) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(

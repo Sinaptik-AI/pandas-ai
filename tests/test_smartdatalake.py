@@ -190,7 +190,7 @@ class TestSmartDatalake:
             {"type": "string", "value": "Hello World"},
         ]
 
-        smart_datalake.dfs[0].head_df.to_csv = Mock(
+        smart_datalake.dfs[0].to_csv = Mock(
             return_value="""country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16

@@ -1,15 +1,13 @@
 import os
 import unittest
-from pandasai import SmartDataframe
+from pandasai import Agent
 from pandasai.llm import OpenAI
 
 
 class TestLoanPayments(unittest.TestCase):
     def setUp(self) -> None:
         llm = OpenAI(os.environ.get("API_KEY"))
-        self.df = SmartDataframe(
-            "examples/data/Loan payments data.csv", config={"llm": llm}
-        )
+        self.df = Agent(["examples/data/Loan payments data.csv"], config={"llm": llm})
 
     def test_number_response(self):
         response = self.df.chat(

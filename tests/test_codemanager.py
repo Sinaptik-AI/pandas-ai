@@ -22,10 +22,11 @@ from pandasai.exceptions import (
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 
-from pandasai.smart_dataframe import SmartDataframe
 from pandasai.smart_datalake import SmartDatalake
 
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
+from pandasai.schemas.df_config import Config
+from pandasai.helpers.logger import Logger
 
 
 class TestCodeManager:
@@ -76,6 +77,18 @@ class TestCodeManager:
                     5.12,
                 ],
             }
+        )
+
+    @pytest.fixture
+    def logger(self):
+        return Logger()
+
+    @pytest.fixture
+    def config_with_direct_sql(self):
+        return Config(
+            llm=FakeLLM(output=""),
+            enable_cache=False,
+            direct_sql=True,
         )
 
     @pytest.fixture
@@ -137,7 +150,7 @@ class TestCodeManager:
         ).dict()
 
         # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config)
+        return PostgreSQLConnector(self.config, name="your_table")
 
     def test_run_code_for_calculations(
         self, code_manager: CodeManager, exec_context: MagicMock
@@ -402,9 +415,7 @@ result = {
         # raise exception when two different connector
         with pytest.raises(InvalidConfigError):
             code_manager._config.direct_sql = True
-            df1 = SmartDataframe(sql_connector)
-            df2 = SmartDataframe(pgsql_connector)
-            code_manager._validate_direct_sql([df1, df2])
+            code_manager._validate_direct_sql([sql_connector, pgsql_connector])
 
     def test_clean_code_direct_sql_code(
         self, exec_context: MagicMock, smart_datalake_with_connector
@@ -463,7 +474,7 @@ np.array()"""
         mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
 
         class MockObject:
-            table_name = "allowed_table"
+            name = "allowed_table"
 
         code_manager._dfs = [MockObject()]
 
@@ -482,7 +493,7 @@ np.array()"""
             table_name = "allowed_table"
 
             def __init__(self, table_name):
-                self.table_name = table_name
+                self.name = table_name
 
         code_manager._dfs = [MockObject("table1"), MockObject("table2")]
 
@@ -496,7 +507,7 @@ np.array()"""
         mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
 
         class MockObject:
-            table_name = "allowed_table"
+            name = "allowed_table"
 
         code_manager._dfs = [MockObject()]
 
@@ -515,7 +526,7 @@ np.array()"""
             table_name = "allowed_table"
 
             def __init__(self, table_name):
-                self.table_name = table_name
+                self.name = table_name
 
         code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
 
@@ -524,26 +535,26 @@ np.array()"""
         assert len(irrelevant_tables) == 1
 
     def test_clean_code_using_correct_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
-        )
-        code_manager = CodeManager([df], df.config, df.logger)
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM your_table'"""
         assert code_manager._clean_code(safe_code, exec_context) == safe_code
 
     def test_clean_code_using_incorrect_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger,
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
-        )
-        code_manager = CodeManager([df], df.config, df.logger)
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM unknown_table'
     """
         with pytest.raises(MaliciousQueryError) as excinfo:
@@ -554,15 +565,14 @@ np.array()"""
         )
 
     def test_clean_code_using_multi_incorrect_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
-        )
-
-        code_manager = CodeManager([df], df.config, df.logger)
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
         with pytest.raises(MaliciousQueryError) as excinfo:
             code_manager._clean_code(safe_code, exec_context)

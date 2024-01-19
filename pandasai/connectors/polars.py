@@ -29,8 +29,7 @@ class PolarsConnector(BaseConnector):
     Polars connector class to handle csv, parquet, xlsx files and polars dataframes.
     """
 
-    _polars_df = pl.DataFrame
-    _config: PolarsConnectorConfig = None
+    pandas_df = pl.DataFrame
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
@@ -47,7 +46,7 @@ class PolarsConnector(BaseConnector):
         """
         super().__init__(config, **kwargs)
 
-        self._load_df(self._config.original_df)
+        self._load_df(self.config.original_df)
 
     def _load_df(self, df: Union[pl.DataFrame, pl.Series, str, dict]):
         """
@@ -73,7 +72,7 @@ class PolarsConnector(BaseConnector):
         else:
             raise ValueError("Invalid input data. We cannot convert it to a dataframe.")
 
-        self._polars_df = polars_df.to_pandas()
+        self.pandas_df = polars_df.to_pandas()
 
     def _load_connector_config(
         self, config: Union[PolarsConnectorConfig, dict]
@@ -96,7 +95,7 @@ class PolarsConnector(BaseConnector):
         This information is passed to the LLM to provide the schema of the
         data source.
         """
-        sampler = DataSampler(self._polars_df)
+        sampler = DataSampler(self.pandas_df)
         return sampler.sample(n)
 
     @cache
@@ -105,7 +104,7 @@ class PolarsConnector(BaseConnector):
         Execute the given query on the data source that the connector is
         connected to.
         """
-        return self._polars_df
+        return self.pandas_df
 
     @cached_property
     def rows_count(self):
@@ -113,7 +112,7 @@ class PolarsConnector(BaseConnector):
         Return the number of rows in the data source that the connector is
         connected to.
         """
-        return len(self._polars_df)
+        return len(self.pandas_df)
 
     @cached_property
     def columns_count(self):
@@ -121,7 +120,7 @@ class PolarsConnector(BaseConnector):
         Return the number of columns in the data source that the connector is
         connected to.
         """
-        return len(self._polars_df.columns)
+        return len(self.pandas_df.columns)
 
     @property
     def column_hash(self):
@@ -129,7 +128,7 @@ class PolarsConnector(BaseConnector):
         Return the hash code that is unique to the columns of the data source
         that the connector is connected to.
         """
-        columns_str = "".join(self._polars_df.columns)
+        columns_str = "".join(self.pandas_df.columns)
         hash_object = hashlib.sha256(columns_str.encode())
         return hash_object.hexdigest()
 

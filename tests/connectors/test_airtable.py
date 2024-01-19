@@ -51,7 +51,7 @@ class TestAirTableConnector(unittest.TestCase):
         self.connector = AirtableConnector(config=self.config)
 
     def test_constructor_and_properties(self):
-        self.assertEqual(self.connector._config, self.config)
+        self.assertEqual(self.connector.config, self.config)
         self.assertEqual(self.connector._root_url, self.root_url)
         self.assertEqual(self.connector._cache_interval, 600)
 

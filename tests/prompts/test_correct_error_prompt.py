@@ -2,9 +2,8 @@
 import sys
 
 import pandas as pd
-from pandasai import SmartDataframe
 from pandasai.prompts import CorrectErrorPrompt
-from pandasai.llm.fake import FakeLLM
+from pandasai.connectors import PandasConnector
 
 
 class TestCorrectErrorPrompt:
@@ -13,13 +12,7 @@ class TestCorrectErrorPrompt:
     def test_str_with_args(self):
         """Test that the __str__ method is implemented"""
 
-        llm = FakeLLM("plt.show()")
-        dfs = [
-            SmartDataframe(
-                pd.DataFrame({}),
-                config={"llm": llm},
-            )
-        ]
+        dfs = [PandasConnector({"original_df": pd.DataFrame()})]
         prompt = CorrectErrorPrompt(code="df.head()", error_returned="Error message")
         prompt.set_var("dfs", dfs)
         prompt.set_var("conversation", "What is the correct code?")

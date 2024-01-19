@@ -12,7 +12,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
     SmartDatalakePipelineInput,
 )
-from pandasai.smart_datalake import SmartDatalake
+from pandasai.connectors import PandasConnector
 from unittest import TestCase
 from datetime import datetime, timedelta
 
@@ -69,8 +69,8 @@ class TestQueryExecTracker:
         )
 
     @pytest.fixture
-    def smart_datalake(self, llm, sample_df):
-        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
+    def dataframe(self, sample_df):
+        return PandasConnector({"original_df": sample_df})
 
     @pytest.fixture
     def tracker(self, tracking_info):
@@ -90,11 +90,11 @@ class TestQueryExecTracker:
         )
 
     def test_add_dataframes(
-        self, smart_datalake: SmartDatalake, tracker: QueryExecTracker
+        self, dataframe: PandasConnector, tracker: QueryExecTracker
     ):
         # Add the dataframe to the tracker
         tracker._dataframes = []
-        tracker.add_dataframes(smart_datalake.dfs)
+        tracker.add_dataframes([dataframe])
 
         # Check if the dataframe was added correctly
         assert len(tracker._dataframes) == 1

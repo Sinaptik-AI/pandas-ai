@@ -26,6 +26,7 @@ from ..helpers.logger import Logger
 from ..schemas.df_config import Config
 import logging
 import traceback
+from ..connectors import BaseConnector
 
 
 class CodeExecutionContext:
@@ -209,10 +210,11 @@ Code running:
 
             extracted_filters = self._extract_filters(self._current_code_executed)
             filters = extracted_filters.get(f"dfs[{index}]", [])
-            df.connector.set_additional_filters(filters)
-            df.load_connector(partial=len(filters) > 0)
+            df.set_additional_filters(filters)
+            df.execute()
+            # df.load_connector(partial=len(filters) > 0)
 
-            original_dfs.append(df.dataframe)
+            original_dfs.append(df.pandas_df)
 
         return original_dfs
 
@@ -304,20 +306,18 @@ Code running:
             and node.name == "execute_sql_query"
         )
 
-    def _validate_direct_sql(self, dfs: List) -> bool:
+    def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
         Args:
-            dfs (List[SmartDataframe]): list of SmartDataframes
+            dfs (List[BaseConnector]): list of BaseConnectors
 
         Raises:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
 
         if self._config.direct_sql:
-            if all(
-                (isinstance(df.connector, SQLConnector) and df == dfs[0]) for df in dfs
-            ):
+            if all((isinstance(df, SQLConnector) and df == dfs[0]) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(
@@ -336,7 +336,7 @@ Code running:
             ):
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
-                allowed_table_names = [df.table_name for df in self._dfs]
+                allowed_table_names = [df.name for df in self._dfs]
                 return [
                     table_name
                     for table_name in table_names

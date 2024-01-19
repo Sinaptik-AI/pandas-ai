@@ -96,7 +96,7 @@ class AirtableConnector(BaseConnector):
             cache_dir = os.path.join((find_project_root()), "cache")
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _cached(self, include_additional_filters: bool = False):
         """
@@ -145,7 +145,7 @@ class AirtableConnector(BaseConnector):
         Returns :
             str : The fallback table name of the connector.
         """
-        return self._config.table
+        return self.config.table
 
     def execute(self) -> pd.DataFrame:
         """
@@ -170,17 +170,17 @@ class AirtableConnector(BaseConnector):
         """
 
         condition_strings = []
-        if self._config.where is not None:
-            for i in self._config.where:
+        if self.config.where is not None:
+            for i in self.config.where:
                 filter_query = f"{i[0]}{i[1]}'{i[2]}'"
                 condition_strings.append(filter_query)
         return f'AND({",".join(condition_strings)})'
 
     def _request_api(self, params):
-        url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
+        url = f"{self._root_url}{self.config.base_id}/{self.config.table}"
         return requests.get(
             url=url,
-            headers={"Authorization": f"Bearer {self._config.api_key}"},
+            headers={"Authorization": f"Bearer {self.config.api_key}"},
             params=params,
         )
 
@@ -191,7 +191,7 @@ class AirtableConnector(BaseConnector):
 
         params = {"pageSize": 100, "offset": "0"}
 
-        if self._config.where is not None:
+        if self.config.where is not None:
             params["filterByFormula"] = self._build_formula()
 
         data = []

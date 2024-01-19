@@ -4,7 +4,7 @@ from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
-import pandas as pd
+from ..connectors import BaseConnector
 
 
 class PipelineContext:
@@ -14,19 +14,17 @@ class PipelineContext:
 
     def __init__(
         self,
-        dfs: List[Union[pd.DataFrame, Any]],
+        dfs: List[BaseConnector],
         config: Optional[Union[Config, dict]] = None,
         memory: Optional[Memory] = None,
         skills_manager: Optional[SkillsManager] = None,
         cache: Optional[Cache] = None,
         initial_values: dict = None,
     ) -> None:
-        from pandasai.smart_dataframe import load_smartdataframes
-
         if isinstance(config, dict):
             config = Config(**config)
 
-        self.dfs = load_smartdataframes(dfs, config)
+        self.dfs = dfs
         self.memory = memory or Memory()
         self.skills_manager = skills_manager or SkillsManager()
 

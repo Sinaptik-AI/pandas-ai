@@ -83,8 +83,8 @@ class SnowFlakeConnector(SQLConnector):
 
         if self.logger:
             self.logger.log(
-                f"Getting head of {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Getting head of {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
@@ -101,24 +101,24 @@ class SnowFlakeConnector(SQLConnector):
             str: The string representation of the SnowFlake connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"Account={self._config.account} "
-            f"warehouse={self._config.warehouse} "
-            f"database={self._config.database} schema={str(self._config.dbSchema)}  "
-            f"table={self._config.table}>"
+            f"<{self.__class__.__name__} dialect={self.config.dialect} "
+            f"Account={self.config.account} "
+            f"warehouse={self.config.warehouse} "
+            f"database={self.config.database} schema={str(self.config.dbSchema)}  "
+            f"table={self.config.table}>"
         )
 
     def equals(self, other):
         if isinstance(other, self.__class__):
             return (
-                self._config.dialect,
-                self._config.account,
-                self._config.username,
-                self._config.password,
+                self.config.dialect,
+                self.config.account,
+                self.config.username,
+                self.config.password,
             ) == (
-                other._config.dialect,
-                other._config.account,
-                other._config.username,
-                other._config.password,
+                other.config.dialect,
+                other.config.account,
+                other.config.username,
+                other.config.password,
             )
         return False

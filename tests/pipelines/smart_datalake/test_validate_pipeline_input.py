@@ -18,8 +18,6 @@ from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
 )
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
-from pandasai.smart_dataframe import SmartDataframe
-
 
 class TestValidatePipelineInput:
     "Unit test for Validate Pipeline Input"
@@ -108,10 +106,6 @@ class TestValidatePipelineInput:
 
         # Create an instance of SQLConnector
         return PostgreSQLConnector(self.config)
-
-    @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": True})
 
     @pytest.fixture
     def config(self, llm):

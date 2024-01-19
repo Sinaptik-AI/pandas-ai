@@ -10,7 +10,7 @@ from pandasai.helpers.file_importer import FileImporter
 
 class TestFileImporter:
     """
-    Unit tests for the SmartDataframe class
+    Unit tests for the FileImporter class
     """
 
     @pytest.fixture

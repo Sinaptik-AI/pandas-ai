@@ -3,8 +3,6 @@ import sys
 
 import pandas as pd
 import pytest
-from pandasai import SmartDataframe
-from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.helpers.viz_library_types import (
     MatplotlibVizLibraryType,
@@ -16,6 +14,7 @@ from pandasai.helpers.output_types import (
     DefaultOutputType,
     output_types_map,
 )
+from pandasai.connectors import PandasConnector
 
 
 class TestDirectSqlPrompt:
@@ -50,13 +49,7 @@ class TestDirectSqlPrompt:
     ):
         """Test that the __str__ method is implemented"""
 
-        llm = FakeLLM("plt.show()")
-        dfs = [
-            SmartDataframe(
-                pd.DataFrame({}),
-                config={"llm": llm},
-            )
-        ]
+        dfs = [PandasConnector({"original_df": pd.DataFrame()})]
 
         prompt = DirectSQLPrompt(tables=dfs)
         prompt.set_var("dfs", dfs)

@@ -4,19 +4,18 @@ import sys
 import pandas as pd
 import pytest
 
-from pandasai import SmartDataframe
 from pandasai.helpers.output_types import (
     output_type_factory,
     DefaultOutputType,
     output_types_map,
 )
 from pandasai.prompts import GeneratePythonCodePrompt
-from pandasai.llm.fake import FakeLLM
 from pandasai.helpers.viz_library_types import (
     MatplotlibVizLibraryType,
     viz_lib_map,
     viz_lib_type_factory,
 )
+from pandasai.connectors import PandasConnector
 
 
 class TestGeneratePythonCodePrompt:
@@ -62,13 +61,7 @@ class TestGeneratePythonCodePrompt:
             possible types in `pandasai.helpers.viz_library_types.viz_library_types_map`
         """
 
-        llm = FakeLLM("plt.show()")
-        dfs = [
-            SmartDataframe(
-                pd.DataFrame({"a": [1], "b": [4]}),
-                config={"llm": llm},
-            )
-        ]
+        dfs = [PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})})]
         prompt = GeneratePythonCodePrompt()
         prompt.set_var("dfs", dfs)
         prompt.set_var("last_message", "Q: Question")

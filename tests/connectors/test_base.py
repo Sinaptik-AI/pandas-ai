@@ -62,7 +62,7 @@ def mock_connector(mock_config):
 
 
 def test_base_connector_initialization(mock_config, mock_connector):
-    assert mock_connector._config == mock_config
+    assert mock_connector.config == mock_config
 
 
 def test_base_connector_path_property(mock_connector):

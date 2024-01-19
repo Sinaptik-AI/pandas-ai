@@ -60,7 +60,7 @@ class YahooFinanceConnector(BaseConnector):
 
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
-        self.ticker = yfinance.Ticker(self._config.table)
+        self.ticker = yfinance.Ticker(self.config.table)
 
     def head(self, n: int = 5) -> pd.DataFrame:
         """
@@ -85,7 +85,7 @@ class YahooFinanceConnector(BaseConnector):
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _get_cache_path(self):
         """
@@ -98,7 +98,7 @@ class YahooFinanceConnector(BaseConnector):
 
         os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _cached(self):
         """
@@ -191,4 +191,4 @@ class YahooFinanceConnector(BaseConnector):
         Returns:
             str: The fallback name of the connector.
         """
-        return self._config.table
+        return self.config.table

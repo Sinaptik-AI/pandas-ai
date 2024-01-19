@@ -74,24 +74,24 @@ class DatabricksConnector(SQLConnector):
         str: The string representation of the Databricks connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"host={self._config.host} port={self._config.port} "
-            f"database={self._config.database} httpPath={str(self._config.httpPath)}"
+            f"<{self.__class__.__name__} dialect={self.config.dialect} "
+            f"host={self.config.host} port={self.config.port} "
+            f"database={self.config.database} httpPath={str(self.config.httpPath)}"
         )
 
     def equals(self, other):
         if isinstance(other, self.__class__):
             return (
-                self._config.dialect,
-                self._config.token,
-                self._config.host,
-                self._config.port,
-                self._config.httpPath,
+                self.config.dialect,
+                self.config.token,
+                self.config.host,
+                self.config.port,
+                self.config.httpPath,
             ) == (
-                other._config.dialect,
-                other._config.token,
-                other._config.host,
-                other._config.port,
-                other._config.httpPath,
+                other.config.dialect,
+                other.config.token,
+                other.config.host,
+                other.config.port,
+                other.config.httpPath,
             )
         return False

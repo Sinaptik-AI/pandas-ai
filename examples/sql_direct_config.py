@@ -3,7 +3,7 @@
 from pandasai import SmartDatalake
 from pandasai.llm import OpenAI
 from pandasai.connectors import PostgreSQLConnector
-from pandasai.smart_dataframe import SmartDataframe
+from pandasai.smart_dataframe import Agent
 
 
 # With a PostgreSQL database
@@ -44,8 +44,8 @@ products = PostgreSQLConnector(
 llm = OpenAI("OPEN_API_KEY")
 
 
-order_details_smart_df = SmartDataframe(
-    order_details,
+order_details_smart_df = Agent(
+    [order_details],
     config={"llm": llm, "direct_sql": True},
     description="Contain user order details",
 )

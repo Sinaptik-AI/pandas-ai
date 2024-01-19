@@ -129,6 +129,11 @@ class GenerateSmartDatalakePipeline:
             return output
 
         except Exception as e:
+            # Show the full traceback
+            import traceback
+
+            traceback.print_exc()
+
             self.last_error = str(e)
             self.query_exec_tracker.success = False
             self.query_exec_tracker.publish()

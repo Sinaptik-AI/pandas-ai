@@ -43,17 +43,19 @@ class AbstractPrompt(ABC):
             dataframe_info = "<dataframe"
 
             # Add name attribute if available
-            if df.table_name is not None:
-                dataframe_info += f' name="{df.table_name}"'
+            if df.name is not None:
+                dataframe_info += f' name="{df.name}"'
 
             # Add description attribute if available
-            if df.table_description is not None:
-                dataframe_info += f' description="{df.table_description}"'
+            if df.description is not None:
+                dataframe_info += f' description="{df.description}"'
 
             dataframe_info += ">"
 
             # Add dataframe details
-            dataframe_info += f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.head_df.to_csv()}"
+            dataframe_info += (
+                f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.to_csv()}"
+            )
 
             # Close the dataframe tag
             dataframe_info += "</dataframe>"

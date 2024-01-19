@@ -41,12 +41,13 @@ from typing import Union, List, Any, Optional
 from ..helpers.path import find_project_root
 import pandas as pd
 from .callbacks import Callbacks
+from ..connectors import BaseConnector, PandasConnector
 
 
 class SmartDatalake:
     def __init__(
         self,
-        dfs: List[Union[pd.DataFrame, Any]],
+        dfs: List[Union[BaseConnector, pd.DataFrame, pd.Series, str, dict, list]],
         config: Optional[Union[Config, dict]] = None,
         logger: Optional[Logger] = None,
         memory: Optional[Memory] = None,
@@ -100,15 +101,29 @@ class SmartDatalake:
             dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
         """
 
-        from ..smart_dataframe import SmartDataframe
-
-        smart_dfs = []
+        connectors = []
         for df in dfs:
-            if not isinstance(df, SmartDataframe):
-                smart_dfs.append(SmartDataframe(df, config=config, logger=self.logger))
+            if isinstance(df, BaseConnector):
+                connectors.append(df)
+            elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
+                connectors.append(PandasConnector({"original_df": df}))
             else:
-                smart_dfs.append(df)
-        self.dfs = smart_dfs
+                try:
+                    import polars as pl
+
+                    if isinstance(df, pl.DataFrame):
+                        from ..connectors.polars import PolarsConnector
+
+                        connectors.append(PolarsConnector({"original_df": df}))
+                    else:
+                        raise ValueError(
+                            "Invalid input data. We cannot convert it to a dataframe."
+                        )
+                except ImportError as e:
+                    raise ValueError(
+                        "Invalid input data. We cannot convert it to a dataframe."
+                    ) from e
+        self.dfs = connectors
 
     def load_config(self, config: Union[Config, dict]):
         """

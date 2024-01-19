@@ -10,7 +10,7 @@ from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..schemas.df_config import Config
 from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
-import pandas as pd
+from ..connectors import BaseConnector
 
 
 class Pipeline(AbstractPipeline):
@@ -25,7 +25,7 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        context: Union[List[Union[pd.DataFrame, Any]], PipelineContext],
+        context: Union[List[BaseConnector], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
         query_exec_tracker: Optional[QueryExecTracker] = None,
         steps: Optional[List] = None,
@@ -42,11 +42,9 @@ class Pipeline(AbstractPipeline):
         """
 
         if not isinstance(context, PipelineContext):
-            from pandasai.smart_dataframe import load_smartdataframes
-
             config = Config(**load_config(config))
-            smart_dfs = load_smartdataframes(context, config)
-            context = PipelineContext(smart_dfs, config)
+            connectors = context
+            context = PipelineContext(connectors, config)
 
         self._logger = (
             Logger(save_logs=context.config.save_logs, verbose=context.config.verbose)

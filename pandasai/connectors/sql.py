@@ -129,10 +129,10 @@ class SQLConnector(BaseConnector):
             str: The string representation of the SQL connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"driver={self._config.driver} host={self._config.host} "
-            f"port={str(self._config.port)} database={self._config.database} "
-            f"table={self._config.table}>"
+            f"<{self.__class__.__name__} dialect={self.config.dialect} "
+            f"driver={self.config.driver} host={self.config.host} "
+            f"port={str(self.config.port)} database={self.config.database} "
+            f"table={self.config.table}>"
         )
 
     def _validate_column_name(self, column_name):
@@ -141,12 +141,12 @@ class SQLConnector(BaseConnector):
             raise ValueError(f"Invalid column name: {column_name}")
 
     def _build_query(self, limit=None, order=None):
-        base_query = select("*").select_from(text(self._config.table))
-        if self._config.where or self._additional_filters:
+        base_query = select("*").select_from(text(self.config.table))
+        if self.config.where or self._additional_filters:
             # conditions is the list of where + additional filters
             conditions = []
-            if self._config.where:
-                conditions += self._config.where
+            if self.config.where:
+                conditions += self.config.where
             if self._additional_filters:
                 conditions += self._additional_filters
 
@@ -190,8 +190,8 @@ class SQLConnector(BaseConnector):
 
         if self.logger:
             self.logger.log(
-                f"Getting head of {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Getting head of {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
@@ -286,8 +286,8 @@ class SQLConnector(BaseConnector):
 
         if self.logger:
             self.logger.log(
-                f"Loading the table {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Loading the table {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the results
@@ -317,12 +317,12 @@ class SQLConnector(BaseConnector):
         if self.logger:
             self.logger.log(
                 "Getting the number of rows in the table "
-                f"{self._config.table} using dialect "
-                f"{self._config.dialect}"
+                f"{self.config.table} using dialect "
+                f"{self.config.dialect}"
             )
 
         # Run a SQL query to get the number of rows
-        query = select(text("COUNT(*)")).select_from(text(self._config.table))
+        query = select(text("COUNT(*)")).select_from(text(self.config.table))
 
         # Return the number of rows
         self._rows_count = self._connection.execute(query).fetchone()[0]
@@ -343,8 +343,8 @@ class SQLConnector(BaseConnector):
         if self.logger:
             self.logger.log(
                 "Getting the number of columns in the table "
-                f"{self._config.table} using dialect "
-                f"{self._config.dialect}"
+                f"{self.config.table} using dialect "
+                f"{self.config.dialect}"
             )
 
         self._columns_count = len(self.head().columns)
@@ -365,14 +365,14 @@ class SQLConnector(BaseConnector):
         # Return the hash of the columns and the where clause
         columns_str = "".join(self.head().columns)
         if (
-            self._config.where
+            self.config.where
             or include_additional_filters
             and self._additional_filters is not None
         ):
             columns_str += "WHERE"
-        if self._config.where:
+        if self.config.where:
             # where clause is a list of lists
-            for condition in self._config.where:
+            for condition in self.config.where:
                 columns_str += f"{condition[0]} {condition[1]} {condition[2]}"
         if include_additional_filters and self._additional_filters:
             for condition in self._additional_filters:
@@ -393,24 +393,24 @@ class SQLConnector(BaseConnector):
 
     @property
     def fallback_name(self):
-        return self._config.table
+        return self.config.table
 
     def equals(self, other):
         if isinstance(other, self.__class__):
             return (
-                self._config.dialect,
-                self._config.driver,
-                self._config.host,
-                self._config.port,
-                self._config.username,
-                self._config.password,
+                self.config.dialect,
+                self.config.driver,
+                self.config.host,
+                self.config.port,
+                self.config.username,
+                self.config.password,
             ) == (
-                other._config.dialect,
-                other._config.driver,
-                other._config.host,
-                other._config.port,
-                other._config.username,
-                other._config.password,
+                other.config.dialect,
+                other.config.driver,
+                other.config.host,
+                other.config.port,
+                other.config.username,
+                other.config.password,
             )
         return False
 
@@ -500,8 +500,8 @@ class SqliteConnector(SQLConnector):
 
         if self.logger:
             self.logger.log(
-                f"Getting head of {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Getting head of {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
@@ -518,9 +518,9 @@ class SqliteConnector(SQLConnector):
             str: The string representation of the SQL connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"database={self._config.database} "
-            f"table={self._config.table}>"
+            f"<{self.__class__.__name__} dialect={self.config.dialect} "
+            f"database={self.config.database} "
+            f"table={self.config.table}>"
         )
 
 
@@ -599,8 +599,8 @@ class PostgreSQLConnector(SQLConnector):
 
         if self.logger:
             self.logger.log(
-                f"Getting head of {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Getting head of {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the columns names and 5 random rows

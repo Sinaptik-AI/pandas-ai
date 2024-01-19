@@ -8,7 +8,6 @@ from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.smart_dataframe import SmartDataframe
 from pandasai.pipelines.smart_datalake_chat.code_execution import CodeExecution
 
 
@@ -63,10 +62,6 @@ class TestCodeExecution:
                 ],
             }
         )
-
-    @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": True})
 
     @pytest.fixture
     def config(self, llm):

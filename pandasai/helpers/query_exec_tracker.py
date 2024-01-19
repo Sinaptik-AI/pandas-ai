@@ -10,6 +10,7 @@ from collections import defaultdict
 from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
     SmartDatalakePipelineInput,
 )
+from pandasai.connectors import BaseConnector
 
 
 class ResponseType(TypedDict):
@@ -80,14 +81,14 @@ class QueryExecTracker:
         json_data = json.loads(df.to_json(orient="split", date_format="iso"))
         return {"headers": json_data["columns"], "rows": json_data["data"]}
 
-    def add_dataframes(self, dfs: List) -> None:
+    def add_dataframes(self, dfs: List[BaseConnector]) -> None:
         """
         Add used dataframes for the query to query exec tracker
         Args:
-            dfs (List[SmartDataFrame]): List of dataframes
+            dfs (List[BaseConnector]): List of dataframes
         """
         for df in dfs:
-            head = df.head_df.get_schema()
+            head = df.get_schema()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_step(self, step: dict) -> None:

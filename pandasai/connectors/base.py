@@ -26,7 +26,6 @@ class BaseConnector(ABC):
     Base connector class to be extended by all connectors.
     """
 
-    _config: BaseConnectorConfig = None
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
@@ -46,7 +45,7 @@ class BaseConnector(ABC):
         if isinstance(config, dict):
             config = self._load_connector_config(config)
 
-        self._config = config
+        self.config = config
         self.name = name
         self.description = description
         self.custom_head = custom_head
@@ -144,10 +143,10 @@ class BaseConnector(ABC):
         Return the path of the data source that the connector is connected to.
         """
         # JDBC string
-        path = f"{self.__class__.__name__}://{self._config.host}:"
-        if hasattr(self._config, "port"):
-            path += str(self._config.port)
-        path += f"/{self._config.database}/{self._config.table}"
+        path = f"{self.__class__.__name__}://{self.config.host}:"
+        if hasattr(self.config, "port"):
+            path += str(self.config.port)
+        path += f"/{self.config.database}/{self.config.table}"
         return path
 
     @property
