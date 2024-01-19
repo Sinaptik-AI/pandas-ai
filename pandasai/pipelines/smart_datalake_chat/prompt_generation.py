@@ -20,16 +20,10 @@ class PromptGeneration(BaseLogicUnit):
     pass
 
     def _get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
-        key = (
-            "direct_sql_prompt" if context.config.direct_sql else "generate_python_code"
-        )
         return (
-            key,
-            (
-                DirectSQLPrompt(tables=context.dfs)
-                if context.config.direct_sql
-                else GeneratePythonCodePrompt()
-            ),
+            DirectSQLPrompt(tables=context.dfs)
+            if context.config.direct_sql
+            else GeneratePythonCodePrompt()
         )
 
     def execute(self, input: Any, **kwargs) -> Any:
@@ -76,15 +70,11 @@ class PromptGeneration(BaseLogicUnit):
         )
 
     def get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
-        custom_prompt_key = (
-            "direct_sql_prompt" if context.config.direct_sql else "generate_python_code"
-        )
-        default_prompt = (
+        return (
             DirectSQLPrompt(tables=context.dfs)
             if context.config.direct_sql
             else GeneratePythonCodePrompt()
         )
-        return custom_prompt_key, default_prompt
 
     def get_prompt(self, default_values) -> AbstractPrompt:
         """
@@ -96,10 +86,7 @@ class PromptGeneration(BaseLogicUnit):
         Returns:
             AbstractPrompt: The prompt
         """
-        custom_prompt_key, default_prompt = self.get_chat_prompt(self.context)
-        prompt = (
-            self.context.config.custom_prompts.get(custom_prompt_key) or default_prompt
-        )
+        prompt = self.get_chat_prompt(self.context)
 
         # Set default values for the prompt
         prompt.set_config(self.context.config)

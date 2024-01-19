@@ -1,5 +1,5 @@
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Any, Dict, TypedDict
+from typing import Optional, List, Any, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
@@ -17,7 +17,6 @@ class Config(BaseModel):
     enforce_privacy: bool = False
     enable_cache: bool = True
     use_error_correction_framework: bool = True
-    custom_prompts: Dict = Field(default_factory=dict)
     custom_instructions: Optional[str] = None
     open_charts: bool = True
     save_charts: bool = False

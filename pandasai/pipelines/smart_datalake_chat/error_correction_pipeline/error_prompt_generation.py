@@ -69,10 +69,7 @@ class ErrorPromptGeneration(BaseLogicUnit):
         if isinstance(e, InvalidLLMOutputType):
             return CorrectOutputTypeErrorPrompt()
         else:
-            return (
-                self.context.config.custom_prompts.get("correct_error")
-                or CorrectErrorPrompt()
-            )
+            return CorrectErrorPrompt()
 
     def get_prompt(self, e: Exception, default_values: dict) -> AbstractPrompt:
         """

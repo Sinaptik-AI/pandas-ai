@@ -78,15 +78,11 @@ class TestPromptGeneration:
         prompt_generation = PromptGeneration()
         context.config.direct_sql = True
 
-        gen_key, gen_prompt = prompt_generation.get_chat_prompt(context)
-        expected_key = "direct_sql_prompt"
-        assert gen_key == expected_key
+        gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, DirectSQLPrompt)
 
         # Test case 2: direct_sql is False
         context.config.direct_sql = False
 
-        gen_key, gen_prompt = prompt_generation.get_chat_prompt(context)
-        expected_key = "generate_python_code"
-        assert gen_key == expected_key
+        gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
