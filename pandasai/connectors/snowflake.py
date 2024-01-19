@@ -28,7 +28,9 @@ class SnowFlakeConnector(SQLConnector):
     SnowFlake connectors are used to connect to SnowFlake Data Cloud.
     """
 
-    def __init__(self, config: Union[SnowFlakeConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[SnowFlakeConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the SnowFlake connector with the given configuration.
 

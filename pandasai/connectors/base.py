@@ -29,7 +29,9 @@ class BaseConnector(ABC):
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config: Union[BaseConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[BaseConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the connector with the given configuration.
 
@@ -40,6 +42,8 @@ class BaseConnector(ABC):
             config = self._load_connector_config(config)
 
         self._config = config
+        self.name = name
+        self.description = description
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object

@@ -11,6 +11,5 @@
   "save_charts_path": "exports/charts",
   "custom_whitelisted_dependencies": [],
   "llm": "OpenAI",
-  "llm_options": null,
-  "saved_dfs": []
+  "llm_options": null
 }

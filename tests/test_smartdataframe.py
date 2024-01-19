@@ -1,5 +1,4 @@
 """Unit tests for the SmartDatalake class"""
-import json
 import os
 from typing import Optional
 from unittest.mock import patch, Mock
@@ -22,13 +21,6 @@ class TestSmartDataframe:
         ]:
             if os.path.exists("cache/" + filename):
                 os.remove("cache/" + filename)
-
-        # Remove saved_dfs from pandasai.json
-        with open("pandasai.json", "r") as json_file:
-            data = json.load(json_file)
-            data["saved_dfs"] = []
-        with open("pandasai.json", "w") as json_file:
-            json.dump(data, json_file, indent=2)
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):

@@ -36,8 +36,6 @@ class SmartDataframe:
     def __init__(
         self,
         df: Union[pd.DataFrame, pd.Series, BaseConnector, str, dict, list],
-        name: str = None,
-        description: str = None,
         custom_head: pd.DataFrame = None,
         config: Config = None,
         logger: Logger = None,
@@ -57,19 +55,14 @@ class SmartDataframe:
         else:
             self.config = config
 
-        self.logger = logger or Logger(self.config)
+        self.logger = logger or Logger()
 
         # Define the dataframe proxy
         self.dataframe_proxy = DataframeProxy(df, logger)
 
         # Set the df info
-        self.table_name = name
-        if self.table_name is None and self.connector:
-            self.table_name = self.connector.fallback_name
-        if self.connector:
-            self._table_name = self.connector.fallback_name
-
-        self.table_description = description
+        self.table_name = self.connector.name or self.connector.fallback_name
+        self.table_description = self.connector.description
 
         self.head_df = DataframeHead(
             self.dataframe_proxy.connector,

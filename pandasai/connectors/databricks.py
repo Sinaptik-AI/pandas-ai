@@ -25,7 +25,12 @@ class DatabricksConnector(SQLConnector):
     Databricks connectors are used to connect to Databricks Data Cloud.
     """
 
-    def __init__(self, config: Union[DatabricksConnectorConfig, dict]):
+    def __init__(
+        self,
+        config: Union[DatabricksConnectorConfig, dict],
+        name=None,
+        description=None,
+    ):
         """
         Initialize the Databricks connector with the given configuration.
 

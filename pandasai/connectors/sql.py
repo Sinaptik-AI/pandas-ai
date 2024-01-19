@@ -438,7 +438,9 @@ class SqliteConnector(SQLConnector):
     Sqlite connector are used to connect to Sqlite databases.
     """
 
-    def __init__(self, config: Union[SqliteConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[SqliteConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the Sqlite connector with the given configuration.
 
@@ -522,7 +524,9 @@ class MySQLConnector(SQLConnector):
     MySQL connectors are used to connect to MySQL databases.
     """
 
-    def __init__(self, config: Union[SQLConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[SQLConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the MySQL connector with the given configuration.
 
@@ -550,7 +554,9 @@ class PostgreSQLConnector(SQLConnector):
     PostgreSQL connectors are used to connect to PostgreSQL databases.
     """
 
-    def __init__(self, config: Union[SQLConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[SQLConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the PostgreSQL connector with the given configuration.
 

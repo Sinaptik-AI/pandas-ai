@@ -34,7 +34,9 @@ class PandasConnector(BaseConnector):
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config: Union[PandasConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[PandasConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the Pandas connector with the given configuration.
 

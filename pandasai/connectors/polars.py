@@ -34,7 +34,9 @@ class PolarsConnector(BaseConnector):
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config: Union[PolarsConnectorConfig, dict]):
+    def __init__(
+        self, config: Union[PolarsConnectorConfig, dict], name=None, description=None
+    ):
         """
         Initialize the Polars connector with the given configuration.
 
@@ -44,6 +46,9 @@ class PolarsConnector(BaseConnector):
         super().__init__(config)
 
         self._load_df(self._config.original_df)
+
+        self.name = name
+        self.description = description
 
     def _load_df(self, df: Union[pl.DataFrame, pl.Series, str, dict]):
         """
