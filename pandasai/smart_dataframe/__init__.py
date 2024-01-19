@@ -24,13 +24,10 @@ import pandas as pd
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
-from ..skills import Skill
-
-from ..smart_datalake import SmartDatalake
 from ..schemas.df_config import Config
 
 from ..helpers.logger import Logger
-from typing import List, Union, Optional
+from typing import List, Union
 from ..connectors.base import BaseConnector
 
 from .df_head import DataframeHead
@@ -57,12 +54,15 @@ class SmartDataframe:
             logger (Logger, optional): Logger to be used. Defaults to None.
         """
 
+        if config is None or isinstance(config, dict):
+            self.config = Config(**(config or {}))
+        else:
+            self.config = config
+
+        self.logger = logger or Logger(self.config)
+
         # Define the dataframe proxy
         self.dataframe_proxy = DataframeProxy(df, logger)
-
-        # Define the smart datalake
-        self.lake = SmartDatalake([self], config, logger)
-        self.lake.set_instance_type(self.__class__.__name__)
 
         # Set the df info
         self.table_name = name
@@ -76,37 +76,8 @@ class SmartDataframe:
         self.head_df = DataframeHead(
             self.dataframe_proxy.connector,
             custom_head,
-            samples_amount=0 if self.lake.config.enforce_privacy else 3,
+            samples_amount=0 if self.config.enforce_privacy else 3,
         )
-
-    def add_skills(self, *skills: Skill):
-        """
-        Add Skills to PandasAI
-        """
-        self.lake.add_skills(*skills)
-
-    def chat(self, query: str, output_type: Optional[str] = None):
-        """
-        Run a query on the dataframe.
-
-        Args:
-            query (str): Query to run on the dataframe
-            output_type (Optional[str]): Add a hint for LLM of which
-                type should be returned by `analyze_data()` in generated
-                code. Possible values: "number", "dataframe", "plot", "string":
-                    * number - specifies that user expects to get a number
-                        as a response object
-                    * dataframe - specifies that user expects to get
-                        pandas dataframe as a response object
-                    * plot - specifies that user expects LLM to build
-                        a plot
-                    * string - specifies that user expects to get text
-                        as a response object
-
-        Raises:
-            ValueError: If the query is empty
-        """
-        return self.lake.chat(query, output_type)
 
     def column_hash(self) -> str:
         """
@@ -155,42 +126,6 @@ class SmartDataframe:
     @property
     def columns_count(self):
         return self.connector.columns_count
-
-    @property
-    def last_prompt(self):
-        return self.lake.last_prompt
-
-    @property
-    def last_code_generated(self):
-        return self.lake.last_code_generated
-
-    @property
-    def last_code_executed(self):
-        return self.lake.last_code_executed
-
-    @property
-    def last_result(self):
-        return self.lake.last_result
-
-    @property
-    def last_error(self):
-        return self.lake.last_error
-
-    @property
-    def cache(self):
-        return self.lake.cache
-
-    @property
-    def logs(self):
-        return self.lake.logs
-
-    @property
-    def llm(self):
-        return self.lake.llm
-
-    @property
-    def last_query_log_id(self):
-        return self.lake.last_query_log_id
 
     def get_query_exec_func(self):
         return self.dataframe_proxy.connector.execute_direct_sql_query

@@ -10,7 +10,7 @@ from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.skills import skill, Skill
-from pandasai.smart_dataframe import SmartDataframe
+from pandasai.smart_datalake import SmartDatalake
 
 
 class TestSkills:
@@ -62,15 +62,15 @@ class TestSkills:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def smart_datalake(self, llm, sample_df):
+        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
-    def code_manager(self, smart_dataframe: SmartDataframe):
+    def code_manager(self, smart_datalake: SmartDatalake):
         return CodeManager(
-            dfs=[smart_dataframe],
-            config=smart_dataframe.lake.config,
-            logger=smart_dataframe.lake.logger,
+            smart_datalake.dfs,
+            config=smart_datalake.config,
+            logger=smart_datalake.logger,
         )
 
     @pytest.fixture
@@ -243,26 +243,9 @@ class TestSkills:
         agent.add_skills(skill_a, skill_b)
         assert len(agent.lake.skills_manager.skills) == 2
 
-    def test_add_skills_with_smartDataframe(self, smart_dataframe: SmartDataframe):
-        @skill
-        def skill_a(*args, **kwargs):
-            """Skill A"""
-            return "SkillA Result"
-
-        skill_b = Skill.from_function(
-            func=lambda _: "SkillB Result", description="Skill B"
-        )
-
-        smart_dataframe.add_skills(skill_a)
-        assert len(smart_dataframe.lake.skills_manager.skills) == 1
-
-        smart_dataframe.lake.skills_manager.skills = []
-        smart_dataframe.add_skills(skill_a, skill_b)
-        assert len(smart_dataframe.lake.skills_manager.skills) == 2
-
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})
-        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        df = SmartDatalake([df], config={"llm": llm, "enable_cache": False})
 
         function_def = """
 <function>

@@ -1,7 +1,7 @@
 import pytest
 
 
-from pandasai import SmartDataframe
+from pandasai import SmartDatalake
 from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
@@ -201,7 +201,7 @@ class TestOpenAIInfo:
         )
         mocker.patch.object(llm.client, "create", return_value=llm_response)
 
-        sdf = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        sdf = SmartDatalake([df], config={"llm": llm, "enable_cache": False})
         with get_openai_callback() as cb:
             sdf.chat("some question 1")
             assert cb.total_tokens == 3

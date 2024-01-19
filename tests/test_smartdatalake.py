@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 
-from pandasai import SmartDataframe, SmartDatalake
+from pandasai import SmartDatalake
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -111,12 +111,8 @@ class TestSmartDatalake:
         return PostgreSQLConnector(self.config)
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
-
-    @pytest.fixture
-    def smart_datalake(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake
+    def smart_datalake(self, llm, sample_df):
+        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
 
     def test_load_llm_with_pandasai_llm(self, smart_datalake: SmartDatalake, llm):
         assert smart_datalake.load_llm(llm) == llm
@@ -184,7 +180,6 @@ class TestSmartDatalake:
         mock_generate,
         mock_execute,
         smart_datalake: SmartDatalake,
-        smart_dataframe: SmartDataframe,
     ):
         mock_traceback.return_value = "Test error"
         mock_generate.return_value = (
@@ -195,7 +190,7 @@ class TestSmartDatalake:
             {"type": "string", "value": "Hello World"},
         ]
 
-        smart_dataframe.head_df.to_csv = Mock(
+        smart_datalake.dfs[0].head_df.to_csv = Mock(
             return_value="""country,gdp,happiness_index
 China,654881226,6.66
 Japan,9009692259,7.16

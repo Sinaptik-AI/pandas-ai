@@ -23,6 +23,7 @@ from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 
 from pandasai.smart_dataframe import SmartDataframe
+from pandasai.smart_datalake import SmartDatalake
 
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 
@@ -78,22 +79,22 @@ class TestCodeManager:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def smart_datalake(self, llm, sample_df):
+        return SmartDatalake([sample_df], config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
-    def smart_dataframe_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
-        return SmartDataframe(
-            pgsql_connector,
+    def smart_datalake_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+        return SmartDatalake(
+            [pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
         )
 
     @pytest.fixture
-    def code_manager(self, smart_dataframe: SmartDataframe):
+    def code_manager(self, smart_datalake: SmartDatalake):
         return CodeManager(
-            dfs=[smart_dataframe],
-            config=smart_dataframe.lake.config,
-            logger=smart_dataframe.lake.logger,
+            dfs=smart_datalake.dfs,
+            config=smart_datalake.config,
+            logger=smart_datalake.logger,
         )
 
     @pytest.fixture
@@ -225,16 +226,16 @@ print(dfs)"""
         autospec=True,
     )
     def test_exception_handling(
-        self, mock_execute_code: MagicMock, smart_dataframe: SmartDataframe
+        self, mock_execute_code: MagicMock, smart_datalake: SmartDatalake
     ):
         mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
-        result = smart_dataframe.chat("How many countries are in the dataframe?")
+        result = smart_datalake.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "
             "because of the following error:\n"
             "\nNo code found in the answer.\n"
         )
-        assert smart_dataframe.last_error == "No code found in the answer."
+        assert smart_datalake.last_error == "No code found in the answer."
 
     def test_custom_whitelisted_dependencies(
         self, code_manager: CodeManager, llm, exec_context: MagicMock
@@ -254,7 +255,7 @@ my_custom_library.do_something()
             == """my_custom_library.do_something()"""
         )
 
-    def test_get_environment(self, code_manager: CodeManager, smart_dataframe):
+    def test_get_environment(self, code_manager: CodeManager):
         code_manager._additional_dependencies = [
             {"name": "pyplot", "alias": "plt", "module": "matplotlib"},
             {"name": "numpy", "alias": "np", "module": "numpy"},
@@ -401,24 +402,18 @@ result = {
         # raise exception when two different connector
         with pytest.raises(InvalidConfigError):
             code_manager._config.direct_sql = True
-            df1 = SmartDataframe(
-                sql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
-            df2 = SmartDataframe(
-                pgsql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
+            df1 = SmartDataframe(sql_connector)
+            df2 = SmartDataframe(pgsql_connector)
             code_manager._validate_direct_sql([df1, df2])
 
     def test_clean_code_direct_sql_code(
-        self, exec_context: MagicMock, smart_dataframe_with_connector
+        self, exec_context: MagicMock, smart_datalake_with_connector
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
         code_manager = CodeManager(
-            dfs=[smart_dataframe_with_connector],
-            config=smart_dataframe_with_connector.lake.config,
-            logger=smart_dataframe_with_connector.lake.logger,
+            dfs=smart_datalake_with_connector.dfs,
+            config=smart_datalake_with_connector.config,
+            logger=smart_datalake_with_connector.logger,
         )
         safe_code = """
 import numpy as np
@@ -536,7 +531,7 @@ np.array()"""
             pgsql_connector,
             config={"llm": FakeLLM(output=""), "direct_sql": True},
         )
-        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        code_manager = CodeManager([df], df.config, df.logger)
         safe_code = """sql_query = 'SELECT * FROM your_table'"""
         assert code_manager._clean_code(safe_code, exec_context) == safe_code
 
@@ -548,7 +543,7 @@ np.array()"""
             pgsql_connector,
             config={"llm": FakeLLM(output=""), "direct_sql": True},
         )
-        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        code_manager = CodeManager([df], df.config, df.logger)
         safe_code = """sql_query = 'SELECT * FROM unknown_table'
     """
         with pytest.raises(MaliciousQueryError) as excinfo:
@@ -567,7 +562,7 @@ np.array()"""
             config={"llm": FakeLLM(output=""), "direct_sql": True},
         )
 
-        code_manager = CodeManager([df], df.lake.config, df.lake.logger)
+        code_manager = CodeManager([df], df.config, df.logger)
         safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
         with pytest.raises(MaliciousQueryError) as excinfo:
             code_manager._clean_code(safe_code, exec_context)
