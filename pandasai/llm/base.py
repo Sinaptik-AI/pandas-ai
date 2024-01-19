@@ -1,7 +1,7 @@
 """ Base class to implement a new LLM
 
 This module is the base class to integrate the various LLMs API. This module also
-includes the Base LLM classes for OpenAI, HuggingFace and Google PaLM.
+includes the Base LLM classes for OpenAI and Google PaLM.
 
 Example:
 
@@ -14,19 +14,15 @@ Example:
     ```
 """
 
-import os
 import ast
 import re
 from abc import abstractmethod
 from typing import Any, Dict, Optional, Union, Mapping, Tuple
 
-import requests
-
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
     NoCodeFoundError,
-    LLMResponseHTTPError,
 )
 from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var
@@ -348,119 +344,6 @@ class BaseOpenAI(LLM):
             if self._is_chat_model
             else self.completion(self.last_prompt)
         )
-
-
-class HuggingFaceLLM(LLM):
-    """Base class to implement a new Hugging Face LLM.
-
-    LLM base class is extended to be used with HuggingFace LLM Modes APIs.
-
-    """
-
-    last_prompt: Optional[str] = None
-    api_token: str
-    _api_url: str = "https://api-inference.huggingface.co/models/"
-    _max_retries: int = 3
-
-    @property
-    def type(self) -> str:
-        return "huggingface-llm"
-
-    def _setup(self, **kwargs):
-        """
-        Setup the HuggingFace LLM
-
-        Args:
-            **kwargs: ["api_token", "max_retries"]
-
-        """
-        self.api_token = (
-            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
-        )
-        if self.api_token is None:
-            raise APIKeyNotFoundError("HuggingFace Hub API key is required")
-
-        # Since the huggingface API only returns few tokens at a time, we need to
-        # call the API multiple times to get all the tokens. This is the maximum
-        # number of retries we will do.
-        if kwargs.get("max_retries"):
-            self._max_retries = kwargs.get("max_retries")
-
-    def __init__(self, **kwargs):
-        """
-        __init__ method of HuggingFaceLLM Class
-
-        Args:
-            **kwargs: ["api_token", "max_retries"]
-
-        """
-        self._setup(**kwargs)
-
-    def query(self, payload) -> str:
-        """
-        Query the HF API
-        Args:
-            payload: A JSON form payload
-
-        Returns:
-            str: Value of the field "generated_text" in response JSON
-                given by the remote server.
-
-        Raises:
-            LLMResponseHTTPError: If api-inference.huggingface.co responses
-                with any error HTTP code (>= 400).
-
-        """
-
-        headers = {"Authorization": f"Bearer {self.api_token}"}
-
-        response = requests.post(
-            self._api_url, headers=headers, json=payload, timeout=60
-        )
-
-        if response.status_code >= 400:
-            try:
-                error_msg = response.json().get("error")
-            except (requests.exceptions.JSONDecodeError, TypeError):
-                error_msg = None
-
-            raise LLMResponseHTTPError(
-                status_code=response.status_code, error_msg=error_msg
-            )
-
-        return response.json()[0]["generated_text"]
-
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
-        """
-        A call method of HuggingFaceLLM class.
-        Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
-            suffix (str): A string representing the suffix to be truncated
-                from the generated response.
-
-        Returns
-            str: LLM response.
-
-        """
-
-        prompt = instruction.to_string()
-        payload = prompt + suffix
-
-        # sometimes the API doesn't return a valid response, so we retry passing the
-        # output generated from the previous call as the input
-        for _i in range(self._max_retries):
-            response = self.query({"inputs": payload})
-            payload = response
-
-            match = re.search(
-                "(```python)(.*)(```)",
-                response.replace(prompt + suffix, ""),
-                re.DOTALL | re.MULTILINE,
-            )
-            if match:
-                break
-
-        return response.replace(prompt + suffix, "")
 
 
 class BaseGoogle(LLM):
