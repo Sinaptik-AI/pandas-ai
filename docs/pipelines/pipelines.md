@@ -27,15 +27,6 @@ The `GenerateSmartDataLakePipeline` generates new data in a SmartDatalake. It ch
 - `ResultValidation` - Validating execution result
 - `ResultParsing` - Parsing result into data
 
-### GenerateSDFPipeline
-
-The `GenerateSDFPipeline` generates a new synthetic dataframe by chaining logic units:
-
-- `SyntheticDataframePrompt` - Generating dataframe prompt
-- `PromptExecution` - Executing prompt
-- `SDFCodeExecutor` - Executing generated code
-- `ProcessOutput` - Post-processing dataframe
-
 ## Custom Pipelines
 
 Custom pipelines can be created by composing `BaseLogicUnit` implementations:
