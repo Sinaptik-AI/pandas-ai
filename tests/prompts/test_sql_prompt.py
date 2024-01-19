@@ -87,9 +87,12 @@ Based on the last message in the conversation:
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
+        print(prompt_content)
+
         assert (
             prompt_content
-            == f'''<tables>
+            == f'''You are a helpful data analyst. You goal is to provide the answer for each query from the user. Answer with the full code based on the full context, no partial or incomplete code. DO NOT display plots.
+<tables>
 <table name="None">
 
 
@@ -117,5 +120,7 @@ At the end, declare "result" variable as a dictionary of type and value.
 {viz_library_type_hint}
 
 
-Generate python code and return full updated code:'''  # noqa: E501
+Generate python code and return full updated code:
+
+### Note: Use only relevant table for query and do aggregation, sorting, joins and grouby through sql query.'''  # noqa: E501
         )
