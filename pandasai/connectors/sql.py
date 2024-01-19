@@ -60,7 +60,10 @@ class SQLConnector(BaseConnector):
     _cache_interval: int = 600  # 10 minutes
 
     def __init__(
-        self, config: Union[BaseConnectorConfig, dict], cache_interval: int = 600
+        self,
+        config: Union[BaseConnectorConfig, dict],
+        cache_interval: int = 600,
+        **kwargs,
     ):
         """
         Initialize the SQL connector with the given configuration.
@@ -69,7 +72,7 @@ class SQLConnector(BaseConnector):
             config (ConnectorConfig): The configuration for the SQL connector.
         """
         config = self._load_connector_config(config)
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
         if config.dialect is None:
             raise Exception("SQL dialect must be specified")
@@ -439,7 +442,9 @@ class SqliteConnector(SQLConnector):
     """
 
     def __init__(
-        self, config: Union[SqliteConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[SqliteConnectorConfig, dict],
+        **kwargs,
     ):
         """
         Initialize the Sqlite connector with the given configuration.
@@ -452,7 +457,7 @@ class SqliteConnector(SQLConnector):
             sqlite_env_vars = {"database": "SQLITE_DB_PATH", "table": "TABLENAME"}
             config = self._populate_config_from_env(config, sqlite_env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """
@@ -525,7 +530,9 @@ class MySQLConnector(SQLConnector):
     """
 
     def __init__(
-        self, config: Union[SQLConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[SQLConnectorConfig, dict],
+        **kwargs,
     ):
         """
         Initialize the MySQL connector with the given configuration.
@@ -546,7 +553,7 @@ class MySQLConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, mysql_env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
 
 class PostgreSQLConnector(SQLConnector):
@@ -555,7 +562,9 @@ class PostgreSQLConnector(SQLConnector):
     """
 
     def __init__(
-        self, config: Union[SQLConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[SQLConnectorConfig, dict],
+        **kwargs,
     ):
         """
         Initialize the PostgreSQL connector with the given configuration.
@@ -576,7 +585,7 @@ class PostgreSQLConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, postgresql_env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     @cache
     def head(self, n: int = 5) -> pd.DataFrame:

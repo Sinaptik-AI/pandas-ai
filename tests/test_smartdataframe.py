@@ -83,7 +83,7 @@ class TestSmartDataframe:
         )
 
     @pytest.fixture
-    def custom_head(self, sample_df: pd.DataFrame):
+    def custom_head(self):
         return pd.DataFrame({"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]})
 
     @pytest.fixture

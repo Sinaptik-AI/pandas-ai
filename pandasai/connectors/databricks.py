@@ -28,8 +28,7 @@ class DatabricksConnector(SQLConnector):
     def __init__(
         self,
         config: Union[DatabricksConnectorConfig, dict],
-        name=None,
-        description=None,
+        **kwargs,
     ):
         """
         Initialize the Databricks connector with the given configuration.
@@ -48,7 +47,7 @@ class DatabricksConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         return DatabricksConnectorConfig(**config)

@@ -28,12 +28,19 @@ from ..connectors.pandas import PandasConnector
 
 
 class DataframeProxy:
-    def __init__(self, df: Union[pd.DataFrame, BaseConnector], logger: Logger = None):
+    def __init__(
+        self,
+        df: Union[pd.DataFrame, BaseConnector],
+        logger: Logger = None,
+        custom_head: pd.DataFrame = None,
+    ):
         self.logger = logger
-        self.load_dataframe(df)
+        self.load_dataframe(df, custom_head)
         self.df = None
 
-    def load_dataframe(self, df: Union[pd.DataFrame, BaseConnector]):
+    def load_dataframe(
+        self, df: Union[pd.DataFrame, BaseConnector], custom_head: pd.DataFrame = None
+    ):
         """
         Load the dataframe from a file or a connector.
 
@@ -43,7 +50,9 @@ class DataframeProxy:
         if isinstance(df, BaseConnector):
             self.connector = df
         elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
-            self.connector = PandasConnector({"original_df": df})
+            self.connector = PandasConnector(
+                {"original_df": df}, custom_head=custom_head
+            )
         else:
             try:
                 import polars as pl

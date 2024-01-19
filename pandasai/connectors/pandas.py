@@ -35,7 +35,9 @@ class PandasConnector(BaseConnector):
     _additional_filters: list[list[str]] = None
 
     def __init__(
-        self, config: Union[PandasConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[PandasConnectorConfig, dict],
+        **kwargs,
     ):
         """
         Initialize the Pandas connector with the given configuration.
@@ -43,7 +45,7 @@ class PandasConnector(BaseConnector):
         Args:
             config (PandasConnectorConfig): The configuration for the Pandas connector.
         """
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
         self._load_df(self._config.original_df)
 

@@ -8,6 +8,7 @@ import os
 from ..helpers.logger import Logger
 from pydantic import BaseModel
 from typing import Union
+from functools import cache
 
 
 class BaseConnectorConfig(BaseModel):
@@ -30,7 +31,11 @@ class BaseConnector(ABC):
     _additional_filters: list[list[str]] = None
 
     def __init__(
-        self, config: Union[BaseConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[BaseConnectorConfig, dict],
+        name: str = None,
+        description: str = None,
+        custom_head: pd.DataFrame = None,
     ):
         """
         Initialize the connector with the given configuration.
@@ -44,6 +49,7 @@ class BaseConnector(ABC):
         self._config = config
         self.name = name
         self.description = description
+        self.custom_head = custom_head
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object
@@ -83,7 +89,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def head(self, n: int = 5) -> pd.DataFrame:
+    def head(self, n: int = 3) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the
@@ -170,3 +176,65 @@ class BaseConnector(ABC):
 
     def equals(self, other):
         return self.__dict__ == other.__dict__
+
+    @cache
+    def get_head(self, n: int = 3) -> pd.DataFrame:
+        """
+        Return the head of the data source that the connector is connected to.
+        This information is passed to the LLM to provide the schema of the
+        data source.
+
+        Args:
+            n (int, optional): The number of rows to return. Defaults to 5.
+
+        Returns:
+            pd.DataFrame: The head of the data source that the connector is
+                connected to.
+        """
+        return self.custom_head if self.custom_head is not None else self.head(n)
+
+    def head_with_truncate_columns(self, max_size=25) -> pd.DataFrame:
+        """
+        Truncate the columns of the dataframe to a maximum of 20 characters.
+
+        Args:
+            df (pd.DataFrame): The dataframe to truncate the columns of.
+
+        Returns:
+            pd.DataFrame: The dataframe with truncated columns.
+        """
+        df_trunc = self.get_head().copy()
+
+        for col in df_trunc.columns:
+            if df_trunc[col].dtype == "object":
+                first_val = df_trunc[col].iloc[0]
+                if isinstance(first_val, str) and len(first_val) > max_size:
+                    df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+
+        return df_trunc
+
+    @cache
+    def get_schema(self) -> pd.DataFrame:
+        """
+        A sample of the dataframe.
+
+        Returns:
+            pd.DataFrame: A sample of the dataframe.
+        """
+        if self.get_head() is None:
+            return None
+
+        if len(self.get_head()) > 0:
+            return self.head_with_truncate_columns()
+
+        return self.get_head()
+
+    @cache
+    def to_csv(self) -> str:
+        """
+        A proxy-call to the dataframe's `.to_csv()`.
+
+        Returns:
+            str: The dataframe as a CSV string.
+        """
+        return self.get_head().to_csv(index=False)

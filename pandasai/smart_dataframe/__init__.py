@@ -28,7 +28,6 @@ from ..helpers.logger import Logger
 from typing import List, Union
 from ..connectors.base import BaseConnector
 
-from .df_head import DataframeHead
 from .dataframe_proxy import DataframeProxy
 
 
@@ -58,17 +57,11 @@ class SmartDataframe:
         self.logger = logger or Logger()
 
         # Define the dataframe proxy
-        self.dataframe_proxy = DataframeProxy(df, logger)
+        self.dataframe_proxy = DataframeProxy(df, logger, custom_head)
 
         # Set the df info
         self.table_name = self.connector.name or self.connector.fallback_name
         self.table_description = self.connector.description
-
-        self.head_df = DataframeHead(
-            self.dataframe_proxy.connector,
-            custom_head,
-            samples_amount=0 if self.config.enforce_privacy else 3,
-        )
 
     def column_hash(self) -> str:
         """
@@ -113,6 +106,10 @@ class SmartDataframe:
 
     def load_connector(self, partial: bool = False):
         self.dataframe_proxy.load_connector(partial)
+
+    @property
+    def head_df(self):
+        return self.connector
 
 
 def load_smartdataframes(

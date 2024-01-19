@@ -32,6 +32,7 @@ class YahooFinanceConnector(BaseConnector):
         stock_ticker: Optional[str] = None,
         config: Optional[Union[YahooFinanceConnectorConfig, dict]] = None,
         cache_interval: int = 600,
+        **kwargs,
     ):
         if not stock_ticker and not config:
             raise ValueError(

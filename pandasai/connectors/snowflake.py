@@ -29,7 +29,9 @@ class SnowFlakeConnector(SQLConnector):
     """
 
     def __init__(
-        self, config: Union[SnowFlakeConnectorConfig, dict], name=None, description=None
+        self,
+        config: Union[SnowFlakeConnectorConfig, dict],
+        **kwargs,
     ):
         """
         Initialize the SnowFlake connector with the given configuration.
@@ -50,7 +52,7 @@ class SnowFlakeConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, snowflake_env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         return SnowFlakeConnectorConfig(**config)

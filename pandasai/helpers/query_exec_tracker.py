@@ -87,7 +87,7 @@ class QueryExecTracker:
             dfs (List[SmartDataFrame]): List of dataframes
         """
         for df in dfs:
-            head = df.head_df.sample()
+            head = df.head_df.get_schema()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_step(self, step: dict) -> None:

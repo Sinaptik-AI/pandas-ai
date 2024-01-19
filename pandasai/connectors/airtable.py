@@ -37,6 +37,7 @@ class AirtableConnector(BaseConnector):
         self,
         config: Optional[Union[AirtableConnectorConfig, dict]] = None,
         cache_interval: int = 600,
+        **kwargs,
     ):
         if isinstance(config, dict):
             if "api_key" in config and "base_id" in config and "table" in config:
@@ -59,7 +60,7 @@ class AirtableConnector(BaseConnector):
         self._root_url: str = "https://api.airtable.com/v0/"
         self._cache_interval = cache_interval
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _init_connection(self, config: BaseConnectorConfig):
         """
