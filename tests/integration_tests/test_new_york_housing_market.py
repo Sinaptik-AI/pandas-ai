@@ -1,8 +1,7 @@
-import os
 import unittest
 
 from pandasai import SmartDataframe
-from pandasai.llm import AzureOpenAI, OpenAI
+from pandasai.llm import OpenAI
 
 from . import PATH_DATA
 
