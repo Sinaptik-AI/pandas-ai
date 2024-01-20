@@ -7,8 +7,8 @@ from typing import Any, List, TypedDict, Union
 import requests
 from collections import defaultdict
 
-from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
-    SmartDatalakePipelineInput,
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
 )
 from pandasai.connectors import BaseConnector
 
@@ -57,7 +57,7 @@ class QueryExecTracker:
         """
         self._is_related_query = flag
 
-    def start_new_track(self, input: SmartDatalakePipelineInput):
+    def start_new_track(self, input: ChatPipelineInput):
         """
         Resets tracking variables to start new track
         """

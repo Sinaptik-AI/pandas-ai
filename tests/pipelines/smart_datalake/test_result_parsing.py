@@ -6,11 +6,11 @@ from pandasai.helpers.logger import Logger
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.result_parsing import ResultParsing
+from pandasai.pipelines.chat.result_parsing import ResultParsing
 
 
 class TestResultParsing:
-    "Unit test for Smart Data Lake Result Parsing"
+    "Unit test for Result Parsing"
 
     throw_exception = True
 

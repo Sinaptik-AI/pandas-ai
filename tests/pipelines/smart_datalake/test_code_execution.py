@@ -8,11 +8,11 @@ from pandasai.helpers.skills_manager import SkillsManager
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.code_execution import CodeExecution
+from pandasai.pipelines.chat.code_execution import CodeExecution
 
 
 class TestCodeExecution:
-    "Unit test for Smart Data Lake Code Execution"
+    "Unit test for Code Execution"
 
     throw_exception = True
 

@@ -23,7 +23,7 @@ from pandasai.llm.langchain import LangchainLLM
 
 
 class TestAgentCore:
-    """Unit tests for the SmartDatlake class"""
+    """Unit tests for the Agent class"""
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
@@ -163,15 +163,15 @@ class TestAgentCore:
         mock_query_tracker_publish.assert_called()
 
     @patch(
-        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        "pandasai.pipelines.chat.code_execution.CodeManager.execute_code",
         autospec=True,
     )
     @patch(
-        "pandasai.pipelines.smart_datalake_chat.code_generator.CodeGenerator.execute",
+        "pandasai.pipelines.chat.code_generator.CodeGenerator.execute",
         autospec=True,
     )
     @patch(
-        "pandasai.pipelines.smart_datalake_chat.code_execution.traceback.format_exc",
+        "pandasai.pipelines.chat.code_execution.traceback.format_exc",
         autospec=True,
     )
     def test_retry_on_error_with_single_df(

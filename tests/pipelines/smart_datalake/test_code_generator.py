@@ -10,11 +10,11 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
-from pandasai.pipelines.smart_datalake_chat.code_generator import CodeGenerator
+from pandasai.pipelines.chat.code_generator import CodeGenerator
 
 
 class TestCodeGenerator:
-    "Unit test for Smart Data Lake Code Generator"
+    "Unit test for Code Generator"
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):

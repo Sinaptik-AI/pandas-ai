@@ -6,13 +6,13 @@ from pandasai.llm.fake import FakeLLM
 
 from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
-from pandasai.pipelines.smart_datalake_chat.prompt_generation import PromptGeneration
+from pandasai.pipelines.chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.connectors import PandasConnector
 
 
 class TestPromptGeneration:
-    "Unit test for Smart Data Lake Prompt Generation"
+    "Unit test for Prompt Generation"
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):

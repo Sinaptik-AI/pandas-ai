@@ -26,7 +26,7 @@ class ResponseParser(IResponseParser):
 
     def __init__(self, context) -> None:
         """
-        Initialize the ResponseParser with Context from SmartDataLake
+        Initialize the ResponseParser with Context from Agent
         Args:
             context (Context): context contains the config and logger
         """

@@ -9,8 +9,8 @@ from pandasai.helpers.output_types import output_type_factory
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
-    SmartDatalakePipelineInput,
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
 )
 from pandasai.connectors import PandasConnector
 from unittest import TestCase
@@ -80,7 +80,7 @@ class TestQueryExecTracker:
 
     @pytest.fixture
     def tracking_info(self):
-        return SmartDatalakePipelineInput(
+        return ChatPipelineInput(
             "which country has the highest GDP?",
             output_type_factory("string"),
             conversation_id="123",
@@ -445,7 +445,7 @@ class TestQueryExecTracker:
         assert result is None  # The function should return None
 
     def test_multiple_instance_of_tracker(
-        self, tracker: QueryExecTracker, tracking_info: SmartDatalakePipelineInput
+        self, tracker: QueryExecTracker, tracking_info: ChatPipelineInput
     ):
         # Create a mock function
         mock_func = Mock()
@@ -456,7 +456,7 @@ class TestQueryExecTracker:
         tracker.execute_func(mock_func, tag="generate_code")
 
         tracker2 = QueryExecTracker()
-        track_input = SmartDatalakePipelineInput(
+        track_input = ChatPipelineInput(
             "which country has the highest GDP?",
             output_type_factory("string"),
             conversation_id="1234",
@@ -487,7 +487,7 @@ class TestQueryExecTracker:
         )
 
     def test_conversation_id_in_different_tracks(
-        self, tracker: QueryExecTracker, tracking_info: SmartDatalakePipelineInput
+        self, tracker: QueryExecTracker, tracking_info: ChatPipelineInput
     ):
         # Create a mock function
         mock_func = Mock()

@@ -235,7 +235,7 @@ print(dfs)"""
         )
 
     @patch(
-        "pandasai.pipelines.smart_datalake_chat.code_execution.CodeManager.execute_code",
+        "pandasai.pipelines.chat.code_execution.CodeManager.execute_code",
         autospec=True,
     )
     def test_exception_handling(self, mock_execute_code: MagicMock, agent: Agent):

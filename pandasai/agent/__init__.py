@@ -42,7 +42,7 @@ class Agent:
         if not isinstance(dfs, list):
             dfs = [dfs]
 
-        # Configure the smart datalake
+        # Configure the agent core
         self.core = AgentCore(dfs, config, logger, memory=Memory(memory_size))
 
     def add_skills(self, *skills: Skill):

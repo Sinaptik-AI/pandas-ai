@@ -3,11 +3,11 @@ from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.code_generator import CodeGenerator
-from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
+from pandasai.pipelines.chat.code_generator import CodeGenerator
+from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
-from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_prompt_generation import (
+from pandasai.pipelines.chat.error_correction_pipeline.error_prompt_generation import (
     ErrorPromptGeneration,
 )
 

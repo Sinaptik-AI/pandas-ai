@@ -2,12 +2,12 @@ import uuid
 import os
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
-    SmartDatalakePipelineInput,
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
 )
 from pandasai.skills import Skill
-from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
-    GenerateSmartDatalakePipeline,
+from ..pipelines.chat.generate_chat_pipeline import (
+    GenerateChatPipeline,
 )
 
 from pandasai.helpers.output_types import output_type_factory
@@ -61,7 +61,7 @@ class AgentCore:
             dfs=self.dfs, config=config, memory=memory, cache=cache
         )
 
-        self._pipeline = GenerateSmartDatalakePipeline(
+        self._pipeline = GenerateChatPipeline(
             self.context,
             self.logger,
             on_prompt_generation=self.callbacks.on_prompt_generation,
@@ -72,7 +72,7 @@ class AgentCore:
 
     def load_dfs(self, dfs: List[Union[pd.DataFrame, Any]], config: Config = None):
         """
-        Load all the dataframes to be used in the smart datalake.
+        Load all the dataframes to be used in the agent.
 
         Args:
             dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
@@ -204,7 +204,7 @@ class AgentCore:
 
         self.assign_prompt_id()
 
-        pipeline_input = SmartDatalakePipelineInput(
+        pipeline_input = ChatPipelineInput(
             query,
             output_type_factory(output_type, logger=self.logger),
             self.conversation_id,

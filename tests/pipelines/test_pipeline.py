@@ -85,7 +85,7 @@ class TestPipeline:
         assert pipeline._context == context
         assert pipeline._steps == []
 
-    def test_init_with_smartdfs(self, dataframe, config):
+    def test_init_with_agent(self, dataframe, config):
         # Test the initialization of the Pipeline
         pipeline = Pipeline([dataframe], config=config)
         assert isinstance(pipeline, Pipeline)

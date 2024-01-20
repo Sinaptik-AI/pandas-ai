@@ -1,16 +1,16 @@
 from typing import Optional
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
-from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline import (
+from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline import (
     ErrorCorrectionPipeline,
 )
-from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline_input import (
+from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
-from pandasai.pipelines.smart_datalake_chat.smart_datalake_pipeline_input import (
-    SmartDatalakePipelineInput,
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
 )
 
-from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
+from pandasai.pipelines.chat.validate_pipeline_input import (
     ValidatePipelineInput,
 )
 from ...helpers.logger import Logger
@@ -25,7 +25,7 @@ from .result_parsing import ResultParsing
 from .result_validation import ResultValidation
 
 
-class GenerateSmartDatalakePipeline:
+class GenerateChatPipeline:
     pipeline: Pipeline
     context: PipelineContext
     _logger: Logger
@@ -92,11 +92,11 @@ class GenerateSmartDatalakePipeline:
     def get_last_track_log_id(self):
         return self.query_exec_tracker.last_log_id
 
-    def run(self, input: SmartDatalakePipelineInput) -> dict:
+    def run(self, input: ChatPipelineInput) -> dict:
         """
-        Executes the smartdatalake pipeline with user input and return the result
+        Executes the chat pipeline with user input and return the result
         Args:
-            input (SmartDatalakePipelineInput): _description_
+            input (ChatPipelineInput): _description_
 
         Returns:
             The `output` dictionary is expected to have the following keys:

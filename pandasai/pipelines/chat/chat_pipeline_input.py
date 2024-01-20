@@ -5,9 +5,9 @@ from pandasai.helpers.output_types._output_types import BaseOutputType
 
 
 @dataclass
-class SmartDatalakePipelineInput:
+class ChatPipelineInput:
     """
-    Contain all the data needed by the SmartDatalake chat pipeline
+    Contain all the data needed by the chat pipeline
     """
 
     query: str

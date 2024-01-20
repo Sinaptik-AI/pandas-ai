@@ -6,7 +6,7 @@ from pandasai.exceptions import InvalidLLMOutputType
 
 from pandasai.llm.fake import FakeLLM
 
-from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_prompt_generation import (
+from pandasai.pipelines.chat.error_correction_pipeline.error_prompt_generation import (
     ErrorPromptGeneration,
 )
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
@@ -17,7 +17,7 @@ from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class TestErrorPromptGeneration:
-    "Unit test for Smart Data Lake Prompt Generation"
+    "Unit test for Prompt Generation"
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):

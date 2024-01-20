@@ -13,7 +13,7 @@ from pandasai.helpers.logger import Logger
 
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.validate_pipeline_input import (
+from pandasai.pipelines.chat.validate_pipeline_input import (
     ValidatePipelineInput,
 )
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
