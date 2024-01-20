@@ -1,4 +1,5 @@
 from typing import Any
+
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import IResponseParser, ResponseParser

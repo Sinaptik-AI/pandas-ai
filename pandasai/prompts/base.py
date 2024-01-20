@@ -1,8 +1,8 @@
 """ Base class to implement a new Prompt
 In order to better handle the instructions, this prompt module is written.
 """
-from abc import ABC, abstractmethod
 import string
+from abc import ABC, abstractmethod
 
 
 class AbstractPrompt(ABC):

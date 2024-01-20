@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import Union
+
+import pandas as pd
 
 polars_imported = False
 try:

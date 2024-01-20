@@ -7,11 +7,12 @@ from pandasai.prompts.base import AbstractPrompt
 from pandasai.prompts.correct_output_type_error_prompt import (
     CorrectOutputTypeErrorPrompt,
 )
+
 from ...helpers.code_manager import CodeExecutionContext
 from ...helpers.logger import Logger
+from ...prompts.correct_error_prompt import CorrectErrorPrompt
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
-from ...prompts.correct_error_prompt import CorrectErrorPrompt
 
 
 class CodeExecution(BaseLogicUnit):

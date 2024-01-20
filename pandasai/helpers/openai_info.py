@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import Optional, Generator
-
+from typing import Generator, Optional
 
 MODEL_COST_PER_1K_TOKENS = {
     # GPT-4 input

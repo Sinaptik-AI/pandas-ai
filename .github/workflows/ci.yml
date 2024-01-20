@@ -25,16 +25,14 @@ jobs:
         run: poetry install --all-extras
       - name: Lint with ruff
         run: |
-          poetry run ruff pandasai examples
-          poetry run ruff format pandasai examples --diff
+          make format_diff
       - name: Spellcheck
-        run: poetry run codespell pandasai docs examples tests
+        run: make spell_check
       - name: Run tests
-        run: poetry run pytest tests
+        run: make tests
       - name: Run code coverage
         run: |
-          poetry run coverage run --source=pandasai -m pytest tests
-          poetry run coverage xml
+          make coverage
       - name: Report coverage
         run: poetry run coverage report
       - name: Upload coverage reports to Codecov

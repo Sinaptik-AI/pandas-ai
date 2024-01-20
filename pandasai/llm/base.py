@@ -14,19 +14,19 @@ Example:
     ```
 """
 
-import os
 import ast
+import os
 import re
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Union, Mapping, Tuple
+from typing import Any, Dict, Mapping, Optional, Tuple, Union
 
 import requests
 
 from ..exceptions import (
     APIKeyNotFoundError,
+    LLMResponseHTTPError,
     MethodNotImplementedError,
     NoCodeFoundError,
-    LLMResponseHTTPError,
 )
 from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var

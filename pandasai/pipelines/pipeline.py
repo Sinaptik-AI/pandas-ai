@@ -1,12 +1,14 @@
 import logging
+from typing import Any, List, Optional, Union
+
 from pandasai.config import load_config
 from pandasai.exceptions import UnSupportedLogicUnit
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.logger import Logger
-from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.pipeline_context import PipelineContext
+
 from ..schemas.df_config import Config
-from typing import Any, Optional, List, Union
 from .abstract_pipeline import AbstractPipeline
 
 

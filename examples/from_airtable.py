@@ -1,7 +1,6 @@
+from pandasai import SmartDataframe
 from pandasai.connectors import AirtableConnector
 from pandasai.llm import OpenAI
-from pandasai import SmartDataframe
-
 
 airtable_connectors = AirtableConnector(
     config={

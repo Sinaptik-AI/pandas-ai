@@ -1,15 +1,14 @@
 import logging
-from typing import Union, Optional
+from typing import Optional, Union
 
+from .. import Logger
 from ._output_types import (
-    NumberOutputType,
     DataFrameOutputType,
+    DefaultOutputType,
+    NumberOutputType,
     PlotOutputType,
     StringOutputType,
-    DefaultOutputType,
 )
-from .. import Logger
-
 
 output_types_map = {
     "number": NumberOutputType,

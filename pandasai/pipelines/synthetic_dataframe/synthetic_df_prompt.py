@@ -1,6 +1,7 @@
 from typing import Any
-from pandasai.pipelines.pipeline_context import PipelineContext
+
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.generate_synthetic_df_prompt import GenerateSyntheticDfPrompt
 
 

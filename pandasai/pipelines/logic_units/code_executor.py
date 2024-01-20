@@ -1,4 +1,5 @@
 from typing import Any
+
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 
 

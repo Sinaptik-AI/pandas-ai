@@ -4,11 +4,11 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 import importlib.metadata
 
+from .agent import Agent
+from .helpers.cache import Cache
+from .skills import skill
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
-from .helpers.cache import Cache
-from .agent import Agent
-from .skills import skill
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 

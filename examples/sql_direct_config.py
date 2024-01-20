@@ -1,10 +1,9 @@
 """Example of using PandasAI with a CSV file."""
 
 from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
 from pandasai.connectors import PostgreSQLConnector
+from pandasai.llm import OpenAI
 from pandasai.smart_dataframe import SmartDataframe
-
 
 # With a PostgreSQL database
 order = PostgreSQLConnector(

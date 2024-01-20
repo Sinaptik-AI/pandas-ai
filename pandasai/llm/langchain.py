@@ -1,4 +1,5 @@
 from pandasai.prompts.base import AbstractPrompt
+
 from .base import LLM
 
 """Langchain LLM 

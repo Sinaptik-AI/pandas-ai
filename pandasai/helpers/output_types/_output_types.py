@@ -1,6 +1,6 @@
 import re
+from abc import ABC, abstractmethod
 from decimal import Decimal
-from abc import abstractmethod, ABC
 from typing import Any, Iterable
 
 from ..df_info import df_type

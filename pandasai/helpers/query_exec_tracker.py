@@ -2,11 +2,11 @@ import base64
 import json
 import os
 import time
-from typing import Any, List, TypedDict, Union
 import uuid
+from collections import defaultdict
+from typing import Any, List, TypedDict, Union
 
 import requests
-from collections import defaultdict
 
 
 class ResponseType(TypedDict):

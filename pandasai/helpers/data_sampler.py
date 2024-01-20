@@ -8,11 +8,12 @@ Only df.head() is sent to LLM API, hence the df.head() is processed
 """
 
 import random
-import pandas as pd
-import numpy as np
 
-from .df_info import df_type, DataFrameType
+import numpy as np
+import pandas as pd
+
 from .anonymizer import Anonymizer
+from .df_info import DataFrameType, df_type
 
 
 class DataSampler:

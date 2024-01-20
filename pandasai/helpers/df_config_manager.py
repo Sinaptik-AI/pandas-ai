@@ -2,10 +2,12 @@
 Class to manage the configuration of the dataframe
 """
 
+import hashlib
 import json
 import os
-import hashlib
+
 from pandasai.helpers.path import create_directory, find_closest, find_project_root
+
 from .df_info import df_type
 
 

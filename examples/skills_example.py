@@ -1,6 +1,6 @@
 import pandas as pd
-from pandasai import Agent
 
+from pandasai import Agent
 from pandasai.llm.openai import OpenAI
 from pandasai.skills import skill
 

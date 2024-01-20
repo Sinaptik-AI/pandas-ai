@@ -11,9 +11,10 @@ Example:
 
 """
 from typing import Optional
-from .base import BaseGoogle
+
 from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
+from .base import BaseGoogle
 
 
 class GoogleVertexAI(BaseGoogle):
@@ -108,11 +109,11 @@ class GoogleVertexAI(BaseGoogle):
         """
         self._validate()
 
+        from vertexai.preview.generative_models import GenerativeModel
         from vertexai.preview.language_models import (
             CodeGenerationModel,
             TextGenerationModel,
         )
-        from vertexai.preview.generative_models import GenerativeModel
 
         if self.model in self._supported_code_models:
             code_generation = CodeGenerationModel.from_pretrained(self.model)
