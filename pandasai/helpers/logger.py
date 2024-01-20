@@ -17,12 +17,14 @@ Example:
 """
 
 import inspect
-import time
-import sys
-from typing import List
 import logging
-from .path import find_closest
+import sys
+import time
+from typing import List
+
 from pydantic import BaseModel
+
+from .path import find_closest
 
 
 class Log(BaseModel):

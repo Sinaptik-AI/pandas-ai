@@ -1,15 +1,14 @@
 import logging
-from typing import Union, Optional
-from .base import VisualizationLibrary
+from typing import Optional, Union
 
+from .. import Logger
 from ._viz_library_types import (
-    NoVizLibraryType,
     MatplotlibVizLibraryType,
+    NoVizLibraryType,
     PlotlyVizLibraryType,
     SeabornVizLibraryType,
 )
-from .. import Logger
-
+from .base import VisualizationLibrary
 
 viz_lib_map = {
     VisualizationLibrary.MATPLOTLIB.value: MatplotlibVizLibraryType,

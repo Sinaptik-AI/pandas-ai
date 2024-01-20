@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from ..helpers.df_info import polars_imported
+
 from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
+
+from ..helpers.df_info import polars_imported
 
 
 class IResponseParser(ABC):

@@ -1,30 +1,30 @@
-import re
 import ast
+import logging
+import re
+import traceback
 import uuid
 from collections import defaultdict
+from typing import Any, Generator, List, Union
 
 import astor
 import pandas as pd
-from pandasai.helpers.path import find_project_root
 
+from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
 
-from .node_visitors import AssignmentVisitor, CallVisitor
-from .save_chart import add_save_chart
-from .optional import import_dependency
+from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ..exceptions import (
     BadImportError,
+    InvalidConfigError,
     MaliciousQueryError,
     NoResultFoundError,
-    InvalidConfigError,
 )
-from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
-from typing import Union, List, Generator, Any
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
-import logging
-import traceback
+from .node_visitors import AssignmentVisitor, CallVisitor
+from .optional import import_dependency
+from .save_chart import add_save_chart
 
 
 class CodeExecutionContext:

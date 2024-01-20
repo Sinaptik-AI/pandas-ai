@@ -12,9 +12,9 @@ import os
 from typing import Any, Dict, Optional
 
 import openai
-from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
+from ..helpers import load_dotenv
 from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 

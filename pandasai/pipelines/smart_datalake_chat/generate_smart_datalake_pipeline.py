@@ -1,4 +1,5 @@
 from typing import Optional
+
 from ...helpers.logger import Logger
 from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext

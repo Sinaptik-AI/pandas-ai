@@ -2,12 +2,14 @@
 Base connector class to be extended by all connectors.
 """
 
-from abc import ABC, abstractmethod
 import os
+from abc import ABC, abstractmethod
+from typing import Optional, Union
+
+from pydantic import BaseModel
+
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
-from pydantic import BaseModel
-from typing import Optional, Union
 
 
 class BaseConnectorConfig(BaseModel):

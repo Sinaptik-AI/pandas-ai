@@ -12,12 +12,12 @@ Example:
 """
 
 import os
-from typing import Any, Dict, Optional, Union, Callable
+from typing import Any, Callable, Dict, Optional, Union
 
 import openai
-from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, MissingModelError
+from ..helpers import load_dotenv
 from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 

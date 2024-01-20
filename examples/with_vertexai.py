@@ -1,7 +1,9 @@
 """Example of using PandasAI with a CSV file and Google Vertexai."""
 
 import os
+
 import pandas as pd
+
 from pandasai import SmartDataframe
 from pandasai.llm import GoogleVertexAI
 

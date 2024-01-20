@@ -1,6 +1,6 @@
-from typing import List, Optional, Union, Any
-from pandasai.helpers.cache import Cache
+from typing import Any, List, Optional, Union
 
+from pandasai.helpers.cache import Cache
 from pandasai.helpers.df_info import DataFrameType
 from pandasai.helpers.memory import Memory
 from pandasai.helpers.query_exec_tracker import QueryExecTracker

@@ -1,18 +1,19 @@
 import pandas as pd
+
 from pandasai.llm.openai import OpenAI
 from pandasai.pipelines.logic_units.output_logic_unit import ProcessOutput
+from pandasai.pipelines.logic_units.prompt_execution import PromptExecution
+from pandasai.pipelines.pipeline import Pipeline
+from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.synthetic_dataframe.generate_sdf_pipeline import (
     GenerateSDFPipeline,
 )
-from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.synthetic_dataframe.sdf_code_executor import (
     SDFCodeExecutor,
 )
 from pandasai.pipelines.synthetic_dataframe.synthetic_df_prompt import (
     SyntheticDataframePrompt,
 )
-from pandasai.pipelines.logic_units.prompt_execution import PromptExecution
-from pandasai.pipelines.pipeline import Pipeline
 
 employees_df = pd.DataFrame(
     {

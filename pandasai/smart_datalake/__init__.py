@@ -17,36 +17,37 @@ Example:
     # The average loan amount is $15,000.
     ```
 """
-import uuid
 import logging
 import os
+import uuid
+from typing import Any, List, Optional, Union
+
 from pandasai.constants import DEFAULT_CHART_DIRECTORY, DEFAULT_FILE_PERMISSIONS
-from pandasai.helpers.skills_manager import SkillsManager
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.skills import Skill
+from pandasai.helpers.output_types import output_type_factory
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.helpers.skills_manager import SkillsManager
+from pandasai.helpers.viz_library_types import viz_lib_type_factory
+from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.responses.context import Context
+from pandasai.responses.response_parser import ResponseParser
+from pandasai.skills import Skill
+
+from ..config import load_config
+from ..helpers.cache import Cache
+from ..helpers.code_manager import CodeManager
+from ..helpers.df_info import DataFrameType
+from ..helpers.logger import Logger
+from ..helpers.memory import Memory
+from ..helpers.path import find_project_root
+from ..helpers.viz_library_types.base import VisualizationLibrary
+from ..llm.base import LLM
+from ..llm.langchain import LangchainLLM
 from ..pipelines.smart_datalake_chat.generate_smart_datalake_pipeline import (
     GenerateSmartDatalakePipeline,
 )
-
-from pandasai.helpers.output_types import output_type_factory
-from pandasai.helpers.viz_library_types import viz_lib_type_factory
-from pandasai.responses.context import Context
-from pandasai.responses.response_parser import ResponseParser
-from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
-from ..helpers.logger import Logger
-from ..helpers.cache import Cache
-from ..helpers.memory import Memory
-from ..schemas.df_config import Config
-from ..config import load_config
 from ..prompts.base import AbstractPrompt
 from ..prompts.correct_error_prompt import CorrectErrorPrompt
-from typing import Union, List, Any, Optional
-from ..helpers.code_manager import CodeManager
-from ..helpers.df_info import DataFrameType
-from ..helpers.path import find_project_root
-from ..helpers.viz_library_types.base import VisualizationLibrary
+from ..schemas.df_config import Config
 
 
 class SmartDatalake:

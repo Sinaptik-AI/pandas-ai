@@ -1,6 +1,8 @@
 from typing import Any
-from pandasai.responses.response_parser import ResponseParser
+
 import pandas as pd
+
+from pandasai.responses.response_parser import ResponseParser
 
 
 class StreamlitResponse(ResponseParser):

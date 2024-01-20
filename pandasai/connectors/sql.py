@@ -2,22 +2,27 @@
 SQL connectors are used to connect to SQL databases in different dialects.
 """
 
-import re
+import hashlib
 import os
-import pandas as pd
+import re
+import time
+from functools import cache, cached_property
+from typing import Union
 
-from pandasai.exceptions import MaliciousQueryError
-from .base import BaseConnector, SQLConnectorConfig, SqliteConnectorConfig
-from .base import BaseConnectorConfig
-from sqlalchemy import create_engine, text, select, asc
+import pandas as pd
+from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
 
-from functools import cached_property, cache
-import hashlib
-from ..helpers.path import find_project_root
+from pandasai.exceptions import MaliciousQueryError
+
 from ..constants import DEFAULT_FILE_PERMISSIONS
-from typing import Union
-import time
+from ..helpers.path import find_project_root
+from .base import (
+    BaseConnector,
+    BaseConnectorConfig,
+    SQLConnectorConfig,
+    SqliteConnectorConfig,
+)
 
 
 class SQLConnector(BaseConnector):
