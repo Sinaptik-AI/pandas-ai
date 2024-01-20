@@ -313,14 +313,17 @@ Code running:
         )
 
     def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
-        if (
-            isinstance(node, ast.Expr)
-            and isinstance(node.value, ast.Call)
-            and hasattr(node.value.func, "id")
-            and context.skills_manager.skill_exists(node.value.func.id)
-        ):
-            function_name = node.value.func.id
-            context.skills_manager.add_used_skill(function_name)
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                if context.skills_manager.skill_exists:
+                    context.skills_manager.add_used_skill(node.func.id)
+            elif isinstance(node.func, ast.Attribute) and isinstance(
+                node.func.value, ast.Name
+            ):
+                context.skills_manager.add_used_skill(
+                    f"{node.func.value.id}.{node.func.attr}"
+                )
+
         for child_node in ast.iter_child_nodes(node):
             self.find_function_calls(child_node, context)
 
