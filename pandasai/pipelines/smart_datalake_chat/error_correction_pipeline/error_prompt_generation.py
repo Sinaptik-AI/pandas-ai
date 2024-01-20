@@ -56,8 +56,6 @@ class ErrorPromptGeneration(BaseLogicUnit):
         if self.on_prompt_generation:
             self.on_prompt_generation(error_correcting_instruction)
 
-        print(error_correcting_instruction)
-
         return LogicUnitOutput(
             error_correcting_instruction,
             True,

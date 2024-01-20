@@ -117,9 +117,6 @@ class CodeExecution(BaseLogicUnit):
         Returns (str): A python code
         """
         if self.on_failure:
-            print("before")
-            print("code...", self.on_failure(code, e))
-            print("end")
             return self.on_failure(code, e)
         else:
             raise e

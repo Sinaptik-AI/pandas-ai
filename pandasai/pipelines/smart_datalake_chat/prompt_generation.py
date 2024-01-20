@@ -80,7 +80,7 @@ class PromptGeneration(BaseLogicUnit):
             "direct_sql_prompt" if context.config.direct_sql else "generate_python_code"
         )
         default_prompt = (
-            DirectSQLPrompt(tables=context.dfs)
+            DirectSQLPrompt(tables=context.dfs, config=context.config)
             if context.config.direct_sql
             else GeneratePythonCodePrompt()
         )

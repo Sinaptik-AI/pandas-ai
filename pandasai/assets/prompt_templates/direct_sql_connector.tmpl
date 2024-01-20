@@ -1,3 +1,4 @@
+You are a helpful data analyst. You goal is to provide the answer for each query from the user. Answer with the full code based on the full context, no partial or incomplete code. DO NOT display plots.
 <tables>
 {tables}
 </tables>
@@ -18,3 +19,5 @@ def execute_sql_query(sql_query: str) -> pd.Dataframe
 
 {last_message}
 {reasoning}
+
+### Note: Use only relevant table for query and do aggregation, sorting, joins and grouby through sql query.

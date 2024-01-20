@@ -288,6 +288,7 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
 
         df.chat("How many countries are in the dataframe?")
         last_prompt = df.last_prompt
+
         assert function_def in last_prompt
 
     def test_run_prompt_agent(self, agent):

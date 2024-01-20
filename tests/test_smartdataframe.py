@@ -12,6 +12,7 @@ import pytest
 
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.helpers.output_types import (
     DefaultOutputType,
     output_types_map,
@@ -173,7 +174,14 @@ result = { 'type': 'dataframe', 'value': df }
 
     def test_run_with_privacy_enforcement(self, llm):
         df = pd.DataFrame({"country": []})
-        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        df = SmartDataframe(
+            df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
+        )
         df.enforce_privacy = True
 
         expected_prompt = """<dataframe>
@@ -231,7 +239,14 @@ Generate python code and return full updated code:"""  # noqa: E501
         output_type_hint,
     ):
         df = pd.DataFrame({"country": []})
-        df = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        df = SmartDataframe(
+            df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
+        )
 
         expected_prompt = f"""<dataframe>
 dfs[0]:0x1
@@ -395,6 +410,7 @@ result = {"type": None, "value": "temp_chart.png"}
                     "enable_cache": False,
                     "save_charts": True,
                     "save_charts_path": "charts",
+                    "dataframe_serializer": DataframeSerializerType.CSV,
                 },
             )
 
@@ -427,6 +443,7 @@ result = {"type": None, "value": "temp_chart.png"}
                 "llm": llm,
                 "enable_cache": False,
                 "custom_prompts": {"generate_python_code": replacement_prompt},
+                "dataframe_serializer": DataframeSerializerType.CSV,
             },
         )
         question = "Will this work?"
@@ -455,6 +472,7 @@ result = {"type": None, "value": "temp_chart.png"}
                 "llm": llm,
                 "custom_prompts": {"correct_error": replacement_prompt},
                 "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
             },
         )
         df.chat("Will this work?")
@@ -569,7 +587,13 @@ result = {"type": None, "value": "temp_chart.png"}
 
         # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
+            df,
+            description="Name",
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
         )
 
         # Pydantic Schema
@@ -587,7 +611,13 @@ result = {"type": None, "value": "temp_chart.png"}
 
         # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
+            df,
+            description="Name",
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
         )
 
         # Pydantic Schema
@@ -605,7 +635,13 @@ result = {"type": None, "value": "temp_chart.png"}
 
         # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
+            df,
+            description="Name",
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
         )
 
         # Pydantic Schema
@@ -624,7 +660,13 @@ result = {"type": None, "value": "temp_chart.png"}
 
         # Create an instance of SmartDataframe without a name
         df_object = SmartDataframe(
-            df, description="Name", config={"llm": llm, "enable_cache": False}
+            df,
+            description="Name",
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "dataframe_serializer": DataframeSerializerType.CSV,
+            },
         )
 
         # Pydantic Schema
@@ -670,6 +712,7 @@ result = {"type": None, "value": "temp_chart.png"}
                 "llm": llm,
                 "enable_cache": False,
                 "data_viz_library": viz_library_type,
+                "dataframe_serializer": DataframeSerializerType.CSV,
             },
         )
 
@@ -678,6 +721,78 @@ result = {"type": None, "value": "temp_chart.png"}
 dfs[0]:0x1
 country
 </dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+```
+
+Q: Plot the histogram of countries showing for each the gdp with distinct bar colors
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+%s
+
+
+Generate python code and return full updated code:"""  # noqa: E501
+            % viz_library_type_hint
+        )
+
+        df.chat(
+            "Plot the histogram of countries showing for each the gdp"
+            " with distinct bar colors"
+        )
+        last_prompt = df.last_prompt
+        if sys.platform.startswith("win"):
+            last_prompt = df.last_prompt.replace("\r\n", "\n")
+
+        assert last_prompt == expected_prompt
+
+    @pytest.mark.parametrize(
+        "viz_library_type,viz_library_type_hint",
+        [
+            (None, NoVizLibraryType().template_hint),
+            *[
+                (type_, viz_lib_type_factory(type_).template_hint)
+                for type_ in viz_lib_map
+            ],
+        ],
+    )
+    def test_run_passing_viz_library_type_default_config(
+        self, llm, viz_library_type, viz_library_type_hint
+    ):
+        df = pd.DataFrame({"country": []})
+        df = SmartDataframe(
+            df,
+            config={
+                "llm": llm,
+                "enable_cache": False,
+                "data_viz_library": viz_library_type,
+            },
+        )
+
+        expected_prompt = (
+            """dfs[0]:
+- name: null
+  description: null
+  type: pandas
+  data:
+    rows: 0
+    columns: 1
+    schema:
+      fields:
+      - name: country
+        type: float64
+        samples: []
+
 
 
 

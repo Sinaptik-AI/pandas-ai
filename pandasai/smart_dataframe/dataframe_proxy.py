@@ -79,7 +79,7 @@ class DataframeProxy:
         return self.df.__setitem__(key, value)
 
     def __getattribute__(self, name):
-        if name in pd.DataFrame.__dict__:
+        if name in pd.DataFrame.__dict__ or name == "dtypes":
             self.load_connector()
             return object.__getattribute__(self.df, name)
 
