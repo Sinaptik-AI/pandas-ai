@@ -1,6 +1,6 @@
 import logging
 import time
-from pandasai.config import load_config
+from pandasai.config import load_config_from_json
 from pandasai.exceptions import UnSupportedLogicUnit
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
@@ -42,7 +42,7 @@ class Pipeline(AbstractPipeline):
         """
 
         if not isinstance(context, PipelineContext):
-            config = Config(**load_config(config))
+            config = Config(**load_config_from_json(config))
             connectors = context
             context = PipelineContext(connectors, config)
 

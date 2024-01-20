@@ -8,6 +8,9 @@ While List Builtin Methods.
 # Default directory to store chart if user doesn't provide any
 DEFAULT_CHART_DIRECTORY = "exports/charts"
 
+# Default directory for cache
+DEFAULT_CACHE_DIRECTORY = "cache"
+
 # Default permissions for files and directories
 DEFAULT_FILE_PERMISSIONS = 0o755
 

@@ -105,9 +105,9 @@ class TestCodeManager:
     @pytest.fixture
     def code_manager(self, agent: Agent):
         return CodeManager(
-            dfs=agent.core.dfs,
-            config=agent.core.config,
-            logger=agent.core.logger,
+            dfs=agent.context.dfs,
+            config=agent.context.config,
+            logger=agent.logger,
         )
 
     @pytest.fixture
@@ -420,9 +420,9 @@ result = {
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
         code_manager = CodeManager(
-            dfs=agent_with_connector.core.dfs,
-            config=agent_with_connector.core.config,
-            logger=agent_with_connector.core.logger,
+            dfs=agent_with_connector.context.dfs,
+            config=agent_with_connector.context.config,
+            logger=agent_with_connector.logger,
         )
         safe_code = """
 import numpy as np

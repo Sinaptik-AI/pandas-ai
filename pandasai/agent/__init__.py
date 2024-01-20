@@ -1,3 +1,4 @@
+import uuid
 import json
 from typing import Union, List, Optional
 import pandas as pd
@@ -12,8 +13,21 @@ from ..prompts.check_if_relevant_to_conversation import (
 )
 from ..schemas.df_config import Config
 from ..skills import Skill
-from .core import AgentCore
-from ..connectors import BaseConnector
+from ..connectors import BaseConnector, PandasConnector
+from ..config import load_config_from_json
+from ..llm.base import LLM
+from ..llm.langchain import LangchainLLM
+from ..constants import DEFAULT_CHART_DIRECTORY, DEFAULT_CACHE_DIRECTORY
+from ..helpers.folder import Folder
+from ..pipelines.pipeline_context import PipelineContext
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
+)
+from pandasai.helpers.output_types import output_type_factory
+from .callbacks import Callbacks
+from ..pipelines.chat.generate_chat_pipeline import (
+    GenerateChatPipeline,
+)
 
 
 class Agent:
@@ -27,7 +41,6 @@ class Agent:
             pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
         ],
         config: Optional[Union[Config, dict]] = None,
-        logger: Optional[Logger] = None,
         memory_size: int = 10,
     ):
         """
@@ -37,19 +50,131 @@ class Agent:
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.
         """
+        self.last_prompt = None
+        self.last_prompt_id = None
+        self.last_result = None
+        self.last_code_generated = None
+        self.last_code_executed = None
 
-        # Get a list of dataframes, if only one dataframe is passed
+        self.conversation_id = uuid.uuid4()
+
+        dfs = self.get_dfs(dfs)
+
+        # Instantiate the context
+        config = self.get_config(config)
+        self.context = PipelineContext(
+            dfs=dfs,
+            config=config,
+            memory=Memory(memory_size),
+        )
+
+        # Instantiate the logger
+        self.logger = Logger(save_logs=config.save_logs, verbose=config.verbose)
+
+        callbacks = Callbacks(self)
+        self.chat_pipeline = GenerateChatPipeline(
+            self.context,
+            self.logger,
+            on_prompt_generation=callbacks.on_prompt_generation,
+            on_code_generation=callbacks.on_code_generation,
+            on_code_execution=callbacks.on_code_execution,
+            on_result=callbacks.on_result,
+        )
+
+        self.configure()
+
+    def configure(self):
+        config = self.context.config
+
+        # Add project root path if save_charts_path is default
+        if config.save_charts and config.save_charts_path == DEFAULT_CHART_DIRECTORY:
+            Folder.create(config.save_charts_path)
+
+        # Add project root path if cache_path is default
+        if config.enable_cache:
+            Folder.create(DEFAULT_CACHE_DIRECTORY)
+
+    def get_config(self, config: Union[Config, dict]):
+        """
+        Load a config to be used to run the queries.
+
+        Args:
+            config (Union[Config, dict]): Config to be used
+        """
+
+        config = load_config_from_json(config)
+
+        if isinstance(config, dict) and config.get("llm") is None:
+            config["llm"] = self.get_llm(config["llm"])
+
+        config = Config(**config)
+
+        return config
+
+    def get_llm(self, llm: LLM) -> LLM:
+        """
+        Load a LLM to be used to run the queries.
+        Check if it is a PandasAI LLM or a Langchain LLM.
+        If it is a Langchain LLM, wrap it in a PandasAI LLM.
+
+        Args:
+            llm (object): LLMs option to be used for API access
+
+        Raises:
+            BadImportError: If the LLM is a Langchain LLM but the langchain package
+            is not installed
+        """
+        if LangchainLLM.is_langchain_llm(llm):
+            llm = LangchainLLM(llm)
+
+        return llm
+
+    def get_dfs(
+        self,
+        dfs: Union[
+            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
+        ],
+    ):
+        """
+        Load all the dataframes to be used in the agent.
+
+        Args:
+            dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
+        """
+
+        # If only one dataframe is passed, convert it to a list
         if not isinstance(dfs, list):
             dfs = [dfs]
 
-        # Configure the agent core
-        self.core = AgentCore(dfs, config, logger, memory=Memory(memory_size))
+        connectors = []
+        for df in dfs:
+            if isinstance(df, BaseConnector):
+                connectors.append(df)
+            elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
+                connectors.append(PandasConnector({"original_df": df}))
+            else:
+                try:
+                    import polars as pl
+
+                    if isinstance(df, pl.DataFrame):
+                        from ..connectors.polars import PolarsConnector
+
+                        connectors.append(PolarsConnector({"original_df": df}))
+                    else:
+                        raise ValueError(
+                            "Invalid input data. We cannot convert it to a dataframe."
+                        )
+                except ImportError as e:
+                    raise ValueError(
+                        "Invalid input data. We cannot convert it to a dataframe."
+                    ) from e
+        return connectors
 
     def add_skills(self, *skills: Skill):
         """
         Add Skills to PandasAI
         """
-        self.core.add_skills(*skills)
+        self.context.skills_manager.add_skills(*skills)
 
     def call_llm_with_prompt(self, prompt: AbstractPrompt):
         """
@@ -58,17 +183,17 @@ class Agent:
             prompt (AbstractPrompt): AbstractPrompt to pass to LLM's
         """
         retry_count = 0
-        while retry_count < self.core.config.max_retries:
+        while retry_count < self.context.config.max_retries:
             try:
-                result: str = self.core.llm.call(prompt)
+                result: str = self.context.config.llm.call(prompt)
                 if prompt.validate(result):
                     return result
                 else:
                     raise Exception("Response validation failed!")
             except Exception:
                 if (
-                    not self.core.config.use_error_correction_framework
-                    or retry_count >= self.core.config.max_retries - 1
+                    not self.context.config.use_error_correction_framework
+                    or retry_count >= self.context.config.max_retries - 1
                 ):
                     raise
                 retry_count += 1
@@ -78,10 +203,24 @@ class Agent:
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            is_related = self.check_if_related_to_conversation(query)
-            return self.core.chat(
-                query, output_type=output_type, is_related_query=is_related
+            is_related_query = self.check_if_related_to_conversation(query)
+
+            self.logger.log(f"Question: {query}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
             )
+
+            self.assign_prompt_id()
+
+            pipeline_input = ChatPipelineInput(
+                query,
+                output_type_factory(output_type, logger=self.logger),
+                self.conversation_id,
+                self.last_prompt_id,
+                is_related_query,
+            )
+
+            return self.chat_pipeline.run(pipeline_input)
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your answers, "
@@ -89,35 +228,50 @@ class Agent:
                 f"\n{exception}\n"
             )
 
+    def clear_memory(self):
+        """
+        Clears the memory
+        """
+        self.context.memory.clear()
+        self.conversation_id = uuid.uuid4()
+
     def add_message(self, message, is_user=False):
         """
         Add message to the memory. This is useful when you want to add a message
         to the memory without calling the chat function (for example, when you
         need to add a message from the agent).
         """
-        self.core.memory.add(message, is_user=is_user)
+        self.context.memory.add(message, is_user=is_user)
+
+    def assign_prompt_id(self):
+        """Assign a prompt ID"""
+
+        self.last_prompt_id = uuid.uuid4()
+
+        if self.logger:
+            self.logger.log(f"Prompt ID: {self.last_prompt_id}")
 
     def check_if_related_to_conversation(self, query: str) -> bool:
         """
         Check if the query is related to the previous conversation
         """
-        if self.core.memory.count() == 0:
+        if self.context.memory.count() == 0:
             return
 
         prompt = CheckIfRelevantToConversationPrompt(
-            conversation=self.core.memory.get_conversation(),
+            conversation=self.context.memory.get_conversation(),
             query=query,
         )
 
         result = self.call_llm_with_prompt(prompt)
 
         is_related = "true" in result
-        self.core.logger.log(
+        self.logger.log(
             f"""Check if the new message is related to the conversation: {is_related}"""
         )
 
         if not is_related:
-            self.core.clear_memory()
+            self.clear_memory()
 
         return is_related
 
@@ -126,13 +280,13 @@ class Agent:
         Generate clarification questions based on the data
         """
         prompt = ClarificationQuestionPrompt(
-            dataframes=self.core.dfs,
-            conversation=self.core.memory.get_conversation(),
+            dataframes=self.context.dfs,
+            conversation=self.context.memory.get_conversation(),
             query=query,
         )
 
         result = self.call_llm_with_prompt(prompt)
-        self.core.logger.log(
+        self.logger.log(
             f"""Clarification Questions:  {result}
             """
         )
@@ -144,7 +298,7 @@ class Agent:
         """
         Clears the previous conversation
         """
-        self.core.clear_memory()
+        self.clear_memory()
 
     def explain(self) -> str:
         """
@@ -152,11 +306,11 @@ class Agent:
         """
         try:
             prompt = ExplainPrompt(
-                conversation=self.core.memory.get_conversation(),
-                code=self.core.last_code_executed,
+                conversation=self.context.memory.get_conversation(),
+                code=self.last_code_executed,
             )
             response = self.call_llm_with_prompt(prompt)
-            self.core.logger.log(
+            self.logger.log(
                 f"""Explanation:  {response}
                 """
             )
@@ -172,11 +326,11 @@ class Agent:
         try:
             prompt = RephraseQueryPrompt(
                 query=query,
-                dataframes=self.core.dfs,
-                conversation=self.core.memory.get_conversation(),
+                dataframes=self.context.dfs,
+                conversation=self.context.memory.get_conversation(),
             )
             response = self.call_llm_with_prompt(prompt)
-            self.core.logger.log(
+            self.logger.log(
                 f"""Rephrased Response:  {response}
                 """
             )
@@ -189,21 +343,13 @@ class Agent:
             )
 
     @property
-    def last_code_generated(self):
-        return self.core.last_code_generated
-
-    @property
-    def last_code_executed(self):
-        return self.core.last_code_executed
-
-    @property
-    def last_prompt(self):
-        return self.core.last_prompt
-
-    @property
-    def last_query_log_id(self):
-        return self.core.last_query_log_id
+    def logs(self):
+        return self.logger.logs
 
     @property
     def last_error(self):
-        return self.core.last_error
+        return self.chat_pipeline.last_error
+
+    @property
+    def last_query_log_id(self):
+        return self.chat_pipeline.get_last_track_log_id()

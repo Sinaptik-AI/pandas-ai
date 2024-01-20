@@ -63,9 +63,9 @@ class TestSkills:
     @pytest.fixture
     def code_manager(self, agent: Agent):
         return CodeManager(
-            agent.core.dfs,
-            config=agent.core.config,
-            logger=agent.core.logger,
+            agent.context.dfs,
+            config=agent.context.config,
+            logger=agent.logger,
         )
 
     @pytest.fixture
@@ -232,11 +232,11 @@ class TestSkills:
         )
 
         agent.add_skills(skill_a)
-        assert len(agent.core.skills_manager.skills) == 1
+        assert len(agent.context.skills_manager.skills) == 1
 
-        agent.core.skills_manager.skills = []
+        agent.context.skills_manager.skills = []
         agent.add_skills(skill_a, skill_b)
-        assert len(agent.core.skills_manager.skills) == 2
+        assert len(agent.context.skills_manager.skills) == 2
 
     def test_run_prompt(self, llm):
         df = pd.DataFrame({"country": []})
@@ -292,7 +292,7 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         agent.add_skills(plot_salaries)
 
         agent.chat("How many countries are in the dataframe?")
-        last_prompt = agent.core.last_prompt
+        last_prompt = agent.last_prompt
 
         assert function_def in last_prompt
 

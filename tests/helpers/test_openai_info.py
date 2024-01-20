@@ -1,5 +1,5 @@
 import pytest
-from pandasai.agent.core import AgentCore
+from pandasai.agent import Agent
 from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
@@ -198,7 +198,15 @@ class TestOpenAIInfo:
         )
         mocker.patch.object(llm.client, "create", return_value=llm_response)
 
-        agent = AgentCore([df], config={"llm": llm, "enable_cache": False})
+        # Mock the check_if_related_to_conversation method to not
+        # perform additional api requests to OpenAI
+        mocker.patch.object(
+            Agent,
+            "check_if_related_to_conversation",
+            return_value=False,
+        )
+
+        agent = Agent([df], config={"llm": llm, "enable_cache": False})
         with get_openai_callback() as cb:
             agent.chat("some question 1")
             assert cb.total_tokens == 3

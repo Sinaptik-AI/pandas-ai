@@ -26,6 +26,10 @@ class LangchainLLM(LLM):
         prompt = instruction.to_string() + suffix
         return self.langchain_llm.predict(prompt)
 
+    @staticmethod
+    def is_langchain_llm(llm: LLM) -> bool:
+        return hasattr(llm, "_llm_type")
+
     @property
     def type(self) -> str:
         return f"langchain_{self.langchain_llm._llm_type}"
