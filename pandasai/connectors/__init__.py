@@ -9,6 +9,7 @@ from .sql import SQLConnector, MySQLConnector, PostgreSQLConnector
 from .snowflake import SnowFlakeConnector
 from .databricks import DatabricksConnector
 from .yahoo_finance import YahooFinanceConnector
+from .google_big_query import GoogleBigQueryConnector
 from .airtable import AirtableConnector
 from .sql import SqliteConnector
 from .pandas import PandasConnector
@@ -26,4 +27,5 @@ __all__ = [
     "SqliteConnector",
     "PandasConnector",
     "PolarsConnector",
+    "GoogleBigQueryConnector",
 ]
