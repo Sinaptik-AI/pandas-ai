@@ -4,8 +4,6 @@ import pandas as pd
 
 import pytest
 from pandasai.helpers.logger import Logger
-from pandasai.helpers.output_types import output_type_factory
-from pandasai.helpers.viz_library_types import viz_lib_type_factory
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
@@ -88,10 +86,10 @@ class TestCodeGenerator:
         mock_get_promt = Mock(return_value=GeneratePythonCodePrompt)
 
         def mock_intermediate_values(key: str):
-            if key == "output_type_helper":
-                return output_type_factory("DefaultOutputType")
+            if key == "output_type":
+                return ""
             elif key == "viz_lib_helper":
-                return viz_lib_type_factory("DefaultVizLibraryType")
+                return "plotly"
             elif key == "get_prompt":
                 return mock_get_promt
 

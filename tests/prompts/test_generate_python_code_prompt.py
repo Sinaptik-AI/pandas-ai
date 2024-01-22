@@ -3,78 +3,69 @@ import sys
 
 import pandas as pd
 import pytest
-
-from pandasai.helpers.output_types import (
-    output_type_factory,
-    DefaultOutputType,
-    output_types_map,
-)
 from pandasai.prompts import GeneratePythonCodePrompt
-from pandasai.helpers.viz_library_types import (
-    MatplotlibVizLibraryType,
-    viz_lib_map,
-    viz_lib_type_factory,
-)
 from pandasai.connectors import PandasConnector
+from pandasai import Agent
+from pandasai.llm.fake import FakeLLM
 
 
 class TestGeneratePythonCodePrompt:
     """Unit tests for the generate python code prompt class"""
 
     @pytest.mark.parametrize(
-        "save_charts_path,output_type_hint,viz_library_type_hint",
+        "output_type,output_type_template",
         [
-            (
-                "exports/charts",
-                DefaultOutputType().template_hint,
-                MatplotlibVizLibraryType().template_hint,
-            ),
-            (
-                "custom/dir/for/charts",
-                DefaultOutputType().template_hint,
-                MatplotlibVizLibraryType().template_hint,
-            ),
             *[
                 (
-                    "exports/charts",
-                    output_type_factory(type_).template_hint,
-                    viz_lib_type_factory(viz_type_).template_hint,
-                )
-                for type_ in output_types_map
-                for viz_type_ in viz_lib_map
-            ],
+                    "",
+                    """type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }""",
+                ),
+                (
+                    "number",
+                    """type (must be "number"), value must int. Example: { "type": "number", "value": 125 }""",
+                ),
+                (
+                    "dataframe",
+                    """type (must be "dataframe"), value must be pd.DataFrame or pd.Series. Example: { "type": "dataframe", "value": pd.DataFrame({...}) }""",
+                ),
+                (
+                    "plot",
+                    """type (must be "plot"), value must be string. Example: { "type": "plot", "value": "temp_chart.png" }""",
+                ),
+                (
+                    "string",
+                    """type (must be "string"), value must be string. Example: { "type": "string", "value": f"The highest salary is {highest_salary}." }""",
+                ),
+            ]
         ],
     )
-    def test_str_with_args(
-        self, save_charts_path, output_type_hint, viz_library_type_hint
-    ):
+    def test_str_with_args(self, output_type, output_type_template):
         """Test casting of prompt to string and interpolation of context.
 
-        Parameterized for the following cases:
-        * `save_charts_path` is "exports/charts", `output_type_hint` is default,
-        `viz_library_type_hint` is default
-        * `save_charts_path` is "custom/dir/for/charts", `output_type_hint`
-            is default, `viz_library_type_hint` is default
-        * `save_charts_path` is "exports/charts", `output_type_hint` any of
-            possible types in `pandasai.helpers.output_types.output_types_map`,
-            `viz_library_type_hint` any of
-            possible types in `pandasai.helpers.viz_library_types.viz_library_types_map`
-        """
+        Args:
+            output_type (str): output type
+            output_type_template (str): output type template
 
-        dfs = [PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})})]
-        prompt = GeneratePythonCodePrompt()
-        prompt.set_var("dfs", dfs)
-        prompt.set_var("last_message", "Q: Question")
-        prompt.set_var("save_charts_path", save_charts_path)
-        prompt.set_var("output_type_hint", output_type_hint)
-        prompt.set_var("viz_library_type", viz_library_type_hint)
-        prompt.set_var("skills", "")
+        Returns:
+            None
+        """
+        llm = FakeLLM()
+        agent = Agent(
+            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            config={"llm": llm},
+        )
+        prompt = GeneratePythonCodePrompt(
+            context=agent.context,
+            output_type=output_type,
+        )
 
         expected_prompt_content = f"""<dataframe>
 dfs[0]:1x2
 a,b
 1,4
 </dataframe>
+
+
 
 
 
@@ -86,14 +77,16 @@ import pandas as pd
 
 # Write code here
 
-# Declare result var: {output_type_hint}
+# Declare result var: 
+{output_type_template}
+
 ```
 
-Q: Question
+
+
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
 At the end, declare "result" variable as a dictionary of type and value.
-{viz_library_type_hint}
 
 
 Generate python code and return full updated code:"""  # noqa E501

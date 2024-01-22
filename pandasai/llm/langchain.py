@@ -1,4 +1,4 @@
-from pandasai.prompts.base import AbstractPrompt
+from pandasai.prompts.base import BasePrompt
 from .base import LLM
 
 """Langchain LLM 
@@ -22,7 +22,7 @@ class LangchainLLM(LLM):
     def __init__(self, langchain_llm):
         self.langchain_llm = langchain_llm
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
         return self.langchain_llm.predict(prompt)
 

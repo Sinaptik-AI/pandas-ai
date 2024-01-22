@@ -26,7 +26,7 @@ from ..exceptions import (
 )
 from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var
-from ..prompts.base import AbstractPrompt
+from ..prompts.base import BasePrompt
 
 
 class LLM:
@@ -137,12 +137,12 @@ class LLM:
         return None
 
     @abstractmethod
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
+            instruction (BasePrompt): A prompt object with instruction for LLM.
             suffix (str, optional): Suffix. Defaults to "".
 
         Raises:
@@ -151,12 +151,12 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: AbstractPrompt) -> str:
+    def generate_code(self, instruction: BasePrompt) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
         Args:
-            instruction (AbstractPrompt): Prompt with instruction for LLM.
+            instruction (BasePrompt): Prompt with instruction for LLM.
 
         Returns:
             str: A string of Python code.
@@ -323,12 +323,12 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: AbstractPrompt, suffix: str = ""):
+    def call(self, instruction: BasePrompt, suffix: str = ""):
         """
         Call the OpenAI LLM.
 
         Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
+            instruction (BasePrompt): A prompt object with instruction for LLM.
             suffix (str): Suffix to pass.
 
         Raises:
@@ -408,12 +408,12 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
         """
         Call the Google LLM.
 
         Args:
-            instruction (AbstractPrompt): Instruction to pass.
+            instruction (BasePrompt): Instruction to pass.
             suffix (str): Suffix to pass. Defaults to an empty string ("").
 
         Returns:

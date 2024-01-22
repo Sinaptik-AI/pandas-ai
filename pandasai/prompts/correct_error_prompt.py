@@ -1,22 +1,7 @@
-""" Prompt to correct Python Code on Error
-```
-{dataframes}
-
-{conversation}
-
-You generated this python code:
-{code}
-
-It fails with the following error:
-{error_returned}
-
-Fix the python code above and return the new python code:
-"""  # noqa: E501
-
-from .file_based_prompt import FileBasedPrompt
+from .base import BasePrompt
 
 
-class CorrectErrorPrompt(FileBasedPrompt):
-    """Prompt to Correct Python code on Error"""
+class CorrectErrorPrompt(BasePrompt):
+    """Prompt to generate Python code from a dataframe."""
 
-    _path_to_template = "assets/prompt_templates/correct_error_prompt.tmpl"
+    template_path = "correct_error_prompt.tmpl"

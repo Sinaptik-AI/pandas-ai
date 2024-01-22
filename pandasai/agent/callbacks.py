@@ -1,11 +1,11 @@
-from ..prompts import FileBasedPrompt
+from ..prompts import BasePrompt
 
 
 class Callbacks:
     def __init__(self, agent):
         self.agent = agent
 
-    def on_prompt_generation(self, prompt: FileBasedPrompt) -> str:
+    def on_prompt_generation(self, prompt: BasePrompt) -> str:
         """
         A method to be called after prompt generation.
 

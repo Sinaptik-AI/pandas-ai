@@ -115,7 +115,7 @@ class GenerateChatPipeline:
 
         self.context.add_many(
             {
-                "output_type_helper": input.output_type,
+                "output_type": input.output_type,
                 "last_prompt_id": input.prompt_id,
             }
         )

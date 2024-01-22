@@ -1,119 +1,40 @@
-""" Base class to implement a new Prompt
-In order to better handle the instructions, this prompt module is written.
-"""
-from abc import ABC, abstractmethod
-import string
+import re
+from jinja2 import Environment, FileSystemLoader
+from typing import Optional
 
 
-class AbstractPrompt(ABC):
+class BasePrompt:
     """Base class to implement a new Prompt.
 
     Inheritors have to override `template` property.
     """
 
-    _args: dict = None
-    _config: dict = None
+    template: Optional[str] = None
+    template_path: Optional[str] = None
 
     def __init__(self, **kwargs):
-        """
-        __init__ method of Base class of Prompt Module
-        Args:
-            **kwargs: Inferred Keyword Arguments
-        """
-        if self._args is None:
-            self._args = {}
+        """Initialize the prompt."""
+        self.props = kwargs
 
-        self._args.update(kwargs)
-        self.setup(**kwargs)
+        if self.template:
+            env = Environment()
+            self.prompt = env.from_string(self.template)
+        elif self.template_path:
+            env = Environment(loader=FileSystemLoader("pandasai/prompts/templates"))
+            self.prompt = env.get_template(self.template_path)
 
-    def setup(self, **kwargs) -> None:
-        pass
+    def render(self):
+        """Render the prompt."""
+        render = self.prompt.render(**self.props)
 
-    def on_prompt_generation(self) -> None:
-        pass
+        # Remove additional newlines in render
+        render = re.sub(r"\n{3,}", "\n\n", render)
 
-    def _generate_dataframes(self, dfs):
-        """
-        Generate the dataframes metadata
-        Args:
-            dfs: List of Dataframes
-        """
-        dataframes = []
-        for index, df in enumerate(dfs, start=1):
-            dataframe_info = "<dataframe"
-
-            # Add name attribute if available
-            if df.name is not None:
-                dataframe_info += f' name="{df.name}"'
-
-            # Add description attribute if available
-            if df.description is not None:
-                dataframe_info += f' description="{df.description}"'
-
-            dataframe_info += ">"
-
-            # Add dataframe details
-            dataframe_info += (
-                f"\ndfs[{index-1}]:{df.rows_count}x{df.columns_count}\n{df.to_csv()}"
-            )
-
-            # Close the dataframe tag
-            dataframe_info += "</dataframe>"
-
-            dataframes.append(dataframe_info)
-
-        return "\n".join(dataframes)
-
-    @property
-    @abstractmethod
-    def template(self) -> str:
-        ...
-
-    def set_config(self, config):
-        self._config = config
-
-    def get_config(self, key=None):
-        if self._config is None:
-            return None
-        if key is None:
-            return self._config
-        if hasattr(self._config, key):
-            return getattr(self._config, key)
-
-    def set_var(self, var, value):
-        if self._args is None:
-            self._args = {}
-
-        if var == "dfs":
-            self._args["dataframes"] = self._generate_dataframes(value)
-        self._args[var] = value
-
-    def set_vars(self, vars):
-        if self._args is None:
-            self._args = {}
-
-        if "dfs" in vars:
-            self._args["dataframes"] = self._generate_dataframes(vars["dfs"])
-
-        self._args.update(vars)
+        return render
 
     def to_string(self):
-        self.on_prompt_generation()
-
-        prompt_args = {}
-        for key, value in self._args.items():
-            if isinstance(value, AbstractPrompt):
-                args = [
-                    arg[1] for arg in string.Formatter().parse(value.template) if arg[1]
-                ]
-                value.set_vars(
-                    {k: v for k, v in self._args.items() if k != key and k in args}
-                )
-                prompt_args[key] = value.to_string()
-            else:
-                prompt_args[key] = value
-
-        return self.template.format_map(prompt_args)
+        """Render the prompt."""
+        return self.prompt.render(**self.props)
 
     def __str__(self):
         return self.to_string()

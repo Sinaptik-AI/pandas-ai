@@ -1,0 +1,9 @@
+{% for df in context.dfs %}{% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}{% endfor %}
+
+<conversation>
+{{context.memory.get_conversation()}}
+</conversation>
+
+Use the provided dataframe and conversation to return the rephrased sentence of "{{query}}” in order to obtain more accurate and comprehensive responses without any explanations.
+
+Rephrased query:

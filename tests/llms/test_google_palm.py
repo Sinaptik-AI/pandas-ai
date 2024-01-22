@@ -6,7 +6,7 @@ from google import generativeai
 
 from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.llm import GooglePalm
-from pandasai.prompts import AbstractPrompt
+from pandasai.prompts import BasePrompt
 
 
 class MockedCompletion:
@@ -19,10 +19,10 @@ class TestGooglePalm:
 
     @pytest.fixture
     def prompt(self):
-        class MockAbstractPrompt(AbstractPrompt):
+        class MockBasePrompt(BasePrompt):
             template: str = "Hello"
 
-        return MockAbstractPrompt()
+        return MockBasePrompt()
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):

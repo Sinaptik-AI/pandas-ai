@@ -73,7 +73,7 @@ class QueryExecTracker:
             "conversation_id": str(input.conversation_id),
             "instance": "Agent",
             "query": input.query,
-            "output_type": input.output_type.name,
+            "output_type": input.output_type,
             "is_related_query": input.is_related_query,
         }
 

@@ -4,7 +4,7 @@ from langchain.llms import OpenAI
 import pytest
 
 from pandasai.llm import LangchainLLM
-from pandasai.prompts import AbstractPrompt
+from pandasai.prompts import BasePrompt
 from unittest.mock import Mock
 
 
@@ -23,10 +23,10 @@ class TestLangchainLLM:
 
     @pytest.fixture
     def prompt(self):
-        class MockAbstractPrompt(AbstractPrompt):
+        class MockBasePrompt(BasePrompt):
             template: str = "Hello"
 
-        return MockAbstractPrompt()
+        return MockBasePrompt()
 
     def test_langchain_llm_type(self, langchain_llm):
         langchain_wrapper = LangchainLLM(langchain_llm)

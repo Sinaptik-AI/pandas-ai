@@ -37,6 +37,15 @@ class SkillsManager:
         """
         return any(skill.name == name for skill in self.skills)
 
+    def has_skills(self):
+        """
+        Check if there are any skills in the list of skills.
+
+        Returns:
+            bool: True if there are skills, False otherwise.
+        """
+        return len(self.skills) > 0
+
     def get_skill_by_func_name(self, name: str):
         """
         Get a skill by its name.

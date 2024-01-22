@@ -8,6 +8,7 @@ from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.responses.response_serializer import ResponseSerializer
 from ...helpers.code_manager import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
+from ...helpers.output_validator import OutputValidator
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 
@@ -56,8 +57,12 @@ class CodeExecution(BaseLogicUnit):
             try:
                 result = code_manager.execute_code(code_to_run, code_context)
 
-                if output_helper := self.context.get("output_type_helper"):
-                    (validation_ok, validation_errors) = output_helper.validate(result)
+                if self.context.get("output_type") != "" and (
+                    output_helper := self.context.get("output_type")
+                ):
+                    (validation_ok, validation_errors) = OutputValidator.validate(
+                        output_helper, result
+                    )
 
                     if not validation_ok:
                         raise InvalidLLMOutputType(validation_errors)

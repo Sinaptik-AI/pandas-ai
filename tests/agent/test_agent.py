@@ -231,7 +231,7 @@ What is expected Salary Increase?
         """
         agent.context.config.llm.call.return_value = clarification_response
         prompt = ExplainPrompt(
-            conversation="test conversation",
+            context=agent.context,
             code="test code",
         )
         agent.call_llm_with_prompt(prompt)
@@ -254,7 +254,10 @@ What is expected Salary Increase?
             Exception(),
             "LLM Result",
         ]
-        prompt = ExplainPrompt(conversation="test conversation", code="")
+        prompt = ExplainPrompt(
+            context=agent.context,
+            code="test code",
+        )
         result = agent.call_llm_with_prompt(prompt)
         assert result == "LLM Result"
         assert agent.context.config.llm.call.call_count == 3
@@ -263,7 +266,10 @@ What is expected Salary Increase?
         # test the LLM call failed once but succeed second time
         agent.context.config.llm.call = Mock()
         agent.context.config.llm.call.side_effect = [Exception(), "LLM Result"]
-        prompt = ExplainPrompt(conversation="test conversation", code="")
+        prompt = ExplainPrompt(
+            context=agent.context,
+            code="test code",
+        )
         result = agent.call_llm_with_prompt(prompt)
 
         assert result == "LLM Result"
@@ -299,8 +305,7 @@ What is expected Salary Increase?
         agent.context.config.llm.call.return_value = "This is not json"
 
         prompt = ClarificationQuestionPrompt(
-            dataframes=agent.context.dfs,
-            conversation="test conversation",
+            context=agent.context,
             query="test query",
         )
         with pytest.raises(Exception):
@@ -312,8 +317,7 @@ What is expected Salary Increase?
         agent.context.config.llm.call.return_value = '["This is test question"]'
 
         prompt = ClarificationQuestionPrompt(
-            dataframes=agent.context.dfs,
-            conversation="test conversation",
+            context=agent.context,
             query="test query",
         )
         result = agent.call_llm_with_prompt(prompt)

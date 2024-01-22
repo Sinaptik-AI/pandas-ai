@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import Type
 import uuid
-from pandasai.helpers.output_types._output_types import BaseOutputType
 
 
 @dataclass
@@ -11,7 +9,7 @@ class ChatPipelineInput:
     """
 
     query: str
-    output_type: Type[BaseOutputType]
+    output_type: str
     instance: str
     conversation_id: uuid.UUID
     prompt_id: uuid.UUID
@@ -20,7 +18,7 @@ class ChatPipelineInput:
     def __init__(
         self,
         query: str,
-        output_type: Type[BaseOutputType],
+        output_type: str,
         conversation_id: uuid.UUID,
         prompt_id: uuid.UUID,
         is_related_query: bool,

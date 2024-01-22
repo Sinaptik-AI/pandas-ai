@@ -104,12 +104,9 @@ class TestResultValidation:
 
     def test_result_is_of_dict_type_and_valid(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
+        context.get = Mock(return_value="")
+
         result_validation = ResultValidation()
-        output_type_helper = Mock()
-
-        context.get = Mock(return_value=output_type_helper)
-        output_type_helper.validate = Mock(return_value=(True, "Mocked Logs"))
-
         result = result_validation.execute(
             input={"Mocked": "Result"}, context=context, logger=logger
         )
@@ -122,10 +119,10 @@ class TestResultValidation:
     def test_result_is_of_dict_type_and_not_valid(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         result_validation = ResultValidation()
-        output_type_helper = Mock()
+        output_type = Mock()
 
-        context.get = Mock(return_value=output_type_helper)
-        output_type_helper.validate = Mock(return_value=(False, "Mocked Logs"))
+        context.get = Mock(return_value=output_type)
+        output_type.validate = Mock(return_value=(False, "Mocked Logs"))
 
         result = result_validation.execute(
             input={"Mocked": "Result"}, context=context, logger=logger

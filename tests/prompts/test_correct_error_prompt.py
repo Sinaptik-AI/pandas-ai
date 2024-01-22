@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 from pandasai.prompts import CorrectErrorPrompt
 from pandasai.connectors import PandasConnector
+from pandasai import Agent
+from pandasai.llm.fake import FakeLLM
 
 
 class TestCorrectErrorPrompt:
@@ -12,10 +14,13 @@ class TestCorrectErrorPrompt:
     def test_str_with_args(self):
         """Test that the __str__ method is implemented"""
 
-        dfs = [PandasConnector({"original_df": pd.DataFrame()})]
-        prompt = CorrectErrorPrompt(code="df.head()", error_returned="Error message")
-        prompt.set_var("dfs", dfs)
-        prompt.set_var("conversation", "What is the correct code?")
+        llm = FakeLLM()
+        agent = Agent(
+            dfs=[PandasConnector({"original_df": pd.DataFrame()})], config={"llm": llm}
+        )
+        prompt = CorrectErrorPrompt(
+            context=agent.context, code="df.head()", error="Error message"
+        )
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
@@ -28,7 +33,7 @@ dfs[0]:0x0
 </dataframe>
 
 The user asked the following question:
-What is the correct code?
+
 
 You generated this python code:
 df.head()

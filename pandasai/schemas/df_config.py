@@ -3,7 +3,6 @@ from typing import Optional, List, Any, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
-from ..helpers.viz_library_types.base import VisualizationLibrary
 
 
 class LogServerConfig(TypedDict):
@@ -25,7 +24,7 @@ class Config(BaseModel):
     lazy_load_connector: bool = True
     response_parser: Any = None
     llm: Any = None
-    data_viz_library: Optional[VisualizationLibrary] = None
+    data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
 

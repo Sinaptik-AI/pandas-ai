@@ -4,11 +4,8 @@ from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from ...prompts.generate_python_code import GeneratePythonCodePrompt
-from ...prompts.direct_sql_prompt import DirectSQLPrompt
-from ...prompts.file_based_prompt import FileBasedPrompt
-from ...helpers.viz_library_types.base import VisualizationLibrary
-from ...helpers.viz_library_types import viz_lib_type_factory
-from ...prompts.base import AbstractPrompt
+from ...prompts.generate_python_code_with_sql import GeneratePythonCodeWithSQLPrompt
+from ...prompts.base import BasePrompt
 from ...helpers.logger import Logger
 
 
@@ -18,13 +15,6 @@ class PromptGeneration(BaseLogicUnit):
     """
 
     pass
-
-    def _get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
-        return (
-            DirectSQLPrompt(tables=context.dfs)
-            if context.config.direct_sql
-            else GeneratePythonCodePrompt()
-        )
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -42,65 +32,35 @@ class PromptGeneration(BaseLogicUnit):
         self.context: PipelineContext = kwargs.get("context")
         self.logger: Logger = kwargs.get("logger")
 
-        viz_lib = VisualizationLibrary.DEFAULT.value
-        if self.context.config.data_viz_library:
-            viz_lib = self.context.config.data_viz_library.value
-        viz_lib_helper = viz_lib_type_factory(viz_lib, logger=kwargs.get("logger"))
-
-        default_values = {
-            "output_type_hint": self.context.get("output_type_helper").template_hint,
-            "viz_library_type": viz_lib_helper.template_hint,
-        }
-
-        if (
-            self.context.memory.size > 1
-            and self.context.memory.count() > 1
-            and self.context.get("last_code_generated")
-        ):
-            default_values["current_code"] = self.context.get("last_code_generated")
-            default_values["code_description"] = ""
-
-        prompt = self.get_prompt(default_values)
+        prompt = self.get_chat_prompt(self.context)
+        self.logger.log(f"Using prompt: {prompt}")
 
         return LogicUnitOutput(
             prompt,
             True,
             "Prompt Generated Successfully",
-            {"generated_prompt": prompt.to_string()},
+            {"generated_prompt": prompt.render()},
         )
 
-    def get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:
+    def get_chat_prompt(self, context: PipelineContext) -> [str, BasePrompt]:
+        viz_lib = ""
+        if context.config.data_viz_library:
+            viz_lib = context.config.data_viz_library
+
+        output_type = context.get("output_type")
+
         return (
-            DirectSQLPrompt(tables=context.dfs)
+            GeneratePythonCodeWithSQLPrompt(
+                context=context,
+                last_code_generated=context.get("last_code_generated"),
+                viz_lib=viz_lib,
+                output_type=output_type,
+            )
             if context.config.direct_sql
-            else GeneratePythonCodePrompt()
+            else GeneratePythonCodePrompt(
+                context=context,
+                last_code_generated=context.get("last_code_generated"),
+                viz_lib=viz_lib,
+                output_type=output_type,
+            )
         )
-
-    def get_prompt(self, default_values) -> AbstractPrompt:
-        """
-        Return a prompt by key.
-
-        Args:
-            values (dict): The values to use for the prompt
-
-        Returns:
-            AbstractPrompt: The prompt
-        """
-        prompt = self.get_chat_prompt(self.context)
-
-        # Set default values for the prompt
-        prompt.set_config(self.context.config)
-
-        # Set the variables for the prompt
-        values = {
-            "dfs": self.context.dfs,
-            "conversation": self.context.memory.get_conversation(),
-            "prev_conversation": self.context.memory.get_previous_conversation(),
-            "last_message": self.context.memory.get_last_message(),
-            "skills": self.context.skills_manager.prompt_display() or "",
-        }
-        values |= default_values
-        prompt.set_vars(values)
-
-        self.logger.log(f"Using prompt: {prompt}")
-        return prompt

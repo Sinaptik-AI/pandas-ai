@@ -2,7 +2,7 @@ from typing import Optional, Any, List, Dict
 
 from .base import LLM
 from ..helpers import load_dotenv
-from ..prompts.base import AbstractPrompt
+from ..prompts.base import BasePrompt
 
 load_dotenv()
 
@@ -75,7 +75,7 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
 
         params = self._default_params

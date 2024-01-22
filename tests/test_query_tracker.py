@@ -5,7 +5,6 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
-from pandasai.helpers.output_types import output_type_factory
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
@@ -82,7 +81,7 @@ class TestQueryExecTracker:
     def tracking_info(self):
         return ChatPipelineInput(
             "which country has the highest GDP?",
-            output_type_factory("string"),
+            "string",
             conversation_id="123",
             prompt_id="1234",
             is_related_query=False,
@@ -458,7 +457,7 @@ class TestQueryExecTracker:
         tracker2 = QueryExecTracker()
         track_input = ChatPipelineInput(
             "which country has the highest GDP?",
-            output_type_factory("string"),
+            "string",
             conversation_id="1234",
             prompt_id="1234",
             is_related_query=False,

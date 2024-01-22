@@ -7,7 +7,7 @@ from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline
     ErrorCorrectionPipelineInput,
 )
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-from pandasai.prompts.base import AbstractPrompt
+from pandasai.prompts.base import BasePrompt
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 from pandasai.prompts.correct_output_type_error_prompt import (
     CorrectOutputTypeErrorPrompt,
@@ -44,34 +44,20 @@ class ErrorPromptGeneration(BaseLogicUnit):
         self.logger: Logger = kwargs.get("logger")
         e = input.exception
 
-        default_values = {
-            "code": input.code,
-            "error_returned": e,
-            "output_type_hint": self.context.get("output_type_helper").template_hint,
-        }
-        error_correcting_instruction = self.get_prompt(
-            e,
-            default_values,
-        )
+        prompt = self.get_prompt(e, input.code)
         if self.on_prompt_generation:
-            self.on_prompt_generation(error_correcting_instruction)
+            self.on_prompt_generation(prompt)
 
-        print(error_correcting_instruction)
+        self.logger.log(f"Using prompt: {prompt}")
 
         return LogicUnitOutput(
-            error_correcting_instruction,
+            prompt,
             True,
             "Prompt Generated Successfully",
-            {"generated_prompt": error_correcting_instruction.to_string()},
+            {"generated_prompt": prompt.to_string()},
         )
 
-    def _get_error_prompt(self, e: Exception) -> AbstractPrompt:
-        if isinstance(e, InvalidLLMOutputType):
-            return CorrectOutputTypeErrorPrompt()
-        else:
-            return CorrectErrorPrompt()
-
-    def get_prompt(self, e: Exception, default_values: dict) -> AbstractPrompt:
+    def get_prompt(self, e: Exception, code: str) -> BasePrompt:
         """
         Return a prompt by key.
 
@@ -79,23 +65,19 @@ class ErrorPromptGeneration(BaseLogicUnit):
             values (dict): The values to use for the prompt
 
         Returns:
-            AbstractPrompt: The prompt
+            BasePrompt: The prompt
         """
-        prompt = self._get_error_prompt(e)
-
-        # Set default values for the prompt
-        prompt.set_config(self.context.config)
-
-        # Set the variables for the prompt
-        values = {
-            "dfs": self.context.dfs,
-            "conversation": self.context.memory.get_conversation(),
-            "prev_conversation": self.context.memory.get_previous_conversation(),
-            "last_message": self.context.memory.get_last_message(),
-            "skills": self.context.skills_manager.prompt_display() or "",
-        }
-        values |= default_values
-        prompt.set_vars(values)
-
-        self.logger.log(f"Using prompt: {prompt}")
-        return prompt
+        return (
+            CorrectOutputTypeErrorPrompt(
+                context=self.context,
+                code=code,
+                error=e,
+                output_type=self.context.get("output_type"),
+            )
+            if isinstance(e, InvalidLLMOutputType)
+            else CorrectErrorPrompt(
+                context=self.context,
+                code=code,
+                error=e,
+            )
+        )

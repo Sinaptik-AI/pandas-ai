@@ -4,6 +4,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
+from ...helpers.output_validator import OutputValidator
 
 
 class ResultValidation(BaseLogicUnit):
@@ -37,7 +38,9 @@ class ResultValidation(BaseLogicUnit):
                 (
                     validation_ok,
                     validation_logs,
-                ) = pipeline_context.get("output_type_helper").validate(result)
+                ) = OutputValidator.validate(
+                    pipeline_context.get("output_type"), result
+                )
                 if not validation_ok:
                     logger.log("\n".join(validation_logs), level=logging.WARNING)
                     success = False

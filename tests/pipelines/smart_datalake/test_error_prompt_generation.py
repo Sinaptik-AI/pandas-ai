@@ -85,15 +85,13 @@ class TestErrorPromptGeneration:
         # Mock the InvalidLLMOutputType exception
         mock_exception = MagicMock(spec=InvalidLLMOutputType)
 
-        error_prompt = ErrorPromptGeneration()
-
         error_prompt.context = context
 
         # Call the method with the mock exception
-        result = error_prompt._get_error_prompt(mock_exception)
+        result = error_prompt.get_prompt(mock_exception, "code")
 
         # Call the method with the mock exception
-        result = error_prompt._get_error_prompt(mock_exception)
+        result = error_prompt.get_prompt(mock_exception, "code")
 
         # Assert that the CorrectOutputTypeErrorPrompt is returned
         assert isinstance(result, CorrectOutputTypeErrorPrompt)
@@ -107,7 +105,7 @@ class TestErrorPromptGeneration:
         error_prompt.context = context
 
         # Call the method with the mock exception
-        result = error_prompt._get_error_prompt(mock_exception)
+        result = error_prompt.get_prompt(mock_exception, "code")
 
         # Assert that the CorrectErrorPrompt is returned
         assert isinstance(result, CorrectErrorPrompt)

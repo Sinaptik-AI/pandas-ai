@@ -1,9 +1,9 @@
 """Unit tests for the LLaMa2TextGen LLM class"""
-from pandasai.prompts import AbstractPrompt
+from pandasai.prompts import BasePrompt
 from pandasai.llm import HuggingFaceTextGen
 
 
-class MockAbstractPrompt(AbstractPrompt):
+class MockBasePrompt(BasePrompt):
     template: str = "instruction."
 
 
@@ -54,7 +54,7 @@ class TestHuggingFaceTextGen:
 
         llm = HuggingFaceTextGen(inference_server_url="http://127.0.0.1:8080")
 
-        instruction = MockAbstractPrompt()
+        instruction = MockBasePrompt()
         result = llm.call(instruction)
 
         tgi_mock.assert_called_once_with(

@@ -4,7 +4,9 @@ import pytest
 
 from pandasai.llm.fake import FakeLLM
 
-from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
+from pandasai.prompts.generate_python_code_with_sql import (
+    GeneratePythonCodeWithSQLPrompt,
+)
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -84,7 +86,7 @@ class TestPromptGeneration:
         context.config.direct_sql = True
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
-        assert isinstance(gen_prompt, DirectSQLPrompt)
+        assert isinstance(gen_prompt, GeneratePythonCodeWithSQLPrompt)
 
         # Test case 2: direct_sql is False
         context.config.direct_sql = False
