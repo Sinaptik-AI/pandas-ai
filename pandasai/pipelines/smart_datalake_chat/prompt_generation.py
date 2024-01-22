@@ -72,7 +72,7 @@ class PromptGeneration(BaseLogicUnit):
             prompt,
             True,
             "Prompt Generated Successfully",
-            {"generated_prompt": prompt.to_string()},
+            {"content_type": "prompt", "value": prompt.to_string()},
         )
 
     def get_chat_prompt(self, context: PipelineContext) -> [str, FileBasedPrompt]:

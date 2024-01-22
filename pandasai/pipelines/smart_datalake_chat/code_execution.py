@@ -73,7 +73,6 @@ class CodeExecution(BaseLogicUnit):
                 retry_count += 1
 
                 traceback_errors = traceback.format_exc()
-                print(traceback_errors)
                 self.logger.log(
                     f"Failed with error: {traceback_errors}. Retrying", logging.ERROR
                 )
@@ -94,7 +93,7 @@ class CodeExecution(BaseLogicUnit):
             result,
             True,
             "Code Executed Successfully",
-            {"result": ResponseSerializer.serialize(result)},
+            {"content_type": "response", "value": ResponseSerializer.serialize(result)},
         )
 
     def _retry_run_code(

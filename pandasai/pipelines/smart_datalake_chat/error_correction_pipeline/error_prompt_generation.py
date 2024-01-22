@@ -60,7 +60,10 @@ class ErrorPromptGeneration(BaseLogicUnit):
             error_correcting_instruction,
             True,
             "Prompt Generated Successfully",
-            {"generated_prompt": error_correcting_instruction.to_string()},
+            {
+                "content_type": "prompt",
+                "value": error_correcting_instruction.to_string(),
+            },
         )
 
     def _get_error_prompt(self, e: Exception) -> AbstractPrompt:

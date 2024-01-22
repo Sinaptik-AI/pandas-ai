@@ -39,5 +39,5 @@ class CachePopulation(BaseLogicUnit):
             True,
             "Prompt Cached Successfully"
             if pipeline_context.config.enable_cache
-            else "Caching disables",
+            else "Caching disabled",
         )
