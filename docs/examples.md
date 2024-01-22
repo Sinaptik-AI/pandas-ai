@@ -295,12 +295,14 @@ salaries_df = pd.DataFrame(salaries_data)
 llm = OpenAI("OpenAI_API_KEY")
 agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
 
+query = "Who gets paid the most?"
+
 # Chat with the agent
-response = agent.chat("Who gets paid the most?")
+response = agent.chat(query)
 print(response)
 
 # Get Clarification Questions
-questions = agent.clarification_questions()
+questions = agent.clarification_questions(query)
 
 for question in questions:
     print(question)
