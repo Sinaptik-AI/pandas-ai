@@ -1,3 +1,4 @@
+import traceback
 from typing import Optional
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.smart_datalake_chat.error_correction_pipeline.error_correction_pipeline import (
@@ -82,7 +83,33 @@ class GenerateSmartDatalakePipeline:
         self._logger = logger
         self.last_error = None
 
-    def on_code_execution_failure(self, code: str, exception: Exception):
+    def on_code_execution_failure(self, code: str, exception: Exception) -> str:
+        """
+        Executes on code execution failure
+        Args:
+            code (str): code that is ran
+            exception (Exception): exception that is raised during code execution
+
+        Returns:
+            str: returns the updated code with the fixes
+        """
+        traceback_errors = traceback.format_exc()
+
+        # Add information about the code failure in the query tracker for debug
+        self.query_exec_tracker.add_step(
+            {
+                "type": "CodeExecution",
+                "success": False,
+                "message": "Failed to execute code",
+                "execution_time": None,
+                "data": {
+                    "content_type": "code",
+                    "value": code,
+                    "exception": traceback_errors,
+                },
+            }
+        )
+
         correction_input = ErrorCorrectionPipelineInput(code, exception)
         return self.code_exec_error_pipeline.run(correction_input)
 
@@ -104,6 +131,9 @@ class GenerateSmartDatalakePipeline:
             - 'value': The value of the output.
         """
         self._logger.log(f"Executing Pipeline: {self.__class__.__name__}")
+
+        # Reset intermediate values
+        self.context.reset_intermediate_values()
 
         # Start New Tracking for Query
         self.query_exec_tracker.start_new_track(input)
