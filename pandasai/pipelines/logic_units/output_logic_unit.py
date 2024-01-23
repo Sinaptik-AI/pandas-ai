@@ -4,7 +4,6 @@ from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import IResponseParser, ResponseParser
 
-
 IResponseParserImplementation = TypeVar(
     "IResponseParserImplementation", bound=IResponseParser
 )
