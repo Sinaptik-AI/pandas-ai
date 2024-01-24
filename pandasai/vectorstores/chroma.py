@@ -1,6 +1,7 @@
 import os
 from typing import Callable, Iterable, List, Optional
 import uuid
+from pandasai.helpers.logger import Logger
 from pandasai.helpers.path import find_project_root
 from pandasai.vectorstores import VectorStore
 import chromadb
@@ -15,13 +16,18 @@ class Chroma(VectorStore):
     Implementation of ChromeDB vector store
     """
 
+    _logger: Logger
+
     def __init__(
         self,
         collection_name: str = "pandasai",
         embedding_function: Optional[Callable[[List[str]], List[float]]] = None,
         persist_path: Optional[str] = None,
         client_settings: Optional[chromadb.config.Settings] = None,
+        logger: Optional[Logger] = None,
     ) -> None:
+        self._logger = logger or Logger()
+
         # Initialize Chromadb Client
         # initialize from client settings if exists
         if client_settings:
@@ -49,6 +55,8 @@ class Chroma(VectorStore):
         self._client = chromadb.Client(_client_settings)
         self._persist_directory = _client_settings.persist_directory
 
+        self._logger.log(f"Persisting Agent Training data in {self._persist_directory}")
+
         self._embedding_function = embedding_function or DEFAULT_EMBEDDING_FUNCTION
 
         self._qa_collection = self._client.get_or_create_collection(
@@ -58,6 +66,8 @@ class Chroma(VectorStore):
         self._docs_collection = self._client.get_or_create_collection(
             name=f"{collection_name}-docs", embedding_function=self._embedding_function
         )
+
+        self._logger.log(f"Successfully initialized collection {collection_name}")
 
     def add_question_answer(
         self,

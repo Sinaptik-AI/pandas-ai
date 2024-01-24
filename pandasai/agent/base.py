@@ -257,7 +257,7 @@ class Agent:
                     "Could not import chromadb. Please install it with `pip install chromadb`."
                 ) from e
 
-            self._vectorstore = Chroma()
+            self._vectorstore = Chroma(logger=self.logger)
 
         if (queries is not None and codes is None) or (
             queries is None and codes is not None
@@ -271,6 +271,8 @@ class Agent:
 
         if queries and codes:
             self._vectorstore.add_question_answer(queries, codes)
+
+        self.logger.log("Agent successfully trained on the data")
 
     def clear_memory(self):
         """
