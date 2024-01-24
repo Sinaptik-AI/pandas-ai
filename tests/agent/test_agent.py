@@ -517,3 +517,49 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             [sql_connector, pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": False},
         )
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_train_method_with_qa(self, mock_chroma, agent):
+        mock_chroma_instance = mock_chroma.return_value
+        queries = ["query1", "query2"]
+        codes = ["code1", "code2"]
+        agent.train(queries, codes)
+
+        mock_chroma_instance.add_question_answer.assert_called_once()
+        mock_chroma_instance.add_docs.assert_not_called()
+        mock_chroma_instance.add_question_answer.assert_called_once_with(queries, codes)
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_train_method_with_docs(self, mock_chroma, agent):
+        mock_chroma_instance = mock_chroma.return_value
+        docs = ["doc1"]
+        agent.train(docs=docs)
+
+        mock_chroma_instance.add_question_answer.assert_not_called()
+        mock_chroma_instance.add_docs.assert_called_once()
+        mock_chroma_instance.add_docs.assert_called_once_with(docs)
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_train_method_with_docs_and_qa(self, mock_chroma, agent):
+        mock_chroma_instance = mock_chroma.return_value
+        docs = ["doc1"]
+        queries = ["query1", "query2"]
+        codes = ["code1", "code2"]
+        agent.train(queries, codes, docs=docs)
+
+        mock_chroma_instance.add_question_answer.assert_called_once()
+        mock_chroma_instance.add_question_answer.assert_called_once_with(queries, codes)
+        mock_chroma_instance.add_docs.assert_called_once()
+        mock_chroma_instance.add_docs.assert_called_once_with(docs)
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_train_method_with_queries_but_no_code(self, mock_chroma, agent):
+        queries = ["query1", "query2"]
+        with pytest.raises(ValueError):
+            agent.train(queries)
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_train_method_with_code_but_no_queries(self, mock_chroma, agent):
+        codes = ["code1", "code2"]
+        with pytest.raises(ValueError):
+            agent.train(codes)

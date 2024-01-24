@@ -2,6 +2,8 @@ import uuid
 import json
 from typing import Union, List, Optional
 import pandas as pd
+
+from pandasai.vectorstores.vectorstore import VectorStore
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..prompts.base import BasePrompt
@@ -42,6 +44,7 @@ class Agent:
         ],
         config: Optional[Union[Config, dict]] = None,
         memory_size: int = 10,
+        vectorstore: VectorStore = None,
     ):
         """
         Args:
@@ -80,6 +83,8 @@ class Agent:
             on_code_execution=callbacks.on_code_execution,
             on_result=callbacks.on_result,
         )
+
+        self._vectorstore = vectorstore
 
         self.configure()
 
@@ -227,6 +232,47 @@ class Agent:
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )
+
+    def train(
+        self,
+        queries: Optional[List[str]] = None,
+        codes: Optional[List[str]] = None,
+        docs: Optional[List[str]] = None,
+    ) -> None:
+        """
+        Trains the context to be passed to model
+        Args:
+            query (Optional[str], optional): user user
+            code (Optional[str], optional): generated code
+            docs (Optional[List[str]], optional): additional docs
+
+        Raises:
+            ImportError: if default vector db lib is not installed it raises an error
+        """
+        if not self._vectorstore:
+            try:
+                from pandasai.vectorstores.chroma import Chroma
+            except ImportError as e:
+                raise ImportError(
+                    "Could not import chromadb. Please install it with `pip install chromadb`."
+                ) from e
+
+            self._vectorstore = Chroma(logger=self.logger)
+
+        if (queries is not None and codes is None) or (
+            queries is None and codes is not None
+        ):
+            raise ValueError(
+                "If either queries or codes are provided, both must be provided."
+            )
+
+        if docs is not None:
+            self._vectorstore.add_docs(docs)
+
+        if queries and codes:
+            self._vectorstore.add_question_answer(queries, codes)
+
+        self.logger.log("Agent successfully trained on the data")
 
     def clear_memory(self):
         """
