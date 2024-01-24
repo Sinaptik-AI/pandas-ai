@@ -8,8 +8,8 @@ class VectorStore(ABC):
     @abstractmethod
     def add_question_answer(
         self,
-        query: Iterable[str],
-        code: Iterable[str],
+        queries: Iterable[str],
+        codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
@@ -82,7 +82,7 @@ class VectorStore(ABC):
             Optional[bool]: _description_
         """
 
-    def get_relevant_question_answers(self, question: str, k: int = 5) -> List[str]:
+    def get_relevant_question_answers(self, question: str, k: int = 5) -> List[dict]:
         """
         Returns relevant question answers based on search
         """
@@ -90,13 +90,27 @@ class VectorStore(ABC):
             "get_relevant_question_answers method must be implemented by subclass."
         )
 
-    def get_relevant_docs(self, question: str, k: int = 5) -> List[str]:
+    def get_relevant_docs(self, question: str, k: int = 5) -> List[dict]:
         """
         Returns relevant documents based search
         """
         raise NotImplementedError(
             "get_relevant_docs method must be implemented by subclass."
         )
+
+    def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
+        """
+        Returns relevant question answers documents only
+        Args:
+            question (_type_): list of documents
+        """
+
+    def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
+        """
+        Returns relevant question answers documents only
+        Args:
+            question (_type_): list of documents
+        """
 
     def _format_qa(self, query: str, code: str) -> str:
         return f"Q: {query}\n A: {code}"

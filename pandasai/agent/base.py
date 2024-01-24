@@ -235,8 +235,8 @@ class Agent:
 
     def train(
         self,
-        query: Optional[List[str]] = None,
-        code: Optional[List[str]] = None,
+        queries: Optional[List[str]] = None,
+        codes: Optional[List[str]] = None,
         docs: Optional[List[str]] = None,
     ) -> None:
         """
@@ -259,11 +259,18 @@ class Agent:
 
             self._vectorstore = Chroma()
 
+        if (queries is not None and codes is None) or (
+            queries is None and codes is not None
+        ):
+            raise ValueError(
+                "If either queries or codes are provided, both must be provided."
+            )
+
         if docs is not None:
             self._vectorstore.add_docs(docs)
 
-        if query and code:
-            self._vectorstore.add_question_answer(query, code)
+        if queries and codes:
+            self._vectorstore.add_question_answer(queries, codes)
 
     def clear_memory(self):
         """

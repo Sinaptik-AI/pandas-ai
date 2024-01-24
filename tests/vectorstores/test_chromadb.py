@@ -24,6 +24,23 @@ class TestChroma(unittest.TestCase):
         autospec=True,
     )
     @patch("pandasai.vectorstores.chroma.chromadb.Client", autospec=True)
+    def test_add_question_answer_different_dimensions(
+        self, mock_client, mock_collection
+    ):
+        mock_client.return_value.get_or_create_collection.return_value = mock_collection
+
+        chroma = Chroma()
+        with self.assertRaises(ValueError):
+            chroma.add_question_answer(
+                ["What is Chroma?", "How does it work?"],
+                ["print('Hello')"],
+            )
+
+    @patch(
+        "pandasai.vectorstores.chroma.chromadb.api.models.Collection.Collection",
+        autospec=True,
+    )
+    @patch("pandasai.vectorstores.chroma.chromadb.Client", autospec=True)
     def test_add_docs(self, mock_client, mock_collection):
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = Chroma()
@@ -76,6 +93,42 @@ class TestChroma(unittest.TestCase):
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = Chroma()
         chroma._docs_collection = mock_collection
-        mock_collection.query.return_value = ["Document 1", "Document 2", "Document 3"]
+        mock_collection.query.return_value = {
+            "documents": ["Document 1", "Document 2", "Document 3"]
+        }
         result = chroma.get_relevant_docs("What is Chroma?", k=3)
+        self.assertEqual(
+            result, {"documents": ["Document 1", "Document 2", "Document 3"]}
+        )
+
+    @patch(
+        "pandasai.vectorstores.chroma.chromadb.api.models.Collection.Collection",
+        autospec=True,
+    )
+    @patch("pandasai.vectorstores.chroma.chromadb.Client", autospec=True)
+    def test_get_relevant_question_answers_documents(
+        self, mock_client, mock_collection
+    ):
+        mock_client.return_value.get_or_create_collection.return_value = mock_collection
+        chroma = Chroma()
+        chroma._qa_collection = mock_collection
+        mock_collection.query.return_value = {
+            "documents": ["Document 1", "Document 2", "Document 3"]
+        }
+        result = chroma.get_relevant_qa_documents("What is Chroma?", k=3)
+        self.assertEqual(result, ["Document 1", "Document 2", "Document 3"])
+
+    @patch(
+        "pandasai.vectorstores.chroma.chromadb.api.models.Collection.Collection",
+        autospec=True,
+    )
+    @patch("pandasai.vectorstores.chroma.chromadb.Client", autospec=True)
+    def test_get_relevant_docs_documents(self, mock_client, mock_collection):
+        mock_client.return_value.get_or_create_collection.return_value = mock_collection
+        chroma = Chroma()
+        chroma._qa_collection = mock_collection
+        mock_collection.query.return_value = {
+            "documents": ["Document 1", "Document 2", "Document 3"]
+        }
+        result = chroma.get_relevant_docs_documents("What is Chroma?", k=3)
         self.assertEqual(result, ["Document 1", "Document 2", "Document 3"])

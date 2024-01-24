@@ -61,8 +61,8 @@ class Chroma(VectorStore):
 
     def add_question_answer(
         self,
-        query: Iterable[str],
-        code: Iterable[str],
+        queries: Iterable[str],
+        codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
@@ -75,11 +75,16 @@ class Chroma(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        ids = [f"{str(uuid.uuid4())}-qa" for _ in query]
-        query = [self._format_qa(query, code) for query, code in zip(query, code)]
+        if len(queries) != len(codes):
+            raise ValueError(
+                f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
+            )
+
+        ids = [f"{str(uuid.uuid4())}-qa" for _ in queries]
+        qa_str = [self._format_qa(query, code) for query, code in zip(queries, codes)]
 
         self._qa_collection.add(
-            documents=query,
+            documents=qa_str,
             metadatas=metadatas,
             ids=ids,
         )
@@ -134,14 +139,34 @@ class Chroma(VectorStore):
         self._docs_collection.delete(ids=ids)
         return True
 
-    def get_relevant_question_answers(self, question: str, k: int = 5) -> List[str]:
+    def get_relevant_question_answers(self, question: str, k: int = 3) -> List[dict]:
         """
         Returns relevant question answers based on search
         """
-        return self._qa_collection.query(query_texts=question, n_results=k)
+        return self._qa_collection.query(
+            query_texts=question, n_results=k, include=["metadatas", "documents"]
+        )
 
-    def get_relevant_docs(self, question: str, k: int = 5) -> List[str]:
+    def get_relevant_docs(self, question: str, k: int = 3) -> List[dict]:
         """
         Returns relevant documents based search
         """
-        return self._qa_collection.query(query_texts=question, n_results=k)
+        return self._docs_collection.query(
+            query_texts=question, n_results=k, include=["metadatas", "documents"]
+        )
+
+    def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
+        """
+        Returns relevant question answers documents only
+        Args:
+            question (_type_): list of documents
+        """
+        return self.get_relevant_question_answers(question, k)["documents"]
+
+    def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
+        """
+        Returns relevant question answers documents only
+        Args:
+            question (_type_): list of documents
+        """
+        return self.get_relevant_docs(question, k)["documents"]
