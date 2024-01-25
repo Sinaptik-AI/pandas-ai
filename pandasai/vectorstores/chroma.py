@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Iterable, List, Optional, Union
 import uuid
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.path import find_project_root
@@ -24,9 +24,13 @@ class Chroma(VectorStore):
         embedding_function: Optional[Callable[[List[str]], List[float]]] = None,
         persist_path: Optional[str] = None,
         client_settings: Optional[chromadb.config.Settings] = None,
+        max_samples: int = 3,
+        similary_threshold: int = 1.5,
         logger: Optional[Logger] = None,
     ) -> None:
         self._logger = logger or Logger()
+        self._max_samples = max_samples
+        self._similarity_threshold = similary_threshold
 
         # Initialize Chromadb Client
         # initialize from client settings if exists
@@ -149,20 +153,38 @@ class Chroma(VectorStore):
         self._docs_collection.delete(ids=ids)
         return True
 
-    def get_relevant_question_answers(self, question: str, k: int = 3) -> List[dict]:
+    def get_relevant_question_answers(
+        self, question: str, k: Union[int, None] = None
+    ) -> List[dict]:
         """
         Returns relevant question answers based on search
         """
-        return self._qa_collection.query(
-            query_texts=question, n_results=k, include=["metadatas", "documents"]
+        k = k or self._max_samples
+
+        relevant_data: chromadb.QueryResult = self._qa_collection.query(
+            query_texts=question,
+            n_results=k,
+            include=["metadatas", "documents", "distances"],
+        )
+
+        return self._filter_docs_based_on_distance(
+            relevant_data, self._similarity_threshold
         )
 
     def get_relevant_docs(self, question: str, k: int = 3) -> List[dict]:
         """
         Returns relevant documents based search
         """
-        return self._docs_collection.query(
-            query_texts=question, n_results=k, include=["metadatas", "documents"]
+        k = k or self._max_samples
+
+        relevant_data: chromadb.QueryResult = self._docs_collection.query(
+            query_texts=question,
+            n_results=k,
+            include=["metadatas", "documents", "distances"],
+        )
+
+        return self._filter_docs_based_on_distance(
+            relevant_data, self._similarity_threshold
         )
 
     def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
@@ -171,7 +193,7 @@ class Chroma(VectorStore):
         Args:
             question (_type_): list of documents
         """
-        return self.get_relevant_question_answers(question, k)["documents"]
+        return self.get_relevant_question_answers(question, k)["documents"][0]
 
     def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
         """
@@ -179,4 +201,32 @@ class Chroma(VectorStore):
         Args:
             question (_type_): list of documents
         """
-        return self.get_relevant_docs(question, k)["documents"]
+        return self.get_relevant_docs(question, k)["documents"][0]
+
+    def _filter_docs_based_on_distance(
+        self, documents: chromadb.QueryResult, threshold: int
+    ) -> List[str]:
+        """
+        Filter documents based on threshold
+        Args:
+            documents (List[str]): list of documents in string
+            distances (List[float]): list of distances in float
+            threshold (int): similarity threshold
+
+        Returns:
+            _type_: _description_
+        """
+        filtered_data = [
+            (doc, distance, metadata)
+            for doc, distance, metadata in zip(
+                documents["documents"][0],
+                documents["distances"][0],
+                documents["metadatas"][0],
+            )
+            if distance < threshold
+        ]
+
+        return {
+            key: [[data[i] for data in filtered_data]]
+            for i, key in enumerate(["documents", "distances", "metadatas"])
+        }

@@ -4,6 +4,7 @@ from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
+from pandasai.vectorstores.vectorstore import VectorStore
 from ..connectors import BaseConnector
 
 
@@ -19,6 +20,7 @@ class PipelineContext:
         memory: Optional[Memory] = None,
         skills_manager: Optional[SkillsManager] = None,
         cache: Optional[Cache] = None,
+        vectorstore: VectorStore = None,
         initial_values: dict = None,
     ) -> None:
         if isinstance(config, dict):
@@ -36,6 +38,8 @@ class PipelineContext:
         self.config = config
 
         self.intermediate_values = initial_values or {}
+
+        self.vectorstore = vectorstore
 
     def add(self, key: str, value: Any):
         self.intermediate_values[key] = value

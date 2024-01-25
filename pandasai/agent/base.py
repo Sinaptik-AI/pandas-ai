@@ -63,12 +63,12 @@ class Agent:
 
         dfs = self.get_dfs(dfs)
 
+        self._vectorstore = vectorstore
+
         # Instantiate the context
         config = self.get_config(config)
         self.context = PipelineContext(
-            dfs=dfs,
-            config=config,
-            memory=Memory(memory_size),
+            dfs=dfs, config=config, memory=Memory(memory_size), vectorstore=vectorstore
         )
 
         # Instantiate the logger
@@ -83,8 +83,6 @@ class Agent:
             on_code_execution=callbacks.on_code_execution,
             on_result=callbacks.on_result,
         )
-
-        self._vectorstore = vectorstore
 
         self.configure()
 
@@ -242,14 +240,14 @@ class Agent:
         """
         Trains the context to be passed to model
         Args:
-            query (Optional[str], optional): user user
-            code (Optional[str], optional): generated code
+            queries (Optional[str], optional): user user
+            codes (Optional[str], optional): generated code
             docs (Optional[List[str]], optional): additional docs
 
         Raises:
             ImportError: if default vector db lib is not installed it raises an error
         """
-        if not self._vectorstore:
+        if self._vectorstore is None:
             try:
                 from pandasai.vectorstores.chroma import Chroma
             except ImportError as e:
@@ -258,6 +256,7 @@ class Agent:
                 ) from e
 
             self._vectorstore = Chroma(logger=self.logger)
+            self.context.vectorstore = self._vectorstore
 
         if (queries is not None and codes is None) or (
             queries is None and codes is not None

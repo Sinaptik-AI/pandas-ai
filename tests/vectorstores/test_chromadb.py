@@ -80,9 +80,20 @@ class TestChroma(unittest.TestCase):
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = Chroma()
         chroma._qa_collection = mock_collection
-        mock_collection.query.return_value = ["Answer 1", "Answer 2", "Answer 3"]
+        mock_collection.query.return_value = {
+            "documents": [["Document 1", "Document 2", "Document 3"]],
+            "distances": [[0.5, 0.8, 1.0]],
+            "metadatas": [[None, None, None]],
+        }
         result = chroma.get_relevant_question_answers("What is Chroma?", k=3)
-        self.assertEqual(result, ["Answer 1", "Answer 2", "Answer 3"])
+        self.assertEqual(
+            result,
+            {
+                "documents": [["Document 1", "Document 2", "Document 3"]],
+                "distances": [[0.5, 0.8, 1.0]],
+                "metadatas": [[None, None, None]],
+            },
+        )
 
     @patch(
         "pandasai.vectorstores.chroma.chromadb.api.models.Collection.Collection",
@@ -94,11 +105,18 @@ class TestChroma(unittest.TestCase):
         chroma = Chroma()
         chroma._docs_collection = mock_collection
         mock_collection.query.return_value = {
-            "documents": ["Document 1", "Document 2", "Document 3"]
+            "documents": [["Document 1", "Document 2", "Document 3"]],
+            "distances": [[0.5, 0.8, 1.0]],
+            "metadatas": [[None, None, None]],
         }
         result = chroma.get_relevant_docs("What is Chroma?", k=3)
         self.assertEqual(
-            result, {"documents": ["Document 1", "Document 2", "Document 3"]}
+            result,
+            {
+                "documents": [["Document 1", "Document 2", "Document 3"]],
+                "distances": [[0.5, 0.8, 1.0]],
+                "metadatas": [[None, None, None]],
+            },
         )
 
     @patch(
@@ -113,7 +131,9 @@ class TestChroma(unittest.TestCase):
         chroma = Chroma()
         chroma._qa_collection = mock_collection
         mock_collection.query.return_value = {
-            "documents": ["Document 1", "Document 2", "Document 3"]
+            "documents": [["Document 1", "Document 2", "Document 3"]],
+            "distances": [[0.5, 0.8, 1.0]],
+            "metadatas": [[None, None, None]],
         }
         result = chroma.get_relevant_qa_documents("What is Chroma?", k=3)
         self.assertEqual(result, ["Document 1", "Document 2", "Document 3"])
@@ -128,7 +148,9 @@ class TestChroma(unittest.TestCase):
         chroma = Chroma()
         chroma._qa_collection = mock_collection
         mock_collection.query.return_value = {
-            "documents": ["Document 1", "Document 2", "Document 3"]
+            "documents": [["Document 1", "Document 2", "Document 3"]],
+            "distances": [[0.5, 0.8, 1.0]],
+            "metadatas": [[None, None, None]],
         }
         result = chroma.get_relevant_docs_documents("What is Chroma?", k=3)
         self.assertEqual(result, ["Document 1", "Document 2", "Document 3"])
