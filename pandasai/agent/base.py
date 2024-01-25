@@ -84,6 +84,8 @@ class Agent:
             on_result=callbacks.on_result,
         )
 
+        self._vectorstore = vectorstore
+
         self.configure()
 
     def configure(self):
