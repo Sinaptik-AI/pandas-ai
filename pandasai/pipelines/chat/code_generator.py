@@ -41,5 +41,8 @@ class CodeGenerator(BaseLogicUnit):
         )
 
         return LogicUnitOutput(
-            code, True, "Code Generated Successfully", {"code_generated": code}
+            code,
+            True,
+            "Code Generated Successfully",
+            {"content_type": "code", "value": code},
         )

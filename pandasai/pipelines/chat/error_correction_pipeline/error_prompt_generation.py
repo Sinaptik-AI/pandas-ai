@@ -54,7 +54,10 @@ class ErrorPromptGeneration(BaseLogicUnit):
             prompt,
             True,
             "Prompt Generated Successfully",
-            {"generated_prompt": prompt.to_string()},
+            {
+                "content_type": "prompt",
+                "value": prompt.to_string(),
+            },
         )
 
     def get_prompt(self, e: Exception, code: str) -> BasePrompt:

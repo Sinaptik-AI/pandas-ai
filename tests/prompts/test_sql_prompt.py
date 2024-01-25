@@ -52,6 +52,8 @@ class TestGeneratePythonCodeWithSQLPrompt:
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
+        print(prompt_content)
+
         assert (
             prompt_content
             == f'''<tables>
@@ -91,5 +93,7 @@ Variable `dfs: list[pd.DataFrame]` is already declared.
 At the end, declare "result" variable as a dictionary of type and value.
 
 
-Generate python code and return full updated code:'''  # noqa: E501
+Generate python code and return full updated code:
+
+### Note: Use only relevant table for query and do aggregation, sorting, joins and grouby through sql query'''  # noqa: E501
         )
