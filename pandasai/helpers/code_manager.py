@@ -408,6 +408,7 @@ Code running:
 
             new_body.append(node)
 
+        # Enforcing use of execute_sql_query via Error Prompt Pipeline
         if self._config.direct_sql and not execute_sql_query_used:
             raise ExecuteSQLQueryNotUsed(
                 "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
