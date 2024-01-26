@@ -12,7 +12,7 @@ class TestAirTableConnector(unittest.TestCase):
     def setUp(self) -> None:
         # Define your ConnectorConfig instance here
         self.config = AirtableConnectorConfig(
-            api_key="your_token",
+            token="your_token",
             base_id="your_baseid",
             table="your_table_name",
             where=[["Status", "=", "In progress"]],
