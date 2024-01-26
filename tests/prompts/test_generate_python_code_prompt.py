@@ -87,6 +87,7 @@ import pandas as pd
 
 
 
+
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
 At the end, declare "result" variable as a dictionary of type and value.
@@ -177,6 +178,7 @@ import pandas as pd
 You can utilize these examples as a reference for generating code.
 
 ['query1']
+
 
 
 
@@ -276,6 +278,7 @@ import pandas as pd
 
 Here are additional documents for reference. Feel free to use them to answer.
 ['query1']
+
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.
@@ -388,6 +391,7 @@ You can utilize these examples as a reference for generating code.
 
 Here are additional documents for reference. Feel free to use them to answer.
 ['documents1']
+
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.
