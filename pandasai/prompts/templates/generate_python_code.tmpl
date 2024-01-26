@@ -19,8 +19,19 @@ import pandas as pd
 # Declare result var: {% include 'shared/output_type_template.tmpl' with context %}
 ```
 {% endif %}
+{% if context.vectorstore %}{% set documents = context.vectorstore.get_relevant_qa_documents(context.memory.get_last_message()) %}
+{% if documents|length > 0%}You can utilize these examples as a reference for generating code.{% endif %}
+{% for document in documents %}
+{{ document}}{% endfor %}{% endif %}
+{% if context.vectorstore %}{% set documents = context.vectorstore.get_relevant_docs_documents(context.memory.get_last_message()) %}
+{% if documents|length > 0%}Here are additional documents for reference. Feel free to use them to answer.{% endif %}
+{% for document in documents %}{{ document}}
+{% endfor %}
+{% endif %}
 
+Here is the question for which you need to generate code for
 {{ context.memory.get_last_message() }}
+
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
 At the end, declare "result" variable as a dictionary of type and value.
