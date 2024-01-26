@@ -186,3 +186,11 @@ class InvalidLLMOutputType(Exception):
     Args:
         Exception (Exception): InvalidLLMOutputType
     """
+
+
+class ExecuteSQLQueryNotUsed(Exception):
+    """
+    Raise error if Execute SQL Query is not used
+    Args:
+        Exception (Exception): ExecuteSQLQueryNotUsed
+    """

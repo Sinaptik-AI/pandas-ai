@@ -15,6 +15,7 @@ from pandasai.connectors.sql import (
 
 from pandasai.exceptions import (
     BadImportError,
+    ExecuteSQLQueryNotUsed,
     MaliciousQueryError,
     NoCodeFoundError,
     InvalidConfigError,
@@ -432,8 +433,12 @@ def execute_sql_query(sql_query: str) -> pd.DataFrame:
     # return the result as a dataframe
     return pd.DataFrame()
 np.array()
+execute_sql_query()
 """
-        assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
+        assert (
+            code_manager._clean_code(safe_code, exec_context)
+            == "np.array()\nexecute_sql_query()"
+        )
 
     def test_clean_code_direct_sql_code_false(
         self, exec_context: MagicMock, code_manager
@@ -539,10 +544,28 @@ np.array()"""
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        """Test that the correct sql table"""
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        safe_code = (
+            """sql_query = 'SELECT * FROM your_table'\nexecute_sql_query(sql_query)"""
+        )
+        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+
+    def test_clean_code_with_no_execute_sql_query_usage(
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        """Test that the correct sql table"""
         code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM your_table'"""
-        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+        with pytest.raises(ExecuteSQLQueryNotUsed) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+        assert str(excinfo.value) == (
+            "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
+        )
 
     def test_clean_code_using_incorrect_sql_table(
         self,

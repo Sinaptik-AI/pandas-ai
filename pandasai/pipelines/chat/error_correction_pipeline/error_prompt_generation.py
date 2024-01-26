@@ -1,5 +1,5 @@
 from typing import Any, Callable
-from pandasai.exceptions import InvalidLLMOutputType
+from pandasai.exceptions import ExecuteSQLQueryNotUsed, InvalidLLMOutputType
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -9,6 +9,9 @@ from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.prompts.base import BasePrompt
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
+from pandasai.prompts.correct_execute_sql_query_usage_error_prompt import (
+    CorrectExecuteSQLQueryUsageErrorPrompt,
+)
 from pandasai.prompts.correct_output_type_error_prompt import (
     CorrectOutputTypeErrorPrompt,
 )
@@ -75,6 +78,10 @@ class ErrorPromptGeneration(BaseLogicUnit):
                 output_type=self.context.get("output_type"),
             )
             if isinstance(e, InvalidLLMOutputType)
+            else CorrectExecuteSQLQueryUsageErrorPrompt(
+                context=self.context, code=code, error=e
+            )
+            if isinstance(e, ExecuteSQLQueryNotUsed)
             else CorrectErrorPrompt(
                 context=self.context,
                 code=code,
