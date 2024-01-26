@@ -43,17 +43,17 @@ class DataframeSerializer:
         dataframe_info = "<dataframe"
 
         # Add name attribute if available
-        if df.table_name is not None:
-            dataframe_info += f' name="{df.table_name}"'
+        if df.name is not None:
+            dataframe_info += f' name="{df.name}"'
 
         # Add description attribute if available
-        if df.table_description is not None:
-            dataframe_info += f' description="{df.table_description}"'
+        if df.description is not None:
+            dataframe_info += f' description="{df.description}"'
 
         dataframe_info += ">"
 
         # Add dataframe details
-        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.head_df.to_csv()}"
+        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.to_csv()}"
 
         # Close the dataframe tag
         dataframe_info += "</dataframe>"
@@ -73,11 +73,9 @@ class DataframeSerializer:
             str: dataframe stringify
         """
         table_description_tag = (
-            f' description="{df.table_description}"'
-            if df.table_description is not None
-            else ""
+            f' description="{df.description}"' if df.description is not None else ""
         )
-        table_head_tag = f'<table name="{df.table_name}"{table_description_tag}>'
+        table_head_tag = f'<table name="{df.name}"{table_description_tag}>'
         return f"{table_head_tag}\n{df.head_df.to_csv()}\n</table>"
 
     def convert_df_to_json(self, df: pd.DataFrame, extras: dict) -> dict:
@@ -95,32 +93,28 @@ class DataframeSerializer:
         result = {
             df_number_key: [
                 {
-                    "name": df.table_name,
-                    "description": df.table_description,
+                    "name": df.name,
+                    "description": df.description,
                     "type": extras["type"],
                     "data": {},
                 }
             ]
         }
 
-        # Get DataFrame information
-        num_rows, num_columns = df.shape
-
         # Add DataFrame details to the result
         result[df_number_key][0]["data"] = {
-            "rows": num_rows,
-            "columns": num_columns,
+            "rows": df.rows_count,
+            "columns": df.columns_count,
             "schema": {"fields": []},
         }
 
         # Iterate over DataFrame columns
-        for col_name, col_dtype in df.dtypes.items():
+        df_head = df.get_head()
+        for col_name, col_dtype in df_head.dtypes.items():
             col_info = {
                 "name": col_name,
                 "type": str(col_dtype),
-                "samples": df[col_name].sample(3).tolist()
-                if num_rows > 5
-                else df[col_name].head().tolist(),
+                "samples": df_head[col_name].head().tolist(),
             }
 
             # Add column description if available

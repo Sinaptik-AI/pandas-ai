@@ -5,6 +5,11 @@ Base connector class to be extended by all connectors.
 import pandas as pd
 from abc import ABC, abstractmethod
 import os
+
+from pandasai.helpers.dataframe_serializer import (
+    DataframeSerializer,
+    DataframeSerializerType,
+)
 from ..helpers.logger import Logger
 from pydantic import BaseModel
 from typing import Union
@@ -35,6 +40,7 @@ class BaseConnector(ABC):
         name: str = None,
         description: str = None,
         custom_head: pd.DataFrame = None,
+        field_descriptions: dict = None,
     ):
         """
         Initialize the connector with the given configuration.
@@ -49,6 +55,7 @@ class BaseConnector(ABC):
         self.name = name
         self.description = description
         self.custom_head = custom_head
+        self.field_descriptions = field_descriptions
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object
@@ -173,6 +180,13 @@ class BaseConnector(ABC):
         """
         raise NotImplementedError
 
+    @property
+    def pandas_df(self):
+        """
+        Returns the pandas dataframe
+        """
+        raise NotImplementedError
+
     def equals(self, other):
         return self.__dict__ == other.__dict__
 
@@ -237,3 +251,24 @@ class BaseConnector(ABC):
             str: The dataframe as a CSV string.
         """
         return self.get_head().to_csv(index=False)
+
+    @cache
+    def to_string(
+        self,
+        index: int = 0,
+        is_direct_sql: bool = False,
+        serializer: DataframeSerializerType = None,
+    ) -> str:
+        """
+        Convert dataframe to string
+        Returns:
+            str: dataframe string
+        """
+        return DataframeSerializer().serialize(
+            self,
+            extras={
+                "index": index,
+                "type": "sql" if is_direct_sql else "pandas",
+            },
+            type_=serializer,
+        )

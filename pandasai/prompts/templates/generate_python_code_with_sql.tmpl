@@ -1,7 +1,7 @@
 <tables>
-{% for df in context.dfs %}<table{% if df.name %} name="{{df.name}}"{% endif %}{% if df.description %} description="{{df.name}}"{% endif %}>
-dfs[{{loop.index-1}}]:{{df.rows_count}}x{{df.columns_count}}
-{{df.to_csv()}}</table>{% endfor %}
+{% for df in context.dfs %}<table>
+{% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}
+</table>{% endfor %}
 </tables>
 
 {% if context.skills_manager.has_skills() %}
@@ -29,7 +29,7 @@ import pandas as pd
 # Declare result var: {% include 'shared/output_type_template.tmpl' with context %}
 ```
 {% endif %}
-
+{% include 'shared/vectordb_docs.tmpl' with context %}
 {{ context.memory.get_last_message() }}
 Variable `dfs: list[pd.DataFrame]` is already declared.
 

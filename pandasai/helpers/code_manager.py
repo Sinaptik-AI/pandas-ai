@@ -175,7 +175,7 @@ Code running:
         environment["dfs"] = self._get_originals(dfs)
 
         if self._config.direct_sql:
-            environment["execute_sql_query"] = self._dfs[0].get_query_exec_func()
+            environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
 
         # Add skills to the env
         if context.skills_manager.used_skills:
@@ -317,7 +317,7 @@ Code running:
         """
 
         if self._config.direct_sql:
-            if all((isinstance(df, SQLConnector) and df == dfs[0]) for df in dfs):
+            if all((isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(

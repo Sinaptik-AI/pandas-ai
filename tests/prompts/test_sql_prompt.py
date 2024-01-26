@@ -58,7 +58,15 @@ class TestGeneratePythonCodeWithSQLPrompt:
             prompt_content
             == f'''<tables>
 <table>
-dfs[0]:0x0
+dfs[0]:
+- name: null
+  description: null
+  type: pandas
+  data:
+    rows: 0
+    columns: 0
+    schema:
+      fields: []
 
 </table>
 </tables>
@@ -85,6 +93,7 @@ import pandas as pd
 {output_type_template}
 
 ```
+
 
 
 

@@ -1,5 +1,4 @@
 """Example of using PandasAI with a CSV file."""
-
 from pandasai import Agent
 from pandasai.llm import OpenAI
 from pandasai.connectors import PostgreSQLConnector
@@ -39,20 +38,13 @@ products = PostgreSQLConnector(
     }
 )
 
-
 llm = OpenAI("OPEN_API_KEY")
 
 
-order_details_agent = Agent(
-    [order_details],
-    config={"llm": llm, "direct_sql": True},
-    description="Contain user order details",
-)
-
-
-df = Agent(
-    [order_details_agent, order, products],
+agent = Agent(
+    [order, products, order_details],
     config={"llm": llm, "direct_sql": True},
 )
-response = df.chat("return orders with count of distinct products")
+
+response = agent.chat("return orders with count of distinct products")
 print(response)
