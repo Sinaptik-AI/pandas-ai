@@ -331,3 +331,20 @@ features = {features}
 n_clusters = {n_clusters}
 """
         )
+
+    def data_summarization(self) -> DataFrameType:
+        """
+        Do summarization of the data.
+
+        Returns:
+            DataFrameType: The summarized DataFrame.
+        """
+
+        return self.chat(
+            """
+Provide the summary in df format
+1. For each distinct value :
+2. Calculate subtotal of rows
+3. Calculate the percentage of the total count for each group
+"""
+        )
