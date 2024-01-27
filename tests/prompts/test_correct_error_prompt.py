@@ -2,6 +2,7 @@
 import sys
 
 import pandas as pd
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.prompts import CorrectErrorPrompt
 from pandasai.connectors import PandasConnector
 from pandasai import Agent
@@ -16,7 +17,8 @@ class TestCorrectErrorPrompt:
 
         llm = FakeLLM()
         agent = Agent(
-            dfs=[PandasConnector({"original_df": pd.DataFrame()})], config={"llm": llm}
+            dfs=[PandasConnector({"original_df": pd.DataFrame()})],
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = CorrectErrorPrompt(
             context=agent.context, code="df.head()", error="Error message"

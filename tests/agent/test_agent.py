@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 from pandasai.agent import Agent
 import pandas as pd
 import pytest
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
@@ -72,7 +73,7 @@ class TestAgent:
 
     @pytest.fixture
     def config(self, llm: FakeLLM) -> dict:
-        return {"llm": llm}
+        return {"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV}
 
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
@@ -429,6 +430,8 @@ Spain,8446903488,6.38
         last_prompt = agent.last_prompt
         if sys.platform.startswith("win"):
             last_prompt = last_prompt.replace("\r\n", "\n")
+
+        print(last_prompt)
 
         assert (
             last_prompt

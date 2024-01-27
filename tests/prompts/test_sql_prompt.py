@@ -52,11 +52,21 @@ class TestGeneratePythonCodeWithSQLPrompt:
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
+        print(prompt_content)
+
         assert (
             prompt_content
             == f'''<tables>
 <table>
-dfs[0]:0x0
+dfs[0]:
+- name: null
+  description: null
+  type: pandas
+  data:
+    rows: 0
+    columns: 0
+    schema:
+      fields: []
 
 </table>
 </tables>
@@ -86,10 +96,13 @@ import pandas as pd
 
 
 
+
 Variable `dfs: list[pd.DataFrame]` is already declared.
 
 At the end, declare "result" variable as a dictionary of type and value.
 
 
-Generate python code and return full updated code:'''  # noqa: E501
+Generate python code and return full updated code:
+
+### Note: Use only relevant table for query and do aggregation, sorting, joins and grouby through sql query'''  # noqa: E501
         )

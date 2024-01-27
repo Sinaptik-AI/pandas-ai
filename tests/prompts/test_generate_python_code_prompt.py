@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.prompts import GeneratePythonCodePrompt
 from pandasai.connectors import PandasConnector
 from pandasai import Agent
@@ -53,7 +54,7 @@ class TestGeneratePythonCodePrompt:
         llm = FakeLLM()
         agent = Agent(
             PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
-            config={"llm": llm},
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = GeneratePythonCodePrompt(
             context=agent.context,
@@ -85,8 +86,6 @@ import pandas as pd
 
 
 
-
-Here is the question for which you need to generate code for
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.
@@ -144,7 +143,7 @@ Generate python code and return full updated code:"""  # noqa E501
         llm = FakeLLM()
         agent = Agent(
             PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
-            config={"llm": llm},
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         agent.train(["query1"], ["code1"])
         prompt = GeneratePythonCodePrompt(
@@ -182,9 +181,6 @@ You can utilize these examples as a reference for generating code.
 
 
 
-
-
-Here is the question for which you need to generate code for
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.
@@ -245,7 +241,7 @@ Generate python code and return full updated code:"""  # noqa E501
         llm = FakeLLM()
         agent = Agent(
             PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
-            config={"llm": llm},
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         agent.train(docs=["document1"])
         prompt = GeneratePythonCodePrompt(
@@ -283,9 +279,6 @@ import pandas as pd
 Here are additional documents for reference. Feel free to use them to answer.
 ['query1']
 
-
-
-Here is the question for which you need to generate code for
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.
@@ -355,11 +348,24 @@ Generate python code and return full updated code:"""  # noqa E501
             output_type=output_type,
         )
 
-        expected_prompt_content = f"""<dataframe>
-dfs[0]:1x2
-a,b
-1,4
-</dataframe>
+        expected_prompt_content = f"""dfs[0]:
+- name: null
+  description: null
+  type: pandas
+  data:
+    rows: 1
+    columns: 2
+    schema:
+      fields:
+      - name: a
+        type: int64
+        samples:
+        - 1
+      - name: b
+        type: int64
+        samples:
+        - 4
+
 
 
 
@@ -386,9 +392,6 @@ You can utilize these examples as a reference for generating code.
 Here are additional documents for reference. Feel free to use them to answer.
 ['documents1']
 
-
-
-Here is the question for which you need to generate code for
 
 
 Variable `dfs: list[pd.DataFrame]` is already declared.

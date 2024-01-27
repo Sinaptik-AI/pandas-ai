@@ -81,6 +81,9 @@ class SQLConnector(BaseConnector):
 
         self._cache_interval = cache_interval
 
+        # Table to equal to table name for sql connectors
+        self.name = self.fallback_name
+
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """
         Loads passed Configuration to object
@@ -394,6 +397,10 @@ class SQLConnector(BaseConnector):
     @property
     def fallback_name(self):
         return self.config.table
+
+    @property
+    def pandas_df(self):
+        return self.execute()
 
     def equals(self, other):
         if isinstance(other, self.__class__):

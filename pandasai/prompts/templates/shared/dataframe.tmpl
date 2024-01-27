@@ -1,3 +1,1 @@
-<dataframe{% if df.name %} name="{{df.name}}"{% endif %}{% if df.description %} description="{{df.name}}"{% endif %}>
-dfs[{{loop.index-1}}]:{{df.rows_count}}x{{df.columns_count}}
-{{df.to_csv()}}</dataframe>
+{{ df.to_string(index-1, context.config.direct_sql, context.config.dataframe_serializer) }}

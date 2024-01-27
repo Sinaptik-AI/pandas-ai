@@ -98,8 +98,13 @@ class QueryExecTracker:
             step (dict): dictionary containing information
         """
         # Exception step to store serializable output response from the generated code
-        if "type" in step and step["type"] == "CodeExecution":
-            self._response = step["data"]["result"]
+        if (
+            "type" in step
+            and step["type"] == "CodeExecution"
+            and step["data"] is not None
+            and step["data"]["content_type"] == "response"
+        ):
+            self._response = step["data"]["value"]
 
         self._steps.append(step)
 

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, validator, Field
 from typing import Optional, List, Any, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from ..llm import LLM, LangchainLLM
 from ..exceptions import LLMNotFoundError
 
@@ -27,6 +28,7 @@ class Config(BaseModel):
     data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
+    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.YML
 
     class Config:
         arbitrary_types_allowed = True
