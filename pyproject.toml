@@ -40,7 +40,7 @@ yfinance = { version = "^0.2.28", optional = true }
 sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
 pillow = "^10.1.0"
-google-generativeai = "^0.3.2"
+google-generativeai = {version = "^0.3.2", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.2.2"
