@@ -15,6 +15,7 @@ from .save_chart import add_save_chart
 from .optional import import_dependency
 from ..exceptions import (
     BadImportError,
+    ExecuteSQLQueryNotUsed,
     MaliciousQueryError,
     NoResultFoundError,
     InvalidConfigError,
@@ -306,6 +307,14 @@ Code running:
             and node.name == "execute_sql_query"
         )
 
+    def check_direct_sql_func_usage_exists(self, node: ast.AST):
+        return (
+            self._validate_direct_sql(self._dfs)
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == "execute_sql_query"
+        )
+
     def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
@@ -362,6 +371,8 @@ Code running:
 
         # Check for imports and the node where analyze_data is defined
         new_body = []
+        execute_sql_query_used = False
+
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
@@ -379,6 +390,10 @@ Code running:
             if self.check_direct_sql_func_def_exists(node):
                 continue
 
+            # if generated code contain execute_sql_query usage
+            if self.check_direct_sql_func_usage_exists(node):
+                execute_sql_query_used = True
+
             # Sanity for sql query the code should only use allowed tables
             if (
                 isinstance(node, ast.Assign)
@@ -392,6 +407,12 @@ Code running:
             self.find_function_calls(node, context)
 
             new_body.append(node)
+
+        # Enforcing use of execute_sql_query via Error Prompt Pipeline
+        if self._config.direct_sql and not execute_sql_query_used:
+            raise ExecuteSQLQueryNotUsed(
+                "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
+            )
 
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
