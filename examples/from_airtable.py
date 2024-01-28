@@ -4,7 +4,7 @@ from pandasai.llm import OpenAI
 
 airtable_connectors = AirtableConnector(
     config={
-        "api_key": "AIRTABLE_API_TOKEN",
+        "token": "AIRTABLE_API_TOKEN",
         "table": "AIRTABLE_TABLE_NAME",
         "base_id": "AIRTABLE_BASE_ID",
         "where": [

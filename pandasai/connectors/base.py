@@ -27,7 +27,7 @@ class AirtableConnectorConfig(BaseConnectorConfig):
     Connecter configuration for Airtable data.
     """
 
-    api_key: str
+    token: str
     base_id: str
     database: str = "airtable_data"
 
