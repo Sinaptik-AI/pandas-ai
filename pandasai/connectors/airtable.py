@@ -8,8 +8,9 @@ import time
 from functools import cache, cached_property
 from typing import Optional, Union
 
-import pandas as pd
 import requests
+
+import pandasai.pandas as pd
 
 from ..exceptions import InvalidRequestError
 from ..helpers.path import find_project_root

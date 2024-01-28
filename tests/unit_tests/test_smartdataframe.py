@@ -13,6 +13,7 @@ import polars as pl
 import pytest
 from pydantic import BaseModel, Field
 
+import pandasai
 from pandasai import SmartDataframe
 from pandasai.exceptions import LLMNotFoundError
 from pandasai.helpers.cache import Cache
@@ -681,7 +682,7 @@ result = {"type": None, "value": "temp_chart.png"}
                 "size": ["1240KB", "320KB"],
             }
         )
-        mocker.patch.object(pd, "read_parquet", return_value=expected_df)
+        mocker.patch.object(pandasai.pandas, "read_parquet", return_value=expected_df)
 
         mocker.patch.object(
             json,
@@ -706,7 +707,7 @@ result = {"type": None, "value": "temp_chart.png"}
 
     def test_import_csv_file(self, smart_dataframe, mocker):
         mocker.patch.object(
-            pd,
+            pandasai.pandas,
             "read_parquet",
             return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
         )
@@ -719,7 +720,7 @@ result = {"type": None, "value": "temp_chart.png"}
 
     def test_import_parquet_file(self, smart_dataframe, mocker):
         mocker.patch.object(
-            pd,
+            pandasai.pandas,
             "read_parquet",
             return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
         )
@@ -732,7 +733,7 @@ result = {"type": None, "value": "temp_chart.png"}
 
     def test_import_excel_file(self, smart_dataframe, mocker):
         mocker.patch.object(
-            pd,
+            pandasai.pandas,
             "read_excel",
             return_value=pd.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]}),
         )

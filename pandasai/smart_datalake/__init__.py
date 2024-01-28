@@ -19,6 +19,7 @@ Example:
 """
 import logging
 import os
+import threading
 import uuid
 from typing import Any, List, Optional, Union
 
@@ -69,6 +70,7 @@ class SmartDatalake:
     _last_error: str = None
 
     _viz_lib: str = None
+    _lock: threading.RLock = threading.RLock()
 
     def __init__(
         self,
@@ -162,7 +164,8 @@ class SmartDatalake:
                     charts_dir = os.path.join(
                         os.getcwd(), self._config.save_charts_path
                     )
-            os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
+            with self._lock:
+                os.makedirs(charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
         if self._config.enable_cache:
             try:

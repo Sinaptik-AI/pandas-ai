@@ -3,7 +3,7 @@ import os
 import time
 from typing import Optional, Union
 
-import pandas as pd
+import pandasai.pandas as pd
 
 from ..constants import DEFAULT_FILE_PERMISSIONS
 from ..helpers.path import find_project_root

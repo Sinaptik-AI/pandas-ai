@@ -20,13 +20,14 @@ Example:
 
 import hashlib
 import uuid
+import warnings
 from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-import pandas as pd
 import pydantic
 
+import pandasai.pandas as pd
 from pandasai.helpers.df_validator import DfValidator
 
 from ..connectors.base import BaseConnector
@@ -116,14 +117,20 @@ class SmartDataframeCore:
         """
         Load the engine of the dataframe (Pandas or Polars)
         """
-        engine = df_type(self._df)
+        df_engine = df_type(self._df)
 
-        if engine is None:
+        if df_engine is None:
             raise ValueError(
-                "Invalid input data. Must be a Pandas or Polars dataframe."
+                "Invalid input data. Must be a Pandas, Modin or Polars dataframe."
             )
 
-        self._engine = engine
+        if df_engine != "polars" and not isinstance(self._df, pd.DataFrame):
+            raise ValueError(
+                f"The provided dataframe is a {df_engine} dataframe, but the current pandasai engine is {pd.__name__}. "
+                f"To use {df_engine}, please run `pandasai.set_engine('{df_engine}')`. "
+            )
+
+        self._engine = df_engine
 
     def _validate_and_convert_dataframe(self, df: DataFrameType) -> DataFrameType:
         """
@@ -181,7 +188,7 @@ class SmartDataframeCore:
 
             if self._engine == "polars":
                 return_df = self._df.clone()
-            elif self._engine == "pandas":
+            elif self._engine in ("pandas", "modin"):
                 return_df = self._df.copy()
 
             if self.has_connector and self._df_loaded and self._temporary_loaded:
@@ -384,8 +391,8 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Returns:
             DataFrameType: Pandas or Polars dataframe
         """
-
-        if df_type(df) == "pandas":
+        engine = df_type(df)
+        if engine in ("pandas", "modin"):
             df_trunc = df.copy()
 
             for col in df.columns:
@@ -393,7 +400,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     first_val = df[col].iloc[0]
                     if isinstance(first_val, str) and len(first_val) > max_size:
                         df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
-        elif df_type(df) == "polars":
+        elif engine == "polars":
             try:
                 import polars as pl
 
@@ -411,6 +418,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     "Polars is not installed. "
                     "Please install Polars to use this feature."
                 ) from e
+        else:
+            raise ValueError(
+                f"Unrecognized engine {engine}. It must either be pandas, modin or polars."
+            )
 
         return df_trunc
 

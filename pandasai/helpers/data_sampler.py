@@ -10,7 +10,8 @@ Only df.head() is sent to LLM API, hence the df.head() is processed
 import random
 
 import numpy as np
-import pandas as pd
+
+import pandasai.pandas as pd
 
 from .anonymizer import Anonymizer
 from .df_info import DataFrameType, df_type

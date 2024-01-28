@@ -7,7 +7,7 @@ import random
 import re
 import string
 
-import pandas as pd
+import pandasai.pandas as pd
 
 
 class Anonymizer:
