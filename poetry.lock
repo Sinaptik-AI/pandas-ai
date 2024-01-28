@@ -1306,21 +1306,18 @@ test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre
 
 [[package]]
 name = "google-ai-generativelanguage"
-version = "0.2.0"
+version = "0.4.0"
 description = "Google Ai Generativelanguage API client library"
 optional = true
 python-versions = ">=3.7"
 files = [
-    {file = "google-ai-generativelanguage-0.2.0.tar.gz", hash = "sha256:4d5440a7df7f495f016e5ccd4d9903514264392b240c40d40d28a1356bd9fad3"},
-    {file = "google_ai_generativelanguage-0.2.0-py3-none-any.whl", hash = "sha256:1a82949622da9fbdfbcf10c65084d3789b671fec231ba2a5b2ede3392ebbfeb5"},
+    {file = "google-ai-generativelanguage-0.4.0.tar.gz", hash = "sha256:c8199066c08f74c4e91290778329bb9f357ba1ea5d6f82de2bc0d10552bf4f8c"},
+    {file = "google_ai_generativelanguage-0.4.0-py3-none-any.whl", hash = "sha256:e4c425376c1ee26c78acbc49a24f735f90ebfa81bf1a06495fae509a2433232c"},
 ]
 
 [package.dependencies]
 google-api-core = {version = ">=1.34.0,<2.0.dev0 || >=2.11.dev0,<3.0.0dev", extras = ["grpc"]}
-proto-plus = [
-    {version = ">=1.22.0,<2.0.0dev", markers = "python_version < \"3.11\""},
-    {version = ">=1.22.2,<2.0.0dev", markers = "python_version >= \"3.11\""},
-]
+proto-plus = ">=1.22.3,<2.0.0dev"
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<5.0.0dev"
 
 [[package]]
@@ -1593,19 +1590,24 @@ testing = ["pytest"]
 
 [[package]]
 name = "google-generativeai"
-version = "0.1.0"
+version = "0.3.2"
 description = "Google Generative AI High level API client library and tools."
 optional = true
 python-versions = ">=3.9"
 files = [
-    {file = "google_generativeai-0.1.0-py3-none-any.whl", hash = "sha256:1cdfbef1bfc280a56172c48f480b71665122796f9f98f464e7918b840cc80c07"},
+    {file = "google_generativeai-0.3.2-py3-none-any.whl", hash = "sha256:8761147e6e167141932dc14a7b7af08f2310dd56668a78d206c19bb8bd85bcd7"},
 ]
 
 [package.dependencies]
-google-ai-generativelanguage = "0.2.0"
+google-ai-generativelanguage = "0.4.0"
+google-api-core = "*"
+google-auth = "*"
+protobuf = "*"
+tqdm = "*"
+typing-extensions = "*"
 
 [package.extras]
-dev = ["absl-py", "asynctest", "black", "nose2", "pandas", "pytype", "pyyaml"]
+dev = ["Pillow", "absl-py", "black", "ipython", "nose2", "pandas", "pytype", "pyyaml"]
 
 [[package]]
 name = "google-resumable-media"
@@ -5107,4 +5109,4 @@ yfinance = ["yfinance"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "0411d7552275e727a153e34a3633e5bdc3d2a9f52c269763c0ba0952f8508dd3"
+content-hash = "33310dfcccd79b43c742efa191fef9dd776aef6e8947332a767c8fbc4db8a78b"
