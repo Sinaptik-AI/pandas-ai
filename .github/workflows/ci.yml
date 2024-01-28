@@ -22,7 +22,7 @@ jobs:
       - name: Install poetry
         run: pip install poetry==1.4.2
       - name: Install dependencies
-        run: poetry install --all-extras
+        run: poetry install --all-extras --with dev
       - name: Lint with ruff
         run: |
           make format_diff
