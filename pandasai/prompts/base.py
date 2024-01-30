@@ -1,6 +1,8 @@
 import re
 from jinja2 import Environment, FileSystemLoader
 from typing import Optional
+import os
+from pathlib import Path
 
 
 class BasePrompt:
@@ -20,7 +22,10 @@ class BasePrompt:
             env = Environment()
             self.prompt = env.from_string(self.template)
         elif self.template_path:
-            env = Environment(loader=FileSystemLoader("pandasai/prompts/templates"))
+            # find path to template file
+            current_dir_path = Path(__file__).parent
+            path_to_template = os.path.join(current_dir_path, "templates")
+            env = Environment(loader=FileSystemLoader(path_to_template))
             self.prompt = env.get_template(self.template_path)
 
     def render(self):
