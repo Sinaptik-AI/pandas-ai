@@ -194,3 +194,11 @@ class ExecuteSQLQueryNotUsed(Exception):
     Args:
         Exception (Exception): ExecuteSQLQueryNotUsed
     """
+
+
+class PromptTemplateNotFound(Exception):
+    """
+    Raise error if template path is invalid
+    Args:
+        Exception (Exception): PromptTemplateNotFound
+    """

@@ -1,8 +1,9 @@
 import re
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from typing import Optional
-import os
 from pathlib import Path
+
+from pandasai.exceptions import PromptTemplateNotFound
 
 
 class BasePrompt:
@@ -24,9 +25,14 @@ class BasePrompt:
         elif self.template_path:
             # find path to template file
             current_dir_path = Path(__file__).parent
-            path_to_template = os.path.join(current_dir_path, "templates")
-            env = Environment(loader=FileSystemLoader(path_to_template))
-            self.prompt = env.get_template(self.template_path)
+            path_to_template = current_dir_path / "templates"
+            try:
+                env = Environment(loader=FileSystemLoader(path_to_template))
+                self.prompt = env.get_template(self.template_path)
+            except TemplateNotFound as e:
+                raise PromptTemplateNotFound(
+                    f"Template not found: {self.template_path}"
+                ) from e
 
     def render(self):
         """Render the prompt."""
