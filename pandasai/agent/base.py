@@ -1,6 +1,6 @@
 import uuid
 import json
-from typing import Union, List, Optional
+from typing import Type, Union, List, Optional
 import pandas as pd
 
 from pandasai.vectorstores.vectorstore import VectorStore
@@ -43,8 +43,9 @@ class Agent:
             pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
         ],
         config: Optional[Union[Config, dict]] = None,
-        memory_size: int = 10,
-        vectorstore: VectorStore = None,
+        memory_size: Optional[int] = 10,
+        pipeline: Optional[Type[GenerateChatPipeline]] = None,
+        vectorstore: Optional[VectorStore] = None,
     ):
         """
         Args:
@@ -75,13 +76,25 @@ class Agent:
         self.logger = Logger(save_logs=config.save_logs, verbose=config.verbose)
 
         callbacks = Callbacks(self)
-        self.chat_pipeline = GenerateChatPipeline(
-            self.context,
-            self.logger,
-            on_prompt_generation=callbacks.on_prompt_generation,
-            on_code_generation=callbacks.on_code_generation,
-            on_code_execution=callbacks.on_code_execution,
-            on_result=callbacks.on_result,
+
+        self.chat_pipeline = (
+            pipeline(
+                self.context,
+                self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
+                on_code_generation=callbacks.on_code_generation,
+                on_code_execution=callbacks.on_code_execution,
+                on_result=callbacks.on_result,
+            )
+            if pipeline
+            else GenerateChatPipeline(
+                self.context,
+                self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
+                on_code_generation=callbacks.on_code_generation,
+                on_code_execution=callbacks.on_code_execution,
+                on_result=callbacks.on_result,
+            )
         )
 
         self._vectorstore = vectorstore
