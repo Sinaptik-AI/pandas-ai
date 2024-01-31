@@ -46,6 +46,7 @@ Once you have installed PandasAI, you can start using it by importing it into yo
 Now you can start asking questions to your data in natural language. For example, the following code will ask PandasAI to find all the rows in a DataFrame where the value of the `gdp` column is greater than 5:
 
 ```python
+import pandas as pd
 from pandasai import SmartDataframe
 
 df = pd.DataFrame({
@@ -56,7 +57,11 @@ df = pd.DataFrame({
     ],
 })
 
-df = SmartDataframe(df)
+# Instantiate a LLM
+from pandasai.llm import OpenAI
+llm = OpenAI(api_token="YOUR_API_TOKEN")  # Get API token from https://platform.openai.com/account/api-keys
+
+df = SmartDataframe(df, config={"llm": llm})
 df.chat('Which are the countries with GDP greater than 3000000000000?')
 # Output:
 # 0    United States
