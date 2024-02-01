@@ -332,12 +332,19 @@ result = {{ 'type': '{output_type_returned}', 'value': highest_gdp }}
         "to_dict_params,expected_passing_params,engine_type",
         [
             ({}, {"orient": "dict", "into": dict}, "pandas"),
+            ({}, {"orient": "dict", "into": dict}, "modin"),
             ({}, {"as_series": True}, "polars"),
             ({"orient": "dict"}, {"orient": "dict", "into": dict}, "pandas"),
             (
                 {"orient": "dict", "into": defaultdict},
                 {"orient": "dict", "into": defaultdict},
                 "pandas",
+            ),
+            ({"orient": "dict"}, {"orient": "dict", "into": dict}, "modin"),
+            (
+                {"orient": "dict", "into": defaultdict},
+                {"orient": "dict", "into": defaultdict},
+                "modin",
             ),
             ({"as_series": False}, {"as_series": False}, "polars"),
             (
@@ -697,7 +704,7 @@ result = {"type": None, "value": "temp_chart.png"}
         assert smart_dataframe.table_name == saved_df_name
         assert smart_dataframe.dataframe.equals(expected_df)
 
-    def test_load_dataframe_from_other_dataframe_type(self, smart_dataframe):
+    def test_load_dataframe_from_polars(self, smart_dataframe):
         polars_df = pl.DataFrame({"column1": [1, 2, 3], "column2": [4, 5, 6]})
 
         smart_dataframe._load_dataframe(polars_df)

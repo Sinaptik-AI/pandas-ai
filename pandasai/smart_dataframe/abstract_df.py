@@ -297,7 +297,7 @@ class DataframeAbstract(ABC):
         """
         A proxy-call to the dataframe's `.to_dict()`.
         """
-        if self._engine == "pandas":
+        if self._engine in ("pandas", "modin"):
             return self.dataframe.to_dict(orient=orient, into=into)
         elif self._engine == "polars":
             return self.dataframe.to_dict(as_series=as_series)
