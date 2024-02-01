@@ -78,7 +78,7 @@ class DfConfigManager:
 
         # Save df if pandas or polar
         dataframe_type = df_type(self.original_import)
-        if dataframe_type == "pandas":
+        if dataframe_type in ("pandas", "modin"):
             file_path = self._create_save_path()
             self._sdf.dataframe.to_parquet(file_path)
         elif dataframe_type == "polars":

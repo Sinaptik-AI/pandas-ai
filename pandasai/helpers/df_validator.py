@@ -101,7 +101,7 @@ class DfValidator:
         Returns:
             list of dict of dataframe rows
         """
-        if dataframe_type == "pandas":
+        if dataframe_type in ("pandas", "modin"):
             return df.to_dict(orient="records")
         elif dataframe_type == "polars":
             return df.to_dicts()
