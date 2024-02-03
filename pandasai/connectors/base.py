@@ -269,6 +269,7 @@ class BaseConnector(ABC):
             extras={
                 "index": index,
                 "type": "sql" if is_direct_sql else "pandas",
+                "is_direct_sql": is_direct_sql,
             },
             type_=serializer,
         )
