@@ -2,6 +2,8 @@
 
 from typing import Optional
 
+from pandasai.helpers.memory import Memory
+
 from ..prompts.base import BasePrompt
 from .base import LLM
 
@@ -15,8 +17,8 @@ class FakeLLM(LLM):
         if output is not None:
             self._output = output
 
-    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
-        self.last_prompt = instruction.to_string() + suffix
+    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
+        self.last_prompt = instruction.to_string()
         return self._output
 
     @property

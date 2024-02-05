@@ -268,7 +268,7 @@ class BaseConnector(ABC):
             self,
             extras={
                 "index": index,
-                "type": "sql" if is_direct_sql else "pandas",
+                "type": "sql" if is_direct_sql else "pd.DataFrame",
                 "is_direct_sql": is_direct_sql,
             },
             type_=serializer,

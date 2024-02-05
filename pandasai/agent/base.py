@@ -46,6 +46,7 @@ class Agent:
         memory_size: Optional[int] = 10,
         pipeline: Optional[Type[GenerateChatPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
+        description: str = None,
     ):
         """
         Args:
@@ -59,6 +60,7 @@ class Agent:
         self.last_result = None
         self.last_code_generated = None
         self.last_code_executed = None
+        self.agent_info = description
 
         self.conversation_id = uuid.uuid4()
 
@@ -69,7 +71,10 @@ class Agent:
         # Instantiate the context
         config = self.get_config(config)
         self.context = PipelineContext(
-            dfs=dfs, config=config, memory=Memory(memory_size), vectorstore=vectorstore
+            dfs=dfs,
+            config=config,
+            memory=Memory(memory_size, agent_info=description),
+            vectorstore=vectorstore,
         )
 
         # Instantiate the logger

@@ -36,6 +36,4 @@ class TestLangchainLLM:
     def test_langchain_model_call(self, langchain_llm, prompt):
         langchain_wrapper = LangchainLLM(langchain_llm)
 
-        assert (
-            langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
-        )
+        assert langchain_wrapper.call(instruction=prompt) == "Custom response"

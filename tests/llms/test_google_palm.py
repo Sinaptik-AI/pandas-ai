@@ -105,5 +105,5 @@ class TestGooglePalm:
             generativeai, "generate_text", return_value=expected_response
         )
 
-        result = llm.call(instruction=prompt, suffix="!")
+        result = llm.call(instruction=prompt)
         assert result == expected_text

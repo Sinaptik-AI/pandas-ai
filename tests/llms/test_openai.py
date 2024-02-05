@@ -125,7 +125,7 @@ class TestOpenAILLM:
         result = openai.call(instruction=prompt)
         assert result == "response"
 
-    def test_call_finetuned_model(self, mocker, prompt):
+    def test_call_with_system_prompt(self, mocker, prompt):
         openai = OpenAI(
             api_token="test", model="ft:gpt-3.5-turbo:my-org:custom_suffix:id"
         )

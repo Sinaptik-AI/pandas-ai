@@ -1,5 +1,7 @@
 from typing import Optional, Any, List, Dict
 
+from pandasai.helpers.memory import Memory
+
 from .base import LLM
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
@@ -75,8 +77,14 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
-        prompt = instruction.to_string() + suffix
+    def call(self, instruction: BasePrompt, memory: Memory = "") -> str:
+        prompt = instruction.to_string()
+
+        prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
 
         params = self._default_params
         if self.streaming:
