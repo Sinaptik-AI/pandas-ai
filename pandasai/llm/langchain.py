@@ -1,3 +1,4 @@
+from pandasai.helpers.memory import Memory
 from pandasai.prompts.base import BasePrompt
 from .base import LLM
 
@@ -22,8 +23,13 @@ class LangchainLLM(LLM):
     def __init__(self, langchain_llm):
         self.langchain_llm = langchain_llm
 
-    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
-        prompt = instruction.to_string() + suffix
+    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
+        prompt = instruction.to_string()
+        prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
         return self.langchain_llm.predict(prompt)
 
     @staticmethod

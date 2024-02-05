@@ -11,6 +11,8 @@ Example:
 
 """
 from typing import Optional
+
+from pandasai.helpers.memory import Memory
 from .base import BaseGoogle
 from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
@@ -95,7 +97,7 @@ class GoogleVertexAI(BaseGoogle):
         if not self.model:
             raise ValueError("model is required.")
 
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Memory = None) -> str:
         """
         Generates text for prompt.
 
@@ -114,6 +116,12 @@ class GoogleVertexAI(BaseGoogle):
         )
         from vertexai.preview.generative_models import GenerativeModel
 
+        updated_prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
+
         if self.model in self._supported_code_models:
             code_generation = CodeGenerationModel.from_pretrained(self.model)
 
@@ -126,7 +134,7 @@ class GoogleVertexAI(BaseGoogle):
             text_generation = TextGenerationModel.from_pretrained(self.model)
 
             completion = text_generation.predict(
-                prompt=prompt,
+                prompt=updated_prompt,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 top_k=self.top_k,
@@ -134,8 +142,9 @@ class GoogleVertexAI(BaseGoogle):
             )
         elif self.model in self._supported_generative_models:
             model = GenerativeModel(self.model)
+
             responses = model.generate_content(
-                [prompt],
+                [updated_prompt],
                 generation_config={
                     "max_output_tokens": self.max_output_tokens,
                     "temperature": self.temperature,

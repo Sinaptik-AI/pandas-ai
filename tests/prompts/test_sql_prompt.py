@@ -61,7 +61,7 @@ class TestGeneratePythonCodeWithSQLPrompt:
 dfs[0]:
   name: null
   description: null
-  type: pandas
+  type: pd.DataFrame
   data:
     rows: 0
     columns: 0
