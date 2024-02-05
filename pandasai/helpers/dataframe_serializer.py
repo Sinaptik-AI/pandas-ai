@@ -90,19 +90,16 @@ class DataframeSerializer:
         """
         # Initialize the result dictionary
         df_number_key = f"dfs[{extras['index']}]"
-        result = {
-            df_number_key: [
-                {
-                    "name": df.name,
-                    "description": df.description,
-                    "type": extras["type"],
-                    "data": {},
-                }
-            ]
-        }
 
+        # Create a dictionary representing the data structure
+        df_info = {
+            "name": df.name,
+            "description": df.description,
+            "type": extras["type"],
+            "data": {},
+        }
         # Add DataFrame details to the result
-        result[df_number_key][0]["data"] = {
+        data = {
             "rows": df.rows_count,
             "columns": df.columns_count,
             "schema": {"fields": []},
@@ -122,9 +119,11 @@ class DataframeSerializer:
                 if col_description := df.field_descriptions.get(col_name, None):
                     col_info["description"] = col_description
 
-            result[df_number_key][0]["data"]["schema"]["fields"].append(col_info)
+            data["schema"]["fields"].append(col_info)
 
-        return result
+        df_info["data"] = data
+
+        return {df_number_key: df_info}
 
     def convert_df_to_json_str(self, df: pd.DataFrame, extras: dict) -> str:
         """

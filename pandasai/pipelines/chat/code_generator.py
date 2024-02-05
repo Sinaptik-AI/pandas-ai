@@ -29,7 +29,7 @@ class CodeGenerator(BaseLogicUnit):
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")
 
-        code = pipeline_context.config.llm.generate_code(input)
+        code = pipeline_context.config.llm.generate_code(input, pipeline_context.memory)
 
         pipeline_context.add("last_code_generated", code)
         logger.log(

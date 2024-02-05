@@ -98,7 +98,7 @@ class CodeManager:
 
         # Sometimes GPT-3.5/4 use a for loop to iterate over the dfs (even if there is only one)
         # or they concatenate the dfs. In this case we need all the dfs
-        if "for df in dfs" in code or "pd.concat(dfs)" in code:
+        if "for df in dfs" in code or "pd.concat(dfs" in code:
             return self._dfs
 
         required_dfs = []
@@ -107,7 +107,7 @@ class CodeManager:
                 required_dfs.append(df)
             else:
                 required_dfs.append(None)
-        return required_dfs
+        return required_dfs or self._dfs
 
     def _replace_plot_png(self, code):
         """
@@ -212,6 +212,7 @@ Code running:
             extracted_filters = self._extract_filters(self._current_code_executed)
             filters = extracted_filters.get(f"dfs[{index}]", [])
             df.set_additional_filters(filters)
+
             df.execute()
             # df.load_connector(partial=len(filters) > 0)
 
@@ -516,6 +517,9 @@ Code running:
             >>> print(list(res))
             ['foo', 2, 1, 0]
         """
+        if isinstance(operand_node, ast.Call):
+            yield operand_node.func.attr
+
         if isinstance(operand_node, ast.Subscript):
             slice_ = operand_node.slice.value
             yield from CodeManager._tokenize_operand(operand_node.value)
@@ -652,7 +656,7 @@ Code running:
                 "Unable to extract filters for passed code", level=logging.ERROR
             )
             self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
-            raise
+            return {}
 
         return filters
 

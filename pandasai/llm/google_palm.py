@@ -9,6 +9,7 @@ Example:
 
     >>> from pandasai.llm.google_palm import GooglePalm
 """
+from pandasai.helpers.memory import Memory
 from .base import BaseGoogle
 from typing import Any
 from ..helpers.optional import import_dependency
@@ -69,7 +70,7 @@ class GooglePalm(BaseGoogle):
         if not self.model:
             raise ValueError("model is required.")
 
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Memory = None) -> str:
         """
         Generates text for prompt.
 
@@ -81,6 +82,11 @@ class GooglePalm(BaseGoogle):
 
         """
         self._validate()
+        prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
         completion = self.google_palm.generate_text(
             model=self.model,
             prompt=prompt,

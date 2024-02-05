@@ -59,9 +59,9 @@ class TestGeneratePythonCodeWithSQLPrompt:
             == f'''<tables>
 <table>
 dfs[0]:
-- name: null
+  name: null
   description: null
-  type: pandas
+  type: pd.DataFrame
   data:
     rows: 0
     columns: 0

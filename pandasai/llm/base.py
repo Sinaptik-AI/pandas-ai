@@ -19,6 +19,8 @@ import re
 from abc import abstractmethod
 from typing import Any, Dict, Optional, Union, Mapping, Tuple
 
+from pandasai.helpers.memory import Memory
+
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
@@ -137,7 +139,7 @@ class LLM:
         return None
 
     @abstractmethod
-    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
         """
         Execute the LLM with given prompt.
 
@@ -151,7 +153,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: BasePrompt) -> str:
+    def generate_code(self, instruction: BasePrompt, memory: Memory) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -162,7 +164,7 @@ class LLM:
             str: A string of Python code.
 
         """
-        response = self.call(instruction, suffix="")
+        response = self.call(instruction, memory)
         return self._extract_code(response)
 
 
@@ -269,7 +271,7 @@ class BaseOpenAI(LLM):
             "http_client": self.http_client,
         }
 
-    def completion(self, prompt: str) -> str:
+    def completion(self, prompt: str, memory: Memory) -> str:
         """
         Query the completion API
 
@@ -280,6 +282,11 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
+        prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
         params = {**self._invocation_params, "prompt": prompt}
 
         if self.stop is not None:
@@ -292,7 +299,7 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].text
 
-    def chat_completion(self, value: str) -> str:
+    def chat_completion(self, value: str, memory: Memory) -> str:
         """
         Query the chat completion API
 
@@ -303,14 +310,25 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
-        params = {
-            **self._invocation_params,
-            "messages": [
+        messages = []
+        if memory and memory.agent_info:
+            messages.append(
                 {
                     "role": "system",
-                    "content": value,
+                    "content": memory.get_system_prompt(),
                 }
-            ],
+            )
+
+        messages.append(
+            {
+                "role": "user",
+                "content": value,
+            },
+        )
+
+        params = {
+            **self._invocation_params,
+            "messages": messages,
         }
 
         if self.stop is not None:
@@ -323,7 +341,7 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: BasePrompt, suffix: str = ""):
+    def call(self, instruction: BasePrompt, memory: Memory = None):
         """
         Call the OpenAI LLM.
 
@@ -337,12 +355,12 @@ class BaseOpenAI(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = instruction.to_string() + suffix
+        self.last_prompt = instruction.to_string()
 
         return (
-            self.chat_completion(self.last_prompt)
+            self.chat_completion(self.last_prompt, memory)
             if self._is_chat_model
-            else self.completion(self.last_prompt)
+            else self.completion(self.last_prompt, memory)
         )
 
 
@@ -395,7 +413,7 @@ class BaseGoogle(LLM):
             raise ValueError("max_output_tokens must be greater than zero")
 
     @abstractmethod
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Memory) -> str:
         """
         Generates text for prompt, specific to implementation.
 
@@ -408,7 +426,7 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: BasePrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
         """
         Call the Google LLM.
 
@@ -420,5 +438,5 @@ class BaseGoogle(LLM):
             str: LLM response.
 
         """
-        self.last_prompt = instruction.to_string() + suffix
-        return self._generate_text(self.last_prompt)
+        self.last_prompt = instruction.to_string()
+        return self._generate_text(self.last_prompt, memory)

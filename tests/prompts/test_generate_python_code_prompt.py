@@ -349,9 +349,9 @@ Generate python code and return full updated code:"""  # noqa E501
         )
 
         expected_prompt_content = f"""dfs[0]:
-- name: null
+  name: null
   description: null
-  type: pandas
+  type: pd.DataFrame
   data:
     rows: 1
     columns: 2
