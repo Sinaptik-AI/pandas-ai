@@ -44,6 +44,47 @@ class VectorStore(ABC):
         """
         raise NotImplementedError("add_docs method must be implemented by subclass.")
 
+    @abstractmethod
+    def update_question_answer(
+        self,
+        ids: Iterable[str],
+        queries: Iterable[str],
+        codes: Iterable[str],
+        metadatas: Optional[List[dict]] = None,
+    ) -> List[str]:
+        """
+        Update question and answer(code) to the training set
+        Args:
+            query: string of question
+            code: str
+            metadatas: Optional list of metadatas associated with the texts.
+            kwargs: vectorstore specific parameters
+        Returns:
+            List of ids from updating the texts into the vectorstore.
+        """
+        raise NotImplementedError(
+            "update_question_answer method must be implemented by subclass."
+        )
+
+    @abstractmethod
+    def update_docs(
+        self,
+        ids: Iterable[str],
+        docs: Iterable[str],
+        metadatas: Optional[List[dict]] = None,
+    ) -> List[str]:
+        """
+        Update docs to the training set
+        Args:
+            docs: Iterable of strings to update to the vectorstore.
+            metadatas: Optional list of metadatas associated with the texts.
+            kwargs: vectorstore specific parameters
+
+        Returns:
+            List of ids from adding the texts into the vectorstore.
+        """
+        raise NotImplementedError("update_docs method must be implemented by subclass.")
+
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
     ) -> Optional[bool]:

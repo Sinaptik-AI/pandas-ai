@@ -125,6 +125,57 @@ class Chroma(VectorStore):
             ids=ids,
         )
 
+    def update_question_answer(
+        self,
+        ids: Iterable[str],
+        queries: Iterable[str],
+        codes: Iterable[str],
+        metadatas: Optional[List[dict]] = None,
+    ) -> List[str]:
+        """
+        Update question and answer(code) to the training set
+        Args:
+            query: string of question
+            code: str
+            metadatas: Optional list of metadatas associated with the texts.
+            kwargs: vectorstore specific parameters
+        Returns:
+            List of ids from updating the texts into the vectorstore.
+        """
+        if len(queries) != len(codes):
+            raise ValueError(
+                f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
+            )
+
+        qa_str = [self._format_qa(query, code) for query, code in zip(queries, codes)]
+        self._qa_collection.update(
+            documents=qa_str,
+            metadatas=metadatas,
+            ids=ids,
+        )
+
+    def update_docs(
+        self,
+        ids: Iterable[str],
+        docs: Iterable[str],
+        metadatas: Optional[List[dict]] = None,
+    ) -> List[str]:
+        """
+        Update docs to the training set
+        Args:
+            docs: Iterable of strings to update to the vectorstore.
+            metadatas: Optional list of metadatas associated with the texts.
+            kwargs: vectorstore specific parameters
+
+        Returns:
+            List of ids from adding the texts into the vectorstore.
+        """
+        self._docs_collection.update(
+            documents=docs,
+            metadatas=metadatas,
+            ids=ids,
+        )
+
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
     ) -> Optional[bool]:
@@ -217,16 +268,17 @@ class Chroma(VectorStore):
             _type_: _description_
         """
         filtered_data = [
-            (doc, distance, metadata)
-            for doc, distance, metadata in zip(
+            (doc, distance, metadata, ids)
+            for doc, distance, metadata, ids in zip(
                 documents["documents"][0],
                 documents["distances"][0],
                 documents["metadatas"][0],
+                documents["ids"][0],
             )
             if distance < threshold
         ]
 
         return {
             key: [[data[i] for data in filtered_data]]
-            for i, key in enumerate(["documents", "distances", "metadatas"])
+            for i, key in enumerate(["documents", "distances", "metadatas", "ids"])
         }
