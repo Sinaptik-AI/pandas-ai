@@ -115,6 +115,12 @@ class GoogleVertexAI(BaseGoogle):
 
         self.last_prompt = updated_prompt
 
+        updated_prompt = (
+            memory.get_system_prompt() + "\n" + prompt
+            if memory and memory.agent_info
+            else prompt
+        )
+
         if self.model in self._supported_code_models:
             from vertexai.preview.language_models import CodeGenerationModel
 
