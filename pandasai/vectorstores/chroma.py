@@ -77,6 +77,7 @@ class Chroma(VectorStore):
         self,
         queries: Iterable[str],
         codes: Iterable[str],
+        ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
@@ -84,6 +85,7 @@ class Chroma(VectorStore):
         Args:
             query: string of question
             code: str
+            ids: Optional Iterable of ids associated with the texts.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
         Returns:
@@ -94,7 +96,8 @@ class Chroma(VectorStore):
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
             )
 
-        ids = [f"{str(uuid.uuid4())}-qa" for _ in queries]
+        if ids is None:
+            ids = [f"{str(uuid.uuid4())}-qa" for _ in queries]
         qa_str = [self._format_qa(query, code) for query, code in zip(queries, codes)]
 
         self._qa_collection.add(
@@ -106,19 +109,22 @@ class Chroma(VectorStore):
     def add_docs(
         self,
         docs: Iterable[str],
+        ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
         Add docs to the training set
         Args:
             docs: Iterable of strings to add to the vectorstore.
+            ids: Optional Iterable of ids associated with the texts.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
 
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
+        if ids is None:
+            ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
         self._docs_collection.add(
             documents=docs,
             metadatas=metadatas,
@@ -135,8 +141,9 @@ class Chroma(VectorStore):
         """
         Update question and answer(code) to the training set
         Args:
-            query: string of question
-            code: str
+            ids: Iterable of ids associated with the texts.
+            queries: string of question
+            codes: str
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
         Returns:
@@ -163,6 +170,7 @@ class Chroma(VectorStore):
         """
         Update docs to the training set
         Args:
+            ids: Iterable of ids associated with the texts.
             docs: Iterable of strings to update to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
@@ -237,6 +245,30 @@ class Chroma(VectorStore):
         return self._filter_docs_based_on_distance(
             relevant_data, self._similarity_threshold
         )
+
+    def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
+        """
+        Returns relevant question answers based on ids
+        """
+
+        relevant_data: chromadb.QueryResult = self._qa_collection.get(
+            ids=ids,
+            include=["metadatas", "documents"],
+        )
+
+        return relevant_data
+
+    def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
+        """
+        Returns relevant question answers based on ids
+        """
+
+        relevant_data: chromadb.QueryResult = self._docs_collection.get(
+            ids=ids,
+            include=["metadatas", "documents"],
+        )
+
+        return relevant_data
 
     def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
         """

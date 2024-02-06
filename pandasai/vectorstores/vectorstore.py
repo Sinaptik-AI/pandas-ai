@@ -10,6 +10,7 @@ class VectorStore(ABC):
         self,
         queries: Iterable[str],
         codes: Iterable[str],
+        ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
@@ -17,6 +18,7 @@ class VectorStore(ABC):
         Args:
             query: string of question
             code: str
+            ids: Optional Iterable of ids associated with the texts.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
         Returns:
@@ -30,12 +32,14 @@ class VectorStore(ABC):
     def add_docs(
         self,
         docs: Iterable[str],
+        ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
         """
         Add docs to the training set
         Args:
             docs: Iterable of strings to add to the vectorstore.
+            ids: Optional Iterable of ids associated with the texts.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
 
@@ -55,8 +59,9 @@ class VectorStore(ABC):
         """
         Update question and answer(code) to the training set
         Args:
-            query: string of question
-            code: str
+            ids: Iterable of ids associated with the texts.
+            queries: string of question
+            codes: str
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
         Returns:
@@ -76,6 +81,7 @@ class VectorStore(ABC):
         """
         Update docs to the training set
         Args:
+            ids: Iterable of ids associated with the texts.
             docs: Iterable of strings to update to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
             kwargs: vectorstore specific parameters
@@ -134,6 +140,24 @@ class VectorStore(ABC):
     def get_relevant_docs(self, question: str, k: int = 5) -> List[dict]:
         """
         Returns relevant documents based search
+        """
+        raise NotImplementedError(
+            "get_relevant_docs method must be implemented by subclass."
+        )
+
+    @abstractmethod
+    def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
+        """
+        Returns relevant question answers based on ids
+        """
+        raise NotImplementedError(
+            "get_relevant_question_answers_by_id method must be implemented by subclass."
+        )
+
+    @abstractmethod
+    def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
+        """
+        Returns relevant documents based on ids
         """
         raise NotImplementedError(
             "get_relevant_docs method must be implemented by subclass."
