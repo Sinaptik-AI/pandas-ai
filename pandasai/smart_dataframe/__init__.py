@@ -68,7 +68,7 @@ class SmartDataframeCore:
 
         Args:
             df (Union[pd.DataFrame, pl.DataFrame, BaseConnector]):
-            Pandas or Polars dataframe or a connector.
+            Pandas, Modin or Polars dataframe or a connector.
         """
         if isinstance(df, BaseConnector):
             self.dataframe = None
@@ -99,7 +99,7 @@ class SmartDataframeCore:
             file_path (str): Path to the file to be imported.
 
         Returns:
-            pd.DataFrame: Pandas dataframe
+            pd.DataFrame: Pandas or Modin dataframe
         """
 
         if file_path.endswith(".csv"):
@@ -115,7 +115,7 @@ class SmartDataframeCore:
 
     def _load_engine(self):
         """
-        Load the engine of the dataframe (Pandas or Polars)
+        Load the engine of the dataframe (Pandas, Modin or Polars)
         """
         df_engine = df_type(self._df)
 
@@ -313,7 +313,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas/modin/polars dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -386,10 +386,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Truncate the columns of the dataframe to a maximum of 20 characters.
 
         Args:
-            df (DataFrameType): Pandas or Polars dataframe
+            df (DataFrameType): Pandas, Modin or Polars dataframe
 
         Returns:
-            DataFrameType: Pandas or Polars dataframe
+            DataFrameType: Pandas, Modin or Polars dataframe
         """
         engine = df_type(df)
         if engine in ("pandas", "modin"):
@@ -440,7 +440,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         sampler = DataSampler(head)
         sampled_head = sampler.sample(rows_to_display)
-
         if self.lake.config.enforce_privacy:
             return sampled_head
         else:
@@ -517,7 +516,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Get the head of the dataframe as a dataframe.
 
         Returns:
-            DataFrameType: Pandas or Polars dataframe
+            DataFrameType: Pandas, Modin or Polars dataframe
         """
         return self._get_sample_head()
 

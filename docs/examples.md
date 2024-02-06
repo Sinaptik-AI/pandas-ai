@@ -119,7 +119,7 @@ Remember that at the moment, you need to make sure that the Google Sheet is publ
 Example of using PandasAI with a Modin DataFrame. In order to use Modin dataframes as a data source, you need to install the `pandasai[modin]` extra dependency.
 
 ```console
-pip install pandasai[polars]
+pip install pandasai[modin]
 ```
 
 Then, you can use PandasAI with a Modin DataFrame as follows:
