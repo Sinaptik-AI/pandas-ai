@@ -391,8 +391,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Returns:
             DataFrameType: Pandas, Modin or Polars dataframe
         """
-        engine = df_type(df)
-        if engine in ("pandas", "modin"):
+        if (engine := df_type(df)) in ("pandas", "modin"):
             df_trunc = df.copy()
 
             for col in df.columns:
