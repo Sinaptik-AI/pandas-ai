@@ -80,11 +80,7 @@ class HuggingFaceTextGen(LLM):
     def call(self, instruction: BasePrompt, memory: Memory = "") -> str:
         prompt = instruction.to_string()
 
-        prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
+        prompt = self.prepend_system_prompt(prompt, memory)
 
         params = self._default_params
         if self.streaming:
@@ -100,6 +96,7 @@ class HuggingFaceTextGen(LLM):
                     res.generated_text = res.generated_text[
                         : res.generated_text.index(stop_seq)
                     ]
+        self.last_prompt = prompt
         return res.generated_text
 
     @property

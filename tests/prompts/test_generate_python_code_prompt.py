@@ -69,9 +69,6 @@ a,b
 
 
 
-
-
-
 Update this initial code:
 ```python
 # TODO: import the required dependencies
@@ -156,9 +153,6 @@ dfs[0]:1x2
 a,b
 1,4
 </dataframe>
-
-
-
 
 
 
@@ -257,9 +251,6 @@ a,b
 
 
 
-
-
-
 Update this initial code:
 ```python
 # TODO: import the required dependencies
@@ -352,22 +343,18 @@ Generate python code and return full updated code:"""  # noqa E501
   name: null
   description: null
   type: pd.DataFrame
-  data:
-    rows: 1
-    columns: 2
-    schema:
-      fields:
-      - name: a
-        type: int64
-        samples:
-        - 1
-      - name: b
-        type: int64
-        samples:
-        - 4
-
-
-
+  rows: 1
+  columns: 2
+  schema:
+    fields:
+    - name: a
+      type: int64
+      samples:
+      - 1
+    - name: b
+      type: int64
+      samples:
+      - 4
 
 
 

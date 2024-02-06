@@ -20,6 +20,7 @@ from abc import abstractmethod
 from typing import Any, Dict, Optional, Union, Mapping, Tuple
 
 from pandasai.helpers.memory import Memory
+from pandasai.prompts.generate_system_message import GenerateSystemMessagePrompt
 
 from ..exceptions import (
     APIKeyNotFoundError,
@@ -117,6 +118,30 @@ class LLM:
             raise NoCodeFoundError("No code found in the response")
 
         return code
+
+    def prepend_system_prompt(self, prompt: BasePrompt, memory: Memory):
+        """
+        Append system prompt to the chat prompt, useful when model doesn't have messages for chat history
+        Args:
+            prompt (BasePrompt): prompt for chat method
+            memory (Memory): user conversation history
+        """
+        return self.get_system_prompt(memory) + prompt if memory else prompt
+
+    def get_system_prompt(self, memory: Memory) -> Any:
+        """
+        Generate system prompt with agent info and previous conversations
+        """
+        system_prompt = GenerateSystemMessagePrompt(memory=memory)
+        return system_prompt.to_string()
+
+    def get_messages(self, memory: Memory) -> Any:
+        """
+        Return formatted messages
+        Args:
+            memory (Memory): Get past Conversation from memory
+        """
+        return memory.get_previous_conversation()
 
     def _extract_tag_text(self, response: str, tag: str) -> str:
         """
@@ -282,11 +307,8 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
-        prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
+        prompt = self.prepend_system_prompt(prompt, memory)
+
         params = {**self._invocation_params, "prompt": prompt}
 
         if self.stop is not None:
@@ -296,6 +318,8 @@ class BaseOpenAI(LLM):
 
         if openai_handler := openai_callback_var.get():
             openai_handler(response)
+
+        self.last_prompt = prompt
 
         return response.choices[0].text
 
@@ -319,6 +343,19 @@ class BaseOpenAI(LLM):
                 }
             )
 
+            # Skip if memory size is one because of the current query in memory
+            if memory.count() > 1:
+                for message in memory.all()[
+                    :-1
+                ]:  # skip last message that is of current query instead add prompt
+                    if message["is_user"]:
+                        messages.append({"role": "user", "content": message["message"]})
+                    else:
+                        messages.append(
+                            {"role": "assistant", "content": message["message"]}
+                        )
+
+        # adding current prompt as latest query message
         messages.append(
             {
                 "role": "user",
