@@ -9,10 +9,10 @@ import time
 from functools import cache, cached_property
 from typing import Union
 
-import pandas as pd
 from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
 
+import pandasai.pandas as pd
 from pandasai.exceptions import MaliciousQueryError
 
 from ..constants import DEFAULT_FILE_PERMISSIONS

@@ -19,7 +19,11 @@ pydantic = "^1"
 sqlalchemy = ">=1.4,<3"
 duckdb = "^0.9.2"
 faker = "^19.12.0"
+pillow = "^10.1.0"
+requests = "^2.31.0"
+modin = {version = "0.18.1", optional = true, extras=["ray"]}
 beautifulsoup4 = {version="^4.12.2", optional = true}
+google-generativeai = {version = "^0.3.2", optional = true}
 google-cloud-aiplatform = {version = "^1.26.1", optional = true}
 langchain = {version = "^0.0.199", optional = true}
 polars = {version = "^0.18.15", optional = true}
@@ -39,8 +43,11 @@ psycopg2 = { version = "^2.9.7", optional = true }
 yfinance = { version = "^0.2.28", optional = true }
 sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
-pillow = "^10.1.0"
-google-generativeai = {version = "^0.3.2", optional = true}
+
+
+[tool.poetry.group.dev]
+optional = true
+
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.2.2"
@@ -53,8 +60,6 @@ click = "^8.1.3"
 coverage = "^7.2.7"
 sourcery = "^1.11.0"
 
-[tool.poetry.group.extras.dependencies]
-google-cloud-aiplatform = "^1.26.1"
 
 [tool.poetry.extras]
 connectors = [ "pymysql", "psycopg2",  "sqlalchemy-databricks", "snowflake-sqlalchemy"]
@@ -72,6 +77,10 @@ scikit-learn = ["scikit-learn"]
 streamlit = ["streamlit"]
 text-generation = ["fsspec", "huggingface-hub", "text-generation"]
 yfinance = ["yfinance"]
+modin = ["modin", "ray"]
+
+[tool.poetry.group.docs]
+optional = true
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.5.3"

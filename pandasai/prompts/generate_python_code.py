@@ -17,6 +17,8 @@ Based on the last message in the conversation:
 - return the updated analyze_data function wrapped within ```python ```"""  # noqa: E501
 
 
+import pandasai.pandas as pd
+
 from .file_based_prompt import FileBasedPrompt
 
 
@@ -70,7 +72,7 @@ class GeneratePythonCodePrompt(FileBasedPrompt):
         self.set_var("prev_conversation", kwargs.pop("prev_conversation", ""))
 
     def on_prompt_generation(self) -> None:
-        default_import = "import pandas as pd"
+        default_import = f"import {pd.__name__} as pd"
         engine_df_name = "pd.DataFrame"
 
         self.set_var("default_import", default_import)

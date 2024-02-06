@@ -5,6 +5,7 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 import importlib.metadata
 
 from .agent import Agent
+from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .skills import skill
 from .smart_dataframe import SmartDataframe
@@ -25,4 +26,6 @@ __all__ = [
     "Agent",
     "clear_cache",
     "skill",
+    "set_pd_engine",
+    "pandas",
 ]

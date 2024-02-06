@@ -7,8 +7,8 @@ from collections import defaultdict
 from typing import Any, Generator, List, Union
 
 import astor
-import pandas as pd
 
+import pandasai.pandas as pd
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names

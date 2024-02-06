@@ -114,6 +114,43 @@ print(response)
 
 Remember that at the moment, you need to make sure that the Google Sheet is public.
 
+## Working with Modin dataframes
+
+Example of using PandasAI with a Modin DataFrame. In order to use Modin dataframes as a data source, you need to install the `pandasai[modin]` extra dependency.
+
+```console
+pip install pandasai[modin]
+```
+
+Then, you can use PandasAI with a Modin DataFrame as follows:
+
+```python
+import pandasai
+from pandasai import SmartDataframe
+import modin.pandas as pd
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+# You can instantiate a SmartDataframe with a Polars DataFrame
+
+df = pd.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia",
+                "Japan", "China"],
+    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504,
+            1490967855104, 4380756541440, 14631844184064],
+    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+})
+
+pandasai.set_pd_engine("modin")
+df = SmartDataframe(df, config={"llm": llm})
+response = df.chat("How many loans are from men and have been paid off?")
+print(response)
+
+# you can switch back to pandas using
+# pandasai.set_pd_engine("pandas")
+```
+
 ## Working with Polars dataframes
 
 Example of using PandasAI with a Polars DataFrame (still in beta). In order to use Polars dataframes as a data source, you need to install the `pandasai[polars]` extra dependency.

@@ -1,7 +1,6 @@
 from typing import Any
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai.responses.response_parser import ResponseParser
 
 

@@ -20,13 +20,14 @@ Example:
 
 import hashlib
 import uuid
+import warnings
 from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-import pandas as pd
 import pydantic
 
+import pandasai.pandas as pd
 from pandasai.helpers.df_validator import DfValidator
 
 from ..connectors.base import BaseConnector
@@ -67,7 +68,7 @@ class SmartDataframeCore:
 
         Args:
             df (Union[pd.DataFrame, pl.DataFrame, BaseConnector]):
-            Pandas or Polars dataframe or a connector.
+            Pandas, Modin or Polars dataframe or a connector.
         """
         if isinstance(df, BaseConnector):
             self.dataframe = None
@@ -98,7 +99,7 @@ class SmartDataframeCore:
             file_path (str): Path to the file to be imported.
 
         Returns:
-            pd.DataFrame: Pandas dataframe
+            pd.DataFrame: Pandas or Modin dataframe
         """
 
         if file_path.endswith(".csv"):
@@ -114,16 +115,22 @@ class SmartDataframeCore:
 
     def _load_engine(self):
         """
-        Load the engine of the dataframe (Pandas or Polars)
+        Load the engine of the dataframe (Pandas, Modin or Polars)
         """
-        engine = df_type(self._df)
+        df_engine = df_type(self._df)
 
-        if engine is None:
+        if df_engine is None:
             raise ValueError(
-                "Invalid input data. Must be a Pandas or Polars dataframe."
+                "Invalid input data. Must be a Pandas, Modin or Polars dataframe."
             )
 
-        self._engine = engine
+        if df_engine != "polars" and not isinstance(self._df, pd.DataFrame):
+            raise ValueError(
+                f"The provided dataframe is a {df_engine} dataframe, but the current pandasai engine is {pd.__name__}. "
+                f"To use {df_engine}, please run `pandasai.set_engine('{df_engine}')`. "
+            )
+
+        self._engine = df_engine
 
     def _validate_and_convert_dataframe(self, df: DataFrameType) -> DataFrameType:
         """
@@ -181,7 +188,7 @@ class SmartDataframeCore:
 
             if self._engine == "polars":
                 return_df = self._df.clone()
-            elif self._engine == "pandas":
+            elif self._engine in ("pandas", "modin"):
                 return_df = self._df.copy()
 
             if self.has_connector and self._df_loaded and self._temporary_loaded:
@@ -306,7 +313,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas/modin/polars dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -379,13 +386,12 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Truncate the columns of the dataframe to a maximum of 20 characters.
 
         Args:
-            df (DataFrameType): Pandas or Polars dataframe
+            df (DataFrameType): Pandas, Modin or Polars dataframe
 
         Returns:
-            DataFrameType: Pandas or Polars dataframe
+            DataFrameType: Pandas, Modin or Polars dataframe
         """
-
-        if df_type(df) == "pandas":
+        if (engine := df_type(df)) in ("pandas", "modin"):
             df_trunc = df.copy()
 
             for col in df.columns:
@@ -393,7 +399,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     first_val = df[col].iloc[0]
                     if isinstance(first_val, str) and len(first_val) > max_size:
                         df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
-        elif df_type(df) == "polars":
+        elif engine == "polars":
             try:
                 import polars as pl
 
@@ -411,6 +417,10 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     "Polars is not installed. "
                     "Please install Polars to use this feature."
                 ) from e
+        else:
+            raise ValueError(
+                f"Unrecognized engine {engine}. It must either be pandas, modin or polars."
+            )
 
         return df_trunc
 
@@ -429,7 +439,6 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
 
         sampler = DataSampler(head)
         sampled_head = sampler.sample(rows_to_display)
-
         if self.lake.config.enforce_privacy:
             return sampled_head
         else:
@@ -506,7 +515,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         Get the head of the dataframe as a dataframe.
 
         Returns:
-            DataFrameType: Pandas or Polars dataframe
+            DataFrameType: Pandas, Modin or Polars dataframe
         """
         return self._get_sample_head()
 
