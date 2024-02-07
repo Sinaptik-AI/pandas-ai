@@ -343,17 +343,13 @@ class BaseOpenAI(LLM):
                 }
             )
 
-            # Skip if memory size is one because of the current query in memory
-            if memory.count() > 1:
-                for message in memory.all()[
-                    :-1
-                ]:  # skip last message that is of current query instead add prompt
-                    if message["is_user"]:
-                        messages.append({"role": "user", "content": message["message"]})
-                    else:
-                        messages.append(
-                            {"role": "assistant", "content": message["message"]}
-                        )
+            for message in memory.all():
+                if message["is_user"]:
+                    messages.append({"role": "user", "content": message["message"]})
+                else:
+                    messages.append(
+                        {"role": "assistant", "content": message["message"]}
+                    )
 
         # adding current prompt as latest query message
         messages.append(

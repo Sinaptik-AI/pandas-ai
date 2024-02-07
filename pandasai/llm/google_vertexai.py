@@ -115,12 +115,6 @@ class GoogleVertexAI(BaseGoogle):
 
         self.last_prompt = updated_prompt
 
-        updated_prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
-
         if self.model in self._supported_code_models:
             from vertexai.preview.language_models import CodeGenerationModel
 
@@ -164,18 +158,16 @@ class GoogleVertexAI(BaseGoogle):
 
             code_chat_model = CodeChatModel.from_pretrained(self.model)
             messages = []
-            # Skip if memory size is one because of the current query in memory
-            if memory and memory.count() > 1:
-                for message in memory.all()[:-1]:
-                    # skip last message that is of current query instead add prompt
-                    if message["is_user"]:
-                        messages.append(
-                            ChatMessage(author="user", content=message["message"])
-                        )
-                    else:
-                        messages.append(
-                            ChatMessage(author="model", content=message["message"])
-                        )
+
+            for message in memory.all():
+                if message["is_user"]:
+                    messages.append(
+                        ChatMessage(author="user", content=message["message"])
+                    )
+                else:
+                    messages.append(
+                        ChatMessage(author="model", content=message["message"])
+                    )
             chat = code_chat_model.start_chat(
                 context=memory.get_system_prompt(), message_history=messages
             )
