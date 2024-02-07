@@ -1,0 +1,5 @@
+{% if memory.agent_info %} {{memory.get_system_prompt()}} {% endif %}
+{% if memory.count() > 1 %}
+### PREVIOUS CONVERSATION
+{{ memory.get_previous_conversation() }}
+{% endif %}

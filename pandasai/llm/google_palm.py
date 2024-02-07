@@ -82,11 +82,7 @@ class GooglePalm(BaseGoogle):
 
         """
         self._validate()
-        prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
+        prompt = self.prepend_system_prompt(prompt, memory)
         completion = self.google_palm.generate_text(
             model=self.model,
             prompt=prompt,
@@ -95,6 +91,7 @@ class GooglePalm(BaseGoogle):
             top_k=self.top_k,
             max_output_tokens=self.max_output_tokens,
         )
+        self.last_prompt = prompt
         return completion.result
 
     @property

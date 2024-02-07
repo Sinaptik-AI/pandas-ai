@@ -43,6 +43,7 @@ class GoogleVertexAI(BaseGoogle):
     _supported_generative_models = [
         "gemini-pro",
     ]
+    _supported_code_chat_models = ["codechat-bison@001", "codechat-bison@002"]
 
     def __init__(
         self, project_id: str, location: str, model: Optional[str] = None, **kwargs
@@ -110,19 +111,13 @@ class GoogleVertexAI(BaseGoogle):
         """
         self._validate()
 
-        from vertexai.preview.language_models import (
-            CodeGenerationModel,
-            TextGenerationModel,
-        )
-        from vertexai.preview.generative_models import GenerativeModel
+        updated_prompt = self.prepend_system_prompt(prompt, memory)
 
-        updated_prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
+        self.last_prompt = updated_prompt
 
         if self.model in self._supported_code_models:
+            from vertexai.preview.language_models import CodeGenerationModel
+
             code_generation = CodeGenerationModel.from_pretrained(self.model)
 
             completion = code_generation.predict(
@@ -131,6 +126,8 @@ class GoogleVertexAI(BaseGoogle):
                 max_output_tokens=self.max_output_tokens,
             )
         elif self.model in self._supported_text_models:
+            from vertexai.preview.language_models import TextGenerationModel
+
             text_generation = TextGenerationModel.from_pretrained(self.model)
 
             completion = text_generation.predict(
@@ -141,6 +138,8 @@ class GoogleVertexAI(BaseGoogle):
                 max_output_tokens=self.max_output_tokens,
             )
         elif self.model in self._supported_generative_models:
+            from vertexai.preview.generative_models import GenerativeModel
+
             model = GenerativeModel(self.model)
 
             responses = model.generate_content(
@@ -154,6 +153,28 @@ class GoogleVertexAI(BaseGoogle):
             )
 
             completion = responses.candidates[0].content.parts[0]
+        elif self.model in self._supported_code_chat_models:
+            from vertexai.language_models import CodeChatModel, ChatMessage
+
+            code_chat_model = CodeChatModel.from_pretrained(self.model)
+            messages = []
+
+            for message in memory.all():
+                if message["is_user"]:
+                    messages.append(
+                        ChatMessage(author="user", content=message["message"])
+                    )
+                else:
+                    messages.append(
+                        ChatMessage(author="model", content=message["message"])
+                    )
+            chat = code_chat_model.start_chat(
+                context=memory.get_system_prompt(), message_history=messages
+            )
+
+            response = chat.send_message(prompt)
+            return response.text
+
         else:
             raise UnsupportedModelError(self.model)
 

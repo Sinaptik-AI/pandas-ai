@@ -62,11 +62,10 @@ dfs[0]:
   name: null
   description: null
   type: pd.DataFrame
-  data:
-    rows: 0
-    columns: 0
-    schema:
-      fields: []
+  rows: 0
+  columns: 0
+  schema:
+    fields: []
 
 </table>
 </tables>
@@ -78,8 +77,6 @@ You can call the following functions that have been pre-defined for you:
 def execute_sql_query(sql_query: str) -> pd.Dataframe
     """This method connects to the database, executes the sql query and returns the dataframe"""
 </function>
-
-
 
 
 Update this initial code:

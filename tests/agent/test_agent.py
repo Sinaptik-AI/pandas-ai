@@ -444,7 +444,8 @@ Spain,8446903488,6.38
 </dataframe>
 
 The user asked the following question:
-Q: Hello world
+### QUERY
+ Hello world
 
 You generated this python code:
 result = {'type': 'string', 'value': 'Hello World'}

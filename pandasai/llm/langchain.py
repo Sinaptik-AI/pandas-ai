@@ -25,11 +25,8 @@ class LangchainLLM(LLM):
 
     def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
         prompt = instruction.to_string()
-        prompt = (
-            memory.get_system_prompt() + "\n" + prompt
-            if memory and memory.agent_info
-            else prompt
-        )
+        prompt = self.prepend_system_prompt(prompt, memory)
+        self.last_prompt = prompt
         return self.langchain_llm.predict(prompt)
 
     @staticmethod

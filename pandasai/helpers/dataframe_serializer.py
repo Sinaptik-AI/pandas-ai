@@ -96,7 +96,6 @@ class DataframeSerializer:
             "name": df.name,
             "description": df.description,
             "type": extras["type"],
-            "data": {},
         }
         # Add DataFrame details to the result
         data = {
@@ -121,9 +120,9 @@ class DataframeSerializer:
 
             data["schema"]["fields"].append(col_info)
 
-        df_info["data"] = data
+        result = df_info | data
 
-        return {df_number_key: df_info}
+        return {df_number_key: result}
 
     def convert_df_to_json_str(self, df: pd.DataFrame, extras: dict) -> str:
         """
