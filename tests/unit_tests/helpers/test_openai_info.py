@@ -66,22 +66,22 @@ class TestOpenAIInfo:
     @pytest.mark.parametrize(
         "model_name,expected_cost",
         [
-            ("gpt-3.5-turbo", 0.003),
+            ("gpt-3.5-turbo", 0.002),
             (
                 "gpt-3.5-turbo-0613",
-                0.003,
+                0.002,
             ),
             (
                 "gpt-3.5-turbo-16k-0613",
-                0.003,
+                0.002,
             ),
             (
                 "gpt-3.5-turbo-1106",
-                0.003,
+                0.002,
             ),
             (
                 "gpt-3.5-turbo-16k",
-                0.003,
+                0.002,
             ),
             ("gpt-4", 0.09),
             ("gpt-4-0613", 0.09),
@@ -151,7 +151,7 @@ class TestOpenAIInfo:
     @pytest.mark.parametrize(
         "model_name, expected_cost",
         [
-            ("ft:gpt-3.5-turbo-0613:your-org:custom-model-name:1abcdefg", 0.028),
+            ("ft:gpt-3.5-turbo-0613:your-org:custom-model-name:1abcdefg", 0.024),
             ("gpt-35-turbo-0613.ft-0123456789abcdefghijklmnopqrstuv", 0.0035),
         ],
     )
