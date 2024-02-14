@@ -28,6 +28,8 @@ class BasePrompt:
             env = Environment(loader=FileSystemLoader(path_to_template))
             self.prompt = env.get_template(self.template_path)
 
+        self._resolved_prompt = None
+
     def render(self):
         """Render the prompt."""
         render = self.prompt.render(**self.props)
@@ -39,7 +41,10 @@ class BasePrompt:
 
     def to_string(self):
         """Render the prompt."""
-        return self.prompt.render(**self.props)
+        if self._resolved_prompt is None:
+            self._resolved_prompt = self.prompt.render(**self.props)
+
+        return self._resolved_prompt
 
     def __str__(self):
         return self.to_string()
