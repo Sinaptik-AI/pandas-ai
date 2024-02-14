@@ -194,3 +194,19 @@ class ExecuteSQLQueryNotUsed(Exception):
     Args:
         Exception (Exception): ExecuteSQLQueryNotUsed
     """
+
+
+class PandasAIApiKeyError(Exception):
+    """
+    Raise error if api key is not found for remote vectorstore and llm
+    Args:
+        Exception (Exception): PandasAIApiKeyError
+    """
+
+
+class PandasAIApiCallError(Exception):
+    """
+    Raise error if exception in API request fails
+    Args:
+        Exception (Exception): PandasAIApiCallError
+    """

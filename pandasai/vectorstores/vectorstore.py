@@ -48,7 +48,6 @@ class VectorStore(ABC):
         """
         raise NotImplementedError("add_docs method must be implemented by subclass.")
 
-    @abstractmethod
     def update_question_answer(
         self,
         ids: Iterable[str],
@@ -67,11 +66,8 @@ class VectorStore(ABC):
         Returns:
             List of ids from updating the texts into the vectorstore.
         """
-        raise NotImplementedError(
-            "update_question_answer method must be implemented by subclass."
-        )
+        pass
 
-    @abstractmethod
     def update_docs(
         self,
         ids: Iterable[str],
@@ -89,7 +85,7 @@ class VectorStore(ABC):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        raise NotImplementedError("update_docs method must be implemented by subclass.")
+        pass
 
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
@@ -145,37 +141,39 @@ class VectorStore(ABC):
             "get_relevant_docs method must be implemented by subclass."
         )
 
-    @abstractmethod
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
         """
         Returns relevant question answers based on ids
         """
-        raise NotImplementedError(
-            "get_relevant_question_answers_by_id method must be implemented by subclass."
-        )
+        pass
 
-    @abstractmethod
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
         """
         Returns relevant documents based on ids
         """
-        raise NotImplementedError(
-            "get_relevant_docs method must be implemented by subclass."
-        )
+        pass
 
+    @abstractmethod
     def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:
             question (_type_): list of documents
         """
+        raise NotImplementedError(
+            "get_relevant_qa_documents method must be implemented by subclass."
+        )
 
+    @abstractmethod
     def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:
             question (_type_): list of documents
         """
+        raise NotImplementedError(
+            "get_relevant_docs_documents method must be implemented by subclass."
+        )
 
     def _format_qa(self, query: str, code: str) -> str:
         return f"Q: {query}\n A: {code}"

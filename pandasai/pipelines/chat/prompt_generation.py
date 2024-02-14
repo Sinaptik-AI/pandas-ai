@@ -39,7 +39,7 @@ class PromptGeneration(BaseLogicUnit):
             prompt,
             True,
             "Prompt Generated Successfully",
-            {"content_type": "prompt", "value": prompt.render()},
+            {"content_type": "prompt", "value": prompt.to_string()},
         )
 
     def get_chat_prompt(self, context: PipelineContext) -> [str, BasePrompt]:
