@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from pandasai.exceptions import PandasAIApiKeyError
 from pandasai.prompts.base import BasePrompt
 from pandasai.llm.bamboo_llm import BambooLLM
 
@@ -21,11 +20,6 @@ class TestBambooLLM(unittest.TestCase):
 
     def get_context(self):
         return MagicMock()
-
-    @patch("pandasai.helpers.request.Session.make_request", autospec=True)
-    def test_constructor_without_api_key(self, mock_request):
-        with self.assertRaises(PandasAIApiKeyError):
-            BambooLLM()
 
     @patch("pandasai.helpers.request.Session.make_request", autospec=True)
     def test_call_method(self, mock_request):

@@ -84,7 +84,6 @@ class TestQueryExecTracker:
             "string",
             conversation_id="123",
             prompt_id="1234",
-            is_related_query=False,
         )
 
     def test_add_dataframes(
@@ -182,25 +181,6 @@ class TestQueryExecTracker:
         assert "steps" in summary
         assert "response" in summary
         assert "execution_time" in summary
-        assert "is_related_query" in summary["query_info"]
-
-    def test_related_query_in_summary(self, tracking_info):
-        # Execute a mock function to generate some steps and response
-        def mock_function(*args, **kwargs):
-            return "Mock Result"
-
-        tracker = QueryExecTracker()
-
-        tracker.start_new_track(tracking_info)
-
-        # Get the summary
-        summary = tracker.get_summary()
-
-        tracker.execute_func(mock_function, tag="custom_tag")
-
-        # Check if the summary contains the expected keys
-        assert "is_related_query" in summary["query_info"]
-        assert not summary["query_info"]["is_related_query"]
 
     def test_get_execution_time(self, tracker: QueryExecTracker):
         def mock_function(*args, **kwargs):
@@ -418,8 +398,8 @@ class TestQueryExecTracker:
             return "Test summary data"
 
         # Define a mock environment for testing
-        os.environ["LOGGING_SERVER_URL"] = "http://test-server"
-        os.environ["LOGGING_SERVER_API_KEY"] = "test-api-key"
+        os.environ["PANDASAI_API_URL"] = "http://test-server"
+        os.environ["PANDASAI_API_KEY"] = "test-api-key"
 
         # Set the get_summary method to your mock
         tracker.get_summary = mock_get_summary
@@ -460,7 +440,6 @@ class TestQueryExecTracker:
             "string",
             conversation_id="1234",
             prompt_id="1234",
-            is_related_query=False,
         )
         tracker2.start_new_track(track_input)
 
