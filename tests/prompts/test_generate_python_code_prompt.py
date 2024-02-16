@@ -392,3 +392,38 @@ Generate python code and return full updated code:"""  # noqa E501
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
 
         assert actual_prompt_content == expected_prompt_content
+
+    @patch("pandasai.vectorstores.chroma.Chroma")
+    def test_str_geenerate_code_prompt_to_json(self, chromadb_mock):
+        """Test casting of prompt to string and interpolation of context.
+
+        Args:
+            output_type (str): output type
+            output_type_template (str): output type template
+
+        Returns:
+            None
+        """
+
+        chromadb_instance = chromadb_mock.return_value
+        chromadb_instance.get_relevant_docs_documents.return_value = [["documents1"]]
+        chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
+        llm = FakeLLM()
+        agent = Agent(
+            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            config={"llm": llm},
+        )
+        agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
+        prompt = GeneratePythonCodePrompt(
+            context=agent.context, viz_lib="", output_type=None
+        )
+        print(prompt.to_json())
+
+        assert prompt.to_json() == {
+            "datasets": [
+                {"name": None, "description": None, "head": [{"a": 1, "b": 4}]}
+            ],
+            "conversation": [],
+            "system_prompt": None,
+            "config": {"direct_sql": False, "viz_lib": "", "output_type": None},
+        }

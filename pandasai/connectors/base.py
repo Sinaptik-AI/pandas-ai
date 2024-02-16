@@ -2,6 +2,7 @@
 Base connector class to be extended by all connectors.
 """
 
+import json
 import pandas as pd
 from abc import ABC, abstractmethod
 import os
@@ -273,3 +274,13 @@ class BaseConnector(ABC):
             },
             type_=serializer,
         )
+
+    @cache
+    def to_json(self):
+        df_head = self.get_head()
+
+        return {
+            "name": self.name,
+            "description": self.description,
+            "head": json.loads(df_head.to_json(orient="records", date_format="iso")),
+        }

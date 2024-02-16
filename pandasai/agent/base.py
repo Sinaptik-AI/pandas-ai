@@ -226,7 +226,7 @@ class Agent:
         Simulate a chat interaction with the assistant on Dataframe.
         """
         try:
-            is_related_query = self.check_if_related_to_conversation(query)
+            # is_related_query = self.check_if_related_to_conversation(query)
 
             self.logger.log(f"Question: {query}")
             self.logger.log(
@@ -240,7 +240,7 @@ class Agent:
                 output_type,
                 self.conversation_id,
                 self.last_prompt_id,
-                is_related_query,
+                True,
             )
 
             return self.chat_pipeline.run(pipeline_input)

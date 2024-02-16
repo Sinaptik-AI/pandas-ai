@@ -51,3 +51,9 @@ class BasePrompt:
 
     def validate(self, output: str) -> bool:
         return isinstance(output, str)
+
+    def to_json(self):
+        """
+        Return Json Prompt
+        """
+        raise NotImplementedError("Implementation required")

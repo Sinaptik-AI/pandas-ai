@@ -45,3 +45,27 @@ Error message
 
 Fix the python code above and return the new python code:"""  # noqa: E501
         )
+
+    def test_to_json(self):
+        """Test that the __str__ method is implemented"""
+
+        llm = FakeLLM()
+        agent = Agent(
+            dfs=[PandasConnector({"original_df": pd.DataFrame()})],
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
+        )
+        prompt = CorrectErrorPrompt(
+            context=agent.context, code="df.head()", error="Error message"
+        )
+
+        assert prompt.to_json() == {
+            "datasets": [{"name": None, "description": None, "head": []}],
+            "conversation": [],
+            "system_prompt": None,
+            "error": {
+                "code": "df.head()",
+                "error_trace": "Error message",
+                "exception_type": "Exception",
+            },
+            "config": {"direct_sql": False},
+        }
