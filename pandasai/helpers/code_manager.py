@@ -176,7 +176,7 @@ class CodeManager:
                 code,
                 logger=self._logger,
                 file_name="temp_chart",
-                save_charts_path_str=find_project_root() + "/exports/charts",
+                save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
 
         # Reset used skills
