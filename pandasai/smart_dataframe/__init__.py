@@ -20,7 +20,6 @@ Example:
 
 import hashlib
 import uuid
-import warnings
 from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
