@@ -26,3 +26,20 @@ class TestPandasConnector:
         input_data = pd.Series([1, 2, 3])
         connector = PandasConnector({"original_df": input_data})
         assert isinstance(connector.execute(), pd.DataFrame)
+
+    def test_to_json(self):
+        input_data = pd.DataFrame(
+            {
+                "EmployeeID": [1, 2, 3, 4, 5],
+                "Name": ["John", "Emma", "Liam", "Olivia", "William"],
+                "Department": ["HR", "Sales", "IT", "Marketing", "Finance"],
+            }
+        )
+        connector = PandasConnector({"original_df": input_data})
+        data = connector.to_json()
+
+        assert isinstance(data, dict)
+        assert "name" in data
+        assert "description" in data
+        assert "head" in data
+        assert isinstance(data["head"], list)

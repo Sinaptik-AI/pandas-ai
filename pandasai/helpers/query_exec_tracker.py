@@ -46,16 +46,6 @@ class QueryExecTracker:
         self._start_time = None
         self._server_config = server_config
         self._query_info = {}
-        self._is_related_query = True
-
-    def set_related_query(self, flag: bool):
-        """
-        Set Related Query Parameter whether new query is related to the conversation
-        or not
-        Args:
-            flag (bool): boolean to set true if related else false
-        """
-        self._is_related_query = flag
 
     def start_new_track(self, input: ChatPipelineInput):
         """
@@ -74,7 +64,6 @@ class QueryExecTracker:
             "instance": "Agent",
             "query": input.query,
             "output_type": input.output_type,
-            "is_related_query": input.is_related_query,
         }
 
     def convert_dataframe_to_dict(self, df):
@@ -240,14 +229,14 @@ class QueryExecTracker:
         server_url = None
 
         if self._server_config is None:
-            server_url = os.environ.get("LOGGING_SERVER_URL")
-            api_key = os.environ.get("LOGGING_SERVER_API_KEY")
+            server_url = os.environ.get("PANDASAI_API_URL")
+            api_key = os.environ.get("PANDASAI_API_KEY")
         else:
             server_url = self._server_config.get(
-                "server_url", os.environ.get("LOGGING_SERVER_URL")
+                "server_url", os.environ.get("PANDASAI_API_URL")
             )
             api_key = self._server_config.get(
-                "api_key", os.environ.get("LOGGING_SERVER_API_KEY")
+                "api_key", os.environ.get("PANDASAI_API_KEY")
             )
 
         if api_key is None or server_url is None:

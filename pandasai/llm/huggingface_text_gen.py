@@ -1,10 +1,13 @@
-from typing import Optional, Any, List, Dict
-
-from pandasai.helpers.memory import Memory
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional, Any, List, Dict
 
 from .base import LLM
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
+
 
 load_dotenv()
 
@@ -77,8 +80,10 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: BasePrompt, memory: Memory = "") -> str:
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         prompt = instruction.to_string()
+
+        memory = context.memory if context else None
 
         prompt = self.prepend_system_prompt(prompt, memory)
 

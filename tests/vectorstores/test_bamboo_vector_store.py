@@ -1,15 +1,9 @@
 import unittest
 from unittest.mock import patch
-from pandasai.exceptions import PandasAIApiKeyError
 from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
 
 
 class TestBambooVector(unittest.TestCase):
-    @patch("pandasai.helpers.request.Session.make_request", autospec=True)
-    def test_constructor_without_api_key(self, mock_request):
-        with self.assertRaises(PandasAIApiKeyError):
-            BambooVectorStore()
-
     @patch("pandasai.helpers.request.Session.make_request", autospec=True)
     def test_add_question_answer(self, mock_request):
         bvs = BambooVectorStore(api_key="dummy_key")

@@ -70,6 +70,15 @@ class Memory:
     def get_system_prompt(self) -> str:
         return self._agent_info
 
+    def to_json(self):
+        messages = []
+        for message in self.all():
+            if message["is_user"]:
+                messages.append({"role": "user", "message": message["message"]})
+            else:
+                messages.append({"role": "assistant", "message": message["message"]})
+        return messages
+
     def clear(self):
         self._messages = []
 

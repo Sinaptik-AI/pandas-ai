@@ -13,11 +13,11 @@ Example:
         Custom Class Starts here!!
     ```
 """
-
+from __future__ import annotations
 import ast
 import re
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Union, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union, Mapping, Tuple
 
 from pandasai.helpers.memory import Memory
 from pandasai.prompts.generate_system_message import GenerateSystemMessagePrompt
@@ -30,6 +30,9 @@ from ..exceptions import (
 from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import BasePrompt
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class LLM:
@@ -164,13 +167,13 @@ class LLM:
         return None
 
     @abstractmethod
-    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
             instruction (BasePrompt): A prompt object with instruction for LLM.
-            suffix (str, optional): Suffix. Defaults to "".
+            context (PipelineContext, optional): PipelineContext. Defaults to None.
 
         Raises:
             MethodNotImplementedError: Call method has not been implemented
@@ -178,7 +181,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: BasePrompt, memory: Memory) -> str:
+    def generate_code(self, instruction: BasePrompt, context: PipelineContext) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
@@ -189,7 +192,7 @@ class LLM:
             str: A string of Python code.
 
         """
-        response = self.call(instruction, memory)
+        response = self.call(instruction, context)
         return self._extract_code(response)
 
 
@@ -335,13 +338,14 @@ class BaseOpenAI(LLM):
 
         """
         messages = []
-        if memory and memory.agent_info:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": memory.get_system_prompt(),
-                }
-            )
+        if memory:
+            if memory.agent_info:
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": memory.get_system_prompt(),
+                    }
+                )
 
             for message in memory.all():
                 if message["is_user"]:
@@ -374,13 +378,13 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: BasePrompt, memory: Memory = None):
+    def call(self, instruction: BasePrompt, context: PipelineContext = None):
         """
         Call the OpenAI LLM.
 
         Args:
             instruction (BasePrompt): A prompt object with instruction for LLM.
-            suffix (str): Suffix to pass.
+            context (PipelineContext): context to pass.
 
         Raises:
             UnsupportedModelError: Unsupported model
@@ -389,6 +393,8 @@ class BaseOpenAI(LLM):
             str: Response
         """
         self.last_prompt = instruction.to_string()
+
+        memory = context.memory if context else None
 
         return (
             self.chat_completion(self.last_prompt, memory)
@@ -459,17 +465,18 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: BasePrompt, memory: Memory = None) -> str:
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         """
         Call the Google LLM.
 
         Args:
             instruction (BasePrompt): Instruction to pass.
-            suffix (str): Suffix to pass. Defaults to an empty string ("").
+            context (PipelineContext): Pass PipelineContext.
 
         Returns:
             str: LLM response.
 
         """
         self.last_prompt = instruction.to_string()
+        memory = context.memory if context else None
         return self._generate_text(self.last_prompt, memory)
