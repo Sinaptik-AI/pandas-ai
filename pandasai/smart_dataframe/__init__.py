@@ -7,10 +7,10 @@ Example:
     ```python
     from pandasai.smart_dataframe import SmartDataframe
     from pandasai.llm.openai import OpenAI
-    
+
     df = pd.read_csv("examples/data/Loan payments data.csv")
     llm = OpenAI()
-    
+
     df = SmartDataframe(df, config={"llm": llm})
     response = df.chat("What is the average loan amount?")
     print(response)
@@ -408,7 +408,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     if df[col].dtype == pl.Utf8:
                         first_val = df[col][0]
                         if isinstance(first_val, str) and len(df_trunc[col]) > max_size:
-                            df_trunc[col] = f"{df_trunc[col].str.slice(0, max_size - 3)}..."
+                            df_trunc[
+                                col
+                            ] = f"{df_trunc[col].str.slice(0, max_size - 3)}..."
             except ImportError as e:
                 raise ImportError(
                     "Polars is not installed. "
