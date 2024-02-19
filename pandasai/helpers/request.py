@@ -2,9 +2,10 @@ import logging
 import os
 import traceback
 from urllib.parse import urljoin
-from pandasai.exceptions import PandasAIApiCallError, PandasAIApiKeyError
+
 import requests
 
+from pandasai.exceptions import PandasAIApiCallError, PandasAIApiKeyError
 from pandasai.helpers.logger import Logger
 
 

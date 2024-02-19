@@ -1,6 +1,6 @@
+from pandasai import Agent
 from pandasai.connectors import AirtableConnector
 from pandasai.llm import OpenAI
-from pandasai import Agent
 
 airtable_connectors = AirtableConnector(
     config={

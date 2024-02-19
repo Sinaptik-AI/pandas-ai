@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
+
 import pandas as pd
-from pandasai.connectors.snowflake import SnowFlakeConnectorConfig
+
 from pandasai.connectors import SnowFlakeConnector
+from pandasai.connectors.snowflake import SnowFlakeConnectorConfig
 
 
 class TestSQLConnector(unittest.TestCase):

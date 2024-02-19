@@ -2,15 +2,17 @@
 Polars connector class to handle csv, parquet, xlsx files and polars dataframes.
 """
 
+import hashlib
+from functools import cache, cached_property
+from typing import Union
+
 import polars as pl
 from pydantic import BaseModel
-from .base import BaseConnector
-from ..helpers.logger import Logger
-from typing import Union
-from functools import cache, cached_property
-import hashlib
-from ..helpers.file_importer import FileImporter
+
 from ..helpers.data_sampler import DataSampler
+from ..helpers.file_importer import FileImporter
+from ..helpers.logger import Logger
+from .base import BaseConnector
 
 
 class PolarsConnectorConfig(BaseModel):

@@ -7,17 +7,17 @@ import os
 import re
 import time
 from functools import cache, cached_property
+from typing import Optional, Union
 
-from pandasai.exceptions import MaliciousQueryError
-from pandasai.helpers.path import find_project_root
-from .base import BaseConnector, BaseConnectorConfig
-from sqlalchemy import create_engine, text, select, asc
+from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
 
 import pandasai.pandas as pd
+from pandasai.exceptions import MaliciousQueryError
+from pandasai.helpers.path import find_project_root
 
 from ..constants import DEFAULT_FILE_PERMISSIONS
-from typing import Optional, Union
+from .base import BaseConnector, BaseConnectorConfig
 
 
 class SQLBaseConnectorConfig(BaseConnectorConfig):

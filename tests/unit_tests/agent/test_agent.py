@@ -2,23 +2,24 @@ import os
 import sys
 from typing import Optional
 from unittest.mock import Mock, patch
-from pandasai.agent import Agent
+
 import pandas as pd
 import pytest
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.llm.fake import FakeLLM
-from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
-from pandasai.prompts.explain_prompt import ExplainPrompt
-from pandasai.helpers.code_manager import CodeManager
-from pandasai.constants import DEFAULT_FILE_PERMISSIONS
-
 from langchain import OpenAI
-from pandasai.llm.langchain import LangchainLLM
+
+from pandasai.agent import Agent
 from pandasai.connectors.sql import (
+    PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
-    PostgreSQLConnector,
 )
+from pandasai.constants import DEFAULT_FILE_PERMISSIONS
+from pandasai.helpers.code_manager import CodeManager
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
+from pandasai.llm.fake import FakeLLM
+from pandasai.llm.langchain import LangchainLLM
+from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
+from pandasai.prompts.explain_prompt import ExplainPrompt
 
 
 class TestAgent:

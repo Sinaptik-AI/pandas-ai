@@ -6,8 +6,8 @@ import pytest
 
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.chat.result_parsing import ResultParsing
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class TestResultParsing:

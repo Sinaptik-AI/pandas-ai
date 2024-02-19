@@ -1,6 +1,6 @@
 """Unit tests for the LLaMa2TextGen LLM class"""
-from pandasai.prompts import BasePrompt
 from pandasai.llm import HuggingFaceTextGen
+from pandasai.prompts import BasePrompt
 
 
 class MockBasePrompt(BasePrompt):

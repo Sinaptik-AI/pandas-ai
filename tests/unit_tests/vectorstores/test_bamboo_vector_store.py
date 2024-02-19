@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
 
 

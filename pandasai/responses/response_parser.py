@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError

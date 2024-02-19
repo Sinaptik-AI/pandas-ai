@@ -3,9 +3,10 @@ from typing import Any
 
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+
+from ...helpers.output_validator import OutputValidator
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
-from ...helpers.output_validator import OutputValidator
 
 
 class ResultValidation(BaseLogicUnit):

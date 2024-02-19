@@ -1,33 +1,30 @@
 """Unit tests for the CodeManager class"""
 import ast
+import uuid
 from typing import Optional
 from unittest.mock import MagicMock, patch
-import uuid
 
 import pandas as pd
 import pytest
 
+from pandasai import Agent
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
 )
-
 from pandasai.exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
+    InvalidConfigError,
     MaliciousQueryError,
     NoCodeFoundError,
-    InvalidConfigError,
 )
+from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
+from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-
-from pandasai import Agent
-
-from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 from pandasai.schemas.df_config import Config
-from pandasai.helpers.logger import Logger
 
 
 class TestCodeManager:

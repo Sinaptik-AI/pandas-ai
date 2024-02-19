@@ -4,12 +4,12 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
+from pandasai.connectors import BaseConnector, PandasConnector
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
-from pandasai.connectors import BaseConnector, PandasConnector
 
 
 class MockLogicUnit(BaseLogicUnit):

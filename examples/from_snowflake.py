@@ -1,8 +1,8 @@
 """Example of using PandasAI with a Snowflake"""
 
 from pandasai import Agent
-from pandasai.llm import OpenAI
 from pandasai.connectors import SnowFlakeConnector
+from pandasai.llm import OpenAI
 
 snowflake_connector = SnowFlakeConnector(
     config={

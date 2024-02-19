@@ -4,11 +4,12 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
+
 from pandasai import Agent
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.skills import skill, Skill
+from pandasai.skills import Skill, skill
 
 
 class TestSkills:

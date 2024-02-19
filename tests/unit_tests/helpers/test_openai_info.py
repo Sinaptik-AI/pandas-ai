@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from pandasai.agent import Agent
 from pandasai.helpers import (
     OpenAICallbackHandler,

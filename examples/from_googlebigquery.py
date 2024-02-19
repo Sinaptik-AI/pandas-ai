@@ -1,7 +1,6 @@
+from pandasai import SmartDataframe
 from pandasai.connectors import GoogleBigQueryConnector
 from pandasai.llm import OpenAI
-from pandasai import SmartDataframe
-
 
 # ENV's
 # BIG_QUERY_DATABASE

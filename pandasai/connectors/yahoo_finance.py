@@ -5,9 +5,9 @@ from typing import Optional, Union
 
 import pandasai.pandas as pd
 
-from .base import BaseConnector, BaseConnectorConfig
 from ..constants import DEFAULT_FILE_PERMISSIONS
 from ..helpers.path import find_project_root
+from .base import BaseConnector, BaseConnectorConfig
 
 
 class YahooFinanceConnectorConfig(BaseConnectorConfig):

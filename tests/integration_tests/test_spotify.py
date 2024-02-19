@@ -1,6 +1,7 @@
 import unittest
 
 import pandas as pd
+
 from pandasai.agent import Agent
 from pandasai.llm import OpenAI
 

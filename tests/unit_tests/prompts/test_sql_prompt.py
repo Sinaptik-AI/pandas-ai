@@ -3,11 +3,12 @@ import sys
 
 import pandas as pd
 import pytest
+
+from pandasai import Agent
+from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.generate_python_code_with_sql import (
     GeneratePythonCodeWithSQLPrompt,
 )
-from pandasai import Agent
-from pandasai.llm.fake import FakeLLM
 
 
 class TestGeneratePythonCodeWithSQLPrompt:

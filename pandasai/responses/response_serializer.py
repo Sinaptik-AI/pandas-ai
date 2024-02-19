@@ -2,6 +2,7 @@ import base64
 import json
 
 import pandas as pd
+
 from pandasai.responses.response_type import ResponseType
 
 

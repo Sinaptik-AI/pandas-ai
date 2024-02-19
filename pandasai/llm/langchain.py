@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from pandasai.prompts.base import BasePrompt
+
 from .base import LLM
 
 if TYPE_CHECKING:

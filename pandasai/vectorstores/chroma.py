@@ -1,12 +1,13 @@
 import os
-from typing import Callable, Iterable, List, Optional, Union
 import uuid
-from pandasai.helpers.logger import Logger
-from pandasai.helpers.path import find_project_root
-from pandasai.vectorstores import VectorStore
+from typing import Callable, Iterable, List, Optional, Union
+
 import chromadb
 import chromadb.config
 from chromadb.utils import embedding_functions
+from pandasai.helpers.logger import Logger
+from pandasai.helpers.path import find_project_root
+from pandasai.vectorstores import VectorStore
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
 

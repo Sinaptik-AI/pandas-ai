@@ -2,17 +2,19 @@
 Airtable connectors are used to connect airtable records.
 """
 
-from .base import BaseConnector, BaseConnectorConfig
-from typing import Union, Optional
-import requests
-import os
-from ..helpers.path import find_project_root
-import time
 import hashlib
+import os
+import time
 from functools import cache, cached_property
+from typing import Optional, Union
+
+import requests
+
 import pandasai.pandas as pd
 
 from ..exceptions import InvalidRequestError
+from ..helpers.path import find_project_root
+from .base import BaseConnector, BaseConnectorConfig
 
 
 class AirtableConnectorConfig(BaseConnectorConfig):

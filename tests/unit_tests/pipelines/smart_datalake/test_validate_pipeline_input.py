@@ -1,8 +1,9 @@
 from typing import Optional
 from unittest.mock import patch
-import pandas as pd
 
+import pandas as pd
 import pytest
+
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -10,13 +11,12 @@ from pandasai.connectors.sql import (
 )
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.logger import Logger
-
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.chat.validate_pipeline_input import (
     ValidatePipelineInput,
 )
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class TestValidatePipelineInput:

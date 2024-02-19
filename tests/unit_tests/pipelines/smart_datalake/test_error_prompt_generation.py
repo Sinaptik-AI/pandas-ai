@@ -1,19 +1,19 @@
-from unittest.mock import MagicMock
-import pandas as pd
 from typing import Optional
+from unittest.mock import MagicMock
+
+import pandas as pd
 import pytest
+
 from pandasai.exceptions import InvalidLLMOutputType
-
 from pandasai.llm.fake import FakeLLM
-
 from pandasai.pipelines.chat.error_correction_pipeline.error_prompt_generation import (
     ErrorPromptGeneration,
 )
+from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 from pandasai.prompts.correct_output_type_error_prompt import (
     CorrectOutputTypeErrorPrompt,
 )
-from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class TestErrorPromptGeneration:

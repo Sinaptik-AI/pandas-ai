@@ -1,6 +1,7 @@
 from typing import Any
 
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+
 from ...helpers.logger import Logger
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext

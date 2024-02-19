@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pandasai.helpers.request import Session
 from pandasai.llm.base import LLM
 from pandasai.pipelines.pipeline_context import PipelineContext

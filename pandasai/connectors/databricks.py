@@ -3,10 +3,12 @@ Databricks Connector to connects you to your Databricks SQL Warhouse on
 Azure, AWS and GCP
 """
 
-from .base import BaseConnectorConfig
-from sqlalchemy import create_engine
 from typing import Union
-from .sql import SQLConnector, SQLBaseConnectorConfig
+
+from sqlalchemy import create_engine
+
+from .base import BaseConnectorConfig
+from .sql import SQLBaseConnectorConfig, SQLConnector
 
 
 class DatabricksConnectorConfig(SQLBaseConnectorConfig):

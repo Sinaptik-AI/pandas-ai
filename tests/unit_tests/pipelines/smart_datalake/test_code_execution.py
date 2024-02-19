@@ -7,8 +7,8 @@ import pytest
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.chat.code_execution import CodeExecution
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class TestCodeExecution:

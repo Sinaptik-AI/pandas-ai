@@ -1,15 +1,14 @@
 from typing import Optional
 from unittest.mock import Mock, patch
-import pandas as pd
 
+import pandas as pd
 import pytest
 
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.chat.code_generator import CodeGenerator
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
-
-from pandasai.pipelines.chat.code_generator import CodeGenerator
 
 
 class TestCodeGenerator:

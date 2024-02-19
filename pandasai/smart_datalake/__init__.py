@@ -19,8 +19,10 @@ Example:
 """
 import uuid
 from typing import Any, List, Optional, Union
+
 from pandasai.agent.base import Agent
 from pandasai.skills import Skill
+
 from ..helpers.cache import Cache
 from ..helpers.df_info import DataFrameType
 from ..schemas.df_config import Config

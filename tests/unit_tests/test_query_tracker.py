@@ -9,13 +9,12 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
 
+from pandasai.connectors import PandasConnector
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
-from pandasai.connectors import PandasConnector
-
 
 assert_almost_equal = TestCase().assertAlmostEqual
 

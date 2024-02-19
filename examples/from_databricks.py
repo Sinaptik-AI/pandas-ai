@@ -1,8 +1,8 @@
 """Example of using PandasAI with a DataBricks"""
 
 from pandasai import Agent
-from pandasai.llm import OpenAI
 from pandasai.connectors import DatabricksConnector
+from pandasai.llm import OpenAI
 
 databricks_connector = DatabricksConnector(
     config={

@@ -2,11 +2,12 @@
 import sys
 
 import pandas as pd
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.prompts import CorrectErrorPrompt
-from pandasai.connectors import PandasConnector
+
 from pandasai import Agent
+from pandasai.connectors import PandasConnector
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
+from pandasai.prompts import CorrectErrorPrompt
 
 
 class TestCorrectErrorPrompt:

@@ -1,19 +1,20 @@
 import traceback
 from typing import Optional
+
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
+)
 from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline import (
     ErrorCorrectionPipeline,
 )
 from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
-from pandasai.pipelines.chat.chat_pipeline_input import (
-    ChatPipelineInput,
-)
-
 from pandasai.pipelines.chat.validate_pipeline_input import (
     ValidatePipelineInput,
 )
+
 from ...helpers.logger import Logger
 from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext

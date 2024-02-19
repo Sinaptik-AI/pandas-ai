@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from pandasai.prompts.base import BasePrompt
 from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.prompts.base import BasePrompt
 
 
 class TestBambooLLM(unittest.TestCase):

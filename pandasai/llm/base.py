@@ -14,10 +14,11 @@ Example:
     ```
 """
 from __future__ import annotations
+
 import ast
 import re
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Tuple, Union
 
 from pandasai.helpers.memory import Memory
 from pandasai.prompts.generate_system_message import GenerateSystemMessagePrompt

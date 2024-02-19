@@ -1,8 +1,10 @@
 import unittest
-import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.connectors.google_big_query import GoogleBigQueryConnectorConfig
+
+import pandas as pd
+
 from pandasai.connectors import GoogleBigQueryConnector
+from pandasai.connectors.google_big_query import GoogleBigQueryConnectorConfig
 
 
 class TestGoogleBigQueryConnector(unittest.TestCase):

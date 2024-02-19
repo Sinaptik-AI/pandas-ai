@@ -1,12 +1,13 @@
 from typing import Any
 
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-from ..base_logic_unit import BaseLogicUnit
-from ..pipeline_context import PipelineContext
+
+from ...helpers.logger import Logger
+from ...prompts.base import BasePrompt
 from ...prompts.generate_python_code import GeneratePythonCodePrompt
 from ...prompts.generate_python_code_with_sql import GeneratePythonCodeWithSQLPrompt
-from ...prompts.base import BasePrompt
-from ...helpers.logger import Logger
+from ..base_logic_unit import BaseLogicUnit
+from ..pipeline_context import PipelineContext
 
 
 class PromptGeneration(BaseLogicUnit):

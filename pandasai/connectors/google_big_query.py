@@ -3,10 +3,12 @@ Google Big Query connector is used to connect to dataset from
 google big query api.
 """
 
+from typing import Union
+
 from sqlalchemy import create_engine
+
 from .base import BaseConnectorConfig
 from .sql import SQLBaseConnectorConfig, SQLConnector
-from typing import Union
 
 
 class GoogleBigQueryConnectorConfig(SQLBaseConnectorConfig):

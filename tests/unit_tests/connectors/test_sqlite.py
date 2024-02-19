@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
+
 import pandas as pd
-from pandasai.connectors.sql import SqliteConnectorConfig
+
 from pandasai.connectors import SqliteConnector
+from pandasai.connectors.sql import SqliteConnectorConfig
 
 
 class TestSqliteConnector(unittest.TestCase):

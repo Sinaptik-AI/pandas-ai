@@ -13,21 +13,21 @@ from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
 
-from .node_visitors import AssignmentVisitor, CallVisitor
-from .save_chart import add_save_chart
-from .optional import import_dependency
+from ..connectors import BaseConnector
+from ..connectors.sql import SQLConnector
+from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ..exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
+    InvalidConfigError,
     MaliciousQueryError,
     NoResultFoundError,
-    InvalidConfigError,
 )
-from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
-from ..connectors.sql import SQLConnector
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
-from ..connectors import BaseConnector
+from .node_visitors import AssignmentVisitor, CallVisitor
+from .optional import import_dependency
+from .save_chart import add_save_chart
 
 
 class CodeExecutionContext:

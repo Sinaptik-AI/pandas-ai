@@ -23,10 +23,10 @@ from io import StringIO
 from typing import Any, List, Optional, Union
 
 import pydantic
-from pandasai.agent.base import Agent
-from pandasai.connectors.pandas import PandasConnector
 
 import pandasai.pandas as pd
+from pandasai.agent.base import Agent
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.df_validator import DfValidator
 
 from ..connectors.base import BaseConnector

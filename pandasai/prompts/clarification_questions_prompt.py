@@ -1,6 +1,7 @@
-from .base import BasePrompt
 import json
 from typing import List
+
+from .base import BasePrompt
 
 
 class ClarificationQuestionPrompt(BasePrompt):

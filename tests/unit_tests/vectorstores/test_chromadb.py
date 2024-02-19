@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from pandasai.vectorstores.chroma import Chroma
 
 

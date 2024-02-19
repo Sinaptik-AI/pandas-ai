@@ -1,10 +1,11 @@
 from typing import Any
 
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-from ..base_logic_unit import BaseLogicUnit
-from ..pipeline_context import PipelineContext
+
 from ...responses.context import Context
 from ...responses.response_parser import ResponseParser
+from ..base_logic_unit import BaseLogicUnit
+from ..pipeline_context import PipelineContext
 
 
 class ResultParsing(BaseLogicUnit):
