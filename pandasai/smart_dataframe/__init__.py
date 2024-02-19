@@ -7,10 +7,10 @@ Example:
     ```python
     from pandasai.smart_dataframe import SmartDataframe
     from pandasai.llm.openai import OpenAI
-    
+
     df = pd.read_csv("examples/data/Loan payments data.csv")
     llm = OpenAI()
-    
+
     df = SmartDataframe(df, config={"llm": llm})
     response = df.chat("What is the average loan amount?")
     print(response)
@@ -20,7 +20,6 @@ Example:
 
 import hashlib
 import uuid
-import warnings
 from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
@@ -398,7 +397,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                 if df[col].dtype == "object":
                     first_val = df[col].iloc[0]
                     if isinstance(first_val, str) and len(first_val) > max_size:
-                        df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+                        df_trunc[col] = f"{df_trunc[col].str.slice(0, max_size - 3)}..."
         elif engine == "polars":
             try:
                 import polars as pl
@@ -409,9 +408,9 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
                     if df[col].dtype == pl.Utf8:
                         first_val = df[col][0]
                         if isinstance(first_val, str) and len(df_trunc[col]) > max_size:
-                            df_trunc[col] = (
-                                df_trunc[col].str.slice(0, max_size - 3) + "..."
-                            )
+                            df_trunc[
+                                col
+                            ] = f"{df_trunc[col].str.slice(0, max_size - 3)}..."
             except ImportError as e:
                 raise ImportError(
                     "Polars is not installed. "

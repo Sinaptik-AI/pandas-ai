@@ -271,5 +271,5 @@ class AirtableConnector(BaseConnector):
         if not isinstance(self._instance, pd.DataFrame):
             self._instance = self.execute()
         columns_str = "|".join(self._instance.columns)
-        columns_str += "WHERE" + self._build_formula()
+        columns_str += f"WHERE{self._build_formula()}"
         return hashlib.sha256(columns_str.encode("utf-8")).hexdigest()
