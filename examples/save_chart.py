@@ -5,9 +5,9 @@ import os
 import pandas as pd
 from data.sample_dataframe import dataframe
 
-from pandasai import SmartDataframe
-from pandasai.helpers import path
+from pandasai import Agent
 from pandasai.llm import OpenAI
+from pandasai.helpers import path
 
 df = pd.DataFrame(dataframe)
 
@@ -19,8 +19,8 @@ except ValueError:
     user_defined_path = os.getcwd()
 
 user_defined_path = os.path.join(user_defined_path, "exports", "charts")
-df = SmartDataframe(
-    df,
+df = Agent(
+    [df],
     config={
         "llm": llm,
         "save_charts_path": user_defined_path,

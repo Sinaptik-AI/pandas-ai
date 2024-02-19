@@ -2,15 +2,25 @@
 SnowFlake connectors are used to connect to SnowFlake Data Cloud.
 """
 
+import pandas as pd
+from .base import BaseConnectorConfig
+from sqlalchemy import create_engine
 from functools import cache
 from typing import Union
+from .sql import SQLConnector, SQLBaseConnectorConfig
 
-from sqlalchemy import create_engine
 
-import pandasai.pandas as pd
+class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
+    """
+    Connector configuration for SnowFlake.
+    """
 
-from .base import BaseConnectorConfig, SnowFlakeConnectorConfig
-from .sql import SQLConnector
+    account: str
+    database: str
+    username: str
+    password: str
+    dbSchema: str
+    warehouse: str
 
 
 class SnowFlakeConnector(SQLConnector):
@@ -18,7 +28,11 @@ class SnowFlakeConnector(SQLConnector):
     SnowFlake connectors are used to connect to SnowFlake Data Cloud.
     """
 
-    def __init__(self, config: Union[SnowFlakeConnectorConfig, dict]):
+    def __init__(
+        self,
+        config: Union[SnowFlakeConnectorConfig, dict],
+        **kwargs,
+    ):
         """
         Initialize the SnowFlake connector with the given configuration.
 
@@ -38,7 +52,7 @@ class SnowFlakeConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, snowflake_env_vars)
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         return SnowFlakeConnectorConfig(**config)
@@ -58,7 +72,7 @@ class SnowFlakeConnector(SQLConnector):
         self._connection = self._engine.connect()
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the data source.
@@ -69,12 +83,12 @@ class SnowFlakeConnector(SQLConnector):
 
         if self.logger:
             self.logger.log(
-                f"Getting head of {self._config.table} "
-                f"using dialect {self._config.dialect}"
+                f"Getting head of {self.config.table} "
+                f"using dialect {self.config.dialect}"
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=5, order="RANDOM()")
+        query = self._build_query(limit=n, order="RANDOM()")
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
@@ -87,24 +101,24 @@ class SnowFlakeConnector(SQLConnector):
             str: The string representation of the SnowFlake connector.
         """
         return (
-            f"<{self.__class__.__name__} dialect={self._config.dialect} "
-            f"Account={self._config.account} "
-            f"warehouse={self._config.warehouse} "
-            f"database={self._config.database} schema={str(self._config.dbSchema)}  "
-            f"table={self._config.table}>"
+            f"<{self.__class__.__name__} dialect={self.config.dialect} "
+            f"Account={self.config.account} "
+            f"warehouse={self.config.warehouse} "
+            f"database={self.config.database} schema={str(self.config.dbSchema)}  "
+            f"table={self.config.table}>"
         )
 
     def equals(self, other):
         if isinstance(other, self.__class__):
             return (
-                self._config.dialect,
-                self._config.account,
-                self._config.username,
-                self._config.password,
+                self.config.dialect,
+                self.config.account,
+                self.config.username,
+                self.config.password,
             ) == (
-                other._config.dialect,
-                other._config.account,
-                other._config.username,
-                other._config.password,
+                other.config.dialect,
+                other.config.account,
+                other.config.username,
+                other.config.password,
             )
         return False

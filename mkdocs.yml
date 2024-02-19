@@ -26,8 +26,6 @@ nav:
       - determinism.md
       - cache.md
       - custom-response.md
-      - custom-instructions.md
-      - custom-prompts.md
       - custom-whitelisted-dependencies.md
   - Examples:
       - examples.md

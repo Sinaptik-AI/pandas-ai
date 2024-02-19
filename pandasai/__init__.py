@@ -8,8 +8,6 @@ from .agent import Agent
 from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .skills import skill
-from .smart_dataframe import SmartDataframe
-from .smart_datalake import SmartDatalake
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 
@@ -21,8 +19,6 @@ def clear_cache(filename: str = None):
 
 
 __all__ = [
-    "SmartDataframe",
-    "SmartDatalake",
     "Agent",
     "clear_cache",
     "skill",

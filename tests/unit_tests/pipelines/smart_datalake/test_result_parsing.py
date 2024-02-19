@@ -7,12 +7,11 @@ import pytest
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.result_parsing import ResultParsing
-from pandasai.smart_dataframe import SmartDataframe
+from pandasai.pipelines.chat.result_parsing import ResultParsing
 
 
 class TestResultParsing:
-    "Unit test for Smart Data Lake Result Parsing"
+    "Unit test for Result Parsing"
 
     throw_exception = True
 
@@ -64,10 +63,6 @@ class TestResultParsing:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": True})
-
-    @pytest.fixture
     def config(self, llm):
         return {"llm": llm, "enable_cache": True}
 
@@ -89,23 +84,24 @@ class TestResultParsing:
         result_parsing = ResultParsing()
         result_parsing._add_result_to_memory = Mock()
         mock_response_parser = Mock()
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(
-            return_value="Mocked Parsed Result"
-        )
 
         def mock_intermediate_values(key: str):
             if key == "response_parser":
                 return mock_response_parser
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         result = result_parsing.execute(
-            input="Test Result", context=context, logger=logger
+            input={"type": "string", "value": "Test Result"},
+            context=context,
+            logger=logger,
         )
 
         assert isinstance(result_parsing, ResultParsing)
-        assert result == "Mocked Parsed Result"
+        assert result.output == "Test Result"
+        assert result.success is True
+        assert result.message == "Results parsed successfully"
+        assert result.metadata is None
 
     def test_result_parsing_unsuccessful_with_exceptions(self, context, logger):
         # Test Flow : Code Execution Unsuccessful with exceptions
@@ -116,14 +112,11 @@ class TestResultParsing:
         def mock_result_parsing(*args, **kwargs):
             raise Exception("Unit test exception")
 
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(side_effect=mock_result_parsing)
-
         def mock_intermediate_values(key: str):
             if key == "response_parser":
                 return mock_response_parser
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         result = None
         try:

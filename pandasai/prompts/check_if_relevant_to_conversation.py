@@ -1,19 +1,7 @@
-""" Prompt to check if the query is related to the previous conversation
-
-<conversation>
-{conversation}
-</conversation>
-
-<query>
-{query}
-</query>
-
-Is the query related to the conversation? Answer only "true" or "false" (lowercase).
-"""
-from .file_based_prompt import FileBasedPrompt
+from .base import BasePrompt
 
 
-class CheckIfRelevantToConversationPrompt(FileBasedPrompt):
-    """Prompt to check if the query is related to the previous conversation"""
+class CheckIfRelevantToConversationPrompt(BasePrompt):
+    """Prompt to generate Python code from a dataframe."""
 
-    _path_to_template = "assets/prompt_templates/check_if_relevant_to_conversation.tmpl"
+    template_path = "check_if_relevant_to_conversation.tmpl"

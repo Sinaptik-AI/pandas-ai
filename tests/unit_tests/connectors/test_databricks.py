@@ -1,10 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
-
-import pandas as pd
-
+from pandasai.connectors.databricks import DatabricksConnectorConfig
 from pandasai.connectors import DatabricksConnector
-from pandasai.connectors.base import DatabricksConnectorConfig
+import pandas as pd
 
 
 class TestDataBricksConnector(unittest.TestCase):
@@ -40,7 +38,7 @@ class TestDataBricksConnector(unittest.TestCase):
         # Test constructor and properties
 
         mock_load_connector_config.return_value = self.config
-        self.assertEqual(self.connector._config, self.config)
+        self.assertEqual(self.connector.config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)

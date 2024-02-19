@@ -4,14 +4,18 @@ import pandas as pd
 import pytest
 
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.prompt_generation import PromptGeneration
-from pandasai.prompts.direct_sql_prompt import DirectSQLPrompt
+
+from pandasai.prompts.generate_python_code_with_sql import (
+    GeneratePythonCodeWithSQLPrompt,
+)
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.pipelines.chat.prompt_generation import PromptGeneration
+from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.connectors import PandasConnector
 
 
 class TestPromptGeneration:
-    "Unit test for Smart Data Lake Prompt Generation"
+    "Unit test for Prompt Generation"
 
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
@@ -61,12 +65,16 @@ class TestPromptGeneration:
         )
 
     @pytest.fixture
+    def dataframe(self, sample_df):
+        return PandasConnector({"original_df": sample_df})
+
+    @pytest.fixture
     def config(self, llm):
         return {"llm": llm, "enable_cache": True}
 
     @pytest.fixture
-    def context(self, sample_df, config):
-        return PipelineContext([sample_df], config)
+    def context(self, dataframe, config):
+        return PipelineContext([dataframe], config)
 
     def test_init(self):
         # Test the initialization of the PromptGeneration
@@ -78,15 +86,11 @@ class TestPromptGeneration:
         prompt_generation = PromptGeneration()
         context.config.direct_sql = True
 
-        gen_key, gen_prompt = prompt_generation._get_chat_prompt(context)
-        expected_key = "direct_sql_prompt"
-        assert gen_key == expected_key
-        assert isinstance(gen_prompt, DirectSQLPrompt)
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodeWithSQLPrompt)
 
         # Test case 2: direct_sql is False
         context.config.direct_sql = False
 
-        gen_key, gen_prompt = prompt_generation._get_chat_prompt(context)
-        expected_key = "generate_python_code"
-        assert gen_key == expected_key
+        gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)

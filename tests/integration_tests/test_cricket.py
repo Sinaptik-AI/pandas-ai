@@ -1,6 +1,8 @@
 import unittest
 
-from pandasai import SmartDataframe
+import pandas as pd
+
+from pandasai.agent.base import Agent
 from pandasai.llm import OpenAI
 
 from . import PATH_DATA
@@ -10,7 +12,13 @@ class TestCricket(unittest.TestCase):
     def setUp(self) -> None:
         # export OPENAI_API_KEY='sk-...'
         llm = OpenAI(temperature=0)
-        self.df = SmartDataframe(f"{PATH_DATA}/cricket data.csv", config={"llm": llm})
+
+        csv_file_path = f"{PATH_DATA}/cricket data.csv"
+
+        # Read the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path)
+
+        self.df = Agent([df], config={"llm": llm})
 
     def test_number_response(self):
         response = self.df.chat(

@@ -34,3 +34,21 @@ for question in questions:
 # Explain how the chat response is generated
 response = agent.explain()
 print(response)
+
+
+# Train with data
+queries = [
+    "Display the distribution of ages in the population.",
+    "Visualize the distribution of product ratings.",
+    "Show the distribution of household incomes in a region.",
+]
+
+codes = [
+    "display_age_distribution()",
+    "visualize_product_ratings_distribution()",
+    "show_household_incomes_distribution_in_region()",
+]
+
+agent.train(queries, codes)
+
+print("Done")

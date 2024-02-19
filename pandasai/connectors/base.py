@@ -2,14 +2,19 @@
 Base connector class to be extended by all connectors.
 """
 
-import os
+import json
+import pandas as pd
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+import os
 
-from pydantic import BaseModel
-
-from ..helpers.df_info import DataFrameType
+from pandasai.helpers.dataframe_serializer import (
+    DataframeSerializer,
+    DataframeSerializerType,
+)
 from ..helpers.logger import Logger
+from pydantic import BaseModel
+from typing import Union
+from functools import cache
 
 
 class BaseConnectorConfig(BaseModel):
@@ -22,90 +27,22 @@ class BaseConnectorConfig(BaseModel):
     where: list[list[str]] = None
 
 
-class AirtableConnectorConfig(BaseConnectorConfig):
-    """
-    Connecter configuration for Airtable data.
-    """
-
-    token: str
-    base_id: str
-    database: str = "airtable_data"
-
-
-class SQLBaseConnectorConfig(BaseConnectorConfig):
-    """
-    Base Connector configuration.
-    """
-
-    driver: Optional[str] = None
-    dialect: Optional[str] = None
-
-
-class SqliteConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configurations for sqlite db.
-    """
-
-    table: str
-    database: str
-
-
-class YahooFinanceConnectorConfig(BaseConnectorConfig):
-    """
-    Connector configuration for Yahoo Finance.
-    """
-
-    dialect: str = "yahoo_finance"
-    host: str = "yahoo.finance.com"
-    database: str = "stock_data"
-    host: str
-
-
-class SQLConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration.
-    """
-
-    host: str
-    port: int
-    username: str
-    password: str
-
-
-class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for SnowFlake.
-    """
-
-    account: str
-    database: str
-    username: str
-    password: str
-    dbSchema: str
-    warehouse: str
-
-
-class DatabricksConnectorConfig(SQLBaseConnectorConfig):
-    """
-    Connector configuration for DataBricks.
-    """
-
-    host: str
-    port: int
-    token: str
-    httpPath: str
-
-
 class BaseConnector(ABC):
     """
     Base connector class to be extended by all connectors.
     """
 
-    _config: BaseConnectorConfig = None
     _logger: Logger = None
     _additional_filters: list[list[str]] = None
 
-    def __init__(self, config: Union[BaseConnectorConfig, dict]):
+    def __init__(
+        self,
+        config: Union[BaseConnectorConfig, dict],
+        name: str = None,
+        description: str = None,
+        custom_head: pd.DataFrame = None,
+        field_descriptions: dict = None,
+    ):
         """
         Initialize the connector with the given configuration.
 
@@ -115,7 +52,11 @@ class BaseConnector(ABC):
         if isinstance(config, dict):
             config = self._load_connector_config(config)
 
-        self._config = config
+        self.config = config
+        self.name = name
+        self.description = description
+        self.custom_head = custom_head
+        self.field_descriptions = field_descriptions
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object
@@ -155,7 +96,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def head(self):
+    def head(self, n: int = 3) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
         This information is passed to the LLM to provide the schema of the
@@ -164,7 +105,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def execute(self) -> DataFrameType:
+    def execute(self) -> pd.DataFrame:
         """
         Execute the given query on the data source that the connector is
         connected to.
@@ -210,10 +151,10 @@ class BaseConnector(ABC):
         Return the path of the data source that the connector is connected to.
         """
         # JDBC string
-        path = f"{self.__class__.__name__}://{self._config.host}:"
-        if hasattr(self._config, "port"):
-            path += str(self._config.port)
-        path += f"/{self._config.database}/{self._config.table}"
+        path = f"{self.__class__.__name__}://{self.config.host}:"
+        if hasattr(self.config, "port"):
+            path += str(self.config.port)
+        path += f"/{self.config.database}/{self.config.table}"
         return path
 
     @property
@@ -239,3 +180,107 @@ class BaseConnector(ABC):
         Return the name of the table that the connector is connected to.
         """
         raise NotImplementedError
+
+    @property
+    def pandas_df(self):
+        """
+        Returns the pandas dataframe
+        """
+        raise NotImplementedError
+
+    def equals(self, other):
+        return self.__dict__ == other.__dict__
+
+    @cache
+    def get_head(self, n: int = 3) -> pd.DataFrame:
+        """
+        Return the head of the data source that the connector is connected to.
+        This information is passed to the LLM to provide the schema of the
+        data source.
+
+        Args:
+            n (int, optional): The number of rows to return. Defaults to 5.
+
+        Returns:
+            pd.DataFrame: The head of the data source that the connector is
+                connected to.
+        """
+        return self.custom_head if self.custom_head is not None else self.head(n)
+
+    def head_with_truncate_columns(self, max_size=25) -> pd.DataFrame:
+        """
+        Truncate the columns of the dataframe to a maximum of 20 characters.
+
+        Args:
+            df (pd.DataFrame): The dataframe to truncate the columns of.
+
+        Returns:
+            pd.DataFrame: The dataframe with truncated columns.
+        """
+        df_trunc = self.get_head().copy()
+
+        for col in df_trunc.columns:
+            if df_trunc[col].dtype == "object":
+                first_val = df_trunc[col].iloc[0]
+                if isinstance(first_val, str) and len(first_val) > max_size:
+                    df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+
+        return df_trunc
+
+    @cache
+    def get_schema(self) -> pd.DataFrame:
+        """
+        A sample of the dataframe.
+
+        Returns:
+            pd.DataFrame: A sample of the dataframe.
+        """
+        if self.get_head() is None:
+            return None
+
+        if len(self.get_head()) > 0:
+            return self.head_with_truncate_columns()
+
+        return self.get_head()
+
+    @cache
+    def to_csv(self) -> str:
+        """
+        A proxy-call to the dataframe's `.to_csv()`.
+
+        Returns:
+            str: The dataframe as a CSV string.
+        """
+        return self.get_head().to_csv(index=False)
+
+    @cache
+    def to_string(
+        self,
+        index: int = 0,
+        is_direct_sql: bool = False,
+        serializer: DataframeSerializerType = None,
+    ) -> str:
+        """
+        Convert dataframe to string
+        Returns:
+            str: dataframe string
+        """
+        return DataframeSerializer().serialize(
+            self,
+            extras={
+                "index": index,
+                "type": "sql" if is_direct_sql else "pd.DataFrame",
+                "is_direct_sql": is_direct_sql,
+            },
+            type_=serializer,
+        )
+
+    @cache
+    def to_json(self):
+        df_head = self.get_head()
+
+        return {
+            "name": self.name,
+            "description": self.description,
+            "head": json.loads(df_head.to_json(orient="records", date_format="iso")),
+        }

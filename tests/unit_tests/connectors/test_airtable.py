@@ -5,18 +5,19 @@ from unittest.mock import patch
 import pandas as pd
 
 from pandasai.connectors import AirtableConnector
-from pandasai.connectors.base import AirtableConnectorConfig
+from pandasai.connectors.airtable import AirtableConnectorConfig
 
 
 class TestAirTableConnector(unittest.TestCase):
     def setUp(self) -> None:
         # Define your ConnectorConfig instance here
         self.config = AirtableConnectorConfig(
-            token="your_token",
             base_id="your_baseid",
             table="your_table_name",
+            database="abc",
+            api_key="you_key",
             where=[["Status", "=", "In progress"]],
-        ).dict()
+        )
         self.root_url = "https://api.airtable.com/v0/"
         self.expected_data_json = """
             {
@@ -53,12 +54,12 @@ class TestAirTableConnector(unittest.TestCase):
         self.connector = AirtableConnector(config=self.config)
 
     def test_constructor_and_properties(self):
-        self.assertEqual(self.connector._config, self.config)
+        self.assertEqual(self.connector.config, self.config)
         self.assertEqual(self.connector._root_url, self.root_url)
         self.assertEqual(self.connector._cache_interval, 600)
 
     def test_fallback_name(self):
-        self.assertEqual(self.connector.fallback_name, self.config["table"])
+        self.assertEqual(self.connector.fallback_name, self.config.table)
 
     @patch("requests.get")
     def test_execute(self, mock_request_get):
@@ -83,7 +84,7 @@ class TestAirTableConnector(unittest.TestCase):
     def test_fallback_name_property(self):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
-        self.assertEqual(fallback_name, self.config["table"])
+        self.assertEqual(fallback_name, self.config.table)
 
     @patch("requests.get")
     def test_rows_count_property(self, mock_request_get):

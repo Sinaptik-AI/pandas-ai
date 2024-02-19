@@ -4,12 +4,16 @@ Connectors are used to connect to databases, external APIs, and other data sourc
 The connectors package contains all the connectors that are used by the application.
 """
 
-from .airtable import AirtableConnector
 from .base import BaseConnector
-from .databricks import DatabricksConnector
+from .sql import SQLConnector, MySQLConnector, PostgreSQLConnector
 from .snowflake import SnowFlakeConnector
-from .sql import MySQLConnector, PostgreSQLConnector, SQLConnector, SqliteConnector
+from .databricks import DatabricksConnector
 from .yahoo_finance import YahooFinanceConnector
+from .google_big_query import GoogleBigQueryConnector
+from .airtable import AirtableConnector
+from .sql import SqliteConnector
+from .pandas import PandasConnector
+from .polars import PolarsConnector
 
 __all__ = [
     "BaseConnector",
@@ -21,4 +25,7 @@ __all__ = [
     "DatabricksConnector",
     "AirtableConnector",
     "SqliteConnector",
+    "PandasConnector",
+    "PolarsConnector",
+    "GoogleBigQueryConnector",
 ]

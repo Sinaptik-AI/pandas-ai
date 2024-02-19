@@ -242,3 +242,27 @@ df = SmartDataframe(airtable_connectors)
 
 df.chat("How many rows are there in data ?")
 ```
+
+## GoogleBigQuery connector
+
+The GoogleBigQuery connector allows you to connect to GoogleBigQuery datasests. It is very similar to the SQL connectors, but it has some differences.
+
+To use the GoogleBigQuery connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import GoogleBigQueryConnector
+
+bigquery_connector = GoogleBigQueryConnector(
+    config={
+        "credentials_path" : "path to keyfile.json",
+        "database" : "dataset_name",
+        "table" : "table_name",
+        "projectID" : "Project_id_name",
+        "where": [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            ["loan_status", "=", "PAIDOFF"],
+        ],
+    }
+)
+```

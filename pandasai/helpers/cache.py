@@ -97,7 +97,6 @@ class Cache:
 
         # make the cache key unique for each combination of dfs
         for df in context.dfs:
-            hash = df.column_hash()
-            cache_key += str(hash)
+            cache_key += str(df.column_hash)
 
         return cache_key

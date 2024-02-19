@@ -1,8 +1,8 @@
 """Example of using PandasAI with a DataBricks"""
 
-from pandasai import SmartDataframe
-from pandasai.connectors import DatabricksConnector
+from pandasai import Agent
 from pandasai.llm import OpenAI
+from pandasai.connectors import DatabricksConnector
 
 databricks_connector = DatabricksConnector(
     config={
@@ -21,7 +21,7 @@ databricks_connector = DatabricksConnector(
 )
 
 llm = OpenAI("OPEN_API_KEY")
-df = SmartDataframe(databricks_connector, config={"llm": llm})
+df = Agent([databricks_connector], config={"llm": llm})
 
 response = df.chat("How many people from the United states?")
 print(response)

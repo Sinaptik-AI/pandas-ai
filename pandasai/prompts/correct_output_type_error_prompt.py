@@ -1,22 +1,35 @@
-""" Prompt to correct Output Type Python Code on Error
-```
-{dataframes}
-
-{conversation}
-
-You generated this python code:
-{code}
-
-It fails with the following error:
-{error_returned}
-
-Fix the python code above and return the new python code but the result type should be: 
-"""  # noqa: E501
-
-from .file_based_prompt import FileBasedPrompt
+from .base import BasePrompt
 
 
-class CorrectOutputTypeErrorPrompt(FileBasedPrompt):
-    """Prompt to Correct Python code on Error"""
+class CorrectOutputTypeErrorPrompt(BasePrompt):
+    """Prompt to generate Python code from a dataframe."""
 
-    _path_to_template = "assets/prompt_templates/correct_output_type_error_prompt.tmpl"
+    template_path = "correct_output_type_error_prompt.tmpl"
+
+    def to_json(self):
+        context = self.props["context"]
+        code = self.props["code"]
+        error = self.props["error"]
+        output_type = self.props["output_type"]
+        memory = context.memory
+        conversations = memory.to_json()
+
+        system_prompt = memory.get_system_prompt()
+
+        # prepare datasets
+        datasets = [dataset.to_json() for dataset in context.dfs]
+
+        return {
+            "datasets": datasets,
+            "conversation": conversations,
+            "system_prompt": system_prompt,
+            "error": {
+                "code": code,
+                "error_trace": str(error),
+                "exception_type": "InvalidLLMOutputType",
+            },
+            "config": {
+                "direct_sql": context.config.direct_sql,
+                "output_type": output_type,
+            },
+        }

@@ -29,10 +29,11 @@ jobs:
       - name: Spellcheck
         run: make spell_check
       - name: Run tests
-        run: make tests
+        run: poetry run pytest tests
       - name: Run code coverage
         run: |
-          make coverage
+          poetry run coverage run --source=pandasai -m pytest tests
+          poetry run coverage xml
       - name: Report coverage
         run: poetry run coverage report
       - name: Upload coverage reports to Codecov

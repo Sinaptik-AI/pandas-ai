@@ -1,10 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
-
 import pandas as pd
-
+from pandasai.connectors.snowflake import SnowFlakeConnectorConfig
 from pandasai.connectors import SnowFlakeConnector
-from pandasai.connectors.base import SnowFlakeConnectorConfig
 
 
 class TestSQLConnector(unittest.TestCase):
@@ -38,7 +36,7 @@ class TestSQLConnector(unittest.TestCase):
         self, mock_load_connector_config, mock_init_connection
     ):
         # Test constructor and properties
-        self.assertEqual(self.connector._config, self.config)
+        self.assertEqual(self.connector.config, self.config)
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)

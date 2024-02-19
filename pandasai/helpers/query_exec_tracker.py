@@ -2,11 +2,17 @@ import base64
 import json
 import os
 import time
-import uuid
+
 from collections import defaultdict
+
 from typing import Any, List, TypedDict, Union
 
 import requests
+
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
+)
+from pandasai.connectors import BaseConnector
 
 
 class ResponseType(TypedDict):
@@ -16,10 +22,10 @@ class ResponseType(TypedDict):
 
 exec_steps = {
     "cache_hit": "Cache Hit",
-    "_get_prompt": "Generate Prompt",
+    "get_prompt": "Generate Prompt",
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
-    "_retry_run_code": "Retry Code Generation",
+    "retry_run_code": "Retry Code Generation",
     "parse": "Parse Output",
 }
 
@@ -42,41 +48,8 @@ class QueryExecTracker:
         self._start_time = None
         self._server_config = server_config
         self._query_info = {}
-        self._is_related_query = True
 
-    def set_related_query(self, flag: bool):
-        """
-        Set Related Query Parameter whether new query is related to the conversation
-        or not
-        Args:
-            flag (bool): boolean to set true if related else false
-        """
-        self._is_related_query = flag
-
-    def add_query_info(
-        self,
-        conversation_id: uuid.UUID,
-        instance: str,
-        query: str,
-        output_type: str,
-    ):
-        """
-        Adds query information for new track
-        Args:
-            conversation_id (str): conversation id
-            instance (str): instance like Agent or SmartDataframe
-            query (str): chat query given by user
-            output_type (str): output type expected by user
-        """
-        self._query_info = {
-            "conversation_id": str(conversation_id),
-            "instance": instance,
-            "query": query,
-            "output_type": output_type,
-            "is_related_query": self._is_related_query,
-        }
-
-    def start_new_track(self):
+    def start_new_track(self, input: ChatPipelineInput):
         """
         Resets tracking variables to start new track
         """
@@ -88,18 +61,25 @@ class QueryExecTracker:
         self._query_info = {}
         self._func_exec_count: dict = defaultdict(int)
 
+        self._query_info = {
+            "conversation_id": str(input.conversation_id),
+            "instance": "Agent",
+            "query": input.query,
+            "output_type": input.output_type,
+        }
+
     def convert_dataframe_to_dict(self, df):
         json_data = json.loads(df.to_json(orient="split", date_format="iso"))
         return {"headers": json_data["columns"], "rows": json_data["data"]}
 
-    def add_dataframes(self, dfs: List) -> None:
+    def add_dataframes(self, dfs: List[BaseConnector]) -> None:
         """
         Add used dataframes for the query to query exec tracker
         Args:
-            dfs (List[SmartDataFrame]): List of dataframes
+            dfs (List[BaseConnector]): List of dataframes
         """
         for df in dfs:
-            head = df.head_df
+            head = df.get_schema()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_step(self, step: dict) -> None:
@@ -108,6 +88,15 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
+        # Exception step to store serializable output response from the generated code
+        if (
+            "type" in step
+            and step["type"] == "CodeExecution"
+            and step["data"] is not None
+            and step["data"]["content_type"] == "response"
+        ):
+            self._response = step["data"]["value"]
+
         self._steps.append(step)
 
     def execute_func(self, function, *args, **kwargs) -> Any:
@@ -164,16 +153,16 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "_get_prompt":
+        if func_name == "get_prompt":
             step["prompt_class"] = result.__class__.__name__
             step["generated_prompt"] = result.to_string()
 
-        elif func_name == "_retry_run_code":
-            self._func_exec_count["_retry_run_code"] += 1
+        elif func_name == "retry_run_code":
+            self._func_exec_count["retry_run_code"] += 1
 
             step[
                 "type"
-            ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
+            ] = f"{exec_steps[func_name]} ({self._func_exec_count['retry_run_code']})"
             step["code_generated"] = result
 
         elif func_name in {"cache_hit", "generate_code"}:
@@ -242,14 +231,14 @@ class QueryExecTracker:
         server_url = None
 
         if self._server_config is None:
-            server_url = os.environ.get("LOGGING_SERVER_URL")
-            api_key = os.environ.get("LOGGING_SERVER_API_KEY")
+            server_url = os.environ.get("PANDASAI_API_URL")
+            api_key = os.environ.get("PANDASAI_API_KEY")
         else:
             server_url = self._server_config.get(
-                "server_url", os.environ.get("LOGGING_SERVER_URL")
+                "server_url", os.environ.get("PANDASAI_API_URL")
             )
             api_key = self._server_config.get(
-                "api_key", os.environ.get("LOGGING_SERVER_API_KEY")
+                "api_key", os.environ.get("PANDASAI_API_KEY")
             )
 
         if api_key is None or server_url is None:

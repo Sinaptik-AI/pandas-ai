@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: make tests
+        entry: poetry run pytest tests --ignore=integration
         language: system
         pass_filenames: false
         always_run: true

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from pandasai import SmartDatalake
+from pandasai import Agent
 from pandasai.llm import OpenAI
 
 employees_df = pd.DataFrame(
@@ -21,7 +21,7 @@ salaries_df = pd.DataFrame(
 )
 
 llm = OpenAI()
-dl = SmartDatalake(
+dl = Agent(
     [employees_df, salaries_df],
     config={"llm": llm, "verbose": True},
 )

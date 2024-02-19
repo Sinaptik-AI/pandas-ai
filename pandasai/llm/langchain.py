@@ -1,6 +1,11 @@
-from pandasai.prompts.base import AbstractPrompt
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
+from pandasai.prompts.base import BasePrompt
 from .base import LLM
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
 
 """Langchain LLM 
 
@@ -18,15 +23,22 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
-    _langchain_llm = None
+    langchain_llm = None
 
     def __init__(self, langchain_llm):
-        self._langchain_llm = langchain_llm
+        self.langchain_llm = langchain_llm
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
-        prompt = instruction.to_string() + suffix
-        return self._langchain_llm.predict(prompt)
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+        prompt = instruction.to_string()
+        memory = context.memory if context else None
+        prompt = self.prepend_system_prompt(prompt, memory)
+        self.last_prompt = prompt
+        return self.langchain_llm.predict(prompt)
+
+    @staticmethod
+    def is_langchain_llm(llm: LLM) -> bool:
+        return hasattr(llm, "_llm_type")
 
     @property
     def type(self) -> str:
-        return f"langchain_{self._langchain_llm._llm_type}"
+        return f"langchain_{self.langchain_llm._llm_type}"

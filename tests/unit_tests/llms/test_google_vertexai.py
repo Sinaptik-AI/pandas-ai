@@ -59,3 +59,7 @@ class TestGoogleVertexAI:
         google_vertexai.model = None
         with pytest.raises(ValueError, match="model is required."):
             google_vertexai._validate()
+
+    def test_validate_with_code_chat_model(self, google_vertexai: GoogleVertexAI):
+        google_vertexai.model = "codechat-bison@001"
+        google_vertexai._validate()

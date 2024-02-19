@@ -1,22 +1,31 @@
-""" Prompt to correct Python Code on Error
-```
-{dataframes}
-
-{conversation}
-
-You generated this python code:
-{code}
-
-It fails with the following error:
-{error_returned}
-
-Fix the python code above and return the new python code:
-"""  # noqa: E501
-
-from .file_based_prompt import FileBasedPrompt
+from .base import BasePrompt
 
 
-class CorrectErrorPrompt(FileBasedPrompt):
-    """Prompt to Correct Python code on Error"""
+class CorrectErrorPrompt(BasePrompt):
+    """Prompt to generate Python code from a dataframe."""
 
-    _path_to_template = "assets/prompt_templates/correct_error_prompt.tmpl"
+    template_path = "correct_error_prompt.tmpl"
+
+    def to_json(self):
+        context = self.props["context"]
+        code = self.props["code"]
+        error = self.props["error"]
+        memory = context.memory
+        conversations = memory.to_json()
+
+        system_prompt = memory.get_system_prompt()
+
+        # prepare datasets
+        datasets = [dataset.to_json() for dataset in context.dfs]
+
+        return {
+            "datasets": datasets,
+            "conversation": conversations,
+            "system_prompt": system_prompt,
+            "error": {
+                "code": code,
+                "error_trace": str(error),
+                "exception_type": "Exception",
+            },
+            "config": {"direct_sql": context.config.direct_sql},
+        }

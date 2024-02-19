@@ -1,12 +1,9 @@
-from typing import Any, Dict, List, Optional, TypedDict
-
-from pydantic import BaseModel, Field, validator
-
+from pydantic import BaseModel, validator, Field
+from typing import Optional, List, Any, TypedDict
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
-
-from ..exceptions import LLMNotFoundError
-from ..helpers.viz_library_types.base import VisualizationLibrary
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from ..llm import LLM, LangchainLLM
+from ..exceptions import LLMNotFoundError
 
 
 class LogServerConfig(TypedDict):
@@ -20,8 +17,6 @@ class Config(BaseModel):
     enforce_privacy: bool = False
     enable_cache: bool = True
     use_error_correction_framework: bool = True
-    custom_prompts: Dict = Field(default_factory=dict)
-    custom_instructions: Optional[str] = None
     open_charts: bool = True
     save_charts: bool = False
     save_charts_path: str = DEFAULT_CHART_DIRECTORY
@@ -30,9 +25,10 @@ class Config(BaseModel):
     lazy_load_connector: bool = True
     response_parser: Any = None
     llm: Any = None
-    data_viz_library: Optional[VisualizationLibrary] = None
+    data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
+    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.YML
 
     class Config:
         arbitrary_types_allowed = True
