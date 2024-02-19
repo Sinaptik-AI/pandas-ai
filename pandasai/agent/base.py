@@ -164,6 +164,8 @@ class Agent:
         Args:
             dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
         """
+        # Inline import to avoid circular import
+        from pandasai.smart_dataframe import SmartDataframe
 
         # If only one dataframe is passed, convert it to a list
         if not isinstance(dfs, list):
@@ -175,6 +177,10 @@ class Agent:
                 connectors.append(df)
             elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
                 connectors.append(PandasConnector({"original_df": df}))
+            elif isinstance(df, SmartDataframe) and isinstance(
+                df.dataframe, BaseConnector
+            ):
+                connectors.append(df.dataframe)
             else:
                 try:
                     import polars as pl
@@ -183,6 +189,7 @@ class Agent:
                         from ..connectors.polars import PolarsConnector
 
                         connectors.append(PolarsConnector({"original_df": df}))
+
                     else:
                         raise ValueError(
                             "Invalid input data. We cannot convert it to a dataframe."

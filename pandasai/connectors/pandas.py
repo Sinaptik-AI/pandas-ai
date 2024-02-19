@@ -2,7 +2,7 @@
 Pandas connector class to handle csv, parquet, xlsx files and pandas dataframes.
 """
 
-import pandas as pd
+import pandasai.pandas as pd
 from pydantic import BaseModel
 from .base import BaseConnector
 from ..helpers.logger import Logger

@@ -3,7 +3,7 @@ Base connector class to be extended by all connectors.
 """
 
 import json
-import pandas as pd
+import pandasai.pandas as pd
 from abc import ABC, abstractmethod
 import os
 

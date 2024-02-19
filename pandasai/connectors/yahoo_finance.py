@@ -3,7 +3,7 @@ import os
 import time
 from typing import Optional, Union
 
-import pandas as pd
+import pandasai.pandas as pd
 
 from .base import BaseConnector, BaseConnectorConfig
 from ..constants import DEFAULT_FILE_PERMISSIONS
