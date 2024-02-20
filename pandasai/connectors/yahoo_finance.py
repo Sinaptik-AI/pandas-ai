@@ -193,3 +193,7 @@ class YahooFinanceConnector(BaseConnector):
             str: The fallback name of the connector.
         """
         return self.config.table
+
+    @property
+    def pandas_df(self):
+        return self.execute()
