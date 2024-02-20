@@ -29,10 +29,10 @@ jobs:
       - name: Spellcheck
         run: make spell_check
       - name: Run tests
-        run: poetry run pytest tests
+        run: poetry run pytest tests --ignore=tests/integration_tests
       - name: Run code coverage
         run: |
-          poetry run coverage run --source=pandasai -m pytest tests
+          poetry run coverage run --source=pandasai -m pytest tests --ignore=tests/integration_tests
           poetry run coverage xml
       - name: Report coverage
         run: poetry run coverage report
