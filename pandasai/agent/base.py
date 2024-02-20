@@ -3,6 +3,7 @@ import uuid
 from typing import List, Optional, Type, Union
 
 import pandas as pd
+from pandasai.helpers.df_info import df_type
 
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
@@ -178,6 +179,8 @@ class Agent:
             if isinstance(df, BaseConnector):
                 connectors.append(df)
             elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
+                connectors.append(PandasConnector({"original_df": df}))
+            elif df_type(df) == "modin":
                 connectors.append(PandasConnector({"original_df": df}))
             elif isinstance(df, SmartDataframe) and isinstance(
                 df.dataframe, BaseConnector
