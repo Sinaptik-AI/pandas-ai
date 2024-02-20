@@ -18,9 +18,15 @@ class CodeExecution(BaseLogicUnit):
     Code Execution Stage
     """
 
-    def __init__(self, on_failure: Callable[[str, Exception], None] = None, **kwargs):
+    def __init__(
+        self,
+        on_failure: Callable[[str, Exception], None] = None,
+        on_retry: Callable[[str, Exception], None] = None,
+        **kwargs,
+    ):
         super().__init__()
         self.on_failure = on_failure
+        self.on_retry = on_retry
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -53,7 +59,7 @@ class CodeExecution(BaseLogicUnit):
         retry_count = 0
         code_to_run = input
         result = None
-        while retry_count < self.context.config.max_retries:
+        while retry_count <= self.context.config.max_retries:
             try:
                 result = code_manager.execute_code(code_to_run, code_context)
 
@@ -69,18 +75,18 @@ class CodeExecution(BaseLogicUnit):
                 break
 
             except Exception as e:
+                traceback_errors = traceback.format_exc()
+                self.logger.log(f"Failed with error: {traceback_errors}", logging.ERROR)
+                if self.on_failure:
+                    self.on_failure(code_to_run, traceback_errors)
+
                 if (
                     not self.context.config.use_error_correction_framework
-                    or retry_count >= self.context.config.max_retries - 1
+                    or retry_count >= self.context.config.max_retries
                 ):
                     raise e
 
                 retry_count += 1
-
-                traceback_errors = traceback.format_exc()
-                self.logger.log(
-                    f"Failed with error: {traceback_errors}. Retrying", logging.ERROR
-                )
 
                 self.logger.log(
                     f"Failed to execute code retrying with a correction framework "
@@ -120,7 +126,7 @@ class CodeExecution(BaseLogicUnit):
 
         Returns (str): A python code
         """
-        if self.on_failure:
-            return self.on_failure(code, e)
+        if self.on_retry:
+            return self.on_retry(code, e)
         else:
             raise e

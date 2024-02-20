@@ -246,6 +246,7 @@ class QueryExecTracker:
             log_data = {
                 "json_log": self.get_summary(),
             }
+
             headers = {"Authorization": f"Bearer {api_key}"}
             response = requests.post(
                 f"{server_url}/api/log/add", json=log_data, headers=headers
