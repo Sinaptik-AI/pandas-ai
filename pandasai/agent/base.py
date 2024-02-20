@@ -3,7 +3,6 @@ import uuid
 from typing import List, Optional, Type, Union
 
 import pandas as pd
-from pandasai.helpers.df_info import df_type
 
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
@@ -14,6 +13,7 @@ from ..config import load_config_from_json
 from ..connectors import BaseConnector, PandasConnector
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import InvalidLLMOutputType
+from ..helpers.df_info import df_type
 from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
