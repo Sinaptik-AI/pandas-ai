@@ -64,6 +64,9 @@ class Skill(BaseModel):
         """
         return cls(func=func, **kwargs)
 
+    def stringify(self):
+        return inspect.getsource(self.func)
+
     def __str__(self):
         return f"""
 <function>

@@ -20,9 +20,7 @@ class Session:
         if api_key is None:
             api_key = os.environ.get("PANDASAI_API_KEY")
         if api_key is None:
-            raise PandasAIApiKeyError(
-                "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable"
-            )
+            raise PandasAIApiKeyError()
         self._api_key = api_key
 
         if endpoint_url is None:

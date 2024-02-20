@@ -275,13 +275,13 @@ class Agent:
         """
         if self._vectorstore is None:
             try:
-                from pandasai.vectorstores.chroma import Chroma
+                from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
             except ImportError as e:
                 raise ImportError(
                     "Could not import chromadb. Please install it with `pip install chromadb`."
                 ) from e
 
-            self._vectorstore = Chroma(logger=self.logger)
+            self._vectorstore = BambooVectorStore(logger=self.logger)
             self.context.vectorstore = self._vectorstore
 
         if (queries is not None and codes is None) or (

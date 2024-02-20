@@ -125,7 +125,7 @@ class VectorStore(ABC):
             Optional[bool]: _description_
         """
 
-    def get_relevant_question_answers(self, question: str, k: int = 5) -> List[dict]:
+    def get_relevant_question_answers(self, question: str, k: int = 1) -> List[dict]:
         """
         Returns relevant question answers based on search
         """
@@ -133,7 +133,7 @@ class VectorStore(ABC):
             "get_relevant_question_answers method must be implemented by subclass."
         )
 
-    def get_relevant_docs(self, question: str, k: int = 5) -> List[dict]:
+    def get_relevant_docs(self, question: str, k: int = 1) -> List[dict]:
         """
         Returns relevant documents based search
         """
@@ -154,7 +154,7 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
+    def get_relevant_qa_documents(self, question: str, k: int = 1) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:
@@ -165,7 +165,7 @@ class VectorStore(ABC):
         )
 
     @abstractmethod
-    def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
+    def get_relevant_docs_documents(self, question: str, k: int = 1) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:

@@ -229,9 +229,11 @@ Code running:
         return {
             "pd": pd,
             **{
-                lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
-                if hasattr(import_dependency(lib["module"]), lib["name"])
-                else import_dependency(lib["module"])
+                lib["alias"]: (
+                    getattr(import_dependency(lib["module"]), lib["name"])
+                    if hasattr(import_dependency(lib["module"]), lib["name"])
+                    else import_dependency(lib["module"])
+                )
                 for lib in self._additional_dependencies
             },
             "__builtins__": {
@@ -292,7 +294,7 @@ Code running:
     def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name):
-                if context.skills_manager.skill_exists:
+                if context.skills_manager.skill_exists(node.func.id):
                     context.skills_manager.add_used_skill(node.func.id)
             elif isinstance(node.func, ast.Attribute) and isinstance(
                 node.func.value, ast.Name
@@ -310,6 +312,11 @@ Code running:
             and isinstance(node, ast.FunctionDef)
             and node.name == "execute_sql_query"
         )
+
+    def check_skill_func_def_exists(self, node: ast.AST, context: CodeExecutionContext):
+        return isinstance(
+            node, ast.FunctionDef
+        ) and context.skills_manager.skill_exists(node.name)
 
     def check_direct_sql_func_usage_exists(self, node: ast.AST):
         return (
@@ -392,6 +399,9 @@ Code running:
             # if generated code contain execute_sql_query def remove it
             # function already defined
             if self.check_direct_sql_func_def_exists(node):
+                continue
+
+            if self.check_skill_func_def_exists(node, context):
                 continue
 
             # if generated code contain execute_sql_query usage

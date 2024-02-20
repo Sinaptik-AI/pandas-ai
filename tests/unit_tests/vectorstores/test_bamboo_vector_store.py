@@ -50,7 +50,7 @@ class TestBambooVector(unittest.TestCase):
         assert call_args[1] == "GET"
         assert call_args[2] == "/training-data/qa/relevant-qa"
         assert mock_request.call_args_list[0][1] == {
-            "params": {"count": 3, "query": "Chroma"}
+            "params": {"count": 1, "query": "Chroma"}
         }
 
     @patch("pandasai.helpers.request.Session.make_request", autospec=True)

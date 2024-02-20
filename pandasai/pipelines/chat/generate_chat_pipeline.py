@@ -138,6 +138,8 @@ class GenerateChatPipeline:
         # Start New Tracking for Query
         self.query_exec_tracker.start_new_track(input)
 
+        self.query_exec_tracker.add_skills(self.context)
+
         self.query_exec_tracker.add_dataframes(self.context.dfs)
 
         # Add Query to memory

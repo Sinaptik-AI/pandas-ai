@@ -181,6 +181,7 @@ class TestQueryExecTracker:
         assert "steps" in summary
         assert "response" in summary
         assert "execution_time" in summary
+        assert "skills" in summary
 
     def test_get_execution_time(self, tracker: QueryExecTracker):
         def mock_function(*args, **kwargs):
