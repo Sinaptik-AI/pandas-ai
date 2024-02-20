@@ -1,7 +1,9 @@
 from unittest.mock import patch
+
 import pandas as pd
 import pytest
 import yfinance as yf
+
 from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 
 
