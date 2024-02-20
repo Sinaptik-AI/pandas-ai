@@ -1,4 +1,5 @@
 """Unit tests for the generate python code prompt class"""
+
 import sys
 from unittest.mock import patch
 
@@ -124,7 +125,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.chroma.Chroma")
+    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
     def test_str_with_train_qa(self, chromadb_mock, output_type, output_type_template):
         """Test casting of prompt to string and interpolation of context.
 
@@ -217,7 +218,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.chroma.Chroma")
+    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
     def test_str_with_train_docs(
         self, chromadb_mock, output_type, output_type_template
     ):
@@ -312,7 +313,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.chroma.Chroma")
+    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
     def test_str_with_train_docs_and_qa(
         self, chromadb_mock, output_type, output_type_template
     ):
@@ -394,7 +395,7 @@ Generate python code and return full updated code:"""  # noqa E501
 
         assert actual_prompt_content == expected_prompt_content
 
-    @patch("pandasai.vectorstores.chroma.Chroma")
+    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
     def test_str_geenerate_code_prompt_to_json(self, chromadb_mock):
         """Test casting of prompt to string and interpolation of context.
 

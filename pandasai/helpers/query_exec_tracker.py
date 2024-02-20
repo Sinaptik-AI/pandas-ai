@@ -11,6 +11,7 @@ from pandasai.connectors import BaseConnector
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class ResponseType(TypedDict):
@@ -31,6 +32,7 @@ exec_steps = {
 class QueryExecTracker:
     _query_info: dict
     _dataframes: List
+    _skills: List
     _response: ResponseType
     _steps: List
     _func_exec_count: dict
@@ -54,6 +56,7 @@ class QueryExecTracker:
         self._last_log_id = None
         self._start_time = time.time()
         self._dataframes: List = []
+        self._skills: List = []
         self._response: ResponseType = {}
         self._steps: List = []
         self._query_info = {}
@@ -79,6 +82,9 @@ class QueryExecTracker:
         for df in dfs:
             head = df.get_schema()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
+
+    def add_skills(self, context: PipelineContext):
+        self._skills = context.skills_manager.to_object()
 
     def add_step(self, step: dict) -> None:
         """
@@ -211,6 +217,7 @@ class QueryExecTracker:
         execution_time = time.time() - self._start_time
         return {
             "query_info": self._query_info,
+            "skills": self._skills,
             "dataframes": self._dataframes,
             "steps": self._steps,
             "response": self._response,
@@ -246,6 +253,7 @@ class QueryExecTracker:
             log_data = {
                 "json_log": self.get_summary(),
             }
+
             headers = {"Authorization": f"Bearer {api_key}"}
             response = requests.post(
                 f"{server_url}/api/log/add", json=log_data, headers=headers

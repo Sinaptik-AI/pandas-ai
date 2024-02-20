@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
@@ -43,8 +43,9 @@ class PromptGeneration(BaseLogicUnit):
             {"content_type": "prompt", "value": prompt.to_string()},
         )
 
-    def get_chat_prompt(self, context: PipelineContext) -> [str, BasePrompt]:
-        viz_lib = ""
+    def get_chat_prompt(self, context: PipelineContext) -> Union[str, BasePrompt]:
+        # set matplotlib as the default library
+        viz_lib = "matplotlib"
         if context.config.data_viz_library:
             viz_lib = context.config.data_viz_library
 

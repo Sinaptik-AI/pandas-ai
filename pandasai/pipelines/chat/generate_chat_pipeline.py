@@ -1,4 +1,3 @@
-import traceback
 from typing import Optional
 
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
@@ -65,6 +64,7 @@ class GenerateChatPipeline:
                 CodeExecution(
                     before_execution=on_code_execution,
                     on_failure=self.on_code_execution_failure,
+                    on_retry=self.on_code_retry,
                 ),
                 ResultValidation(),
                 ResultParsing(
@@ -84,7 +84,7 @@ class GenerateChatPipeline:
         self._logger = logger
         self.last_error = None
 
-    def on_code_execution_failure(self, code: str, exception: Exception) -> str:
+    def on_code_execution_failure(self, code: str, errors: Exception) -> str:
         """
         Executes on code execution failure
         Args:
@@ -94,8 +94,6 @@ class GenerateChatPipeline:
         Returns:
             str: returns the updated code with the fixes
         """
-        traceback_errors = traceback.format_exc()
-
         # Add information about the code failure in the query tracker for debug
         self.query_exec_tracker.add_step(
             {
@@ -106,11 +104,12 @@ class GenerateChatPipeline:
                 "data": {
                     "content_type": "code",
                     "value": code,
-                    "exception": traceback_errors,
+                    "exception": errors,
                 },
             }
         )
 
+    def on_code_retry(self, code: str, exception: Exception):
         correction_input = ErrorCorrectionPipelineInput(code, exception)
         return self.code_exec_error_pipeline.run(correction_input)
 
@@ -138,6 +137,8 @@ class GenerateChatPipeline:
 
         # Start New Tracking for Query
         self.query_exec_tracker.start_new_track(input)
+
+        self.query_exec_tracker.add_skills(self.context)
 
         self.query_exec_tracker.add_dataframes(self.context.dfs)
 

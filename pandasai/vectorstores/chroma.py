@@ -26,7 +26,7 @@ class Chroma(VectorStore):
         embedding_function: Optional[Callable[[List[str]], List[float]]] = None,
         persist_path: Optional[str] = None,
         client_settings: Optional[config.Settings] = None,
-        max_samples: int = 3,
+        max_samples: int = 1,
         similary_threshold: int = 1.5,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -232,7 +232,7 @@ class Chroma(VectorStore):
             relevant_data, self._similarity_threshold
         )
 
-    def get_relevant_docs(self, question: str, k: int = 3) -> List[dict]:
+    def get_relevant_docs(self, question: str, k: int = None) -> List[dict]:
         """
         Returns relevant documents based search
         """
@@ -272,7 +272,7 @@ class Chroma(VectorStore):
 
         return relevant_data
 
-    def get_relevant_qa_documents(self, question: str, k: int = 3) -> List[str]:
+    def get_relevant_qa_documents(self, question: str, k: int = None) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:
@@ -280,7 +280,7 @@ class Chroma(VectorStore):
         """
         return self.get_relevant_question_answers(question, k)["documents"][0]
 
-    def get_relevant_docs_documents(self, question: str, k: int = 3) -> List[str]:
+    def get_relevant_docs_documents(self, question: str, k: int = None) -> List[str]:
         """
         Returns relevant question answers documents only
         Args:
