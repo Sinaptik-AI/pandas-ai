@@ -1,10 +1,11 @@
-from typing import List, Optional, Union, Any
-from pandasai.helpers.cache import Cache
+from typing import Any, List, Optional, Union
 
+from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
+
 from ..connectors import BaseConnector
 
 

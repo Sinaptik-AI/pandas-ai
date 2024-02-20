@@ -1,8 +1,8 @@
 """Example of using PandasAI with a CSV file."""
 
 from pandasai import Agent
-from pandasai.llm import OpenAI
 from pandasai.connectors import MySQLConnector, PostgreSQLConnector, SqliteConnector
+from pandasai.llm import OpenAI
 
 # With a MySQL database
 loan_connector = MySQLConnector(

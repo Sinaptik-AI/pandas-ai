@@ -1,7 +1,8 @@
 import os
-import pandas as pd
-from pandasai import Agent
 
+import pandas as pd
+
+from pandasai import Agent
 from pandasai.llm.openai import OpenAI
 from pandasai.schemas.df_config import Config
 

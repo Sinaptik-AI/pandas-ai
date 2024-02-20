@@ -1,35 +1,38 @@
-import uuid
 import json
-from typing import Type, Union, List, Optional
+import uuid
+from typing import List, Optional, Type, Union
+
 import pandas as pd
 
-from pandasai.vectorstores.vectorstore import VectorStore
-from ..helpers.logger import Logger
-from ..helpers.memory import Memory
-from ..prompts.base import BasePrompt
-from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
-from ..prompts.explain_prompt import ExplainPrompt
-from ..prompts.rephase_query_prompt import RephraseQueryPrompt
-from ..prompts.check_if_relevant_to_conversation import (
-    CheckIfRelevantToConversationPrompt,
-)
-from ..schemas.df_config import Config
-from ..skills import Skill
-from ..connectors import BaseConnector, PandasConnector
-from ..config import load_config_from_json
-from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
-from ..constants import DEFAULT_CHART_DIRECTORY, DEFAULT_CACHE_DIRECTORY
-from ..helpers.folder import Folder
-from ..pipelines.pipeline_context import PipelineContext
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
-from .callbacks import Callbacks
+from pandasai.vectorstores.vectorstore import VectorStore
+
+from ..config import load_config_from_json
+from ..connectors import BaseConnector, PandasConnector
+from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
+from ..exceptions import InvalidLLMOutputType
+from ..helpers.df_info import df_type
+from ..helpers.folder import Folder
+from ..helpers.logger import Logger
+from ..helpers.memory import Memory
+from ..llm.base import LLM
+from ..llm.langchain import LangchainLLM
 from ..pipelines.chat.generate_chat_pipeline import (
     GenerateChatPipeline,
 )
-from ..exceptions import InvalidLLMOutputType
+from ..pipelines.pipeline_context import PipelineContext
+from ..prompts.base import BasePrompt
+from ..prompts.check_if_relevant_to_conversation import (
+    CheckIfRelevantToConversationPrompt,
+)
+from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
+from ..prompts.explain_prompt import ExplainPrompt
+from ..prompts.rephase_query_prompt import RephraseQueryPrompt
+from ..schemas.df_config import Config
+from ..skills import Skill
+from .callbacks import Callbacks
 
 
 class Agent:
@@ -164,6 +167,8 @@ class Agent:
         Args:
             dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
         """
+        # Inline import to avoid circular import
+        from pandasai.smart_dataframe import SmartDataframe
 
         # If only one dataframe is passed, convert it to a list
         if not isinstance(dfs, list):
@@ -175,6 +180,12 @@ class Agent:
                 connectors.append(df)
             elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
                 connectors.append(PandasConnector({"original_df": df}))
+            elif df_type(df) == "modin":
+                connectors.append(PandasConnector({"original_df": df}))
+            elif isinstance(df, SmartDataframe) and isinstance(
+                df.dataframe, BaseConnector
+            ):
+                connectors.append(df.dataframe)
             else:
                 try:
                     import polars as pl
@@ -183,6 +194,7 @@ class Agent:
                         from ..connectors.polars import PolarsConnector
 
                         connectors.append(PolarsConnector({"original_df": df}))
+
                     else:
                         raise ValueError(
                             "Invalid input data. We cannot convert it to a dataframe."

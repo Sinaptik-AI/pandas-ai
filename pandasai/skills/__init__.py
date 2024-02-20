@@ -1,6 +1,7 @@
-from pydantic import BaseModel, PrivateAttr
-from typing import Callable, Any, Optional, Union
 import inspect
+from typing import Any, Callable, Optional, Union
+
+from pydantic import BaseModel, PrivateAttr
 
 
 class Skill(BaseModel):

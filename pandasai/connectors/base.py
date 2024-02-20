@@ -3,18 +3,20 @@ Base connector class to be extended by all connectors.
 """
 
 import json
-import pandas as pd
-from abc import ABC, abstractmethod
 import os
+from abc import ABC, abstractmethod
+from functools import cache
+from typing import Union
 
+from pydantic import BaseModel
+
+import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
+
 from ..helpers.logger import Logger
-from pydantic import BaseModel
-from typing import Union
-from functools import cache
 
 
 class BaseConnectorConfig(BaseModel):

@@ -1,11 +1,12 @@
 from typing import Any, List
-from pandasai.connectors.sql import SQLConnector
 
+from pandasai.connectors.sql import SQLConnector
 from pandasai.exceptions import InvalidConfigError
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+
+from ...connectors import BaseConnector
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
-from ...connectors import BaseConnector
 
 
 class ValidatePipelineInput(BaseLogicUnit):

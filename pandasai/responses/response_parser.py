@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
@@ -64,10 +65,8 @@ class ResponseParser(IResponseParser):
         Returns:
             Any: Returns depending on the user input
         """
-        if not self._context._config.open_charts:
-            return
-
-        with Image.open(result["value"]) as img:
-            img.show()
+        if self._context._config.open_charts:
+            with Image.open(result["value"]) as img:
+                img.show()
 
         return result["value"]

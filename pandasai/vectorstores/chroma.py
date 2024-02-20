@@ -1,12 +1,14 @@
 import os
-from typing import Callable, Iterable, List, Optional, Union
 import uuid
+from typing import Callable, Iterable, List, Optional, Union
+
+import chromadb
+from chromadb import config
+from chromadb.utils import embedding_functions
+
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.path import find_project_root
-from pandasai.vectorstores import VectorStore
-import chromadb
-import chromadb.config
-from chromadb.utils import embedding_functions
+from pandasai.vectorstores.vectorstore import VectorStore
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
 
@@ -23,7 +25,7 @@ class Chroma(VectorStore):
         collection_name: str = "pandasai",
         embedding_function: Optional[Callable[[List[str]], List[float]]] = None,
         persist_path: Optional[str] = None,
-        client_settings: Optional[chromadb.config.Settings] = None,
+        client_settings: Optional[config.Settings] = None,
         max_samples: int = 3,
         similary_threshold: int = 1.5,
         logger: Optional[Logger] = None,
@@ -42,13 +44,13 @@ class Chroma(VectorStore):
 
         # use persist path if exists
         elif persist_path:
-            _client_settings = chromadb.config.Settings(
+            _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
             )
             _client_settings.persist_directory = persist_path
         # else use root as default path
         else:
-            _client_settings = chromadb.config.Settings(
+            _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
             )
             _client_settings.persist_directory = os.path.join(

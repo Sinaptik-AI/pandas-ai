@@ -3,6 +3,7 @@ from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
+
 from .generate_python_code import (
     CurrentCodePrompt,
     GeneratePythonCodePrompt,

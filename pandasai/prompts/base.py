@@ -1,8 +1,12 @@
-import re
-from jinja2 import Environment, FileSystemLoader
-from typing import Optional
+""" Base class to implement a new Prompt
+In order to better handle the instructions, this prompt module is written.
+"""
 import os
+import re
 from pathlib import Path
+from typing import Optional
+
+from jinja2 import Environment, FileSystemLoader
 
 
 class BasePrompt:

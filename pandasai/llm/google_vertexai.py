@@ -13,9 +13,10 @@ Example:
 from typing import Optional
 
 from pandasai.helpers.memory import Memory
-from .base import BaseGoogle
+
 from ..exceptions import UnsupportedModelError
 from ..helpers.optional import import_dependency
+from .base import BaseGoogle
 
 
 class GoogleVertexAI(BaseGoogle):
@@ -154,7 +155,7 @@ class GoogleVertexAI(BaseGoogle):
 
             completion = responses.candidates[0].content.parts[0]
         elif self.model in self._supported_code_chat_models:
-            from vertexai.language_models import CodeChatModel, ChatMessage
+            from vertexai.language_models import ChatMessage, CodeChatModel
 
             code_chat_model = CodeChatModel.from_pretrained(self.model)
             messages = []

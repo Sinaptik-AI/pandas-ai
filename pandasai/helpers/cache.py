@@ -1,9 +1,11 @@
-import os
 import glob
+import os
 from typing import Any
+
 import duckdb
+
+from ..constants import CACHE_TOKEN, DEFAULT_FILE_PERMISSIONS
 from .path import find_project_root
-from ..constants import DEFAULT_FILE_PERMISSIONS, CACHE_TOKEN
 
 
 class Cache:

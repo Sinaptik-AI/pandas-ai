@@ -7,7 +7,7 @@ import random
 import re
 import string
 
-import pandas as pd
+import pandasai.pandas as pd
 
 
 class Anonymizer:
@@ -71,7 +71,7 @@ class Anonymizer:
         domain = random.choice(domains)
         letters = string.ascii_lowercase + string.digits + "-_"
         username = "".join(random.choice(letters) for _ in range(name_length))
-        return f"{username}@" + domain
+        return f"{username}@{domain}"
 
     @staticmethod
     def _generate_random_phone_number(original: str) -> str:

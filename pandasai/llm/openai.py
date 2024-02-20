@@ -12,9 +12,9 @@ import os
 from typing import Any, Dict, Optional
 
 import openai
-from ..helpers import load_dotenv
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
+from ..helpers import load_dotenv
 from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 
@@ -34,18 +34,21 @@ class OpenAI(BaseOpenAI):
     """
 
     _supported_chat_models = [
+        "gpt-3.5-turbo",
+        "gpt-3.5-turbo-0125",
+        "gpt-3.5-turbo-1106",
+        "gpt-3.5-turbo-0613",
+        "gpt-3.5-turbo-16k",
+        "gpt-3.5-turbo-16k-0613",
         "gpt-4",
+        "gpt-4-0125-preview",
+        "gpt-4-1106-preview",
         "gpt-4-0613",
         "gpt-4-32k",
         "gpt-4-32k-0613",
-        "gpt-4-1106-preview",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-0613",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-1106",
+        "gpt-4-turbo-preview",
     ]
-    _supported_completion_models = ["text-davinci-003", "gpt-3.5-turbo-instruct"]
+    _supported_completion_models = ["gpt-3.5-turbo-instruct"]
 
     model: str = "gpt-3.5-turbo"
 

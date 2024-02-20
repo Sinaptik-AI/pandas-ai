@@ -10,7 +10,6 @@ from pandasai import Agent
 from pandasai.llm import OpenAI
 from pandasai.responses.streamlit_response import StreamlitResponse
 
-
 employees_df = pd.DataFrame(
     {
         "EmployeeID": [1, 2, 3, 4, 5],

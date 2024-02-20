@@ -1,6 +1,8 @@
-import requests
-import pandas as pd
 import re
+
+import requests
+
+import pandasai.pandas as pd
 
 
 def get_google_sheet(src) -> list:
@@ -48,7 +50,7 @@ def sheet_to_df(sheet) -> list:
     """
 
     # A dataframe starts when a header is found
-    # A header is a the first instance of a set of contiguous alphanumeric columns
+    # A header is the first instance of a set of contiguous alphanumeric columns
     # A dataframe ends when a blank row is found or an empty column is found
 
     num = 0  # The number of the dataframe

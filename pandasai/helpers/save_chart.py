@@ -1,5 +1,6 @@
 """Helper functions to save charts to a file, if plt.show() is called."""
 from pathlib import Path
+
 from .logger import Logger
 
 
@@ -22,7 +23,6 @@ def add_save_chart(
         str: Code with line added.
 
     """
-
     save_charts_path = Path(save_charts_path_str) if save_charts_path_str else None
 
     if save_charts_path is not None:
@@ -30,7 +30,8 @@ def add_save_chart(
 
         save_charts_file = save_charts_path / f"{file_name}.png"
 
-        code = code.replace("temp_chart.png", save_charts_file.as_posix())
-        logger.log(f"Saving charts to {save_charts_file}")
+        if "temp_chart.png" in code:
+            code = code.replace("temp_chart.png", save_charts_file.as_posix())
+            logger.log(f"Saving charts to {save_charts_file}")
 
     return code

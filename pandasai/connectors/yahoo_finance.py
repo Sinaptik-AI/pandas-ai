@@ -1,12 +1,13 @@
+import hashlib
 import os
-import pandas as pd
+import time
 from typing import Optional, Union
 
-from .base import BaseConnector, BaseConnectorConfig
-import time
-from ..helpers.path import find_project_root
+import pandasai.pandas as pd
+
 from ..constants import DEFAULT_FILE_PERMISSIONS
-import hashlib
+from ..helpers.path import find_project_root
+from .base import BaseConnector, BaseConnectorConfig
 
 
 class YahooFinanceConnectorConfig(BaseConnectorConfig):
@@ -192,3 +193,7 @@ class YahooFinanceConnector(BaseConnector):
             str: The fallback name of the connector.
         """
         return self.config.table
+
+    @property
+    def pandas_df(self):
+        return self.execute()

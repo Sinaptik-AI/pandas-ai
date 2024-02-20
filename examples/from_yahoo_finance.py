@@ -1,5 +1,5 @@
-from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 from pandasai import Agent
+from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 from pandasai.llm import OpenAI
 
 yahoo_connector = YahooFinanceConnector("MSFT")

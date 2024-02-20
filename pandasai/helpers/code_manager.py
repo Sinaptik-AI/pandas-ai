@@ -1,33 +1,33 @@
-import re
 import ast
+import logging
+import re
+import traceback
 import uuid
 from collections import defaultdict
+from typing import Any, Generator, List, Union
 
 import astor
-import pandas as pd
-from pandasai.helpers.path import find_project_root
 
+import pandasai.pandas as pd
+from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
 
-from .node_visitors import AssignmentVisitor, CallVisitor
-from .save_chart import add_save_chart
-from .optional import import_dependency
+from ..connectors import BaseConnector
+from ..connectors.sql import SQLConnector
+from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ..exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
+    InvalidConfigError,
     MaliciousQueryError,
     NoResultFoundError,
-    InvalidConfigError,
 )
-from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
-from ..connectors.sql import SQLConnector
-from typing import Union, List, Generator, Any
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
-import logging
-import traceback
-from ..connectors import BaseConnector
+from .node_visitors import AssignmentVisitor, CallVisitor
+from .optional import import_dependency
+from .save_chart import add_save_chart
 
 
 class CodeExecutionContext:
@@ -152,7 +152,7 @@ class CodeManager:
                 code,
                 logger=self._logger,
                 file_name="temp_chart",
-                save_charts_path_str=find_project_root() + "/exports/charts",
+                save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
 
         # Reset used skills
@@ -290,14 +290,17 @@ Code running:
         )
 
     def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
-        if (
-            isinstance(node, ast.Expr)
-            and isinstance(node.value, ast.Call)
-            and hasattr(node.value.func, "id")
-            and context.skills_manager.skill_exists(node.value.func.id)
-        ):
-            function_name = node.value.func.id
-            context.skills_manager.add_used_skill(function_name)
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                if context.skills_manager.skill_exists:
+                    context.skills_manager.add_used_skill(node.func.id)
+            elif isinstance(node.func, ast.Attribute) and isinstance(
+                node.func.value, ast.Name
+            ):
+                context.skills_manager.add_used_skill(
+                    f"{node.func.value.id}.{node.func.attr}"
+                )
+
         for child_node in ast.iter_child_nodes(node):
             self.find_function_calls(child_node, context)
 

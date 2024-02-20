@@ -27,6 +27,7 @@ You can replace `extra-dependency-name` with any of the following:
 - `google-aip`: this extra dependency is required if you want to use Google PaLM as a language model.
 - `google-sheet`: this extra dependency is required if you want to use Google Sheets as a data source.
 - `excel`: this extra dependency is required if you want to use Excel files as a data source.
+- `modin`: this extra dependency is required if you want to use Modin dataframes as a data source.
 - `polars`: this extra dependency is required if you want to use Polars dataframes as a data source.
 - `langchain`: this extra dependency is required if you want to support the LangChain LLMs.
 - `numpy`: this extra dependency is required if you want to support numpy.

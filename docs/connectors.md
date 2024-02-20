@@ -216,7 +216,7 @@ df.chat("What is the closing price for yesterday?")
 
 ## Airtable Connector
 
-The Airtable connector allows you to connect to Airtable Projects Tables, by simply passing the `base_id` , `api_key` and `table_name` of the table you want to analyze.
+The Airtable connector allows you to connect to Airtable Projects Tables, by simply passing the `base_id` , `token` and `table_name` of the table you want to analyze.
 
 To use the Airtable connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
@@ -227,7 +227,7 @@ from pandasai import SmartDataframe
 
 airtable_connectors = AirtableConnector(
     config={
-        "api_key": "AIRTABLE_API_TOKEN",
+        "token": "AIRTABLE_API_TOKEN",
         "table":"AIRTABLE_TABLE_NAME",
         "base_id":"AIRTABLE_BASE_ID",
         "where" : [
