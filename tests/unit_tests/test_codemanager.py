@@ -1,4 +1,5 @@
 """Unit tests for the CodeManager class"""
+
 import ast
 import uuid
 from typing import Optional
@@ -563,6 +564,21 @@ np.array()"""
         assert str(excinfo.value) == (
             "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
         )
+
+    def test_clean_code_with_no_execute_sql_query_usage_script(
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        """Test that the correct sql table"""
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        safe_code = (
+            """orders_count = execute_sql_query('SELECT COUNT(*) FROM orders')[0][0]"""
+        )
+
+        assert code_manager._clean_code(safe_code, exec_context) == safe_code
 
     def test_clean_code_using_incorrect_sql_table(
         self,

@@ -105,6 +105,7 @@ class CodeExecution(BaseLogicUnit):
             True,
             "Code Executed Successfully",
             {"content_type": "response", "value": ResponseSerializer.serialize(result)},
+            final_track_output=True,
         )
 
     def _retry_run_code(

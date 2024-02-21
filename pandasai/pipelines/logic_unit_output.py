@@ -12,6 +12,7 @@ class LogicUnitOutput:
     message: str
     success: bool
     metadata: dict
+    final_track_output: bool
 
     def __init__(
         self,
@@ -19,8 +20,10 @@ class LogicUnitOutput:
         success: bool = False,
         message: str = None,
         metadata: dict = None,
+        final_track_output: bool = False,
     ):
         self.output = output
         self.message = message
         self.metadata = metadata
         self.success = success
+        self.final_track_output = final_track_output
