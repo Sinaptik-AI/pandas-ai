@@ -23,7 +23,13 @@ class PromptGeneration(BaseLogicUnit):
             (
                 DirectSQLPrompt(tables=context.dfs)
                 if context.config.direct_sql
-                else GeneratePythonCodePrompt()
+                else (
+                    GeneratePythonCodePrompt(
+                        custom_instructions=context.config.custom_instructions
+                    )
+                    if context.config.custom_instructions
+                    else GeneratePythonCodePrompt()
+                )
             ),
         )
 

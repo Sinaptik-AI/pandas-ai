@@ -90,3 +90,15 @@ class TestPromptGeneration:
         expected_key = "generate_python_code"
         assert gen_key == expected_key
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+
+        # Test case 3: custom_instructions is present
+        context.config.custom_instructions = (
+            "Custom instructions for the generation of Python code"
+        )
+
+        gen_key, gen_prompt = prompt_generation._get_chat_prompt(context)
+        actual_instructions = gen_prompt._args["instructions"]
+        assert (
+            actual_instructions
+            == "Custom instructions for the generation of Python code"
+        )
