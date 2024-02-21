@@ -119,6 +119,11 @@ class Pipeline(AbstractPipeline):
                         }
                     )
 
+                    if step_output.final_track_output:
+                        self._query_exec_tracker.set_final_response(
+                            step_output.metadata
+                        )
+
                     data = step_output.output
                 else:
                     data = step_output

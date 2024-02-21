@@ -92,16 +92,10 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
-        # Exception step to store serializable output response from the generated code
-        if (
-            "type" in step
-            and step["type"] == "CodeExecution"
-            and step["data"] is not None
-            and step["data"]["content_type"] == "response"
-        ):
-            self._response = step["data"]["value"]
-
         self._steps.append(step)
+
+    def set_final_response(self, response: Any):
+        self._response = response
 
     def execute_func(self, function, *args, **kwargs) -> Any:
         """
@@ -236,11 +230,11 @@ class QueryExecTracker:
         server_url = None
 
         if self._server_config is None:
-            server_url = os.environ.get("PANDASAI_API_URL")
+            server_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
             api_key = os.environ.get("PANDASAI_API_KEY")
         else:
             server_url = self._server_config.get(
-                "server_url", os.environ.get("PANDASAI_API_URL")
+                "server_url", os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
             )
             api_key = self._server_config.get(
                 "api_key", os.environ.get("PANDASAI_API_KEY")

@@ -46,6 +46,24 @@ class CodeExecutionContext:
         self.prompt_id = prompt_id
 
 
+class FunctionCallVisitor(ast.NodeVisitor):
+    """
+    Iterate over the code to find function calls
+    """
+
+    def __init__(self):
+        self.function_calls = []
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name):
+            self.function_calls.append(node.func.id)
+        elif isinstance(node.func, ast.Attribute) and isinstance(
+            node.func.value, ast.Name
+        ):
+            self.function_calls.append(f"{node.func.value.id}.{node.func.attr}")
+        self.generic_visit(node)
+
+
 class CodeManager:
     _dfs: List
     _config: Union[Config, dict]
@@ -82,6 +100,7 @@ class CodeManager:
         self._dfs = dfs
         self._config = config
         self._logger = logger
+        self._function_call_vistor = FunctionCallVisitor()
 
     def _required_dfs(self, code: str) -> List[str]:
         """
@@ -318,14 +337,6 @@ Code running:
             node, ast.FunctionDef
         ) and context.skills_manager.skill_exists(node.name)
 
-    def check_direct_sql_func_usage_exists(self, node: ast.AST):
-        return (
-            self._validate_direct_sql(self._dfs)
-            and isinstance(node.value, ast.Call)
-            and isinstance(node.value.func, ast.Name)
-            and node.value.func.id == "execute_sql_query"
-        )
-
     def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
@@ -384,6 +395,9 @@ Code running:
         new_body = []
         execute_sql_query_used = False
 
+        # find function calls
+        self._function_call_vistor.visit(tree)
+
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
@@ -405,7 +419,10 @@ Code running:
                 continue
 
             # if generated code contain execute_sql_query usage
-            if self.check_direct_sql_func_usage_exists(node):
+            if (
+                self._validate_direct_sql(self._dfs)
+                and "execute_sql_query" in self._function_call_vistor.function_calls
+            ):
                 execute_sql_query_used = True
 
             # Sanity for sql query the code should only use allowed tables
