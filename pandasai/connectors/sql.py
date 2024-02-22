@@ -410,15 +410,11 @@ class SQLConnector(BaseConnector):
                 self.config.driver,
                 self.config.host,
                 self.config.port,
-                self.config.username,
-                self.config.password,
             ) == (
                 other.config.dialect,
                 other.config.driver,
                 other.config.host,
                 other.config.port,
-                other.config.username,
-                other.config.password,
             )
         return False
 

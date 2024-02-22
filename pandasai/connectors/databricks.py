@@ -85,13 +85,11 @@ class DatabricksConnector(SQLConnector):
         if isinstance(other, self.__class__):
             return (
                 self.config.dialect,
-                self.config.token,
                 self.config.host,
                 self.config.port,
                 self.config.httpPath,
             ) == (
                 other.config.dialect,
-                other.config.token,
                 other.config.host,
                 other.config.port,
                 other.config.httpPath,

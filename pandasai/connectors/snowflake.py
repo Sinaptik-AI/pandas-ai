@@ -115,13 +115,13 @@ class SnowFlakeConnector(SQLConnector):
         if isinstance(other, self.__class__):
             return (
                 self.config.dialect,
+                self.config.dbSchema,
+                self.config.warehouse,
                 self.config.account,
-                self.config.username,
-                self.config.password,
             ) == (
                 other.config.dialect,
+                other.config.dbSchema,
+                other.config.warehouse,
                 other.config.account,
-                other.config.username,
-                other.config.password,
             )
         return False
