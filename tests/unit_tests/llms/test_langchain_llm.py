@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 from langchain_community.llms import OpenAI
-from langchain_core.outputs import LLMResult, GenerationChunk
+from langchain_core.outputs import GenerationChunk, LLMResult
 
 from pandasai.llm import LangchainLLM
 from pandasai.prompts import AbstractPrompt
