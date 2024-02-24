@@ -3,7 +3,8 @@
 from unittest.mock import Mock
 
 import pytest
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI
+from langchain_core.outputs import LLMResult, GenerationChunk
 
 from pandasai.llm import LangchainLLM
 from pandasai.prompts import AbstractPrompt
@@ -17,8 +18,9 @@ class TestLangchainLLM:
         class FakeOpenAI(OpenAI):
             openai_api_key = "fake_key"
 
-            def __call__(self, _prompt, stop=None, callbacks=None, **kwargs):
-                return Mock(return_value="Custom response")()
+            def generate(self, prompts, stop=None, run_manager=None, **kwargs):
+                generation = GenerationChunk(text="Custom response")
+                return LLMResult(generations=[[generation]])
 
         return FakeOpenAI()
 
