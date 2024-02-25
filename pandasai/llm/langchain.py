@@ -25,7 +25,7 @@ class LangchainLLM(LLM):
 
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
-        return self._langchain_llm.predict(prompt)
+        return self._langchain_llm.invoke(prompt)
 
     @property
     def type(self) -> str:
