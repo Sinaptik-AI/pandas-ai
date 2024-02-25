@@ -35,7 +35,7 @@ class LangchainLLM(LLM):
         memory = context.memory if context else None
         prompt = self.prepend_system_prompt(prompt, memory)
         self.last_prompt = prompt
-        return self.langchain_llm.predict(prompt)
+        return self.langchain_llm.invoke(prompt)
 
     @staticmethod
     def is_langchain_llm(llm: LLM) -> bool:
