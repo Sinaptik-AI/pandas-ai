@@ -2,14 +2,13 @@
 
 
 import pytest
-from langchain_community.llms import OpenAI
 from langchain_core.messages import AIMessage
 from langchain_core.outputs import (
     ChatGeneration,
     GenerationChunk,
     LLMResult,
 )
-from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAI, ChatOpenAI
 
 from pandasai.llm import LangchainLLM
 from pandasai.prompts import AbstractPrompt
