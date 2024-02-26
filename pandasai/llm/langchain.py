@@ -1,10 +1,11 @@
 from typing import Union
 
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.language_models.llms import BaseLLM
+
 from pandasai.prompts.base import AbstractPrompt
 
 from .base import LLM
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import BaseLLM
 
 """Langchain LLM 
 
