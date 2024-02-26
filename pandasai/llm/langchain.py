@@ -1,6 +1,10 @@
+from typing import Union
+
 from pandasai.prompts.base import AbstractPrompt
 
 from .base import LLM
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.language_models.llms import BaseLLM
 
 """Langchain LLM 
 
@@ -18,14 +22,16 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
-    _langchain_llm = None
-
-    def __init__(self, langchain_llm):
+    def __init__(self, langchain_llm: Union[BaseLLM, BaseChatModel]):
         self._langchain_llm = langchain_llm
 
     def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
         prompt = instruction.to_string() + suffix
-        return self._langchain_llm.invoke(prompt)
+        res = self._langchain_llm.invoke(prompt)
+        if isinstance(self._langchain_llm, BaseChatModel):
+            return res.content
+
+        return res
 
     @property
     def type(self) -> str:
