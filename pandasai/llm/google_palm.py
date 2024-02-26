@@ -28,7 +28,7 @@ class GooglePalm(BaseGoogle):
 
     def __init__(self, api_key: str, **kwargs):
         """
-        __init__.py method of GooglePalm Class
+        __init__ method of GooglePalm Class
         Args:
             api_key (str): API Key
             **kwargs: Extended Parameters inferred from BaseGoogle Class

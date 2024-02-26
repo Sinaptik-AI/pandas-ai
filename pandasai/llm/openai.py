@@ -58,7 +58,7 @@ class OpenAI(BaseOpenAI):
         **kwargs,
     ):
         """
-        __init__.py method of OpenAI Class
+        __init__ method of OpenAI Class
 
         Args:
             api_token (str): API Token for OpenAI platform.

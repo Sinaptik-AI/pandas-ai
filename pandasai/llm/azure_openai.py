@@ -60,7 +60,7 @@ class AzureOpenAI(BaseOpenAI):
         **kwargs,
     ):
         """
-        __init__.py method of AzureOpenAI Class.
+        __init__ method of AzureOpenAI Class.
 
         Args:
             api_token (str): Azure OpenAI API token.

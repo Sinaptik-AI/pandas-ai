@@ -28,7 +28,7 @@ class GoogleGemini(BaseGoogle):
 
     def __init__(self, api_key: str, **kwargs):
         """
-        __init__.py method of GoogleGemini Class
+        __init__ method of GoogleGemini Class
         Args:
             api_key (str): API Key
             **kwargs: Extended Parameters inferred from BaseGoogle Class
