@@ -1,11 +1,14 @@
 """Unit tests for the base LLM class"""
 
-from unittest.mock import Mock
 
 import pytest
 from langchain_community.llms import OpenAI
-from langchain_core.messages import BaseMessage, AIMessage
-from langchain_core.outputs import GenerationChunk, LLMResult, ChatResult, ChatGeneration
+from langchain_core.messages import AIMessage
+from langchain_core.outputs import (
+    ChatGeneration,
+    GenerationChunk,
+    LLMResult,
+)
 from langchain_openai import ChatOpenAI
 
 from pandasai.llm import LangchainLLM
@@ -32,7 +35,9 @@ class TestLangchainLLM:
             openai_api_key: str = "fake_key"
 
             def generate(self, prompts, stop=None, run_manager=None, **kwargs):
-                generation = ChatGeneration(message=AIMessage(content="Custom response"))
+                generation = ChatGeneration(
+                    message=AIMessage(content="Custom response")
+                )
                 return LLMResult(generations=[[generation]])
 
         return FakeChatOpenAI()
@@ -53,12 +58,12 @@ class TestLangchainLLM:
         langchain_wrapper = LangchainLLM(langchain_llm)
 
         assert (
-                langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
+            langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
         )
 
     def test_langchain_chat_call(self, langchain_chat_llm, prompt):
         langchain_wrapper = LangchainLLM(langchain_chat_llm)
 
         assert (
-                langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
+            langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
         )
