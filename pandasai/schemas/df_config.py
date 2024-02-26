@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Optional, TypedDict
 
-from pandasai.pydantic import BaseModel, Field, validator
-
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
+from pandasai.pydantic import BaseModel, Field, validator
 
 from ..exceptions import LLMNotFoundError
 from ..helpers.viz_library_types.base import VisualizationLibrary

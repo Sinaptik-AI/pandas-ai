@@ -24,10 +24,9 @@ from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-from pandasai.pydantic import BaseModel
-
 import pandasai.pandas as pd
 from pandasai.helpers.df_validator import DfValidator
+from pandasai.pydantic import BaseModel
 
 from ..connectors.base import BaseConnector
 from ..helpers.data_sampler import DataSampler
