@@ -8,7 +8,7 @@ from langchain_core.outputs import (
     GenerationChunk,
     LLMResult,
 )
-from langchain_openai import OpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAI
 
 from pandasai.llm import LangchainLLM
 from pandasai.prompts import AbstractPrompt
