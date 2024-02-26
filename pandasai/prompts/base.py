@@ -16,7 +16,7 @@ class AbstractPrompt(ABC):
 
     def __init__(self, **kwargs):
         """
-        __init__ method of Base class of Prompt Module
+        __init__.py method of Base class of Prompt Module
         Args:
             **kwargs: Inferred Keyword Arguments
         """

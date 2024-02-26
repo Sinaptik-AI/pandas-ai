@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, TypedDict
 
-from pydantic import BaseModel, Field, validator
+from pandasai.pydantic import BaseModel, Field, validator
 
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 

@@ -24,7 +24,7 @@ from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-import pydantic
+from pandasai.pydantic import BaseModel
 
 import pandasai.pandas as pd
 from pandasai.helpers.df_validator import DfValidator
@@ -468,7 +468,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         connector.logger = self.logger
         self._core.connector = connector
 
-    def validate(self, schema: pydantic.BaseModel):
+    def validate(self, schema: BaseModel):
         """
         Validates Dataframe rows on the basis Pydantic schema input
         (Args):

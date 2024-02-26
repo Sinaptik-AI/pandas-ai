@@ -11,7 +11,7 @@ from uuid import UUID
 import pandas as pd
 import polars as pl
 import pytest
-from pydantic import BaseModel, Field
+from pandasai.pydantic import BaseModel, Field
 
 import pandasai
 from pandasai import SmartDataframe

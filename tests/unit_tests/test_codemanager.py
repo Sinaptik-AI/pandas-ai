@@ -155,7 +155,7 @@ result = {'type': 'number', 'value': set([1, 2, 3])}"""
     def test_clean_code_removes_jailbreak_code(
         self, code_manager: CodeManager, exec_context: MagicMock
     ):
-        malicious_code = """__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
+        malicious_code = """__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.py.__globals__['system']('ls')
 print('hello world')"""
         assert (
             code_manager._clean_code(malicious_code, exec_context)

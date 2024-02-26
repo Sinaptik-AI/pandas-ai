@@ -390,7 +390,7 @@ class HuggingFaceLLM(LLM):
 
     def __init__(self, **kwargs):
         """
-        __init__ method of HuggingFaceLLM Class
+        __init__.py method of HuggingFaceLLM Class
 
         Args:
             **kwargs: ["api_token", "max_retries"]

@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pydantic import BaseModel
+from pandasai.pydantic import BaseModel
 
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger

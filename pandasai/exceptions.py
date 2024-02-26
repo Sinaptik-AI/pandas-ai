@@ -115,7 +115,7 @@ class BadImportError(Exception):
 
     def __init__(self, library_name):
         """
-        __init__ method of BadImportError Class
+        __init__.py method of BadImportError Class
 
         Args:
             library_name (str): Name of the library that is not in the whitelist.
@@ -134,7 +134,7 @@ class TemplateFileNotFoundError(FileNotFoundError):
 
     def __init__(self, template_path, prompt_name="Unknown"):
         """
-        __init__ method of TemplateFileNotFoundError Class
+        __init__.py method of TemplateFileNotFoundError Class
 
         Args:
             template_path (str): Path for template file.
