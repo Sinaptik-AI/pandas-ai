@@ -1,4 +1,4 @@
 try:
-    from pydantic.v1 import *  # noqa: F403 # type: ignore
-except ImportError:
-    from pydantic import *  # noqa: F403 # type: ignore
+    from pydantic.v1 import *
+except ImportError:  # pragma: no cover
+    from pydantic import *
