@@ -1,9 +1,8 @@
 from typing import Any, List, Optional, TypedDict
 
-from pydantic import BaseModel, Field, validator
-
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
+from pandasai.pydantic import BaseModel, Field, validator
 
 from ..exceptions import LLMNotFoundError
 from ..llm import LLM, LangchainLLM

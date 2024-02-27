@@ -22,12 +22,11 @@ from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-import pydantic
-
 import pandasai.pandas as pd
 from pandasai.agent.base import Agent
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.df_validator import DfValidator
+from pandasai.pydantic import BaseModel
 
 from ..connectors.base import BaseConnector
 from ..helpers.df_info import DataFrameType
@@ -132,7 +131,7 @@ class SmartDataframe:
         """
         return self._agent.chat(query, output_type)
 
-    def validate(self, schema: pydantic.BaseModel):
+    def validate(self, schema: BaseModel):
         """
         Validates Dataframe rows on the basis Pydantic schema input
         (Args):

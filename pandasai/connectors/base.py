@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import Union
 
-from pydantic import BaseModel
+from pandasai.pydantic import BaseModel
 
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
@@ -225,7 +225,7 @@ class BaseConnector(ABC):
             if df_trunc[col].dtype == "object":
                 first_val = df_trunc[col].iloc[0]
                 if isinstance(first_val, str) and len(first_val) > max_size:
-                    df_trunc[col] = df_trunc[col].str.slice(0, max_size - 3) + "..."
+                    df_trunc[col] = f"{df_trunc[col].str.slice(0, max_size - 3)}..."
 
         return df_trunc
 

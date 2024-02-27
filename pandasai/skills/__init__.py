@@ -1,7 +1,7 @@
 import inspect
 from typing import Any, Callable, Optional, Union
 
-from pydantic import BaseModel, PrivateAttr
+from pandasai.pydantic import BaseModel, PrivateAttr
 
 
 class Skill(BaseModel):
