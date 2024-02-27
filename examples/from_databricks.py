@@ -4,7 +4,6 @@ from pandasai import Agent
 
 # A license might be required for using Snowflake with PandasAI
 from pandasai.ee.connectors import DatabricksConnector
-
 from pandasai.llm import OpenAI
 
 databricks_connector = DatabricksConnector(

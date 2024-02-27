@@ -8,13 +8,12 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import Union
 
-from pandasai.pydantic import BaseModel
-
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
+from pandasai.pydantic import BaseModel
 
 from ..helpers.logger import Logger
 
