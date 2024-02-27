@@ -3,12 +3,12 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.connectors import DatabricksConnector
-from pandasai.connectors.databricks import DatabricksConnectorConfig
+from pandasai.ee.connectors import DatabricksConnector
+from pandasai.ee.connectors.databricks import DatabricksConnectorConfig
 
 
 class TestDataBricksConnector(unittest.TestCase):
-    @patch("pandasai.connectors.databricks.create_engine", autospec=True)
+    @patch("pandasai.ee.connectors.databricks.create_engine", autospec=True)
     # @patch("pandasai.connectors.sql.sql", autospec=True)
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
@@ -32,8 +32,8 @@ class TestDataBricksConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = DatabricksConnector(self.config)
 
-    @patch("pandasai.connectors.DatabricksConnector._load_connector_config")
-    @patch("pandasai.connectors.DatabricksConnector._init_connection")
+    @patch("pandasai.ee.connectors.DatabricksConnector._load_connector_config")
+    @patch("pandasai.ee.connectors.DatabricksConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):

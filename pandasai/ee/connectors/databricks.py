@@ -7,8 +7,8 @@ from typing import Union
 
 from sqlalchemy import create_engine
 
-from .base import BaseConnectorConfig
-from .sql import SQLBaseConnectorConfig, SQLConnector
+from ...connectors.base import BaseConnectorConfig
+from ...connectors.sql import SQLBaseConnectorConfig, SQLConnector
 
 
 class DatabricksConnectorConfig(SQLBaseConnectorConfig):

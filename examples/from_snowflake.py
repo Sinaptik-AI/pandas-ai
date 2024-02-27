@@ -1,7 +1,10 @@
 """Example of using PandasAI with a Snowflake"""
 
 from pandasai import Agent
-from pandasai.connectors import SnowFlakeConnector
+
+# A license might be required for using Snowflake with PandasAI
+from pandasai.ee.connectors import SnowFlakeConnector
+
 from pandasai.llm import OpenAI
 
 snowflake_connector = SnowFlakeConnector(

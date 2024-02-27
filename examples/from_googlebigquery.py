@@ -1,5 +1,8 @@
 from pandasai import SmartDataframe
-from pandasai.connectors import GoogleBigQueryConnector
+
+# A license might be required for using Snowflake with PandasAI
+from pandasai.ee.connectors import GoogleBigQueryConnector
+
 from pandasai.llm import OpenAI
 
 # ENV's

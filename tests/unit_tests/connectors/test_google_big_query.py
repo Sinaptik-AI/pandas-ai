@@ -3,12 +3,12 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.connectors import GoogleBigQueryConnector
-from pandasai.connectors.google_big_query import GoogleBigQueryConnectorConfig
+from pandasai.ee.connectors import GoogleBigQueryConnector
+from pandasai.ee.connectors.google_big_query import GoogleBigQueryConnectorConfig
 
 
 class TestGoogleBigQueryConnector(unittest.TestCase):
-    @patch("pandasai.connectors.google_big_query.create_engine", autospec=True)
+    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
     def setUp(self, mock_create_engine) -> None:
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -25,8 +25,8 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
 
         self.connector = GoogleBigQueryConnector(self.config)
 
-    @patch("pandasai.connectors.GoogleBigQueryConnector._load_connector_config")
-    @patch("pandasai.connectors.GoogleBigQueryConnector._init_connection")
+    @patch("pandasai.ee.connectors.GoogleBigQueryConnector._load_connector_config")
+    @patch("pandasai.ee.connectors.GoogleBigQueryConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):

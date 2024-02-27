@@ -9,8 +9,8 @@ from sqlalchemy import create_engine
 
 import pandasai.pandas as pd
 
-from .base import BaseConnectorConfig
-from .sql import SQLBaseConnectorConfig, SQLConnector
+from ...connectors.base import BaseConnectorConfig
+from ...connectors.sql import SQLBaseConnectorConfig, SQLConnector
 
 
 class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
