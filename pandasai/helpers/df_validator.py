@@ -1,8 +1,7 @@
 from typing import Dict, List
 
-from pydantic import BaseModel, ValidationError
-
 from pandasai.helpers.df_info import DataFrameType, df_type
+from pandasai.pydantic import BaseModel, ValidationError
 
 
 class DfValidationResult:

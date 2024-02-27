@@ -11,7 +11,6 @@ from uuid import UUID
 import pandas as pd
 import polars as pl
 import pytest
-from pydantic import BaseModel, Field
 
 import pandasai
 from pandasai import SmartDataframe
@@ -30,6 +29,7 @@ from pandasai.helpers.viz_library_types import (
 )
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import AbstractPrompt, GeneratePythonCodePrompt
+from pandasai.pydantic import BaseModel, Field
 
 
 class TestSmartDataframe:
