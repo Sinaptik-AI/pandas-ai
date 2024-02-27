@@ -242,8 +242,8 @@ class QueryExecTracker:
         server_url = None
 
         if self._server_config is None:
-            server_url = os.environ.get("LOGGING_SERVER_URL")
-            api_key = os.environ.get("LOGGING_SERVER_API_KEY")
+            server_url = os.environ.get("LOGGING_SERVER_URL") or None
+            api_key = os.environ.get("LOGGING_SERVER_API_KEY") or None
         else:
             server_url = self._server_config.get(
                 "server_url", os.environ.get("LOGGING_SERVER_URL")

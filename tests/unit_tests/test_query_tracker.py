@@ -405,6 +405,9 @@ class TestQueryExecTracker:
         def mock_get_summary():
             return "Test summary data"
 
+        os.environ["LOGGING_SERVER_URL"] = ""
+        os.environ["LOGGING_SERVER_API_KEY"] = ""
+
         tracker._server_config = None
 
         # Set the get_summary method to your mock
