@@ -21,7 +21,8 @@ nav:
   - Advanced usage:
       - cache.md
       - custom-head.md
-      - field-descriptions.md
+      - fields-description.md
+      - train.md
       - custom-response.md
       - custom-whitelisted-dependencies.md
       - skills.md
