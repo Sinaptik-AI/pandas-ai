@@ -21,25 +21,17 @@ nav:
   - Workspace:
       - workspace/workspace.md
   - Advanced usage:
-      - skills.md
-      - shortcuts.md
-      - custom-head.md
-      - save-dataframes.md
-      - determinism.md
       - cache.md
+      - custom-head.md
+      - field-descriptions.md
       - custom-response.md
       - custom-whitelisted-dependencies.md
+      - skills.md
+      - determinism.md
   - Examples:
       - examples.md
-  - API:
-      - API/pandasai.md
-      - API/prompts.md
-      - API/llms.md
-      - API/helpers.md
   - About:
-      - Release Notes: release-notes.md
       - Contributing: CONTRIBUTING.md
-      - Documents Building: building_docs.md
       - License: license.md
 extra:
   version: "1.5.19"

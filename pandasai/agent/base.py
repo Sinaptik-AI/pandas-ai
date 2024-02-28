@@ -269,7 +269,6 @@ class Agent:
             queries (Optional[str], optional): user user
             codes (Optional[str], optional): generated code
             docs (Optional[List[str]], optional): additional docs
-
         Raises:
             ImportError: if default vector db lib is not installed it raises an error
         """
@@ -278,7 +277,7 @@ class Agent:
                 from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
             except ImportError as e:
                 raise ImportError(
-                    "Could not import chromadb. Please install it with `pip install chromadb`."
+                    "Could not import BambooVectorStore. Please install the required dependencies."
                 ) from e
 
             self._vectorstore = BambooVectorStore(logger=self.logger)

@@ -13,7 +13,7 @@ from pandasai.vectorstores.vectorstore import VectorStore
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
 
 
-class Chroma(VectorStore):
+class ChromaDB(VectorStore):
     """
     Implementation of ChromeDB vector store
     """
