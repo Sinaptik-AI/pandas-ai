@@ -71,6 +71,8 @@ class Session:
             data = response.json()
             if response.status_code == 400:
                 raise PandasAIApiCallError(data["message"])
+            elif response.status_code == 401:
+                raise PandasAIApiCallError(data["error"])
 
             return data
 
