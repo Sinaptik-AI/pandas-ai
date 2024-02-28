@@ -1,6 +1,6 @@
 # Workspace
 
-Workspace provides a way to chat with your dataset seemless without the need to create dataframes again and again. You need PandasAI key to use Workspace. You can create an api key by following below steps:
+Workspace provides a way to chat with your dataset seamless without the need to create dataframes again and again. You need PandasAI key to use Workspace. You can create an api key by following below steps:
 
 1. Go to https://domer.ai and sign up
 2. From settings go to API keys and copy the api key
