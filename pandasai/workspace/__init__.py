@@ -1,6 +1,6 @@
 from typing import List, Optional
-from pandasai.helpers.logger import Logger
 
+from pandasai.helpers.logger import Logger
 from pandasai.helpers.request import Session
 from pandasai.workspace.response_desrializer import ResponseDeserializer
 
