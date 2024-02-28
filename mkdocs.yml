@@ -32,7 +32,7 @@ nav:
       - Contributing: CONTRIBUTING.md
       - License: license.md
 extra:
-  version: "1.5.19"
+  version: "1.5.20"
 plugins:
   - search
   - mkdocstrings:
