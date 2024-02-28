@@ -1,7 +1,7 @@
 import os
 import sys
 from typing import Optional
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest

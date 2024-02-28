@@ -1,8 +1,8 @@
 """Unit tests for the generate python code prompt class"""
 
+import os
 import sys
 from unittest.mock import patch
-import os
 
 import pandas as pd
 import pytest

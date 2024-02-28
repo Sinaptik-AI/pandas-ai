@@ -1,6 +1,6 @@
 """Unit tests for the correct error prompt class"""
-import sys
 import os
+import sys
 
 import pandas as pd
 import pytest

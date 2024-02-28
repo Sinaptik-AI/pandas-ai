@@ -1,6 +1,7 @@
+import os
+
 import pandas as pd
 import pytest
-import os
 
 from pandasai.agent import Agent
 from pandasai.helpers import (
