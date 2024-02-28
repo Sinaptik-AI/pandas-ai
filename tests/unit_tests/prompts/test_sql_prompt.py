@@ -1,5 +1,6 @@
 """Unit tests for the correct error prompt class"""
 import sys
+import os
 
 import pandas as pd
 import pytest
@@ -43,6 +44,10 @@ class TestGeneratePythonCodeWithSQLPrompt:
     )
     def test_str_with_args(self, output_type, output_type_template):
         """Test that the __str__ method is implemented"""
+
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
         llm = FakeLLM()
         agent = Agent(pd.DataFrame(), config={"llm": llm})
         prompt = GeneratePythonCodeWithSQLPrompt(

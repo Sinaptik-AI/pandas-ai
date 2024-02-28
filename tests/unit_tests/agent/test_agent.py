@@ -1,7 +1,7 @@
 import os
 import sys
 from typing import Optional
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 import pytest
@@ -78,7 +78,7 @@ class TestAgent:
 
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
-        return Agent(sample_df, config)
+        return Agent(sample_df, config, vectorstore=MagicMock())
 
     @pytest.fixture
     @patch("pandasai.connectors.sql.create_engine", autospec=True)
@@ -523,48 +523,39 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             config={"llm": llm, "enable_cache": False, "direct_sql": False},
         )
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
-    def test_train_method_with_qa(self, mock_chroma, agent):
-        mock_chroma_instance = mock_chroma.return_value
+    def test_train_method_with_qa(self, agent):
         queries = ["query1", "query2"]
         codes = ["code1", "code2"]
         agent.train(queries, codes)
 
-        mock_chroma_instance.add_question_answer.assert_called_once()
-        mock_chroma_instance.add_docs.assert_not_called()
-        mock_chroma_instance.add_question_answer.assert_called_once_with(queries, codes)
+        agent._vectorstore.add_docs.assert_not_called()
+        agent._vectorstore.add_question_answer.assert_called_once_with(queries, codes)
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
-    def test_train_method_with_docs(self, mock_chroma, agent):
-        mock_chroma_instance = mock_chroma.return_value
+    def test_train_method_with_docs(self, agent):
         docs = ["doc1"]
         agent.train(docs=docs)
 
-        mock_chroma_instance.add_question_answer.assert_not_called()
-        mock_chroma_instance.add_docs.assert_called_once()
-        mock_chroma_instance.add_docs.assert_called_once_with(docs)
+        agent._vectorstore.add_question_answer.assert_not_called()
+        agent._vectorstore.add_docs.assert_called_once()
+        agent._vectorstore.add_docs.assert_called_once_with(docs)
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
-    def test_train_method_with_docs_and_qa(self, mock_chroma, agent):
-        mock_chroma_instance = mock_chroma.return_value
+    def test_train_method_with_docs_and_qa(self, agent):
         docs = ["doc1"]
         queries = ["query1", "query2"]
         codes = ["code1", "code2"]
         agent.train(queries, codes, docs=docs)
 
-        mock_chroma_instance.add_question_answer.assert_called_once()
-        mock_chroma_instance.add_question_answer.assert_called_once_with(queries, codes)
-        mock_chroma_instance.add_docs.assert_called_once()
-        mock_chroma_instance.add_docs.assert_called_once_with(docs)
+        agent._vectorstore.add_question_answer.assert_called_once()
+        agent._vectorstore.add_question_answer.assert_called_once_with(queries, codes)
+        agent._vectorstore.add_docs.assert_called_once()
+        agent._vectorstore.add_docs.assert_called_once_with(docs)
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
-    def test_train_method_with_queries_but_no_code(self, mock_chroma, agent):
+    def test_train_method_with_queries_but_no_code(self, agent):
         queries = ["query1", "query2"]
         with pytest.raises(ValueError):
             agent.train(queries)
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
-    def test_train_method_with_code_but_no_queries(self, mock_chroma, agent):
+    def test_train_method_with_code_but_no_queries(self, agent):
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)

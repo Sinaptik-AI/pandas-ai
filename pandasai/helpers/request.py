@@ -18,15 +18,13 @@ class Session:
         self, endpoint_url: str = None, api_key: str = None, logger: Logger = None
     ) -> None:
         if api_key is None:
-            api_key = os.environ.get("PANDASAI_API_KEY")
+            api_key = os.environ.get("PANDASAI_API_KEY") or None
         if api_key is None:
             raise PandasAIApiKeyError()
         self._api_key = api_key
 
         if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDASAI_API_URL")
-        if endpoint_url is None:
-            endpoint_url = "https://api.domer.ai"
+            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
 
         self._endpoint_url = endpoint_url
         self._version_path = "/api"

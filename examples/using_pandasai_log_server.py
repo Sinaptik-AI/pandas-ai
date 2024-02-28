@@ -20,8 +20,8 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 # Example 1: Using Environment Variables
-os.environ["LOGGING_SERVER_URL"] = "SERVER_URL"
-os.environ["LOGGING_SERVER_API_KEY"] = "YOUR_API_KEY"
+os.environ["PANDASAI_API_URL"] = "SERVER_URL"
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 
 llm = OpenAI("YOUR_API_KEY")

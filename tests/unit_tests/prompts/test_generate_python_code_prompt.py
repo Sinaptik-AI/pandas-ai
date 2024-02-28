@@ -2,6 +2,7 @@
 
 import sys
 from unittest.mock import patch
+import os
 
 import pandas as pd
 import pytest
@@ -53,6 +54,10 @@ class TestGeneratePythonCodePrompt:
         Returns:
             None
         """
+
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
         llm = FakeLLM()
         agent = Agent(
             PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
@@ -136,6 +141,9 @@ Generate python code and return full updated code:"""  # noqa E501
         Returns:
             None
         """
+
+        os.environ["PANDASAI_API_URL"] = "SERVER_URL"
+        os.environ["PANDASAI_API_KEY"] = "API_KEY"
 
         chromadb_instance = chromadb_mock.return_value
         chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
@@ -326,6 +334,9 @@ Generate python code and return full updated code:"""  # noqa E501
         Returns:
             None
         """
+
+        os.environ["PANDASAI_API_URL"] = "SERVER_URL"
+        os.environ["PANDASAI_API_KEY"] = "API_KEY"
 
         chromadb_instance = chromadb_mock.return_value
         chromadb_instance.get_relevant_docs_documents.return_value = [["documents1"]]
