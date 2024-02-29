@@ -45,7 +45,7 @@ yfinance = { version = "^0.2.28", optional = true }
 sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
 flask = { version = "^3.0.2", optional = true }
-sqlalchemy-bigquery = { version = "^1.8.0", optional = true }
+sqlalchemy-bigquery = {version = "^1.8.0", optional = true, markers = "python_version >= '3.8' and python_version < '3.13'"}
 chromadb = {version = "^0.4.22", optional = true}
 
 [tool.poetry.group.dev]
