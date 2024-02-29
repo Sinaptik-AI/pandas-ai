@@ -1,5 +1,8 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
+from pandasai.exceptions import PandasAIDatasetUploadFailed
 
 from pandasai.workspace import Workspace
 
@@ -54,3 +57,92 @@ class TestWorkspace(unittest.TestCase):
         json_data = mock_request.call_args_list[1][1]
         assert json_data["json"]["query"] == "query1"
         assert json_data["json"]["space_id"] == "12345"
+
+    @patch("pandasai.workspace.requests.post")
+    @patch("pandasai.helpers.request.Session.post")
+    def test_push_success(self, mock_session_post, mock_requests_post):
+        # Arrange
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        name = "test_dataset"
+        description = "Test dataset description"
+
+        # Mock responses
+        mock_session_post.side_effect = [
+            {"data": {"id": "1"}},
+            {
+                "data": {
+                    "upload_url": {
+                        "url": "mock_upload_url",
+                        "fields": {"key1": "value1"},
+                    },
+                    "id": "1",
+                }
+            },
+            {"data": {"id": "mock_data_id"}},
+        ]
+        mock_requests_post.return_value.status_code = 204
+
+        # Create a mock Session instance
+        mock_session = MagicMock()
+        mock_session.post.return_value = {
+            "data": {
+                "upload_url": {"url": "mock_upload_url", "fields": {"key1": "value1"}}
+            }
+        }
+
+        workspace = Workspace("test-space")
+        workspace.push(df, name, description)
+
+        assert mock_session_post.call_args_list[1][0][0] == "/table"
+        assert mock_session_post.call_args_list[1][1] == {
+            "json": {"name": name, "description": description}
+        }
+
+        mock_requests_post.assert_called_with(
+            "mock_upload_url",
+            data={"key1": "value1"},
+            files={"file": df.to_csv(index=False).encode("utf-8")},
+        )
+
+        print(mock_session_post.call_args_list[2])
+        assert mock_session_post.call_args_list[2][0][0] == "/table/file-uploaded"
+        assert mock_session_post.call_args_list[2][1] == {
+            "json": {"space_id": workspace._id, "dataframe_id": "1"}
+        }
+
+    @patch("pandasai.workspace.requests.post")
+    @patch("pandasai.helpers.request.Session.post")
+    def test_push_upload_exception(self, mock_session_post, mock_requests_post):
+        # Arrange
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        name = "test_dataset"
+        description = "Test dataset description"
+
+        # Mock responses
+        mock_session_post.side_effect = [
+            {"data": {"id": "1"}},
+            {
+                "data": {
+                    "upload_url": {
+                        "url": "mock_upload_url",
+                        "fields": {"key1": "value1"},
+                    },
+                    "id": "1",
+                }
+            },
+            {"data": {"id": "mock_data_id"}},
+        ]
+        mock_requests_post.return_value.status_code = 400
+
+        # Create a mock Session instance
+        mock_session = MagicMock()
+        mock_session.post.return_value = {
+            "data": {
+                "upload_url": {"url": "mock_upload_url", "fields": {"key1": "value1"}}
+            }
+        }
+
+        workspace = Workspace("test-space")
+
+        with self.assertRaises(PandasAIDatasetUploadFailed):
+            workspace.push(df, name, description)

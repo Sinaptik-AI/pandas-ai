@@ -218,3 +218,11 @@ class PandasAIApiCallError(Exception):
     Args:
         Exception (Exception): PandasAIApiCallError
     """
+
+
+class PandasAIDatasetUploadFailed(Exception):
+    """
+    Raise error if exception in uploading dataframe
+    Args:
+        Exception (Exception): PandasAIDatasetUploadFailed
+    """

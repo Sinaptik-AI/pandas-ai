@@ -19,9 +19,9 @@ os.environ["PANDASAI_API_KEY"] = (
 )
 
 
-workspace = Workspace("orders-space")
+workspace = Workspace("employees-data")
 
-workspace.chat("return orders count groupby country")
+workspace.push(employees_df, "employees")
 
-workspace.chat("Yes")
+workspace.chat("return number or employees")
 ```

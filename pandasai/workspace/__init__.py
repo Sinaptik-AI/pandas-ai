@@ -1,8 +1,12 @@
 from typing import List, Optional
 
+import pandas as pd
+from pandasai.exceptions import PandasAIDatasetUploadFailed
+
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.request import Session
 from pandasai.workspace.response_desrializer import ResponseDeserializer
+import requests
 
 
 class Workspace:
@@ -57,6 +61,41 @@ class Workspace:
             self._print_response(response)
 
         return response
+
+    def push(self, df: pd.DataFrame, name: str, description: str = ""):
+        """
+        Add dataframe to the workspace
+        Args:
+            df (pd.DataFrame): upload dataset to the workspace
+            name (str): unique name for dataset in space
+            description (str, optional): description. Defaults to "".
+
+        Raises:
+            PandasAIDatasetUploadFailed: on upload failure
+        """
+        # Prepare dataset upload
+        data = self._session.post(
+            "/table", json={"name": name, "description": description}
+        )["data"]
+        csv_content = df.to_csv(index=False).encode("utf-8")
+
+        form_data = dict(data.get("upload_url", {}).get("fields", {}))
+        files = {"file": csv_content}
+
+        # Upload file
+        response_csv_data = requests.post(
+            data.get("upload_url", {}).get("url", ""), data=form_data, files=files
+        )
+
+        if response_csv_data.status_code not in [204, 200]:
+            raise PandasAIDatasetUploadFailed("Failed to push dataset!")
+
+        # Add file to space
+        self._session.post(
+            "/table/file-uploaded",
+            json={"space_id": self._id, "dataframe_id": data["id"]},
+        )
+        self._logger.log(f"Dataframe {name} successfully added!")
 
     def _print_response(self, response: List[dict]) -> None:
         """
