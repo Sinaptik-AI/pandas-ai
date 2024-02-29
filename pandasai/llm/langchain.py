@@ -1,7 +1,14 @@
-from typing import Union
+try:
+    from langchain_core.language_models.chat_models import BaseChatModel
+    from langchain_core.language_models.llms import BaseLLM
 
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import BaseLLM
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    # Fallback definitions if langchain_core is not installed
+    BaseLLM = BaseChatModel = object
+    LANGCHAIN_AVAILABLE = False
+
+from typing import Union
 
 from pandasai.prompts.base import AbstractPrompt
 
