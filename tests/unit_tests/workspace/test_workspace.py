@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -10,6 +11,7 @@ from pandasai.workspace import Workspace
 class TestWorkspace(unittest.TestCase):
     @patch("pandasai.helpers.request.Session.make_request", autospec=True)
     def setUp(self, mock_request) -> None:
+        os.environ["PANDASAI_API_KEY"] = "test-api-key"
         self.workspace = Workspace("workspace2")
 
     @patch("pandasai.helpers.request.Session.make_request", autospec=True)

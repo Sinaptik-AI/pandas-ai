@@ -27,7 +27,7 @@ class TestSession(unittest.TestCase):
         # Assert
         mock_requests_request.assert_called_with(
             "GET",
-            "http://test-server/api/test_path",
+            "/api/test_path",
             headers={
                 "Authorization": "Bearer test-api-key",
                 "Content-Type": "application/json",

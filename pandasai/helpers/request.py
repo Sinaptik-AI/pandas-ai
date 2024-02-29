@@ -23,7 +23,7 @@ class Session:
             raise PandasAIApiKeyError()
 
         self._api_key = api_key
-        
+
         self._endpoint_url = endpoint_url or os.environ.get(
             "PANDASAI_API_URL", "https://api.domer.ai"
         )
