@@ -305,6 +305,29 @@ response = agent.explain()
 print(response)
 ```
 
+## Description for an Agent
+
+When you instantiate an agent, you can provide a description of the agent. THis description will be used to describe the agent in the chat and to provide more context for the LLM about how to respond to queries.
+
+Some examples of descriptions can be:
+
+- You are a data analysis agent. Your main goal is to help non-technical users to analyze data
+- Act as a data analyst. Every time I ask you a question, you should provide the code to visualize the answer using plotly
+
+```python
+from pandasai import Agent
+
+from pandasai.llm.openai import OpenAI
+
+llm = OpenAI("YOUR_API_KEY")
+
+agent = Agent(
+    "data.csv",
+    config={"llm": llm},
+    description="You are a data analysis agent. Your main goal is to help non-technical users to analyze data",
+)
+```
+
 ## Add Skills to the Agent
 
 You can add customs functions for the agent to use, allowing the agent to expand its capabilities. These custom functions can be seamlessly integrated with the agent's skills, enabling a wide range of user-defined operations.

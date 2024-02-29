@@ -183,7 +183,6 @@ doc = ["docutils", "geopandas", "jinja2", "myst-parser", "numpydoc", "pillow (>=
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
-category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -4658,7 +4657,6 @@ files = [
 name = "pydantic"
 version = "2.6.2"
 description = "Data validation using Python type hints"
-category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -4678,7 +4676,6 @@ email = ["email-validator (>=2.0.0)"]
 name = "pydantic-core"
 version = "2.16.3"
 description = ""
-category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -6937,5 +6934,5 @@ yfinance = ["yfinance"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "976a14fa71fc03bc950fd3024702185dceabd1e80bf36d2d18ed7d80824be881"
+python-versions = ">=3.9,<3.9.7 || >3.9.7,<3.13"
+content-hash = "7bce70456b621a6d1db50a41bd1f311f4424b0cc24484a9b62b9c93fbda41758"

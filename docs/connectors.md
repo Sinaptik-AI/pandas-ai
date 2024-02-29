@@ -27,7 +27,9 @@ PandasAI provides connectors for the following SQL databases:
 - Generic SQL
 - Snowflake
 - DataBricks
+- GoogleBigQuery
 - Yahoo Finance
+- Airtable
 
 Additionally, PandasAI provides a generic SQL connector that can be used to connect to any SQL database.
 
@@ -143,13 +145,13 @@ sql_connector = SQLConnector(
 
 ## Snowflake connector
 
-The Snowflake connector allows you to connect to Snowflake. It is very similar to the SQL connectors, but it has some differences.
+The Snowflake connector allows you to connect to Snowflake. It is very similar to the SQL connectors, but it has some differences. The usage of this connector might be subject to a license ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
 
 To use the Snowflake connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
 
 ```python
 from pandasai import SmartDataframe
-from pandasai.connectors import SnowFlakeConnector
+from pandasai.ee.connectors import SnowFlakeConnector
 
 snowflake_connector = SnowFlakeConnector(
     config={
@@ -174,12 +176,12 @@ df.chat("How many records has status 'F'?")
 
 ## DataBricks connector
 
-The DataBricks connector allows you to connect to DataBricks. It is very similar to the SQL connectors, but it has some differences.
+The DataBricks connector allows you to connect to DataBricks. It is very similar to the SQL connectors, but it has some differences. The usage of this connector might be subject to a license ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
 
-To use the DataBricks connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+To use the DataBricks connector, you only need to import it into your Python code and pass it to a `Agent`, `SmartDataframe` or `SmartDatalake` object:
 
 ```python
-from pandasai.connectors import DatabricksConnector
+from pandasai.ee.connectors import DatabricksConnector
 
 databricks_connector = DatabricksConnector(
     config={
@@ -189,6 +191,30 @@ databricks_connector = DatabricksConnector(
         "port": 443,
         "table": "loan_payments_data",
         "httpPath": "/sql/1.0/warehouses/213421312",
+        "where": [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            ["loan_status", "=", "PAIDOFF"],
+        ],
+    }
+)
+```
+
+## GoogleBigQuery connector
+
+The GoogleBigQuery connector allows you to connect to GoogleBigQuery datasests. It is very similar to the SQL connectors, but it has some differences. The usage of this connector might be subject to a license ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
+
+To use the GoogleBigQuery connector, you only need to import it into your Python code and pass it to a `Agent`, `SmartDataframe` or `SmartDatalake` object:
+
+```python
+from pandasai.connectors import GoogleBigQueryConnector
+
+bigquery_connector = GoogleBigQueryConnector(
+    config={
+        "credentials_path" : "path to keyfile.json",
+        "database" : "dataset_name",
+        "table" : "table_name",
+        "projectID" : "Project_id_name",
         "where": [
             # this is optional and filters the data to
             # reduce the size of the dataframe
@@ -218,7 +244,7 @@ df.chat("What is the closing price for yesterday?")
 
 The Airtable connector allows you to connect to Airtable Projects Tables, by simply passing the `base_id` , `token` and `table_name` of the table you want to analyze.
 
-To use the Airtable connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
+To use the Airtable connector, you only need to import it into your Python code and pass it to a `Agent`,`SmartDataframe` or `SmartDatalake` object:
 
 ```python
 from pandasai.connectors import AirtableConnector
@@ -241,28 +267,4 @@ airtable_connectors = AirtableConnector(
 df = SmartDataframe(airtable_connectors)
 
 df.chat("How many rows are there in data ?")
-```
-
-## GoogleBigQuery connector
-
-The GoogleBigQuery connector allows you to connect to GoogleBigQuery datasests. It is very similar to the SQL connectors, but it has some differences.
-
-To use the GoogleBigQuery connector, you only need to import it into your Python code and pass it to a `SmartDataframe` or `SmartDatalake` object:
-
-```python
-from pandasai.connectors import GoogleBigQueryConnector
-
-bigquery_connector = GoogleBigQueryConnector(
-    config={
-        "credentials_path" : "path to keyfile.json",
-        "database" : "dataset_name",
-        "table" : "table_name",
-        "projectID" : "Project_id_name",
-        "where": [
-            # this is optional and filters the data to
-            # reduce the size of the dataframe
-            ["loan_status", "=", "PAIDOFF"],
-        ],
-    }
-)
 ```

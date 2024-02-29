@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import pytest
 
@@ -174,6 +176,9 @@ class TestOpenAIInfo:
         assert handler.total_cost == expected_cost
 
     def test_openai_callback(self, mocker):
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
         df = pd.DataFrame([1, 2, 3])
         llm = OpenAI(api_token="test")
         llm_response = OpenAIObject(

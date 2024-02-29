@@ -1,6 +1,6 @@
 """Unit tests for the CodeManager class"""
-
 import ast
+import os
 import uuid
 from typing import Optional
 from unittest.mock import MagicMock, patch
@@ -238,6 +238,9 @@ print(dfs)"""
         autospec=True,
     )
     def test_exception_handling(self, mock_execute_code: MagicMock, agent: Agent):
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
         mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
         result = agent.chat("How many countries are in the dataframe?")
         assert result == (

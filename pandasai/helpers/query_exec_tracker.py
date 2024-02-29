@@ -231,7 +231,7 @@ class QueryExecTracker:
 
         if self._server_config is None:
             server_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
-            api_key = os.environ.get("PANDASAI_API_KEY")
+            api_key = os.environ.get("PANDASAI_API_KEY") or None
         else:
             server_url = self._server_config.get(
                 "server_url", os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
@@ -240,7 +240,7 @@ class QueryExecTracker:
                 "api_key", os.environ.get("PANDASAI_API_KEY")
             )
 
-        if api_key is None or server_url is None:
+        if api_key is None:
             return
 
         try:

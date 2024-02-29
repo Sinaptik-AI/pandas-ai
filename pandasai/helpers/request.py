@@ -17,13 +17,13 @@ class Session:
     def __init__(
         self, endpoint_url: str = None, api_key: str = None, logger: Logger = None
     ) -> None:
-        api_key = api_key or os.environ.get("PANDASAI_API_KEY")
+        api_key = api_key or os.environ.get("PANDASAI_API_KEY", None)
 
         if not api_key:
             raise PandasAIApiKeyError()
 
         self._api_key = api_key
-
+        
         self._endpoint_url = endpoint_url or os.environ.get(
             "PANDASAI_API_URL", "https://api.domer.ai"
         )

@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from typing import List, Optional, Type, Union
 
@@ -12,7 +13,7 @@ from pandasai.vectorstores.vectorstore import VectorStore
 from ..config import load_config_from_json
 from ..connectors import BaseConnector, PandasConnector
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
-from ..exceptions import InvalidLLMOutputType
+from ..exceptions import InvalidLLMOutputType, MissingVectorStoreError
 from ..helpers.df_info import df_type
 from ..helpers.folder import Folder
 from ..helpers.logger import Logger
@@ -69,8 +70,6 @@ class Agent:
 
         dfs = self.get_dfs(dfs)
 
-        self._vectorstore = vectorstore
-
         # Instantiate the context
         config = self.get_config(config)
         self.context = PipelineContext(
@@ -82,6 +81,20 @@ class Agent:
 
         # Instantiate the logger
         self.logger = Logger(save_logs=config.save_logs, verbose=config.verbose)
+
+        # Instantiate the vectorstore
+        self._vectorstore = vectorstore
+
+        if self._vectorstore is None and os.environ.get("PANDASAI_API_KEY"):
+            try:
+                from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
+            except ImportError as e:
+                raise ImportError(
+                    "Could not import BambooVectorStore. Please install the required dependencies."
+                ) from e
+
+            self._vectorstore = BambooVectorStore(logger=self.logger)
+            self.context.vectorstore = self._vectorstore
 
         callbacks = Callbacks(self)
 
@@ -104,8 +117,6 @@ class Agent:
                 on_result=callbacks.on_result,
             )
         )
-
-        self._vectorstore = vectorstore
 
         self.configure()
 
@@ -273,15 +284,9 @@ class Agent:
             ImportError: if default vector db lib is not installed it raises an error
         """
         if self._vectorstore is None:
-            try:
-                from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
-            except ImportError as e:
-                raise ImportError(
-                    "Could not import BambooVectorStore. Please install the required dependencies."
-                ) from e
-
-            self._vectorstore = BambooVectorStore(logger=self.logger)
-            self.context.vectorstore = self._vectorstore
+            raise MissingVectorStoreError(
+                "No vector store provided. Please provide a vector store to train the agent."
+            )
 
         if (queries is not None and codes is None) or (
             queries is None and codes is not None
