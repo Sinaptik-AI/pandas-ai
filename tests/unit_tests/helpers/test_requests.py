@@ -1,8 +1,10 @@
-import unittest
-from unittest.mock import patch, MagicMock
-from pandasai.helpers.request import Session, PandasAIApiKeyError, PandasAIApiCallError
 import os
+import unittest
+from unittest.mock import MagicMock, patch
+
 import requests
+
+from pandasai.helpers.request import PandasAIApiCallError, PandasAIApiKeyError, Session
 
 
 class TestSession(unittest.TestCase):

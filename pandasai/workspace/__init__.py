@@ -1,12 +1,12 @@
 from typing import List, Optional
 
 import pandas as pd
-from pandasai.exceptions import PandasAIDatasetUploadFailed
+import requests
 
+from pandasai.exceptions import PandasAIDatasetUploadFailed
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.request import Session
 from pandasai.workspace.response_desrializer import ResponseDeserializer
-import requests
 
 
 class Workspace:

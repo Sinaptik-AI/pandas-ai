@@ -3,8 +3,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from pandasai.exceptions import PandasAIDatasetUploadFailed
 
+from pandasai.exceptions import PandasAIDatasetUploadFailed
 from pandasai.workspace import Workspace
 
 
