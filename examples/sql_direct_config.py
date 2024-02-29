@@ -1,9 +1,7 @@
 """Example of using PandasAI with a CSV file."""
-
-from pandasai import SmartDatalake
+from pandasai import Agent
 from pandasai.connectors import PostgreSQLConnector
 from pandasai.llm import OpenAI
-from pandasai.smart_dataframe import SmartDataframe
 
 # With a PostgreSQL database
 order = PostgreSQLConnector(
@@ -39,20 +37,13 @@ products = PostgreSQLConnector(
     }
 )
 
-
 llm = OpenAI("OPEN_API_KEY")
 
 
-order_details_smart_df = SmartDataframe(
-    order_details,
-    config={"llm": llm, "direct_sql": True},
-    description="Contain user order details",
-)
-
-
-df = SmartDatalake(
-    [order_details_smart_df, order, products],
+agent = Agent(
+    [order, products, order_details],
     config={"llm": llm, "direct_sql": True},
 )
-response = df.chat("return orders with count of distinct products")
+
+response = agent.chat("return orders with count of distinct products")
 print(response)

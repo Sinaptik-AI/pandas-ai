@@ -6,8 +6,8 @@ The connectors package contains all the connectors that are used by the applicat
 
 from .airtable import AirtableConnector
 from .base import BaseConnector
-from .databricks import DatabricksConnector
-from .snowflake import SnowFlakeConnector
+from .pandas import PandasConnector
+from .polars import PolarsConnector
 from .sql import MySQLConnector, PostgreSQLConnector, SQLConnector, SqliteConnector
 from .yahoo_finance import YahooFinanceConnector
 
@@ -17,8 +17,8 @@ __all__ = [
     "MySQLConnector",
     "PostgreSQLConnector",
     "YahooFinanceConnector",
-    "SnowFlakeConnector",
-    "DatabricksConnector",
     "AirtableConnector",
     "SqliteConnector",
+    "PandasConnector",
+    "PolarsConnector",
 ]

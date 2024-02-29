@@ -1,0 +1,8 @@
+{% if context.vectorstore %}{% set documents = context.vectorstore.get_relevant_qa_documents(context.memory.get_last_message()) %}
+{% if documents|length > 0%}You can utilize these examples as a reference for generating code.{% endif %}
+{% for document in documents %}
+{{ document}}{% endfor %}{% endif %}
+{% if context.vectorstore %}{% set documents = context.vectorstore.get_relevant_docs_documents(context.memory.get_last_message()) %}
+{% if documents|length > 0%}Here are additional documents for reference. Feel free to use them to answer.{% endif %}
+{% for document in documents %}{{ document}}
+{% endfor %}{% endif %}

@@ -5,8 +5,6 @@ from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
 
-from ..helpers.df_info import polars_imported
-
 
 class IResponseParser(ABC):
     @abstractmethod
@@ -29,9 +27,9 @@ class ResponseParser(IResponseParser):
 
     def __init__(self, context) -> None:
         """
-        Initialize the ResponseParser with Context from SmartDataLake
+        Initialize the ResponseParser with Context from Agent
         Args:
-            context (Context): context contains the config, logger and engine
+            context (Context): context contains the config and logger
         """
         self._context = context
 
@@ -51,34 +49,10 @@ class ResponseParser(IResponseParser):
         ):
             raise ValueError("Unsupported result format")
 
-        if result["type"] == "dataframe":
-            return self.format_dataframe(result)
-        elif result["type"] == "plot":
+        if result["type"] == "plot":
             return self.format_plot(result)
         else:
-            return self.format_other(result)
-
-    def format_dataframe(self, result: dict) -> Any:
-        """
-        Format dataframe generate against a user query
-        Args:
-            result (dict): result contains type and value
-        Returns:
-            Any: Returns depending on the user input
-        """
-        from ..smart_dataframe import SmartDataframe
-
-        df = result["value"]
-        if self._context.engine == "polars" and polars_imported:
-            import polars as pl
-
-            df = pl.from_pandas(df)
-
-        return SmartDataframe(
-            df,
-            config=self._context._config.__dict__,
-            logger=self._context.logger,
-        )
+            return result["value"]
 
     def format_plot(self, result: dict) -> Any:
         """
@@ -95,15 +69,4 @@ class ResponseParser(IResponseParser):
             with Image.open(result["value"]) as img:
                 img.show()
 
-        return result["value"]
-
-    def format_other(self, result) -> Any:
-        """
-        Returns the result generated against a user query other than dataframes
-        and plots
-        Args:
-            result (dict): result contains type and value
-        Returns:
-            Any: Returns depending on the user input
-        """
         return result["value"]

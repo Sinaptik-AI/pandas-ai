@@ -4,12 +4,12 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
+from pandasai.connectors import BaseConnector, PandasConnector
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
-from pandasai.smart_dataframe import SmartDataframe
 
 
 class MockLogicUnit(BaseLogicUnit):
@@ -66,8 +66,8 @@ class TestPipeline:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def dataframe(self, sample_df):
+        return PandasConnector({"original_df": sample_df})
 
     @pytest.fixture
     def config(self, llm):
@@ -81,23 +81,23 @@ class TestPipeline:
         # Test the initialization of the Pipeline
         pipeline = Pipeline(context)
         assert isinstance(pipeline, Pipeline)
-        assert pipeline._context._config == Config(**config)
+        assert pipeline._context.config == Config(**config)
         assert pipeline._context == context
         assert pipeline._steps == []
 
-    def test_init_with_smartdfs(self, smart_dataframe, config):
+    def test_init_with_agent(self, dataframe, config):
         # Test the initialization of the Pipeline
-        pipeline = Pipeline([smart_dataframe], config=config)
+        pipeline = Pipeline([dataframe], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
-        assert isinstance(pipeline._context.dfs[0], SmartDataframe)
+        assert isinstance(pipeline._context.dfs[0], BaseConnector)
 
-    def test_init_with_dfs(self, sample_df, config):
+    def test_init_with_dfs(self, dataframe, config):
         # Test the initialization of the Pipeline
-        pipeline = Pipeline([sample_df], config=config)
+        pipeline = Pipeline([dataframe], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
-        assert isinstance(pipeline._context.dfs[0], SmartDataframe)
+        assert isinstance(pipeline._context.dfs[0], BaseConnector)
 
     def test_add_step(self, context, config):
         # Test the add_step method

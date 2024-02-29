@@ -1,6 +1,5 @@
 """Unit tests for the base LLM class"""
 
-
 import pytest
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.llms import OpenAI
@@ -12,7 +11,7 @@ from langchain_core.outputs import (
 )
 
 from pandasai.llm import LangchainLLM
-from pandasai.prompts import AbstractPrompt
+from pandasai.prompts import BasePrompt
 
 
 class TestLangchainLLM:
@@ -44,10 +43,10 @@ class TestLangchainLLM:
 
     @pytest.fixture
     def prompt(self):
-        class MockAbstractPrompt(AbstractPrompt):
+        class MockBasePrompt(BasePrompt):
             template: str = "Hello"
 
-        return MockAbstractPrompt()
+        return MockBasePrompt()
 
     def test_langchain_llm_type(self, langchain_llm):
         langchain_wrapper = LangchainLLM(langchain_llm)

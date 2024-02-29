@@ -1,7 +1,9 @@
+import os
+
 import pandas as pd
 import pytest
 
-from pandasai import SmartDataframe
+from pandasai.agent import Agent
 from pandasai.helpers import (
     OpenAICallbackHandler,
     get_openai_callback,
@@ -151,7 +153,7 @@ class TestOpenAIInfo:
     @pytest.mark.parametrize(
         "model_name, expected_cost",
         [
-            ("ft:gpt-3.5-turbo-0613:your-org:custom-model-name:1abcdefg", 0.024),
+            ("ft:gpt-3.5-turbo-0613:your-org:custom-model-name:1abcdefg", 0.028),
             ("gpt-35-turbo-0613.ft-0123456789abcdefghijklmnopqrstuv", 0.0035),
         ],
     )
@@ -174,6 +176,9 @@ class TestOpenAIInfo:
         assert handler.total_cost == expected_cost
 
     def test_openai_callback(self, mocker):
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
         df = pd.DataFrame([1, 2, 3])
         llm = OpenAI(api_token="test")
         llm_response = OpenAIObject(
@@ -199,9 +204,17 @@ class TestOpenAIInfo:
         )
         mocker.patch.object(llm.client, "create", return_value=llm_response)
 
-        sdf = SmartDataframe(df, config={"llm": llm, "enable_cache": False})
+        # Mock the check_if_related_to_conversation method to not
+        # perform additional api requests to OpenAI
+        mocker.patch.object(
+            Agent,
+            "check_if_related_to_conversation",
+            return_value=False,
+        )
+
+        agent = Agent([df], config={"llm": llm, "enable_cache": False})
         with get_openai_callback() as cb:
-            sdf.chat("some question 1")
+            agent.chat("some question 1")
             assert cb.total_tokens == 3
             assert cb.prompt_tokens == 2
             assert cb.completion_tokens == 1
@@ -210,14 +223,14 @@ class TestOpenAIInfo:
         total_tokens = cb.total_tokens
 
         with get_openai_callback() as cb:
-            sdf.chat("some question 2")
-            sdf.chat("some question 3")
+            agent.chat("some question 2")
+            agent.chat("some question 3")
 
         assert cb.total_tokens == total_tokens * 2
 
         with get_openai_callback() as cb:
-            sdf.chat("some question 4")
-            sdf.chat("some question 5")
-            sdf.chat("some question 6")
+            agent.chat("some question 4")
+            agent.chat("some question 5")
+            agent.chat("some question 6")
 
         assert cb.total_tokens == total_tokens * 3

@@ -2,7 +2,9 @@
 
 from typing import Optional
 
-from ..prompts.base import AbstractPrompt
+from pandasai.pipelines.pipeline_context import PipelineContext
+
+from ..prompts.base import BasePrompt
 from .base import LLM
 
 
@@ -15,8 +17,8 @@ class FakeLLM(LLM):
         if output is not None:
             self._output = output
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
-        self.last_prompt = instruction.to_string() + suffix
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+        self.last_prompt = instruction.to_string()
         return self._output
 
     @property

@@ -7,7 +7,18 @@ import pandasai.pandas as pd
 
 from ..constants import DEFAULT_FILE_PERMISSIONS
 from ..helpers.path import find_project_root
-from .base import BaseConnector, YahooFinanceConnectorConfig
+from .base import BaseConnector, BaseConnectorConfig
+
+
+class YahooFinanceConnectorConfig(BaseConnectorConfig):
+    """
+    Connector configuration for Yahoo Finance.
+    """
+
+    dialect: str = "yahoo_finance"
+    host: str = "yahoo.finance.com"
+    database: str = "stock_data"
+    host: str
 
 
 class YahooFinanceConnector(BaseConnector):
@@ -22,6 +33,7 @@ class YahooFinanceConnector(BaseConnector):
         stock_ticker: Optional[str] = None,
         config: Optional[Union[YahooFinanceConnectorConfig, dict]] = None,
         cache_interval: int = 600,
+        **kwargs,
     ):
         if not stock_ticker and not config:
             raise ValueError(
@@ -49,17 +61,17 @@ class YahooFinanceConnector(BaseConnector):
 
         self._cache_interval = cache_interval
         super().__init__(yahoo_finance_config)
-        self.ticker = yfinance.Ticker(self._config.table)
+        self.ticker = yfinance.Ticker(self.config.table)
 
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the data source that the connector is connected to.
 
         Returns:
-            DataFrameType: The head of the data source that the connector is
+            DataFrame: The head of the data source that the connector is connected to.
             connected to.
         """
-        return self.ticker.history(period="5d")
+        return self.ticker.history(period=f"{n}d")
 
     def _get_cache_path(self, include_additional_filters: bool = False):
         """
@@ -74,7 +86,7 @@ class YahooFinanceConnector(BaseConnector):
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _get_cache_path(self):
         """
@@ -87,7 +99,7 @@ class YahooFinanceConnector(BaseConnector):
 
         os.makedirs(cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True)
 
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _cached(self):
         """
@@ -119,7 +131,7 @@ class YahooFinanceConnector(BaseConnector):
         Execute the connector and return the result.
 
         Returns:
-            DataFrameType: The result of the connector.
+            DataFrame: The result of the connector.
         """
         if cached_path := self._cached():
             return pd.read_parquet(cached_path)
@@ -180,4 +192,8 @@ class YahooFinanceConnector(BaseConnector):
         Returns:
             str: The fallback name of the connector.
         """
-        return self._config.table
+        return self.config.table
+
+    @property
+    def pandas_df(self):
+        return self.execute()

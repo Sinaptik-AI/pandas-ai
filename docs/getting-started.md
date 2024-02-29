@@ -16,7 +16,7 @@ pip install pandasai
 
 ### Optional dependencies
 
-To keep the package size small, we have decided to make some dependencies optional. To install `pandasai` with these extra dependencies, run:
+In order to keep the installation size small, `pandasai` does not include all the dependencies that it supports by default. You can install the extra dependencies by running the following command:
 
 ```console
 pip install pandasai[extra-dependency-name]
@@ -24,7 +24,7 @@ pip install pandasai[extra-dependency-name]
 
 You can replace `extra-dependency-name` with any of the following:
 
-- `google-aip`: this extra dependency is required if you want to use Google PaLM as a language model.
+- `google-ai`: this extra dependency is required if you want to use Google PaLM as a language model.
 - `google-sheet`: this extra dependency is required if you want to use Google Sheets as a data source.
 - `excel`: this extra dependency is required if you want to use Excel files as a data source.
 - `modin`: this extra dependency is required if you want to use Modin dataframes as a data source.
@@ -36,92 +36,95 @@ You can replace `extra-dependency-name` with any of the following:
 - `plotly`: this extra dependency is required if you want to support plotly for plotting.
 - `statsmodels`: this extra dependency is required if you want to support statsmodels.
 - `scikit-learn`: this extra dependency is required if you want to support scikit-learn.
-- `streamlit`: this extra dependency is required if you want to support the streamlit.
+- `streamlit`: this extra dependency is required if you want to support streamlit.
 
 ## SmartDataframe
 
-Below is simple example to get started with `pandasai`.
+The `SmartDataframe` class is the main class of `pandasai`. It is used to interact with a single dataframe. Below is simple example to get started with `pandasai`.
 
 ```python
 import pandas as pd
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
-
 # Sample DataFrame
-df = pd.DataFrame({
+sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 # Instantiate a LLM
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe(df, config={"llm": llm})
-df.chat('Which are the 5 happiest countries?')
-# Output: United Kingdom, Canada, Australia, United States, Germany
+df = SmartDataframe(sales_by_country, config={"llm": llm})
+df.chat('Which are the top 5 countries by sales?')
+# Output: China, United States, Japan, Germany, Australia
 ```
 
 If you want to learn more about the `SmartDataframe` class, check out this video:
 
-[![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to SmartDataframe")
+[![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to the SmartDataframe")
 
 ### How to generate an OpenAI API Token
 
-Users are required to generate `YOUR_API_TOKEN`. Follow these simple steps to generate `YOUR_API_TOKEN` with
-[openai](https://platform.openai.com/overview).
+In order to use the OpenAI language model, users are required to generate a token. Follow these simple steps to generate a token with [openai](https://platform.openai.com/overview):
 
 1. Go to https://openai.com/api/ and signup with your email address or connect your Google Account.
 2. Go to View API Keys on left side of your Personal Account Settings.
 3. Select Create new Secret key.
 
 > The API access to OPENAI is a paid service. You have to set up billing.
-> Read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
+> Make sure you read the [Pricing](https://platform.openai.com/docs/quickstart/pricing) information before experimenting.
 
-### Passing name and description
+### Passing name and description for a dataframe
 
-Sometimes, to help the LLM to work better, you might want to pass a name and a description of the dataframe.
-You can do so as follows:
+Sometimes, in order to help the LLM to work better, you might want to pass a name and a description of the dataframe. You can do this as follows:
 
 ```python
-df = SmartDataframe(df, name="My DataFrame", description="This is my DataFrame")
+df = SmartDataframe(df, name="My DataFrame", description="Brief description of what the dataframe contains")
 ```
 
 ## SmartDatalake
 
-PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`. A `SmartDatalake` is a collection of `SmartDataframe`s. You can instantiate a `SmartDatalake` as follows:
+PandasAI also supports queries with multiple dataframes. To perform such queries, you can use a `SmartDatalake` instead of a `SmartDataframe`.
+
+Similarly to a `SmartDataframe`, you can instantiate a `SmartDatalake` as follows:
 
 ```python
-from pandasai import SmartDatalake
 import pandas as pd
+from pandasai import SmartDatalake
+from pandasai.llm import OpenAI
 
-# Sample DataFrames
-df1 = pd.DataFrame({
-    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
-})
-df2 = "data/Loan payments data.csv"
-df3 = "data/Loan payments data.xlsx"
+employees_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Name': ['John', 'Emma', 'Liam', 'Olivia', 'William'],
+    'Department': ['HR', 'Sales', 'IT', 'Marketing', 'Finance']
+}
 
-dl = SmartDatalake([df1, df2, df3])
-```
+salaries_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Salary': [5000, 6000, 4500, 7000, 5500]
+}
 
-Then, similar to how you would use a `SmartDataframe`, you can use the `SmartDatalake` as follows:
+employees_df = pd.DataFrame(employees_data)
+salaries_df = pd.DataFrame(salaries_data)
 
-```python
-dl.chat('Which are the 5 happiest countries?')
-# Output: United Kingdom, Canada, Australia, United States, Germany
+
+llm = OpenAI()
+dl = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
+dl.chat("Who gets paid the most?")
+# Output: Olivia gets paid the most
 ```
 
 PandasAI will automatically figure out which dataframe or dataframes are relevant to the query and will use only those dataframes to answer the query.
 
-[![Intro to SmartDatalake](https://cdn.loom.com/sessions/thumbnails/a2006ac27b0545189cb5b9b2e011bc72-00001.jpg)](https://www.loom.com/share/a2006ac27b0545189cb5b9b2e011bc72 "Intro to SmartDatalake")
+[![Intro to the SmartDatalake](https://cdn.loom.com/sessions/thumbnails/a2006ac27b0545189cb5b9b2e011bc72-00001.jpg)](https://www.loom.com/share/a2006ac27b0545189cb5b9b2e011bc72 "Intro to SmartDatalake")
 
 ## Agent
 
-PandasAI also supports agents. While a `SmartDataframe` or a `SmartDatalake` can be used to answer a single query and are meant to be used in a single session and for exploratory data analysis, an agent can be used for multi-turn conversations and for production use cases. You can instantiate an agent as follows:
+While a `SmartDataframe` or a `SmartDatalake` can be used to answer a single query and are meant to be used in a single session and for exploratory data analysis, an agent can be used for multi-turn conversations.
+
+To instantiate an agent, you can use the following code:
 
 ```python
 from pandasai import Agent
@@ -130,29 +133,24 @@ from pandasai.llm import OpenAI
 
 
 # Sample DataFrames
-df1 = pd.DataFrame({
+sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000],
+    "deals_opened": [142, 80, 70, 90, 60, 50, 40, 30, 110, 120]
+    "deals_closed": [120, 70, 60, 80, 50, 40, 30, 20, 100, 110]
 })
 
 llm = OpenAI(api_token="YOUR_API_TOKEN")
-
-agent = Agent([df1], config={"llm": llm})
-```
-
-Then, you can use the agent as follows:
-
-```python
-agent.chat('Which are the 5 happiest countries?')
-# Output: United Kingdom, Canada, Australia, United States, Germany
+agent = Agent([sales_by_country], config={"llm": llm})
+agent.chat('Which are the top 5 countries by sales?')
+# Output: China, United States, Japan, Germany, Australia
 ```
 
 Contrary to a `SmartDataframe` or a `SmartDatalake`, an agent will keep track of the state of the conversation and will be able to answer multi-turn conversations. For example:
 
 ```python
-agent.chat('And what is the GDP of these countries?')
-# Output: 2891615567872, 1607402389504, 1490967855104, 19294482071552, 3435817336832
+agent.chat('And which one has the most deals?')
+# Output: United States has the most deals
 ```
 
 ### Clarification questions
@@ -167,7 +165,7 @@ this will return up to 3 clarification questions that the agent can ask to the u
 
 ### Explanation
 
-An agent will also be able to explain the answer to the user. For example:
+An agent will also be able to explain the answer given to the user. For example:
 
 ```python
 response = agent.chat('What is the GDP of the United States?')
@@ -184,15 +182,13 @@ Rephrase question to get accurate and comprehensive response from the model. For
 ```python
 rephrased_query = agent.rephrase_query('What is the GDP of the United States?')
 
-print("The answer is", rephrased_query)
+print("The rephrased query is", rephrased_query)
 
 ```
 
 ## Config
 
-When you instantiate a `SmartDataframe`, you can pass a `config` object as the second argument. This object can contain custom settings that will be used by `pandasai` when generating code.
-
-As an alternative, you can simply edit the `pandasai.json` file in the root of your project. This file will be automatically loaded by `pandasai` and these will be the default settings. You will still be able to override these settings by passing the settings that you want to override when instantiating a `SmartDataframe`.
+To customize PandasAI's `SmartDataframe`, you can either pass a `config` object with specific settings upon instantiation or modify the `pandasai.json` file in your project's root. The latter serves as the default configuration but can be overridden by directly specifying settings in the `config` object at creation. This approach ensures flexibility and precision in how PandasAI handles your data.
 
 Settings:
 
@@ -203,11 +199,10 @@ Settings:
 - `enforce_privacy`: whether to enforce privacy. Defaults to `False`. If set to `True`, PandasAI will not send any data to the LLM, but only the metadata. By default, PandasAI will send 5 samples that are anonymized to improve the accuracy of the results.
 - `save_charts`: whether to save the charts generated by PandasAI. Defaults to `False`. You will find the charts in the root of your project or in the path specified by `save_charts_path`.
 - `save_charts_path`: the path where to save the charts. Defaults to `exports/charts/`. You can use this setting to override the default path.
-- `open_charts`: whether to open the chart during parsing of the response from the LLM. Defaults to `True`. You can completely disable displaying of charts by setting this option to `False`. 
+- `open_charts`: whether to open the chart during parsing of the response from the LLM. Defaults to `True`. You can completely disable displaying of charts by setting this option to `False`.
 - `enable_cache`: whether to enable caching. Defaults to `True`. If set to `True`, PandasAI will cache the results of the LLM to improve the response time. If set to `False`, PandasAI will always call the LLM.
 - `use_error_correction_framework`: whether to use the error correction framework. Defaults to `True`. If set to `True`, PandasAI will try to correct the errors in the code generated by the LLM with further calls to the LLM. If set to `False`, PandasAI will not try to correct the errors in the code generated by the LLM.
 - `max_retries`: the maximum number of retries to use when using the error correction framework. Defaults to `3`. You can use this setting to override the default number of retries.
-- `custom_prompts`: the custom prompts to use. Defaults to `{}`. You can use this setting to override the default custom prompts. You can find more information about custom prompts [here](custom-prompts.md).
 - `custom_whitelisted_dependencies`: the custom whitelisted dependencies to use. Defaults to `{}`. You can use this setting to override the default custom whitelisted dependencies. You can find more information about custom whitelisted dependencies [here](custom-whitelisted-dependencies.md).
 
 ## Demo in Google Colab
@@ -216,7 +211,6 @@ Try out PandasAI in your browser:
 
 [![Open in Colab](https://camo.githubusercontent.com/84f0493939e0c4de4e6dbe113251b4bfb5353e57134ffd9fcab6b8714514d4d1/68747470733a2f2f636f6c61622e72657365617263682e676f6f676c652e636f6d2f6173736574732f636f6c61622d62616467652e737667)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-## Examples
+## Other Examples
 
-You can find some examples [here](examples.md).
-
+You can find all the other examples [here](examples.md).

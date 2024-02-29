@@ -14,7 +14,17 @@ import pandasai.pandas as pd
 
 from ..exceptions import InvalidRequestError
 from ..helpers.path import find_project_root
-from .base import AirtableConnectorConfig, BaseConnector, BaseConnectorConfig
+from .base import BaseConnector, BaseConnectorConfig
+
+
+class AirtableConnectorConfig(BaseConnectorConfig):
+    """
+    Connecter configuration for Airtable data.
+    """
+
+    api_key: str
+    base_id: str
+    database: str = "airtable_data"
 
 
 class AirtableConnector(BaseConnector):
@@ -30,6 +40,7 @@ class AirtableConnector(BaseConnector):
         self,
         config: Optional[Union[AirtableConnectorConfig, dict]] = None,
         cache_interval: int = 600,
+        **kwargs,
     ):
         if isinstance(config, dict):
             if "token" in config and "base_id" in config and "table" in config:
@@ -52,7 +63,7 @@ class AirtableConnector(BaseConnector):
         self._root_url: str = "https://api.airtable.com/v0/"
         self._cache_interval = cache_interval
 
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
     def _init_connection(self, config: BaseConnectorConfig):
         """
@@ -88,7 +99,7 @@ class AirtableConnector(BaseConnector):
             cache_dir = os.path.join((find_project_root()), "cache")
         except ValueError:
             cache_dir = os.path.join(os.getcwd(), "cache")
-        return os.path.join(cache_dir, f"{self._config.table}_data.parquet")
+        return os.path.join(cache_dir, f"{self.config.table}_data.parquet")
 
     def _cached(self, include_additional_filters: bool = False):
         """
@@ -137,14 +148,14 @@ class AirtableConnector(BaseConnector):
         Returns :
             str : The fallback table name of the connector.
         """
-        return self._config.table
+        return self.config.table
 
-    def execute(self):
+    def execute(self) -> pd.DataFrame:
         """
         Execute the connector and return the result.
 
         Returns:
-            DataFrameType: The result of the connector.
+            pd.DataFrame: The result of the connector.
         """
         if cached := self._cached() or self._cached(include_additional_filters=True):
             return pd.read_parquet(cached)
@@ -162,17 +173,17 @@ class AirtableConnector(BaseConnector):
         """
 
         condition_strings = []
-        if self._config.where is not None:
-            for i in self._config.where:
+        if self.config.where is not None:
+            for i in self.config.where:
                 filter_query = f"{i[0]}{i[1]}'{i[2]}'"
                 condition_strings.append(filter_query)
         return f'AND({",".join(condition_strings)})'
 
     def _request_api(self, params):
-        url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
+        url = f"{self._root_url}{self.config.base_id}/{self.config.table}"
         return requests.get(
             url=url,
-            headers={"Authorization": f"Bearer {self._config.token}"},
+            headers={"Authorization": f"Bearer {self.config.api_key}"},
             params=params,
         )
 
@@ -183,7 +194,7 @@ class AirtableConnector(BaseConnector):
 
         params = {"pageSize": 100, "offset": "0"}
 
-        if self._config.where is not None:
+        if self.config.where is not None:
             params["filterByFormula"] = self._build_formula()
 
         data = []
@@ -209,7 +220,7 @@ class AirtableConnector(BaseConnector):
         return pd.DataFrame(data)
 
     @cache
-    def head(self):
+    def head(self, n: int = 5) -> pd.DataFrame:
         """
         Return the head of the table that
           the connector is connected to.
@@ -218,7 +229,7 @@ class AirtableConnector(BaseConnector):
             DatFrameType: The head of the data source
                  that the connector is connected to .
         """
-        data = self._request_api(params={"maxRecords": 5})
+        data = self._request_api(params={"maxRecords": n})
         return pd.DataFrame(
             [
                 {"id": record["id"], **record["fields"]}

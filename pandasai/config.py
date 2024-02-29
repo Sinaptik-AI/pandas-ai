@@ -6,7 +6,7 @@ from .helpers.path import find_closest
 from .schemas.df_config import Config
 
 
-def load_config(
+def load_config_from_json(
     override_config: Optional[Union[Config, dict]] = None,
 ):
     """

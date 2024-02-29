@@ -4,12 +4,13 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 import importlib.metadata
 
+from pandasai.smart_dataframe import SmartDataframe
+from pandasai.smart_datalake import SmartDatalake
+
 from .agent import Agent
 from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .skills import skill
-from .smart_dataframe import SmartDataframe
-from .smart_datalake import SmartDatalake
 
 __version__ = importlib.metadata.version(__package__ or __name__)
 
@@ -21,11 +22,11 @@ def clear_cache(filename: str = None):
 
 
 __all__ = [
-    "SmartDataframe",
-    "SmartDatalake",
     "Agent",
     "clear_cache",
     "skill",
     "set_pd_engine",
     "pandas",
+    "SmartDataframe",
+    "SmartDatalake",
 ]

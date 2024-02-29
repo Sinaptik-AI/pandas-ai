@@ -1,24 +1,18 @@
 from typing import Optional
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pandas as pd
 import pytest
 
-from pandasai.exceptions import InvalidLLMOutputType
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.chat.code_execution import CodeExecution
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.smart_datalake_chat.code_execution import CodeExecution
-from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
-from pandasai.prompts.correct_output_type_error_prompt import (
-    CorrectOutputTypeErrorPrompt,
-)
-from pandasai.smart_dataframe import SmartDataframe
 
 
 class TestCodeExecution:
-    "Unit test for Smart Data Lake Code Execution"
+    "Unit test for Code Execution"
 
     throw_exception = True
 
@@ -70,10 +64,6 @@ class TestCodeExecution:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": True})
-
-    @pytest.fixture
     def config(self, llm):
         return {"llm": llm, "enable_cache": True}
 
@@ -105,16 +95,20 @@ class TestCodeExecution:
             elif key == "code_manager":
                 return mock_code_manager
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
+        context.get = Mock(side_effect=mock_intermediate_values)
+        # context._query_exec_tracker = Mock()
+        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         result = code_execution.execute(
-            input="Test Code", context=context, logger=logger
+            input='result={"type":"string", "value":"5"}',
+            context=context,
+            logger=logger,
         )
 
         assert isinstance(code_execution, CodeExecution)
-        assert result == "Mocked Result"
+        assert result.output == {"type": "string", "value": "5"}
+        assert result.message == "Code Executed Successfully"
+        assert result.success is True
 
     def test_code_execution_unsuccessful_after_retries(self, context, logger):
         # Test Flow : Code Execution Successful after retry
@@ -126,15 +120,6 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(side_effect=mock_execute_code)
 
-        context._query_exec_tracker = Mock()
-        context.query_exec_tracker.execute_func = Mock(
-            return_value=[
-                "Interuppted Code",
-                "Exception Testing",
-                "Unsuccessful after Retries",
-            ]
-        )
-
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
@@ -143,7 +128,7 @@ class TestCodeExecution:
             elif key == "code_manager":
                 return mock_code_manager
 
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
+        context.get = Mock(side_effect=mock_intermediate_values)
 
         assert isinstance(code_execution, CodeExecution)
 
@@ -167,60 +152,20 @@ class TestCodeExecution:
 
         # Conditional return of execute_func method based arguments it is called with
         def mock_execute_func(*args, **kwargs):
-            if isinstance(args[0], Mock) and args[0].name == "execute_code":
-                return mock_execute_code(*args, **kwargs)
-            else:
-                return [
-                    "Interuppted Code",
-                    "Exception Testing",
-                    "Successful after Retry",
-                ]
+            return mock_execute_code(*args, **kwargs)
 
         mock_code_manager = Mock()
-        mock_code_manager.execute_code = Mock()
+        mock_code_manager.execute_code = mock_execute_func
         mock_code_manager.execute_code.name = "execute_code"
 
-        context._query_exec_tracker = Mock()
-
-        context.query_exec_tracker.execute_func = Mock(side_effect=mock_execute_func)
-
-        def mock_intermediate_values(key: str):
-            if key == "last_prompt_id":
-                return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
-            elif key == "code_manager":
-                return mock_code_manager
-
-        context.get_intermediate_value = Mock(side_effect=mock_intermediate_values)
-
-        result = code_execution.execute(
-            input="Test Code", context=context, logger=logger
+        code_execution._retry_run_code = Mock(
+            return_value='result={"type":"string", "value":"5"}'
         )
 
+        result = code_execution.execute(input="x=5", context=context, logger=logger)
+
+        assert code_execution._retry_run_code.assert_called
         assert isinstance(code_execution, CodeExecution)
-        assert result == "Mocked Result after retry"
-
-    def test_get_error_prompt_invalid_llm_output_type(self):
-        code_execution = CodeExecution()
-
-        # Mock the InvalidLLMOutputType exception
-        mock_exception = MagicMock(spec=InvalidLLMOutputType)
-
-        # Call the method with the mock exception
-        result = code_execution._get_error_prompt(mock_exception)
-
-        # Assert that the CorrectOutputTypeErrorPrompt is returned
-        assert isinstance(result, CorrectOutputTypeErrorPrompt)
-
-    def test_get_error_prompt_other_exception(self):
-        code_execution = CodeExecution()
-
-        # Mock a generic exception
-        mock_exception = MagicMock(spec=Exception)
-
-        # Call the method with the mock exception
-        result = code_execution._get_error_prompt(mock_exception)
-
-        # Assert that the CorrectErrorPrompt is returned
-        assert isinstance(result, CorrectErrorPrompt)
+        assert result.output == {"type": "string", "value": "5"}
+        assert result.message == "Code Executed Successfully"
+        assert result.success is True

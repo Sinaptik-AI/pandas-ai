@@ -1,24 +1,31 @@
 """Unit tests for the CodeManager class"""
 import ast
+import os
 import uuid
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
-from pandasai.connectors.base import SQLConnectorConfig
-from pandasai.connectors.sql import PostgreSQLConnector, SQLConnector
+from pandasai import Agent
+from pandasai.connectors.sql import (
+    PostgreSQLConnector,
+    SQLConnector,
+    SQLConnectorConfig,
+)
 from pandasai.exceptions import (
     BadImportError,
+    ExecuteSQLQueryNotUsed,
     InvalidConfigError,
     MaliciousQueryError,
     NoCodeFoundError,
 )
 from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
+from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.smart_dataframe import SmartDataframe
+from pandasai.schemas.df_config import Config
 
 
 class TestCodeManager:
@@ -72,12 +79,35 @@ class TestCodeManager:
         )
 
     @pytest.fixture
-    def smart_dataframe(self, llm, sample_df):
-        return SmartDataframe(sample_df, config={"llm": llm, "enable_cache": False})
+    def logger(self):
+        return Logger()
 
     @pytest.fixture
-    def code_manager(self, smart_dataframe: SmartDataframe):
-        return smart_dataframe.lake._code_manager
+    def config_with_direct_sql(self):
+        return Config(
+            llm=FakeLLM(output=""),
+            enable_cache=False,
+            direct_sql=True,
+        )
+
+    @pytest.fixture
+    def agent(self, llm, sample_df):
+        return Agent([sample_df], config={"llm": llm, "enable_cache": False})
+
+    @pytest.fixture
+    def agent_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+        return Agent(
+            [pgsql_connector],
+            config={"llm": llm, "enable_cache": False, "direct_sql": True},
+        )
+
+    @pytest.fixture
+    def code_manager(self, agent: Agent):
+        return CodeManager(
+            dfs=agent.context.dfs,
+            config=agent.context.config,
+            logger=agent.logger,
+        )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -119,7 +149,7 @@ class TestCodeManager:
         ).dict()
 
         # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config)
+        return PostgreSQLConnector(self.config, name="your_table")
 
     def test_run_code_for_calculations(
         self, code_manager: CodeManager, exec_context: MagicMock
@@ -203,21 +233,22 @@ print(dfs)"""
             == """print(dfs)"""
         )
 
-    def test_exception_handling(
-        self, smart_dataframe: SmartDataframe, code_manager: CodeManager
-    ):
-        code_manager.execute_code = Mock(
-            side_effect=NoCodeFoundError("No code found in the answer.")
-        )
-        code_manager.execute_code.__name__ = "execute_code"
+    @patch(
+        "pandasai.pipelines.chat.code_execution.CodeManager.execute_code",
+        autospec=True,
+    )
+    def test_exception_handling(self, mock_execute_code: MagicMock, agent: Agent):
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
 
-        result = smart_dataframe.chat("How many countries are in the dataframe?")
+        mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
+        result = agent.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "
             "because of the following error:\n"
             "\nNo code found in the answer.\n"
         )
-        assert smart_dataframe.last_error == "No code found in the answer."
+        assert agent.last_error == "No code found in the answer."
 
     def test_custom_whitelisted_dependencies(
         self, code_manager: CodeManager, llm, exec_context: MagicMock
@@ -237,7 +268,7 @@ my_custom_library.do_something()
             == """my_custom_library.do_something()"""
         )
 
-    def test_get_environment(self, code_manager: CodeManager, smart_dataframe):
+    def test_get_environment(self, code_manager: CodeManager):
         code_manager._additional_dependencies = [
             {"name": "pyplot", "alias": "plt", "module": "matplotlib"},
             {"name": "numpy", "alias": "np", "module": "numpy"},
@@ -312,87 +343,6 @@ my_custom_library.do_something()
             "__name__": "__main__",
         }
 
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_polars(self, df_name, code, code_manager: CodeManager):
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    def test_extract_filters_polars_multiple_df(self, code_manager: CodeManager):
-        code = """
-df = dfs[0]
-filtered_paid_df_male = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-num_loans_paid_off_male = len(filtered_paid_df)
-
-df = dfs[1]
-filtered_pend_df_male = df.filter(
-    (pl.col('loan_status') == 'PENDING') & (pl.col('Gender') == 'male')
-)
-num_loans_pending_male = len(filtered_pend_df)
-
-df = dfs[2]
-filtered_paid_df_female = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'female')
-)
-num_loans_paid_off_female = len(filtered_pend_df)
-
-value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
-result = {
-    'type': 'number',
-    'value': value
-}
-"""
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert "dfs[1]" in filters
-        assert "dfs[2]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-        assert len(filters["dfs[1]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
-        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
-
-        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[2]"][1] == ("Gender", "=", "female")
-
     @pytest.mark.parametrize("df_name", ["df", "foobar"])
     def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
         code = f"""
@@ -405,45 +355,6 @@ filtered_df = (
 num_loans = len(filtered_df)
 result = {{'type': 'number', 'value': num_loans}}
 """
-        filters = code_manager._extract_filters(code)
-        assert isinstance(filters, dict)
-        assert "dfs[0]" in filters
-        assert isinstance(filters["dfs[0]"], list)
-        assert len(filters["dfs[0]"]) == 2
-
-        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
-        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
-
-    @pytest.mark.parametrize(
-        "df_name, code",
-        [
-            (
-                "df",
-                """
-df = dfs[0]
-filtered_df = df.filter(
-    (pl.col('loan_status') == 'PAIDOFF') & (pl.col('Gender') == 'male')
-)
-count = filtered_df.shape[0]
-result = {'type': 'number', 'value': count}
-                """,
-            ),
-            (
-                "foobar",
-                """
-foobar = dfs[0]
-filtered_df = foobar[(
-    foobar['loan_status'] == 'PAIDOFF'
-) & (df['Gender'] == 'male')]
-num_loans = len(filtered_df)
-result = {'type': 'number', 'value': num_loans}
-                """,
-            ),
-        ],
-    )
-    def test_extract_filters_col_index_non_default_name(
-        self, df_name, code, code_manager: CodeManager
-    ):
         filters = code_manager._extract_filters(code)
         assert isinstance(filters, dict)
         assert "dfs[0]" in filters
@@ -504,25 +415,17 @@ result = {
         # raise exception when two different connector
         with pytest.raises(InvalidConfigError):
             code_manager._config.direct_sql = True
-            df1 = SmartDataframe(
-                sql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
-            df2 = SmartDataframe(
-                pgsql_connector,
-                config={"llm": FakeLLM(output="")},
-            )
-            code_manager._validate_direct_sql([df1, df2])
+            code_manager._validate_direct_sql([sql_connector, pgsql_connector])
 
     def test_clean_code_direct_sql_code(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self, exec_context: MagicMock, agent_with_connector: Agent
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        code_manager = CodeManager(
+            dfs=agent_with_connector.context.dfs,
+            config=agent_with_connector.context.config,
+            logger=agent_with_connector.logger,
         )
-        code_manager = df.lake._code_manager
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:
@@ -531,19 +434,17 @@ def execute_sql_query(sql_query: str) -> pd.DataFrame:
     # return the result as a dataframe
     return pd.DataFrame()
 np.array()
+execute_sql_query()
 """
-        assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
+        assert (
+            code_manager._clean_code(safe_code, exec_context)
+            == "np.array()\nexecute_sql_query()"
+        )
 
     def test_clean_code_direct_sql_code_false(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self, exec_context: MagicMock, code_manager
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": False},
-        )
-        code_manager = df.lake._code_manager
-
         safe_code = """
 import numpy as np
 def execute_sql_query(sql_query: str) -> pd.DataFrame:
@@ -577,7 +478,7 @@ np.array()"""
         mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
 
         class MockObject:
-            table_name = "allowed_table"
+            name = "allowed_table"
 
         code_manager._dfs = [MockObject()]
 
@@ -596,7 +497,7 @@ np.array()"""
             table_name = "allowed_table"
 
             def __init__(self, table_name):
-                self.table_name = table_name
+                self.name = table_name
 
         code_manager._dfs = [MockObject("table1"), MockObject("table2")]
 
@@ -610,7 +511,7 @@ np.array()"""
         mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
 
         class MockObject:
-            table_name = "allowed_table"
+            name = "allowed_table"
 
         code_manager._dfs = [MockObject()]
 
@@ -629,7 +530,7 @@ np.array()"""
             table_name = "allowed_table"
 
             def __init__(self, table_name):
-                self.table_name = table_name
+                self.name = table_name
 
         code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
 
@@ -638,26 +539,59 @@ np.array()"""
         assert len(irrelevant_tables) == 1
 
     def test_clean_code_using_correct_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
     ):
-        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
+        """Test that the correct sql table"""
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        safe_code = (
+            """sql_query = 'SELECT * FROM your_table'\nexecute_sql_query(sql_query)"""
         )
-        code_manager = df.lake._code_manager
+        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+
+    def test_clean_code_with_no_execute_sql_query_usage(
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        """Test that the correct sql table"""
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM your_table'"""
+        with pytest.raises(ExecuteSQLQueryNotUsed) as excinfo:
+            code_manager._clean_code(safe_code, exec_context)
+        assert str(excinfo.value) == (
+            "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
+        )
+
+    def test_clean_code_with_no_execute_sql_query_usage_script(
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        """Test that the correct sql table"""
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        safe_code = (
+            """orders_count = execute_sql_query('SELECT COUNT(*) FROM orders')[0][0]"""
+        )
+
         assert code_manager._clean_code(safe_code, exec_context) == safe_code
 
     def test_clean_code_using_incorrect_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger,
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
-        )
-        code_manager = df.lake._code_manager
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM unknown_table'
     """
         with pytest.raises(MaliciousQueryError) as excinfo:
@@ -668,14 +602,14 @@ np.array()"""
         )
 
     def test_clean_code_using_multi_incorrect_sql_table(
-        self, pgsql_connector: PostgreSQLConnector, exec_context: MagicMock
+        self,
+        pgsql_connector: PostgreSQLConnector,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        df = SmartDataframe(
-            pgsql_connector,
-            config={"llm": FakeLLM(output=""), "direct_sql": True},
-        )
-        code_manager = df.lake._code_manager
+        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
         safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
         with pytest.raises(MaliciousQueryError) as excinfo:
             code_manager._clean_code(safe_code, exec_context)

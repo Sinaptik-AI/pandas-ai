@@ -4,7 +4,7 @@ import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import OpenAI
-from pandasai.prompts import AbstractPrompt
+from pandasai.prompts import BasePrompt
 
 
 class OpenAIObject:
@@ -17,10 +17,10 @@ class TestOpenAILLM:
 
     @pytest.fixture
     def prompt(self):
-        class MockAbstractPrompt(AbstractPrompt):
+        class MockBasePrompt(BasePrompt):
             template: str = "instruction"
 
-        return MockAbstractPrompt()
+        return MockBasePrompt()
 
     def test_type_without_token(self):
         with pytest.raises(APIKeyNotFoundError):
@@ -125,7 +125,7 @@ class TestOpenAILLM:
         result = openai.call(instruction=prompt)
         assert result == "response"
 
-    def test_call_finetuned_model(self, mocker, prompt):
+    def test_call_with_system_prompt(self, mocker, prompt):
         openai = OpenAI(
             api_token="test", model="ft:gpt-3.5-turbo:my-org:custom_suffix:id"
         )

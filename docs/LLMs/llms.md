@@ -10,11 +10,39 @@ If the model expects one or more parameters, you can pass them to the constructo
 
 ```json
 {
-  "llm": "OpenAI",
+  "llm": "BambooLLM",
   "llm_options": {
-    "api_token": "API_TOKEN_GOES_HERE"
+    "api_key": "API_KEY_GOES_HERE"
   }
 }
+```
+
+## BambooLLM
+
+BambooLLM is the state-of-the-art language model developed by [PandasAI](https://pandas-ai.com) with data analysis in mind. It is designed to understand and execute natural language queries related to data analysis, data manipulation, and data visualization. It's currently in closed beta and available only to a select group of users, but it will be available to the public soon. You can join the waitlist [here](https://docs.google.com/forms/d/1RvdGO6dmV9NY2EaNoxmitxQmRYh3oThVRznoXqJBSFI).
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm import BambooLLM
+
+llm = BambooLLM(api_key="my-bamboo-api-key")
+df = SmartDataframe("data.csv", config={"llm": llm})
+
+response = df.chat("Calculate the sum of the gdp of north american countries")
+print(response)
+```
+
+As an alternative, you can set the `PANDASAI_API_KEY` environment variable and instantiate the `BambooLLM` object without passing the API key:
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm import BambooLLM
+
+llm = BambooLLM() # no need to pass the API key, it will be read from the environment variable
+df = SmartDataframe("data.csv", config={"llm": llm})
+
+response = df.chat("Calculate the sum of the gdp of north american countries")
+print(response)
 ```
 
 ## OpenAI models

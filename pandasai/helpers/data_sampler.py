@@ -14,17 +14,14 @@ import numpy as np
 import pandasai.pandas as pd
 
 from .anonymizer import Anonymizer
-from .df_info import DataFrameType, df_type
 
 
 class DataSampler:
-    def __init__(self, df: DataFrameType):
+    def __init__(self, df: pd.DataFrame):
         """
         Args:
-            df (SmartDataframe): SmartDataframe to sample from.
+            df (pd.DataFrame): pd.DataFrame to sample from.
         """
-        if df_type(df) == "polars":
-            df = df.to_pandas()
         self.df = df
 
     def sample(self, n: int = 3) -> pd.DataFrame:
@@ -34,7 +31,7 @@ class DataSampler:
             n (int, optional): Number of rows to sample. Defaults to 5.
 
         Returns:
-            DataFrameType: Sampled dataframe.
+            pd.DataFrame: Sampled dataframe.
         """
         sampled_df = pd.DataFrame()
         if len(self.df) <= n:

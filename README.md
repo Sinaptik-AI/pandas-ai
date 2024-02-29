@@ -1,4 +1,4 @@
-# PandasAI 🐼
+# ![PandasAI](images/logo.png)
 
 [![Release](https://img.shields.io/pypi/v/pandasai?label=Release&style=flat-square)](https://pypi.org/project/pandasai/)
 [![CI](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)
@@ -9,83 +9,81 @@
 [![Downloads](https://static.pepy.tech/badge/pandasai)](https://pepy.tech/project/pandasai) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-PandasAI is a Python library that adds Generative AI capabilities to [pandas](https://github.com/pandas-dev/pandas), the popular data analysis and manipulation tool. It is designed to be used in conjunction with pandas, and is not a replacement for it.
+PandasAI is a Python library that makes it easy to ask questions to your data in natural language. It helps you to explore, clean, and analyze your data using generative AI.
 
-<!-- Add images/pandas-ai.png -->
+# 🔧 Getting started
 
-![PandasAI](images/pandas-ai.png?raw=true)
+The documentation for PandasAI to use it with specific LLMs, vector stores and connectors, can be found [here](https://pandas-ai.readthedocs.io/en/latest/).
 
-## 🔧 Quick install
+## 📦 Installation
+
+With pip:
 
 ```bash
 pip install pandasai
 ```
 
+With poetry:
+
+```bash
+poetry add pandasai
+```
+
 ## 🔍 Demo
 
-Try out PandasAI in your browser:
+Try out PandasAI yourself in your browser:
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-## 📖 Documentation
+# 🚀 Deploying PandasAI
 
-The documentation for PandasAI can be found [here](https://pandas-ai.readthedocs.io/en/latest/).
+PandasAI can be deployed in a variety of ways. You can easily use it in your Jupyter notebooks or streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
+
+If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
 
 ## 💻 Usage
 
-> Disclaimer: GDP data was collected from [this source](https://ourworldindata.org/grapher/gross-domestic-product?tab=table), published by World Development Indicators - World Bank (2022.05.26) and collected at National accounts data - World Bank / OECD. It relates to the year of 2020. Happiness indexes were extracted from [the World Happiness Report](https://ftnnews.com/images/stories/documents/2020/WHR20.pdf). Another useful [link](https://data.world/makeovermonday/2020w19-world-happiness-report-2020).
-
-PandasAI is designed to be used in conjunction with pandas. It makes pandas conversational, allowing you to ask questions to your data in natural language.
-
-### Queries
-
-For example, you can ask PandasAI to find all the rows in a DataFrame where the value of a column is greater than 5, and it will return a DataFrame containing only those rows:
+### Ask questions
 
 ```python
 import pandas as pd
 from pandasai import SmartDataframe
 
 # Sample DataFrame
-df = pd.DataFrame({
+sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 # Instantiate a LLM
 from pandasai.llm import OpenAI
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe(df, config={"llm": llm})
-df.chat('Which are the 5 happiest countries?')
+df = SmartDataframe(sales_by_country, config={"llm": llm})
+df.chat('Which are the top 5 countries by sales?')
 ```
 
-The above code will return the following:
-
 ```
-6            Canada
-7         Australia
-1    United Kingdom
-3           Germany
-0     United States
-Name: country, dtype: object
+China, United States, Japan, Germany, Australia
 ```
 
-Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
+---
+
+Or you can ask more complex questions:
 
 ```python
-df.chat('What is the sum of the GDPs of the 2 unhappiest countries?')
+df.chat(
+    "What is the total sales for the top 3 countries by sales?"
+)
 ```
 
-The above code will return the following:
-
 ```
-19012600725504
+The total sales for the top 3 countries by sales is 16500.
 ```
 
-### Charts
+### Visualize charts
 
-You can also ask PandasAI to draw a graph:
+You can also ask PandasAI to generate charts for you:
 
 ```python
 df.chat(
@@ -95,11 +93,9 @@ df.chat(
 
 ![Chart](images/histogram-chart.png?raw=true)
 
-You can save any charts generated by PandasAI by setting the `save_charts` parameter to `True` in the `PandasAI` constructor. For example, `PandasAI(llm, save_charts=True)`. Charts are saved in `./pandasai/exports/charts` .
-
 ### Multiple DataFrames
 
-Additionally, you can also pass in multiple dataframes to PandasAI and ask questions relating them.
+You can also pass in multiple dataframes to PandasAI and ask questions relating them.
 
 ```python
 import pandas as pd
@@ -126,60 +122,35 @@ dl = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
 dl.chat("Who gets paid the most?")
 ```
 
-The above code will return the following:
-
 ```
-Oh, Olivia gets paid the most.
+Olivia gets paid the most.
 ```
 
 You can find more examples in the [examples](examples) directory.
 
-### ⚡️ Shortcuts
-
-PandasAI also provides a number of shortcuts (beta) to make it easier to ask questions to your data. For example, you can ask PandasAI to `clean_data`, `impute_missing_values`, `generate_features`, `plot_histogram`, and many many more.
-
-```python
-# Clean data
-df.clean_data()
-
-# Impute missing values
-df.impute_missing_values()
-
-# Generate features
-df.generate_features()
-
-# Plot histogram
-df.plot_histogram(column="gdp")
-```
-
-Learn more about the shortcuts [here](https://pandas-ai.readthedocs.io/en/latest/shortcuts/).
-
 ## 🔒 Privacy & Security
 
-In order to generate the Python code to run, we take the dataframe head, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the head.
+In order to generate the Python code to run, we take some random samples from the dataframe, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the randomized head to the LLM.
 
-Also, if you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please check out the todos below, and feel free to open a pull request.
-For more information, please see the [contributing guidelines](CONTRIBUTING.md).
-
-After installing the virtual environment, please remember to install `pre-commit` to be compliant with our standards:
-
-```bash
-pre-commit install
-```
-
-## Contributors
-
-[![Contributors](https://contrib.rocks/image?repo=gventuri/pandas-ai)](https://github.com/gventuri/pandas-ai/graphs/contributors)
+If you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
 
 ## 📜 License
 
-PandasAI is licensed under the MIT License. See the LICENSE file for more details.
+PandasAI is available under the MIT expat license, except for the `pandasai/ee` directory (which has it's [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE) if applicable.
 
-## Acknowledgements
+If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
 
-- This project is based on the [pandas](https://github.com/pandas-dev/pandas) library by independent contributors, but it's in no way affiliated with the pandas project.
-- This project is meant to be used as a tool for data exploration and analysis, and it's not meant to be used for production purposes. Please use it responsibly.
+## Resources
+
+- [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
+- [Examples](examples) for example notebooks
+- [Discord](https://discord.gg/kF7FqH2FwS) for discussion with the community and PandasAI team
+
+## 🤝 Contributing
+
+Contributions are welcome! Please check the outstanding issues and feel free to open a pull request.
+For more information, please check out the [contributing guidelines](CONTRIBUTING.md).
+
+### Thank you!
+
+[![Contributors](https://contrib.rocks/image?repo=gventuri/pandas-ai)](https://github.com/gventuri/pandas-ai/graphs/contributors)

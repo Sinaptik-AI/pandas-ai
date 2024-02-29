@@ -6,7 +6,6 @@ This module contains the implementation of Custom Exceptions.
 
 
 class InvalidRequestError(Exception):
-
     """
     Raised when the request is not successful.
 
@@ -16,7 +15,6 @@ class InvalidRequestError(Exception):
 
 
 class APIKeyNotFoundError(Exception):
-
     """
     Raised when the API key is not defined/declared.
 
@@ -185,4 +183,46 @@ class InvalidLLMOutputType(Exception):
     Raise error if the output type is invalid
     Args:
         Exception (Exception): InvalidLLMOutputType
+    """
+
+
+class ExecuteSQLQueryNotUsed(Exception):
+    """
+    Raise error if Execute SQL Query is not used
+    Args:
+        Exception (Exception): ExecuteSQLQueryNotUsed
+    """
+
+
+class MissingVectorStoreError(Exception):
+    """
+    Raise error if vector store is not found
+    Args:
+        Exception (Exception): MissingVectorStoreError
+    """
+
+
+class PandasAIApiKeyError(Exception):
+    """
+    Raise error if api key is not found for remote vectorstore and llm
+    Args:
+        Exception (Exception): PandasAIApiKeyError
+    """
+
+    def __init__(self):
+        message = (
+            "The api_key client option must be set either by passing api_key to the client "
+            "or by setting the PANDASAI_API_KEY environment variable. To get the key follow below steps:\n"
+            "1. Go to https://domer.ai and sign up\n"
+            "2. From settings go to API keys and copy\n"
+            "3. Set environment variable like os.environ['PANDASAI_API_KEY'] = '$2a$10$flb7....'"
+        )
+        super().__init__(message)
+
+
+class PandasAIApiCallError(Exception):
+    """
+    Raise error if exception in API request fails
+    Args:
+        Exception (Exception): PandasAIApiCallError
     """

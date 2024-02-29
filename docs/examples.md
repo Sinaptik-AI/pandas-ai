@@ -1,11 +1,11 @@
 # Examples
 
-Some examples of using PandasAI with different data sources.
-Other [examples](../examples) are included in the repository along with samples of data.
+Here are some examples of how to use PandasAI.
+More [examples](https://github.com/Sinaptik-AI/pandas-ai/tree/main/examples) are included in the repository along with samples of data.
 
 ## Working with pandas dataframes
 
-Example of using PandasAI with a Pandas DataFrame
+Using PandasAI with a Pandas DataFrame
 
 ```python
 from pandasai import SmartDataframe
@@ -13,20 +13,19 @@ import pandas as pd
 from pandasai.llm import OpenAI
 
 # pandas dataframe
-df = pd.DataFrame({
+sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
 # convert to SmartDataframe
-df = SmartDataframe(df, config={"llm": llm})
+df = SmartDataframe(sales_by_country, config={"llm": llm})
 
-response = df.chat('Calculate the sum of the gdp of north american countries')
+response = df.chat('Which are the top 5 countries by sales?')
 print(response)
-# Output: 20901884461056
+# Output: China, United States, Japan, Germany, Australia
 ```
 
 ## Working with CSVs
@@ -132,20 +131,16 @@ from pandasai.llm import OpenAI
 
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-# You can instantiate a SmartDataframe with a Polars DataFrame
-
-df = pd.DataFrame({
-    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia",
-                "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504,
-            1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+sales_by_country = pd.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 pandasai.set_pd_engine("modin")
 df = SmartDataframe(df, config={"llm": llm})
-response = df.chat("How many loans are from men and have been paid off?")
+response = df.chat('Which are the top 5 countries by sales?')
 print(response)
+# Output: China, United States, Japan, Germany, Australia
 
 # you can switch back to pandas using
 # pandasai.set_pd_engine("pandas")
@@ -168,13 +163,10 @@ from pandasai.llm import OpenAI
 
 llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-
 # You can instantiate a SmartDataframe with a Polars DataFrame
-
-df = pl.DataFrame({
+sales_by_country = pl.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
-    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 df = SmartDataframe(df, config={"llm": llm})
@@ -185,7 +177,7 @@ print(response)
 
 ## Plotting
 
-Example of using PandasAI to generate a chart from a Pandas DataFrame
+Example of using PandasAI to plot a chart from a Pandas DataFrame
 
 ```python
 from pandasai import SmartDataframe
@@ -227,7 +219,7 @@ print(response)
 # Output: check out $pwd/exports/charts/{hashid}/chart.png
 ```
 
-## Working with multiple dataframes (with SmartDatalake)
+## Working with multiple dataframes (using the SmartDatalake)
 
 Example of using PandasAI with multiple dataframes. In order to use multiple dataframes as a data source, you need to use a `SmartDatalake` instead of a `SmartDataframe`. You can instantiate a `SmartDatalake` as follows:
 
@@ -256,42 +248,6 @@ df = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
 response = df.chat("Who gets paid the most?")
 print(response)
 # Output: Olivia gets paid the most.
-```
-
-## Chain of commands
-
-You can chain commands by passing the output of one command to the next one. In the example, we first filter the original
-dataframe by gender and then by loans that have been paid off.
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
-
-llm = OpenAI(api_token="YOUR_API_TOKEN")
-df = SmartDataframe("data/Loan payments data.csv", config={"llm": llm})
-
-# We filter by males only
-from_males_df = df.chat("Filter the dataframe by women")
-
-# We filter by loans that have been paid off
-paid_from_males_df = from_males_df.chat("Filter the dataframe by loans that have been paid off")
-print(paid_from_males_df)
-# Output:
-# [247 rows x 11 columns]
-#          Loan_ID loan_status  Principal  terms effective_date    due_date     paid_off_time  past_due_days  age             education Gender
-# 0    xqd20166231     PAIDOFF       1000     30       9/8/2016   10/7/2016   9/14/2016 19:31            NaN   45  High School or Below   male
-# 3    xqd20160004     PAIDOFF       1000     15       9/8/2016   9/22/2016   9/22/2016 20:00            NaN   27               college   male
-# 5    xqd20160706     PAIDOFF        300      7       9/9/2016   9/15/2016    9/9/2016 13:45            NaN   35       Master or Above   male
-# 6    xqd20160007     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/7/2016 23:07            NaN   29               college   male
-# 7    xqd20160008     PAIDOFF       1000     30       9/9/2016   10/8/2016   10/5/2016 20:33            NaN   36               college   male
-# ..           ...         ...        ...    ...            ...         ...               ...            ...  ...                   ...    ...
-# 294  xqd20160295     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 13:00            NaN   36              Bechalor   male
-# 296  xqd20160297     PAIDOFF        800     15      9/14/2016   9/28/2016    9/21/2016 4:42            NaN   27               college   male
-# 297  xqd20160298     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   29  High School or Below   male
-# 298  xqd20160299     PAIDOFF       1000     30      9/14/2016  10/13/2016   10/13/2016 9:00            NaN   40  High School or Below   male
-# 299  xqd20160300     PAIDOFF       1000     30      9/14/2016  10/13/2016  10/13/2016 11:00            NaN   28               college   male
-
-# [247 rows x 11 columns]
 ```
 
 ## Working with Agent
@@ -347,6 +303,29 @@ for question in questions:
 # Explain how the chat response is generated
 response = agent.explain()
 print(response)
+```
+
+## Description for an Agent
+
+When you instantiate an agent, you can provide a description of the agent. THis description will be used to describe the agent in the chat and to provide more context for the LLM about how to respond to queries.
+
+Some examples of descriptions can be:
+
+- You are a data analysis agent. Your main goal is to help non-technical users to analyze data
+- Act as a data analyst. Every time I ask you a question, you should provide the code to visualize the answer using plotly
+
+```python
+from pandasai import Agent
+
+from pandasai.llm.openai import OpenAI
+
+llm = OpenAI("YOUR_API_KEY")
+
+agent = Agent(
+    "data.csv",
+    config={"llm": llm},
+    description="You are a data analysis agent. Your main goal is to help non-technical users to analyze data",
+)
 ```
 
 ## Add Skills to the Agent

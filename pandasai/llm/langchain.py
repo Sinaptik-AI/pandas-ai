@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     from langchain_core.language_models.chat_models import BaseChatModel
     from langchain_core.language_models.llms import BaseLLM
@@ -8,11 +10,14 @@ except ImportError:
     BaseLLM = BaseChatModel = object
     LANGCHAIN_AVAILABLE = False
 
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
-from pandasai.prompts.base import AbstractPrompt
+from pandasai.prompts.base import BasePrompt
 
 from .base import LLM
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
 
 """Langchain LLM 
 
@@ -30,17 +35,26 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
+    langchain_llm = None
+
     def __init__(self, langchain_llm: Union[BaseLLM, BaseChatModel]):
-        self._langchain_llm = langchain_llm
+        self.langchain_llm = langchain_llm
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(
+        self, instruction: BasePrompt, context: PipelineContext = None, suffix: str = ""
+    ) -> str:
         prompt = instruction.to_string() + suffix
-        res = self._langchain_llm.invoke(prompt)
-        if isinstance(self._langchain_llm, BaseChatModel):
-            return res.content
+        memory = context.memory if context else None
+        prompt = self.prepend_system_prompt(prompt, memory)
+        self.last_prompt = prompt
 
-        return res
+        res = self.langchain_llm.invoke(prompt)
+        return res.content if isinstance(self.langchain_llm, BaseChatModel) else res
+
+    @staticmethod
+    def is_langchain_llm(llm: LLM) -> bool:
+        return hasattr(llm, "_llm_type")
 
     @property
     def type(self) -> str:
-        return f"langchain_{self._langchain_llm._llm_type}"
+        return f"langchain_{self.langchain_llm._llm_type}"

@@ -1,0 +1,11 @@
+{% if not output_type %}
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+{% elif output_type == "number" %}
+type (must be "number"), value must int. Example: { "type": "number", "value": 125 }
+{% elif output_type == "string" %}
+type (must be "string"), value must be string. Example: { "type": "string", "value": f"The highest salary is {highest_salary}." }
+{% elif output_type == "dataframe" %}
+type (must be "dataframe"), value must be pd.DataFrame or pd.Series. Example: { "type": "dataframe", "value": pd.DataFrame({...}) }
+{% elif output_type == "plot" %}
+type (must be "plot"), value must be string. Example: { "type": "plot", "value": "temp_chart.png" }
+{% endif %}

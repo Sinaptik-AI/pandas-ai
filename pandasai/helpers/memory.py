@@ -7,10 +7,12 @@ class Memory:
 
     _messages: list
     _memory_size: int
+    _agent_info: str
 
-    def __init__(self, memory_size: int = 1):
+    def __init__(self, memory_size: int = 1, agent_info: Union[str, None] = None):
         self._messages = []
         self._memory_size = memory_size
+        self._agent_info = agent_info
 
     def add(self, message: str, is_user: bool):
         self._messages.append({"message": message, "is_user": is_user})
@@ -40,7 +42,7 @@ class Memory:
         limit = self._memory_size if limit is None else limit
 
         return [
-            f"{'Q' if message['is_user'] else 'A'}: {message['message'] if message['is_user'] else self._truncate(message['message'])}"
+            f"{'### QUERY' if message['is_user'] else '### ANSWER'}\n {message['message'] if message['is_user'] else self._truncate(message['message'])}"
             for message in self._messages[-limit:]
         ]
 
@@ -65,9 +67,25 @@ class Memory:
         messages = self.get_messages(self._memory_size)
         return "" if len(messages) == 0 else messages[-1]
 
+    def get_system_prompt(self) -> str:
+        return self._agent_info
+
+    def to_json(self):
+        messages = []
+        for message in self.all():
+            if message["is_user"]:
+                messages.append({"role": "user", "message": message["message"]})
+            else:
+                messages.append({"role": "assistant", "message": message["message"]})
+        return messages
+
     def clear(self):
         self._messages = []
 
     @property
     def size(self):
         return self._memory_size
+
+    @property
+    def agent_info(self):
+        return self._agent_info

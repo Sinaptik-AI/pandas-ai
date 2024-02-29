@@ -11,6 +11,8 @@ Example:
 """
 from typing import Any
 
+from pandasai.helpers.memory import Memory
+
 from ..exceptions import APIKeyNotFoundError
 from ..helpers.optional import import_dependency
 from .base import BaseGoogle
@@ -70,7 +72,7 @@ class GooglePalm(BaseGoogle):
         if not self.model:
             raise ValueError("model is required.")
 
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Memory = None) -> str:
         """
         Generates text for prompt.
 
@@ -82,6 +84,7 @@ class GooglePalm(BaseGoogle):
 
         """
         self._validate()
+        prompt = self.prepend_system_prompt(prompt, memory)
         completion = self.google_palm.generate_text(
             model=self.model,
             prompt=prompt,
@@ -90,6 +93,7 @@ class GooglePalm(BaseGoogle):
             top_k=self.top_k,
             max_output_tokens=self.max_output_tokens,
         )
+        self.last_prompt = prompt
         return completion.result
 
     @property

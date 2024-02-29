@@ -15,9 +15,9 @@ PandasAI provides the following core pipeline logic units that can be composed t
 
 PandasAI provides the following predefined pipelines that combine logic units:
 
-### GenerateSmartDataLakePipeline
+### GenerateChatPipeline
 
-The `GenerateSmartDataLakePipeline` generates new data in a SmartDatalake. It chains together logic units for:
+The `GenerateChatPipeline` generates new data in a Agent. It chains together logic units for:
 
 - `CacheLookup` - Checking if data is cached
 - `PromptGeneration` - Generating prompt
@@ -26,15 +26,6 @@ The `GenerateSmartDataLakePipeline` generates new data in a SmartDatalake. It ch
 - `CodeExecution` - Executing code
 - `ResultValidation` - Validating execution result
 - `ResultParsing` - Parsing result into data
-
-### GenerateSDFPipeline
-
-The `GenerateSDFPipeline` generates a new synthetic dataframe by chaining logic units:
-
-- `SyntheticDataframePrompt` - Generating dataframe prompt
-- `PromptExecution` - Executing prompt
-- `SDFCodeExecutor` - Executing generated code
-- `ProcessOutput` - Post-processing dataframe
 
 ## Custom Pipelines
 

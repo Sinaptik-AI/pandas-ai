@@ -1,28 +1,7 @@
-""" Prompt to explain code generation by the LLM
-The previous conversation we had
-
-<Conversation>
-{conversation}
-</Conversation>
-
-Based on the last conversation you generated the following code:
-
-<Code>
-{code}
-</Code>
-
-Explain how you came up with code for non-technical people without 
-mentioning technical details or mentioning the libraries used?
-
-"""
-from .file_based_prompt import FileBasedPrompt
+from .base import BasePrompt
 
 
-class ExplainPrompt(FileBasedPrompt):
-    """Prompt to explain code generation by the LLM"""
+class ExplainPrompt(BasePrompt):
+    """Prompt to generate Python code from a dataframe."""
 
-    _path_to_template = "assets/prompt_templates/explain_prompt.tmpl"
-
-    def setup(self, conversation: str, code: str) -> None:
-        self.set_var("conversation", conversation)
-        self.set_var("code", code)
+    template_path = "explain.tmpl"

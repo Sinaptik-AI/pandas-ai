@@ -48,8 +48,8 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-35-turbo-16k-completion": 0.004,
     "gpt-35-turbo-16k-0613-completion": 0.004,
     # Fine-tuned input
-    "gpt-3.5-turbo-0613-finetuned": 0.008,
-    "gpt-3.5-turbo-1106-finetuned": 0.008,
+    "gpt-3.5-turbo-0613-finetuned": 0.012,
+    "gpt-3.5-turbo-1106-finetuned": 0.012,
     # Fine-tuned output
     "gpt-3.5-turbo-0613-finetuned-completion": 0.016,
     "gpt-3.5-turbo-1106-finetuned-completion": 0.016,

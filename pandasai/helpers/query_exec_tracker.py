@@ -2,11 +2,16 @@ import base64
 import json
 import os
 import time
-import uuid
 from collections import defaultdict
 from typing import Any, List, TypedDict, Union
 
 import requests
+
+from pandasai.connectors import BaseConnector
+from pandasai.pipelines.chat.chat_pipeline_input import (
+    ChatPipelineInput,
+)
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class ResponseType(TypedDict):
@@ -16,10 +21,10 @@ class ResponseType(TypedDict):
 
 exec_steps = {
     "cache_hit": "Cache Hit",
-    "_get_prompt": "Generate Prompt",
+    "get_prompt": "Generate Prompt",
     "generate_code": "Generate Code",
     "execute_code": "Code Execution",
-    "_retry_run_code": "Retry Code Generation",
+    "retry_run_code": "Retry Code Generation",
     "parse": "Parse Output",
 }
 
@@ -27,6 +32,7 @@ exec_steps = {
 class QueryExecTracker:
     _query_info: dict
     _dataframes: List
+    _skills: List
     _response: ResponseType
     _steps: List
     _func_exec_count: dict
@@ -42,65 +48,43 @@ class QueryExecTracker:
         self._start_time = None
         self._server_config = server_config
         self._query_info = {}
-        self._is_related_query = True
 
-    def set_related_query(self, flag: bool):
-        """
-        Set Related Query Parameter whether new query is related to the conversation
-        or not
-        Args:
-            flag (bool): boolean to set true if related else false
-        """
-        self._is_related_query = flag
-
-    def add_query_info(
-        self,
-        conversation_id: uuid.UUID,
-        instance: str,
-        query: str,
-        output_type: str,
-    ):
-        """
-        Adds query information for new track
-        Args:
-            conversation_id (str): conversation id
-            instance (str): instance like Agent or SmartDataframe
-            query (str): chat query given by user
-            output_type (str): output type expected by user
-        """
-        self._query_info = {
-            "conversation_id": str(conversation_id),
-            "instance": instance,
-            "query": query,
-            "output_type": output_type,
-            "is_related_query": self._is_related_query,
-        }
-
-    def start_new_track(self):
+    def start_new_track(self, input: ChatPipelineInput):
         """
         Resets tracking variables to start new track
         """
         self._last_log_id = None
         self._start_time = time.time()
         self._dataframes: List = []
+        self._skills: List = []
         self._response: ResponseType = {}
         self._steps: List = []
         self._query_info = {}
         self._func_exec_count: dict = defaultdict(int)
 
+        self._query_info = {
+            "conversation_id": str(input.conversation_id),
+            "instance": "Agent",
+            "query": input.query,
+            "output_type": input.output_type,
+        }
+
     def convert_dataframe_to_dict(self, df):
         json_data = json.loads(df.to_json(orient="split", date_format="iso"))
         return {"headers": json_data["columns"], "rows": json_data["data"]}
 
-    def add_dataframes(self, dfs: List) -> None:
+    def add_dataframes(self, dfs: List[BaseConnector]) -> None:
         """
         Add used dataframes for the query to query exec tracker
         Args:
-            dfs (List[SmartDataFrame]): List of dataframes
+            dfs (List[BaseConnector]): List of dataframes
         """
         for df in dfs:
-            head = df.head_df
+            head = df.get_schema()
             self._dataframes.append(self.convert_dataframe_to_dict(head))
+
+    def add_skills(self, context: PipelineContext):
+        self._skills = context.skills_manager.to_object()
 
     def add_step(self, step: dict) -> None:
         """
@@ -109,6 +93,9 @@ class QueryExecTracker:
             step (dict): dictionary containing information
         """
         self._steps.append(step)
+
+    def set_final_response(self, response: Any):
+        self._response = response
 
     def execute_func(self, function, *args, **kwargs) -> Any:
         """
@@ -164,16 +151,16 @@ class QueryExecTracker:
 
         step = {"type": exec_steps[func_name]}
 
-        if func_name == "_get_prompt":
+        if func_name == "get_prompt":
             step["prompt_class"] = result.__class__.__name__
             step["generated_prompt"] = result.to_string()
 
-        elif func_name == "_retry_run_code":
-            self._func_exec_count["_retry_run_code"] += 1
+        elif func_name == "retry_run_code":
+            self._func_exec_count["retry_run_code"] += 1
 
             step[
                 "type"
-            ] = f"{exec_steps[func_name]} ({self._func_exec_count['_retry_run_code']})"
+            ] = f"{exec_steps[func_name]} ({self._func_exec_count['retry_run_code']})"
             step["code_generated"] = result
 
         elif func_name in {"cache_hit", "generate_code"}:
@@ -224,6 +211,7 @@ class QueryExecTracker:
         execution_time = time.time() - self._start_time
         return {
             "query_info": self._query_info,
+            "skills": self._skills,
             "dataframes": self._dataframes,
             "steps": self._steps,
             "response": self._response,
@@ -242,23 +230,24 @@ class QueryExecTracker:
         server_url = None
 
         if self._server_config is None:
-            server_url = os.environ.get("LOGGING_SERVER_URL") or None
-            api_key = os.environ.get("LOGGING_SERVER_API_KEY") or None
+            server_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
+            api_key = os.environ.get("PANDASAI_API_KEY") or None
         else:
             server_url = self._server_config.get(
-                "server_url", os.environ.get("LOGGING_SERVER_URL")
+                "server_url", os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
             )
             api_key = self._server_config.get(
-                "api_key", os.environ.get("LOGGING_SERVER_API_KEY")
+                "api_key", os.environ.get("PANDASAI_API_KEY")
             )
 
-        if api_key is None or server_url is None:
+        if api_key is None:
             return
 
         try:
             log_data = {
                 "json_log": self.get_summary(),
             }
+
             headers = {"Authorization": f"Bearer {api_key}"}
             response = requests.post(
                 f"{server_url}/api/log/add", json=log_data, headers=headers

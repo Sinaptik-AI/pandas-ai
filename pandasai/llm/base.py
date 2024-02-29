@@ -1,7 +1,7 @@
 """ Base class to implement a new LLM
 
 This module is the base class to integrate the various LLMs API. This module also
-includes the Base LLM classes for OpenAI, HuggingFace and Google PaLM.
+includes the Base LLM classes for OpenAI and Google PaLM.
 
 Example:
 
@@ -13,24 +13,27 @@ Example:
         Custom Class Starts here!!
     ```
 """
+from __future__ import annotations
 
 import ast
-import os
 import re
 from abc import abstractmethod
-from typing import Any, Dict, Mapping, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Tuple, Union
 
-import requests
+from pandasai.helpers.memory import Memory
+from pandasai.prompts.generate_system_message import GenerateSystemMessagePrompt
 
 from ..exceptions import (
     APIKeyNotFoundError,
-    LLMResponseHTTPError,
     MethodNotImplementedError,
     NoCodeFoundError,
 )
 from ..helpers.openai import is_openai_v1
 from ..helpers.openai_info import openai_callback_var
-from ..prompts.base import AbstractPrompt
+from ..prompts.base import BasePrompt
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class LLM:
@@ -120,6 +123,30 @@ class LLM:
 
         return code
 
+    def prepend_system_prompt(self, prompt: BasePrompt, memory: Memory):
+        """
+        Append system prompt to the chat prompt, useful when model doesn't have messages for chat history
+        Args:
+            prompt (BasePrompt): prompt for chat method
+            memory (Memory): user conversation history
+        """
+        return self.get_system_prompt(memory) + prompt if memory else prompt
+
+    def get_system_prompt(self, memory: Memory) -> Any:
+        """
+        Generate system prompt with agent info and previous conversations
+        """
+        system_prompt = GenerateSystemMessagePrompt(memory=memory)
+        return system_prompt.to_string()
+
+    def get_messages(self, memory: Memory) -> Any:
+        """
+        Return formatted messages
+        Args:
+            memory (Memory): Get past Conversation from memory
+        """
+        return memory.get_previous_conversation()
+
     def _extract_tag_text(self, response: str, tag: str) -> str:
         """
         Extracts the text between two tags in the response.
@@ -141,13 +168,13 @@ class LLM:
         return None
 
     @abstractmethod
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
-            suffix (str, optional): Suffix. Defaults to "".
+            instruction (BasePrompt): A prompt object with instruction for LLM.
+            context (PipelineContext, optional): PipelineContext. Defaults to None.
 
         Raises:
             MethodNotImplementedError: Call method has not been implemented
@@ -155,18 +182,18 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: AbstractPrompt) -> str:
+    def generate_code(self, instruction: BasePrompt, context: PipelineContext) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 
         Args:
-            instruction (AbstractPrompt): Prompt with instruction for LLM.
+            instruction (BasePrompt): Prompt with instruction for LLM.
 
         Returns:
             str: A string of Python code.
 
         """
-        response = self.call(instruction, suffix="")
+        response = self.call(instruction, context)
         return self._extract_code(response)
 
 
@@ -255,12 +282,10 @@ class BaseOpenAI(LLM):
         """Get the parameters used to invoke the model."""
         openai_creds: Dict[str, Any] = {}
         if not is_openai_v1():
-            openai_creds.update(
-                {
-                    "api_key": self.api_token,
-                    "api_base": self.api_base,
-                }
-            )
+            openai_creds |= {
+                "api_key": self.api_token,
+                "api_base": self.api_base,
+            }
 
         return {**openai_creds, **self._default_params}
 
@@ -275,7 +300,7 @@ class BaseOpenAI(LLM):
             "http_client": self.http_client,
         }
 
-    def completion(self, prompt: str) -> str:
+    def completion(self, prompt: str, memory: Memory) -> str:
         """
         Query the completion API
 
@@ -286,6 +311,8 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
+        prompt = self.prepend_system_prompt(prompt, memory)
+
         params = {**self._invocation_params, "prompt": prompt}
 
         if self.stop is not None:
@@ -296,9 +323,11 @@ class BaseOpenAI(LLM):
         if openai_handler := openai_callback_var.get():
             openai_handler(response)
 
+        self.last_prompt = prompt
+
         return response.choices[0].text
 
-    def chat_completion(self, value: str) -> str:
+    def chat_completion(self, value: str, memory: Memory) -> str:
         """
         Query the chat completion API
 
@@ -309,14 +338,35 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
+        messages = []
+        if memory:
+            if memory.agent_info:
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": memory.get_system_prompt(),
+                    }
+                )
+
+            for message in memory.all():
+                if message["is_user"]:
+                    messages.append({"role": "user", "content": message["message"]})
+                else:
+                    messages.append(
+                        {"role": "assistant", "content": message["message"]}
+                    )
+
+        # adding current prompt as latest query message
+        messages.append(
+            {
+                "role": "user",
+                "content": value,
+            },
+        )
+
         params = {
             **self._invocation_params,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": value,
-                }
-            ],
+            "messages": messages,
         }
 
         if self.stop is not None:
@@ -329,13 +379,13 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: AbstractPrompt, suffix: str = ""):
+    def call(self, instruction: BasePrompt, context: PipelineContext = None):
         """
         Call the OpenAI LLM.
 
         Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
-            suffix (str): Suffix to pass.
+            instruction (BasePrompt): A prompt object with instruction for LLM.
+            context (PipelineContext): context to pass.
 
         Raises:
             UnsupportedModelError: Unsupported model
@@ -343,126 +393,15 @@ class BaseOpenAI(LLM):
         Returns:
             str: Response
         """
-        self.last_prompt = instruction.to_string() + suffix
+        self.last_prompt = instruction.to_string()
+
+        memory = context.memory if context else None
 
         return (
-            self.chat_completion(self.last_prompt)
+            self.chat_completion(self.last_prompt, memory)
             if self._is_chat_model
-            else self.completion(self.last_prompt)
+            else self.completion(self.last_prompt, memory)
         )
-
-
-class HuggingFaceLLM(LLM):
-    """Base class to implement a new Hugging Face LLM.
-
-    LLM base class is extended to be used with HuggingFace LLM Modes APIs.
-
-    """
-
-    last_prompt: Optional[str] = None
-    api_token: str
-    _api_url: str = "https://api-inference.huggingface.co/models/"
-    _max_retries: int = 3
-
-    @property
-    def type(self) -> str:
-        return "huggingface-llm"
-
-    def _setup(self, **kwargs):
-        """
-        Setup the HuggingFace LLM
-
-        Args:
-            **kwargs: ["api_token", "max_retries"]
-
-        """
-        self.api_token = (
-            kwargs.get("api_token") or os.getenv("HUGGINGFACE_API_KEY") or None
-        )
-        if self.api_token is None:
-            raise APIKeyNotFoundError("HuggingFace Hub API key is required")
-
-        # Since the huggingface API only returns few tokens at a time, we need to
-        # call the API multiple times to get all the tokens. This is the maximum
-        # number of retries we will do.
-        if kwargs.get("max_retries"):
-            self._max_retries = kwargs.get("max_retries")
-
-    def __init__(self, **kwargs):
-        """
-        __init__ method of HuggingFaceLLM Class
-
-        Args:
-            **kwargs: ["api_token", "max_retries"]
-
-        """
-        self._setup(**kwargs)
-
-    def query(self, payload) -> str:
-        """
-        Query the HF API
-        Args:
-            payload: A JSON form payload
-
-        Returns:
-            str: Value of the field "generated_text" in response JSON
-                given by the remote server.
-
-        Raises:
-            LLMResponseHTTPError: If api-inference.huggingface.co responses
-                with any error HTTP code (>= 400).
-
-        """
-
-        headers = {"Authorization": f"Bearer {self.api_token}"}
-
-        response = requests.post(
-            self._api_url, headers=headers, json=payload, timeout=60
-        )
-
-        if response.status_code >= 400:
-            try:
-                error_msg = response.json().get("error")
-            except (requests.exceptions.JSONDecodeError, TypeError):
-                error_msg = None
-
-            raise LLMResponseHTTPError(
-                status_code=response.status_code, error_msg=error_msg
-            )
-
-        return response.json()[0]["generated_text"]
-
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
-        """
-        A call method of HuggingFaceLLM class.
-        Args:
-            instruction (AbstractPrompt): A prompt object with instruction for LLM.
-            suffix (str): A string representing the suffix to be truncated
-                from the generated response.
-
-        Returns
-            str: LLM response.
-
-        """
-
-        prompt = instruction.to_string()
-        payload = prompt + suffix
-
-        # sometimes the API doesn't return a valid response, so we retry passing the
-        # output generated from the previous call as the input
-        for _i in range(self._max_retries):
-            response = self.query({"inputs": payload})
-            payload = response
-
-            match = re.search(
-                "(```python)(.*)(```)",
-                response.replace(prompt + suffix, ""),
-                re.DOTALL | re.MULTILINE,
-            )
-            if match:
-                break
-
-        return response.replace(prompt + suffix, "")
 
 
 class BaseGoogle(LLM):
@@ -514,7 +453,7 @@ class BaseGoogle(LLM):
             raise ValueError("max_output_tokens must be greater than zero")
 
     @abstractmethod
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Memory) -> str:
         """
         Generates text for prompt, specific to implementation.
 
@@ -527,17 +466,18 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: AbstractPrompt, suffix: str = "") -> str:
+    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         """
         Call the Google LLM.
 
         Args:
-            instruction (AbstractPrompt): Instruction to pass.
-            suffix (str): Suffix to pass. Defaults to an empty string ("").
+            instruction (BasePrompt): Instruction to pass.
+            context (PipelineContext): Pass PipelineContext.
 
         Returns:
             str: LLM response.
 
         """
-        self.last_prompt = instruction.to_string() + suffix
-        return self._generate_text(self.last_prompt)
+        self.last_prompt = instruction.to_string()
+        memory = context.memory if context else None
+        return self._generate_text(self.last_prompt, memory)

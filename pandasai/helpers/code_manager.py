@@ -13,9 +13,12 @@ from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
 
+from ..connectors import BaseConnector
+from ..connectors.sql import SQLConnector
 from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ..exceptions import (
     BadImportError,
+    ExecuteSQLQueryNotUsed,
     InvalidConfigError,
     MaliciousQueryError,
     NoResultFoundError,
@@ -39,16 +42,26 @@ class CodeExecutionContext:
             prompt_id (uuid.UUID): Prompt ID
             skills_manager (SkillsManager): Skills Manager
         """
-        self._skills_manager = skills_manager
-        self._prompt_id = prompt_id
+        self.skills_manager = skills_manager
+        self.prompt_id = prompt_id
 
-    @property
-    def prompt_id(self):
-        return self._prompt_id
 
-    @property
-    def skills_manager(self):
-        return self._skills_manager
+class FunctionCallVisitor(ast.NodeVisitor):
+    """
+    Iterate over the code to find function calls
+    """
+
+    def __init__(self):
+        self.function_calls = []
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name):
+            self.function_calls.append(node.func.id)
+        elif isinstance(node.func, ast.Attribute) and isinstance(
+            node.func.value, ast.Name
+        ):
+            self.function_calls.append(f"{node.func.value.id}.{node.func.attr}")
+        self.generic_visit(node)
 
 
 class CodeManager:
@@ -87,6 +100,7 @@ class CodeManager:
         self._dfs = dfs
         self._config = config
         self._logger = logger
+        self._function_call_vistor = FunctionCallVisitor()
 
     def _required_dfs(self, code: str) -> List[str]:
         """
@@ -103,7 +117,7 @@ class CodeManager:
 
         # Sometimes GPT-3.5/4 use a for loop to iterate over the dfs (even if there is only one)
         # or they concatenate the dfs. In this case we need all the dfs
-        if "for df in dfs" in code or "pd.concat(dfs)" in code:
+        if "for df in dfs" in code or "pd.concat(dfs" in code:
             return self._dfs
 
         required_dfs = []
@@ -112,7 +126,7 @@ class CodeManager:
                 required_dfs.append(df)
             else:
                 required_dfs.append(None)
-        return required_dfs
+        return required_dfs or self._dfs
 
     def _replace_plot_png(self, code):
         """
@@ -123,25 +137,6 @@ class CodeManager:
             str: Python code with plot.png replaced with temp_chart.png
         """
         return re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
-
-    def _validate_direct_sql(self, dfs: List) -> bool:
-        """
-        Raises error if they don't belong sqlconnector or have different credentials
-        Args:
-            dfs (List[SmartDataframe]): list of SmartDataframes
-
-        Raises:
-            InvalidConfigError: Raise Error in case of config is set but criteria is not met
-        """
-        if self._config.direct_sql and all(df.is_connector() for df in dfs):
-            if all(df == dfs[0] for df in dfs):
-                return True
-            else:
-                raise InvalidConfigError(
-                    "Direct requires all SQLConnector and they belong to same datasource "
-                    "and have same credentials"
-                )
-        return False
 
     def execute_code(self, code: str, context: CodeExecutionContext) -> Any:
         """
@@ -199,8 +194,8 @@ Code running:
         environment: dict = self._get_environment()
         environment["dfs"] = self._get_originals(dfs)
 
-        if self._validate_direct_sql(self._dfs):
-            environment["execute_sql_query"] = self._dfs[0].get_query_exec_func()
+        if self._config.direct_sql:
+            environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
 
         # Add skills to the env
         if context.skills_manager.used_skills:
@@ -233,13 +228,14 @@ Code running:
                 original_dfs.append(None)
                 continue
 
-            if df.has_connector:
-                extracted_filters = self._extract_filters(self._current_code_executed)
-                filters = extracted_filters.get(f"dfs[{index}]", [])
-                df.connector.set_additional_filters(filters)
-                df.load_connector(temporary=len(filters) > 0)
+            extracted_filters = self._extract_filters(self._current_code_executed)
+            filters = extracted_filters.get(f"dfs[{index}]", [])
+            df.set_additional_filters(filters)
 
-            original_dfs.append(df.dataframe)
+            df.execute()
+            # df.load_connector(partial=len(filters) > 0)
+
+            original_dfs.append(df.pandas_df)
 
         return original_dfs
 
@@ -252,9 +248,11 @@ Code running:
         return {
             "pd": pd,
             **{
-                lib["alias"]: getattr(import_dependency(lib["module"]), lib["name"])
-                if hasattr(import_dependency(lib["module"]), lib["name"])
-                else import_dependency(lib["module"])
+                lib["alias"]: (
+                    getattr(import_dependency(lib["module"]), lib["name"])
+                    if hasattr(import_dependency(lib["module"]), lib["name"])
+                    else import_dependency(lib["module"])
+                )
                 for lib in self._additional_dependencies
             },
             "__builtins__": {
@@ -315,7 +313,7 @@ Code running:
     def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name):
-                if context.skills_manager.skill_exists:
+                if context.skills_manager.skill_exists(node.func.id):
                     context.skills_manager.add_used_skill(node.func.id)
             elif isinstance(node.func, ast.Attribute) and isinstance(
                 node.func.value, ast.Name
@@ -334,6 +332,31 @@ Code running:
             and node.name == "execute_sql_query"
         )
 
+    def check_skill_func_def_exists(self, node: ast.AST, context: CodeExecutionContext):
+        return isinstance(
+            node, ast.FunctionDef
+        ) and context.skills_manager.skill_exists(node.name)
+
+    def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
+        """
+        Raises error if they don't belong sqlconnector or have different credentials
+        Args:
+            dfs (List[BaseConnector]): list of BaseConnectors
+
+        Raises:
+            InvalidConfigError: Raise Error in case of config is set but criteria is not met
+        """
+
+        if self._config.direct_sql:
+            if all((isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs):
+                return True
+            else:
+                raise InvalidConfigError(
+                    "Direct requires all SQLConnector and they belong to same datasource "
+                    "and have same credentials"
+                )
+        return False
+
     def _get_sql_irrelevant_tables(self, node: ast.Assign):
         for target in node.targets:
             if (
@@ -344,7 +367,7 @@ Code running:
             ):
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
-                allowed_table_names = [df.table_name for df in self._dfs]
+                allowed_table_names = [df.name for df in self._dfs]
                 return [
                     table_name
                     for table_name in table_names
@@ -370,6 +393,11 @@ Code running:
 
         # Check for imports and the node where analyze_data is defined
         new_body = []
+        execute_sql_query_used = False
+
+        # find function calls
+        self._function_call_vistor.visit(tree)
+
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self._check_imports(node)
@@ -387,6 +415,16 @@ Code running:
             if self.check_direct_sql_func_def_exists(node):
                 continue
 
+            if self.check_skill_func_def_exists(node, context):
+                continue
+
+            # if generated code contain execute_sql_query usage
+            if (
+                self._validate_direct_sql(self._dfs)
+                and "execute_sql_query" in self._function_call_vistor.function_calls
+            ):
+                execute_sql_query_used = True
+
             # Sanity for sql query the code should only use allowed tables
             if (
                 isinstance(node, ast.Assign)
@@ -400,6 +438,12 @@ Code running:
             self.find_function_calls(node, context)
 
             new_body.append(node)
+
+        # Enforcing use of execute_sql_query via Error Prompt Pipeline
+        if self._config.direct_sql and not execute_sql_query_used:
+            raise ExecuteSQLQueryNotUsed(
+                "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
+            )
 
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
@@ -503,6 +547,9 @@ Code running:
             >>> print(list(res))
             ['foo', 2, 1, 0]
         """
+        if isinstance(operand_node, ast.Call):
+            yield operand_node.func.attr
+
         if isinstance(operand_node, ast.Subscript):
             slice_ = operand_node.slice.value
             yield from CodeManager._tokenize_operand(operand_node.value)
@@ -582,49 +629,24 @@ Code running:
 
         call_visitor = CallVisitor()
         call_visitor.visit(tree)
-        calls = call_visitor.call_nodes
 
         for node in ast.walk(tree):
-            if isinstance(node, ast.Compare):
-                is_call_on_left = isinstance(node.left, ast.Call)
-                is_polars = False
-                is_calling_col = False
-                try:
-                    is_polars = node.left.func.value.id in ("pl", "polars")
-                    is_calling_col = node.left.func.attr == "col"
-                except AttributeError:
-                    pass
-
-                if is_call_on_left and is_polars and is_calling_col:
-                    df_name = self._get_nearest_func_call(
-                        node.lineno, calls, "filter"
-                    ).func.value.id
-                    current_df = self._get_df_id_by_nearest_assignment(
-                        node.lineno, assignments, df_name
+            if isinstance(node, ast.Compare) and isinstance(node.left, ast.Subscript):
+                name, *slices = self._tokenize_operand(node.left)
+                current_df = (
+                    self._get_df_id_by_nearest_assignment(
+                        node.lineno, assignments, name
                     )
-                    left_str = node.left.args[0].value
+                    or current_df
+                )
+                left_str = slices[-1] if slices else name
 
-                    for op, right in zip(node.ops, node.comparators):
-                        op_str = self._ast_comparator_map.get(type(op), "Unknown")
-                        right_str = right.value
+                for op, right in zip(node.ops, node.comparators):
+                    op_str = self._ast_comparator_map.get(type(op), "Unknown")
+                    name, *slices = self._tokenize_operand(right)
+                    right_str = slices[-1] if slices else name
 
-                        comparisons[current_df].append((left_str, op_str, right_str))
-                elif isinstance(node.left, ast.Subscript):
-                    name, *slices = self._tokenize_operand(node.left)
-                    current_df = (
-                        self._get_df_id_by_nearest_assignment(
-                            node.lineno, assignments, name
-                        )
-                        or current_df
-                    )
-                    left_str = slices[-1] if slices else name
-
-                    for op, right in zip(node.ops, node.comparators):
-                        op_str = self._ast_comparator_map.get(type(op), "Unknown")
-                        name, *slices = self._tokenize_operand(right)
-                        right_str = slices[-1] if slices else name
-
-                        comparisons[current_df].append((left_str, op_str, right_str))
+                    comparisons[current_df].append((left_str, op_str, right_str))
         return comparisons
 
     def _extract_filters(self, code) -> dict[str, list]:
@@ -664,7 +686,7 @@ Code running:
                 "Unable to extract filters for passed code", level=logging.ERROR
             )
             self._logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
-            raise
+            return {}
 
         return filters
 
