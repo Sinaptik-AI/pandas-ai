@@ -7,6 +7,9 @@ There are two kinds of training:
 - instructions training
 - q/a training
 
+<iframe title='Train on PandasAI' style="width: 100%; max-width: 982px; min-height: 570px;" src="https://app.gemoo.com/embed/home?codeId=MlQ5yGpLeN59r"  frameborder="0" allowfullscreen loading="lazy"></iframe>
+<br />
+
 ## Instructions training
 
 Instructions training is used to teach PandasAI how you expect it to respond to certain queries. You can provide generic instructions about how you expect the model to approach certain types of queries, and PandasAI will use these instructions to generate responses to similar queries.
