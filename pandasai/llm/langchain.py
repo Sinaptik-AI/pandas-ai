@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 try:
+    from langchain_core.language_models import BaseLanguageModel
     from langchain_core.language_models.chat_models import BaseChatModel
-    from langchain_core.language_models.llms import BaseLLM
 
-    LANGCHAIN_AVAILABLE = True
 except ImportError:
-    # Fallback definitions if langchain_core is not installed
-    BaseLLM = BaseChatModel = object
-    LANGCHAIN_AVAILABLE = False
+    from unittest.mock import Mock
 
-from typing import TYPE_CHECKING, Union
+    # Fallback definitions if langchain_core is not installed
+    BaseLanguageModel = BaseChatModel = Mock
+
+from typing import TYPE_CHECKING
 
 from pandasai.prompts.base import BasePrompt
 
@@ -29,15 +29,19 @@ Example:
 """
 
 
+def is_langchain_llm(llm) -> bool:
+    return isinstance(llm, BaseLanguageModel)
+
+
 class LangchainLLM(LLM):
     """
     Class to wrap Langchain LLMs and make PandasAI interoperable
     with LangChain.
     """
 
-    langchain_llm = None
+    langchain_llm: BaseLanguageModel
 
-    def __init__(self, langchain_llm: Union[BaseLLM, BaseChatModel]):
+    def __init__(self, langchain_llm: BaseLanguageModel):
         self.langchain_llm = langchain_llm
 
     def call(
@@ -50,10 +54,6 @@ class LangchainLLM(LLM):
 
         res = self.langchain_llm.invoke(prompt)
         return res.content if isinstance(self.langchain_llm, BaseChatModel) else res
-
-    @staticmethod
-    def is_langchain_llm(llm: LLM) -> bool:
-        return hasattr(llm, "_llm_type")
 
     @property
     def type(self) -> str:

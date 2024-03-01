@@ -10,8 +10,6 @@ __all__ = [
     "LLM",
     "AzureOpenAI",
     "OpenAI",
-    "Falcon",
-    "GoogleGemini",
     "GooglePalm",
     "GoogleVertexAI",
     "HuggingFaceTextGen",
