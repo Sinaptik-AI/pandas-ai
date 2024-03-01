@@ -4,11 +4,11 @@ try:
     from langchain_core.language_models import BaseLanguageModel
     from langchain_core.language_models.chat_models import BaseChatModel
 
-    LANGCHAIN_AVAILABLE = True
 except ImportError:
+    from unittest.mock import Mock
+
     # Fallback definitions if langchain_core is not installed
-    BaseLanguageModel = BaseChatModel = object
-    LANGCHAIN_AVAILABLE = False
+    BaseLanguageModel = BaseChatModel = Mock
 
 from typing import TYPE_CHECKING
 
