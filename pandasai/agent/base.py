@@ -19,7 +19,7 @@ from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
+from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.chat.generate_chat_pipeline import (
     GenerateChatPipeline,
 )
@@ -141,7 +141,7 @@ class Agent:
 
         config = load_config_from_json(config)
 
-        if isinstance(config, dict) and config.get("llm") is None:
+        if isinstance(config, dict) and config.get("llm") is not None:
             config["llm"] = self.get_llm(config["llm"])
 
         config = Config(**config)
@@ -161,7 +161,7 @@ class Agent:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-        if LangchainLLM.is_langchain_llm(llm):
+        if is_langchain_llm(llm):
             llm = LangchainLLM(llm)
 
         return llm
