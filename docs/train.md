@@ -10,6 +10,18 @@ There are two kinds of training:
 <iframe title='Train on PandasAI' style="width: 100%; max-width: 982px; min-height: 570px;" src="https://app.gemoo.com/embed/home?codeId=MlQ5yGpLeN59r"  frameborder="0" allowfullscreen loading="lazy"></iframe>
 <br />
 
+## Prerequisites
+
+Before you start training PandasAI, you need to set your PandasAI API key. You can generate your API key by signing up at [https://pandabi.ai](https://pandabi.ai).
+
+Then you can set your API key as an environment variable:
+
+```python
+import os
+
+os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAIAPI_KEY"
+```
+
 ## Instructions training
 
 Instructions training is used to teach PandasAI how you expect it to respond to certain queries. You can provide generic instructions about how you expect the model to approach certain types of queries, and PandasAI will use these instructions to generate responses to similar queries.
@@ -21,10 +33,13 @@ To train PandasAI with instructions, you can use the `train` method on the `Agen
 ```python
 from pandasai import Agent
 
-df = Agent("data.csv")
-df.train(docs="The fiscal year starts in April")
+# Set your PandasAI API key (you can generate one signing up at https://pandabi.ai)
+os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"
 
-response = df.chat("What is the total sales for the fiscal year?")
+agent = Agent("data.csv")
+agent.train(docs="The fiscal year starts in April")
+
+response = agent.chat("What is the total sales for the fiscal year?")
 print(response)
 # The model will use the information provided in the training to generate a response
 ```
@@ -40,7 +55,7 @@ To train PandasAI with Q/A, you can use the `train` method on the `Agent`, `Smar
 ```python
 from pandasai import Agent
 
-df = Agent("data.csv")
+agent = Agent("data.csv")
 
 # Train the model
 query = "What is the total sales for the current fiscal year?"
@@ -53,9 +68,9 @@ df = dfs[0]
 total_sales = df[df['date'] >= pd.to_datetime('today').replace(month=4, day=1)]['sales'].sum()
 result = { "type": "number", "value": total_sales }
 """
-df.train(queries=[query], codes=[response])
+agent.train(queries=[query], codes=[response])
 
-response = df.chat("What is the total sales for the last fiscal year?")
+response = agent.chat("What is the total sales for the last fiscal year?")
 print(response)
 # The model will use the information provided in the training to generate a response
 ```
