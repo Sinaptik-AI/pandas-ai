@@ -9,9 +9,10 @@ Example:
 
     >>> from pandasai.llm.google_gemini import GoogleGemini
 """
-from typing import Any
+from typing import Any, Optional
 
 from ..exceptions import APIKeyNotFoundError
+from ..helpers.memory import Memory
 from ..helpers.optional import import_dependency
 from .base import BaseGoogle
 
@@ -71,7 +72,7 @@ class GoogleGemini(BaseGoogle):
         if not self.model:
             raise ValueError("model is required.")
 
-    def _generate_text(self, prompt: str) -> str:
+    def _generate_text(self, prompt: str, memory: Optional[Memory] = None) -> str:
         """
         Generates text for prompt.
 
@@ -83,7 +84,9 @@ class GoogleGemini(BaseGoogle):
 
         """
         self._validate()
+        updated_prompt = self.prepend_system_prompt(prompt, memory)
 
+        self.last_prompt = updated_prompt
         completion = self.google.GoogleGemini.generate_content(
             contents=prompt,
             temperature=self.temperature,
