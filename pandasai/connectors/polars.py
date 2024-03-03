@@ -6,7 +6,6 @@ import hashlib
 from functools import cache, cached_property
 from typing import Union
 
-import polars as pl
 from pydantic import BaseModel
 
 from ..helpers.data_sampler import DataSampler
@@ -46,6 +45,15 @@ class PolarsConnector(BaseConnector):
         Args:
             config (PolarsConnectorConfig): The configuration for the Polars connector.
         """
+
+        try:
+            import polars as pl
+        except ImportError as e:
+            raise ImportError(
+                "Could not import polars python package. "
+                "Please install it with `pip install polars`."
+            ) from e
+
         super().__init__(config, **kwargs)
 
         self._load_df(self.config.original_df)
