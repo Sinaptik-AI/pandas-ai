@@ -48,7 +48,6 @@ class SmartDataframe:
         description: str = None,
         custom_head: pd.DataFrame = None,
         config: Config = None,
-        logger: Logger = None,
     ):
         """
         Args:
@@ -57,7 +56,6 @@ class SmartDataframe:
             description (str, optional): Description of the dataframe. Defaults to "".
             custom_head (pd.DataFrame, optional): Sample head of the dataframe.
             config (Config, optional): Config to be used. Defaults to None.
-            logger (Logger, optional): Logger to be used. Defaults to None.
         """
         self._original_import = df
 
