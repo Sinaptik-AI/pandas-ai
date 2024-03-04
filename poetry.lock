@@ -5506,7 +5506,7 @@ testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jar
 
 [[package]]
 name = "shapely"
-version = "2.0.2"
+version = "2.0.3"
 description = "Manipulation and analysis of geometric objects"
 optional = true
 python-versions = ">=3.7"
