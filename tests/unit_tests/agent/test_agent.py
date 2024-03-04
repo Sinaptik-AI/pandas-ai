@@ -360,6 +360,22 @@ How much has the total salary expense increased?
             "value": "There are 10 countries in the dataframe.",
         },
     )
+    def test_last_code_executed(self, _mocked_method, agent: Agent):
+        expected_result = {
+            "type": "string",
+            "value": "There are 10 countries in the dataframe.",
+        }
+        agent.chat("How many countries are in the dataframe?")
+        assert agent.last_code_executed == expected_result
+
+    @patch.object(
+        CodeManager,
+        "execute_code",
+        return_value={
+            "type": "string",
+            "value": "There are 10 countries in the dataframe.",
+        },
+    )
     def test_last_result_is_saved(self, _mocked_method, agent: Agent):
         assert agent.last_result is None
 
