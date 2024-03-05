@@ -1,7 +1,7 @@
 import os
 import sys
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
 import pytest
@@ -352,21 +352,15 @@ How much has the total salary expense increased?
         assert isinstance(llm, LangchainLLM)
         assert llm.langchain_llm == langchain_llm
 
-    @patch.object(
-        CodeManager,
-        "execute_code",
-        return_value={
-            "type": "string",
-            "value": "There are 10 countries in the dataframe.",
-        },
+    @patch(
+        "pandasai.pipelines.chat.code_execution.CodeManager.last_code_executed",
+        new_callable=PropertyMock,
     )
-    def test_last_code_executed(self, _mocked_method, agent: Agent):
-        expected_result = {
-            "type": "string",
-            "value": "There are 10 countries in the dataframe.",
-        }
+    def test_last_code_executed(self, _mocked_property, agent: Agent):
+        expected_code = "result = {'type': 'string', 'value': 'There are 10 countries in the dataframe.'}"
+        _mocked_property.return_value = expected_code
         agent.chat("How many countries are in the dataframe?")
-        assert agent.last_code_executed == expected_result
+        assert agent.last_code_executed == expected_code
 
     @patch.object(
         CodeManager,
