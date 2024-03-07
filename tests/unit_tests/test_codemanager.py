@@ -1,4 +1,5 @@
 """Unit tests for the CodeManager class"""
+
 import ast
 import os
 import uuid
@@ -9,6 +10,7 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -617,3 +619,104 @@ np.array()"""
         assert str(excinfo.value) == (
             "Query uses unauthorized tables: ['table1', 'table2']. Please add them as new datatables or update the query."
         )
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_redeclarations(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+"""
+        tree = ast.parse(python_code)
+
+        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+
+        assert isinstance(output, ast.Assign)
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_multiline_redeclarations(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+import pandas as pd
+
+df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+
+print(df1)
+"""
+        tree = ast.parse(python_code)
+        outputs = [
+            code_manager._extract_fix_dataframe_redeclarations(node)
+            for node in tree.body
+        ]
+
+        assert outputs[0] is None
+        assert outputs[1] is not None
+        assert isinstance(outputs[1], ast.Assign)
+        assert outputs[2] is None
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_no_redeclarations(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+df1 = dfs[0]
+"""
+        tree = ast.parse(python_code)
+
+        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+
+        assert output is None
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_redeclarations_with_subscript(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+"""
+        tree = ast.parse(python_code)
+
+        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+
+        assert isinstance(output, ast.Assign)
