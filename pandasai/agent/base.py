@@ -29,9 +29,6 @@ from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM
-from ..pipelines.chat.generate_chat_pipeline import (
-    GenerateChatPipeline,
-)
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
 from ..prompts.check_if_relevant_to_conversation import (
@@ -57,7 +54,6 @@ class Agent:
         ],
         config: Optional[Union[Config, dict]] = None,
         memory_size: Optional[int] = 10,
-        pipeline: Optional[Type[GenerateChatPipeline]] = None,
         generate_code_pipeline: Optional[Type[GenerateCodeGenerationPipeline]] = None,
         code_execution_pipeline: Optional[Type[GenerateCodeExecutionPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
@@ -108,26 +104,6 @@ class Agent:
             self.context.vectorstore = self._vectorstore
 
         callbacks = Callbacks(self)
-
-        self.chat_pipeline = (
-            pipeline(
-                self.context,
-                self.logger,
-                on_prompt_generation=callbacks.on_prompt_generation,
-                on_code_generation=callbacks.on_code_generation,
-                on_code_execution=callbacks.on_code_execution,
-                on_result=callbacks.on_result,
-            )
-            if pipeline
-            else GenerateChatPipeline(
-                self.context,
-                self.logger,
-                on_prompt_generation=callbacks.on_prompt_generation,
-                on_code_generation=callbacks.on_code_generation,
-                on_code_execution=callbacks.on_code_execution,
-                on_result=callbacks.on_result,
-            )
-        )
 
         self.generate_code_pipeline = (
             generate_code_pipeline(
