@@ -149,6 +149,7 @@ class Agent:
             code_execution_pipeline(
                 self.context,
                 self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
                 on_code_execution=callbacks.on_code_execution,
                 on_result=callbacks.on_result,
             )
@@ -156,6 +157,7 @@ class Agent:
             else GenerateCodeExecutionPipeline(
                 self.context,
                 self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
                 on_code_execution=callbacks.on_code_execution,
                 on_result=callbacks.on_result,
             )
