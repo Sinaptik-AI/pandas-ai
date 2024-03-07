@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.chat.code_execution import CodeExecution
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
@@ -11,10 +13,10 @@ from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline
 )
 from pandasai.pipelines.chat.result_parsing import ResultParsing
 from pandasai.pipelines.chat.result_validation import ResultValidation
+
 from ...helpers.logger import Logger
 from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext
-from typing import Optional
 
 
 class GenerateCodeExecutionPipeline:

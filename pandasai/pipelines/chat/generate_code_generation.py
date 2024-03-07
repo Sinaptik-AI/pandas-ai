@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.chat.cache_lookup import CacheLookup
 from pandasai.pipelines.chat.cache_population import CachePopulation
@@ -8,10 +10,10 @@ from pandasai.pipelines.chat.generate_code_execution import (
 )
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.chat.validate_pipeline_input import ValidatePipelineInput
+
 from ...helpers.logger import Logger
 from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext
-from typing import Optional
 
 
 class GenerateCodeGenerationPipeline:
