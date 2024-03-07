@@ -141,6 +141,34 @@ class TestAgent:
         assert isinstance(response, str)
         assert response == "United States has the highest gdp"
 
+    def test_code_generation(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.generate_code_pipeline = Mock()
+        agent.generate_code_pipeline.return_value = (
+            "print(United States has the highest gdp)"
+        )
+        # Test the chat function
+        response = agent.generate_code_pipeline("Which country has the highest gdp?")
+        assert agent.generate_code_pipeline.called
+        assert isinstance(response, str)
+        assert response == "print(United States has the highest gdp)"
+
+    def test_code_execution(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.run_execute_code_pipeline = Mock()
+        agent.run_execute_code_pipeline.return_value = (
+            "United States has the highest gdp"
+        )
+        # Test the chat function
+        response = agent.run_execute_code_pipeline(
+            "print(United States has the highest gdp)"
+        )
+        assert agent.run_execute_code_pipeline.called
+        assert isinstance(response, str)
+        assert response == "United States has the highest gdp"
+
     def test_start_new_conversation(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
         agent.context.memory.add("Which country has the highest gdp?", True)
