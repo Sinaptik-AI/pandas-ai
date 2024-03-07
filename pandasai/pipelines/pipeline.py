@@ -137,3 +137,19 @@ class Pipeline(AbstractPipeline):
             raise e
 
         return data
+
+    def pipe(self, pipeline: "Pipeline", data: Any = None) -> Any:
+        """
+        This functions is responsible to pipe two pipelines
+        Args:
+            pipeline (Pipeline): Second Pipeline which will be Piped to the self.
+            data (Any, optional): Input Data to run the pipeline. Defaults to None.
+
+        Returns:
+            Any: Depends on the type can return anything
+        """
+
+        for step in pipeline._steps:
+            self.add_step(step)
+
+        return self.run(data)

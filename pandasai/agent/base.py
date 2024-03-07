@@ -8,6 +8,15 @@ import pandas as pd
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
+from pandasai.pipelines.chat.code_execution_pipeline_input import (
+    CodeExecutionPipelineInput,
+)
+from pandasai.pipelines.chat.generate_code_execution import (
+    GenerateCodeExecutionPipeline,
+)
+from pandasai.pipelines.chat.generate_code_generation import (
+    GenerateCodeGenerationPipeline,
+)
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import load_config_from_json
@@ -49,6 +58,8 @@ class Agent:
         config: Optional[Union[Config, dict]] = None,
         memory_size: Optional[int] = 10,
         pipeline: Optional[Type[GenerateChatPipeline]] = None,
+        generate_code_pipeline: Optional[Type[GenerateCodeGenerationPipeline]] = None,
+        code_execution_pipeline: Optional[Type[GenerateCodeExecutionPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
     ):
@@ -113,6 +124,38 @@ class Agent:
                 self.logger,
                 on_prompt_generation=callbacks.on_prompt_generation,
                 on_code_generation=callbacks.on_code_generation,
+                on_code_execution=callbacks.on_code_execution,
+                on_result=callbacks.on_result,
+            )
+        )
+
+        self.generate_code_pipeline = (
+            generate_code_pipeline(
+                self.context,
+                self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
+                on_code_generation=callbacks.on_code_generation,
+            )
+            if generate_code_pipeline
+            else GenerateCodeGenerationPipeline(
+                self.context,
+                self.logger,
+                on_prompt_generation=callbacks.on_prompt_generation,
+                on_code_generation=callbacks.on_code_generation,
+            )
+        )
+
+        self.code_execution_pipeline = (
+            code_execution_pipeline(
+                self.context,
+                self.logger,
+                on_code_execution=callbacks.on_code_execution,
+                on_result=callbacks.on_result,
+            )
+            if code_execution_pipeline
+            else GenerateCodeExecutionPipeline(
+                self.context,
+                self.logger,
                 on_code_execution=callbacks.on_code_execution,
                 on_result=callbacks.on_result,
             )
@@ -260,7 +303,57 @@ class Agent:
                 query, output_type, self.conversation_id, self.last_prompt_id
             )
 
-            return self.chat_pipeline.run(pipeline_input)
+            return self.generate_code_pipeline.pipe(
+                self.code_execution_pipeline, pipeline_input
+            )
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+    def run_generate_code_pipeline(self, query: str, output_type: Optional[str] = None):
+        """
+        Simulate code generation with the assistant on Dataframe.
+        """
+        try:
+            self.logger.log(f"Question: {query}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
+            )
+
+            self.assign_prompt_id()
+
+            pipeline_input = ChatPipelineInput(
+                query, output_type, self.conversation_id, self.last_prompt_id
+            )
+
+            return self.generate_code_pipeline.run(pipeline_input)
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+    def run_execute_code_pipeline(self, code: str, output_type: Optional[str] = None):
+        """
+        Execute code Generated with the assistant on Dataframe.
+        """
+        try:
+            self.logger.log(f"Code: {code}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
+            )
+
+            self.assign_prompt_id()
+
+            pipeline_input = CodeExecutionPipelineInput(
+                code, output_type, self.conversation_id, self.last_prompt_id
+            )
+
+            return self.code_execution_pipeline.run(pipeline_input)
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your answers, "
@@ -421,8 +514,14 @@ class Agent:
 
     @property
     def last_error(self):
-        return self.chat_pipeline.last_error
+        return (
+            self.generate_code_pipeline.last_error,
+            self.code_execution_pipeline.last_error,
+        )
 
     @property
     def last_query_log_id(self):
-        return self.chat_pipeline.get_last_track_log_id()
+        return (
+            self.generate_code_pipeline.get_last_track_log_id(),
+            self.code_execution_pipeline.get_last_track_log_id(),
+        )
