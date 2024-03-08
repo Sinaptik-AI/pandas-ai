@@ -149,9 +149,7 @@ class TestAgent:
             "print(United States has the highest gdp)"
         )
         # Test the chat function
-        response = agent.run_generate_code_pipeline(
-            "Which country has the highest gdp?"
-        )
+        response = agent.generate_code("Which country has the highest gdp?")
         assert agent.generate_code_pipeline.pipeline.run.called
         assert isinstance(response, str)
         assert response == "print(United States has the highest gdp)"
@@ -164,9 +162,7 @@ class TestAgent:
             "Raise an exception"
         )
         # Test the chat function
-        response = agent.run_generate_code_pipeline(
-            "Which country has the highest gdp?"
-        )
+        response = agent.generate_code("Which country has the highest gdp?")
         assert agent.generate_code_pipeline.pipeline.run.called
         assert (
             response
@@ -180,9 +176,7 @@ class TestAgent:
         agent.code_execution_pipeline.pipeline.run.side_effect = Exception(
             "Raise an exception"
         )
-        response = agent.run_execute_code_pipeline(
-            "print(United States has the highest gdp)"
-        )
+        response = agent.execute_code("print(United States has the highest gdp)")
         assert agent.code_execution_pipeline.pipeline.run.called
         assert (
             response
@@ -196,9 +190,7 @@ class TestAgent:
         agent.code_execution_pipeline.pipeline.run.return_value = (
             "United States has the highest gdp"
         )
-        response = agent.run_execute_code_pipeline(
-            "print(United States has the highest gdp)"
-        )
+        response = agent.execute_code("print(United States has the highest gdp)")
         assert agent.code_execution_pipeline.pipeline.run.called
         assert isinstance(response, str)
         assert response == "United States has the highest gdp"

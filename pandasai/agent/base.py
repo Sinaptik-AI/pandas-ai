@@ -291,7 +291,7 @@ class Agent:
                 f"\n{exception}\n"
             )
 
-    def run_generate_code_pipeline(self, query: str, output_type: Optional[str] = None):
+    def generate_code(self, query: str, output_type: Optional[str] = None):
         """
         Simulate code generation with the assistant on Dataframe.
         """
@@ -315,7 +315,7 @@ class Agent:
                 f"\n{exception}\n"
             )
 
-    def run_execute_code_pipeline(self, code: str, output_type: Optional[str] = None):
+    def execute_code(self, code: str, output_type: Optional[str] = None):
         """
         Execute code Generated with the assistant on Dataframe.
         """
