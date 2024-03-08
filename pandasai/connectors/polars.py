@@ -5,7 +5,7 @@ Polars connector class to handle csv, parquet, xlsx files and polars dataframes.
 from functools import cache, cached_property
 from typing import TYPE_CHECKING, Any, Union
 
-import pandas as pd
+import pandasai.pandas as pd
 
 # Use a conditional import for type checking
 if TYPE_CHECKING:

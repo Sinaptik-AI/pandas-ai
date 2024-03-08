@@ -1,8 +1,9 @@
 import json
 from enum import Enum
 
-import pandas as pd
 import yaml
+
+import pandasai.pandas as pd
 
 
 class DataframeSerializerType(Enum):
