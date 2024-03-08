@@ -2,7 +2,7 @@
 Unit tests for the FileImporter class
 """
 
-import pandas as pd
+import pandasai.pandas as pd
 import pytest
 
 from pandasai.helpers.file_importer import FileImporter
