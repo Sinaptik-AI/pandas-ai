@@ -62,7 +62,7 @@ class GenerateChatPipeline:
                 ),
                 CachePopulation(skip_if=self.is_cached),
                 CodeExecution(
-                    before_execution=on_code_execution,
+                    last_code_executed=on_code_execution,
                     on_failure=self.on_code_execution_failure,
                     on_retry=self.on_code_retry,
                 ),

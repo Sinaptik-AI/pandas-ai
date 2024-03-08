@@ -1,7 +1,7 @@
 import os
 import sys
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
 import pytest
@@ -559,3 +559,13 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)
+
+    @patch(
+        "pandasai.pipelines.chat.code_execution.CodeManager.last_code_executed",
+        new_callable=PropertyMock,
+    )
+    def test_last_code_executed(self, _mocked_property, agent: Agent):
+        expected_code = "result = {'type': 'string', 'value': 'There are 10 countries in the dataframe.'}"
+        _mocked_property.return_value = expected_code
+        agent.chat("How many countries are in the dataframe?")
+        assert agent.last_code_executed == expected_code

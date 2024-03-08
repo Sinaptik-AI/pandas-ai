@@ -1,5 +1,5 @@
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
@@ -82,7 +82,7 @@ class TestCodeExecution:
 
     def test_code_execution_successful_with_no_exceptions(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
-        code_execution = CodeExecution()
+        code_execution = CodeExecution(last_code_executed=MagicMock)
 
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
@@ -142,7 +142,7 @@ class TestCodeExecution:
 
     def test_code_execution_successful_at_retry(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
-        code_execution = CodeExecution()
+        code_execution = CodeExecution(last_code_executed=MagicMock())
 
         def mock_execute_code(*args, **kwargs):
             if self.throw_exception is True:

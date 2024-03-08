@@ -20,13 +20,15 @@ class CodeExecution(BaseLogicUnit):
 
     def __init__(
         self,
+        last_code_executed: Callable[[str, Exception], None] = None,
         on_failure: Callable[[str, Exception], None] = None,
         on_retry: Callable[[str, Exception], None] = None,
         **kwargs,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.on_failure = on_failure
         self.on_retry = on_retry
+        self.last_code_executed = last_code_executed
 
     def execute(self, input: Any, **kwargs) -> Any:
         """
@@ -63,6 +65,8 @@ class CodeExecution(BaseLogicUnit):
             try:
                 result = code_manager.execute_code(code_to_run, code_context)
 
+                self.last_code_executed(code_manager.last_code_executed)
+
                 if self.context.get("output_type") != "" and (
                     output_helper := self.context.get("output_type")
                 ):
@@ -84,6 +88,7 @@ class CodeExecution(BaseLogicUnit):
                     not self.context.config.use_error_correction_framework
                     or retry_count >= self.context.config.max_retries
                 ):
+                    self.last_code_executed(code_manager.last_code_executed)
                     raise e
 
                 retry_count += 1
