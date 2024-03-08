@@ -45,6 +45,7 @@ yfinance = { version = "^0.2.28", optional = true }
 sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
 flask = { version = "^3.0.2", optional = true }
+sqlalchemy-cockroachdb = { version = "^2.0.2", optional = true }
 sqlalchemy-bigquery = {version = "^1.8.0", optional = true, markers = "python_version >= '3.8' and python_version < '3.13'"}
 chromadb = {version = "^0.4.22", optional = true}
 
@@ -65,7 +66,7 @@ sourcery = "^1.11.0"
 
 
 [tool.poetry.extras]
-connectors = [ "pymysql", "psycopg2",  "sqlalchemy-databricks", "sqlalchemy-bigquery", "snowflake-sqlalchemy"]
+connectors = [ "pymysql", "psycopg2", "sqlalchemy-cockroachdb", "sqlalchemy-databricks", "sqlalchemy-bigquery", "snowflake-sqlalchemy"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
