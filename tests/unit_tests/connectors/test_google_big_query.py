@@ -39,6 +39,26 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         mock_load_connector_config.assert_called()
         mock_init_connection.assert_called()
 
+    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    def test_constructor_and_properties_with_base64_string(self, mock_create_engine):
+        self.mock_engine = Mock()
+        self.mock_connection = Mock()
+        self.mock_engine.connect.return_value = self.mock_connection
+        mock_create_engine.return_value = self.mock_engine
+
+        self.config = GoogleBigQueryConnectorConfig(
+            dialect="bigquery",
+            database="database",
+            table="yourtable",
+            credentials_base64="base64_str",
+            projectID="project_id",
+        ).dict()
+
+        self.connector = GoogleBigQueryConnector(self.config)
+        mock_create_engine.assert_called_with(
+            "bigquery://project_id/database?credentials_base64=base64_str"
+        )
+
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
