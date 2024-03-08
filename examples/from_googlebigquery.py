@@ -1,12 +1,11 @@
+import base64
 import json
+
 from pandasai import SmartDataframe
 
 # A license might be required for using Snowflake with PandasAI
 from pandasai.ee.connectors import GoogleBigQueryConnector
 from pandasai.llm import OpenAI
-
-import base64
-
 
 # ENV's
 # BIG_QUERY_DATABASE
