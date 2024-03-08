@@ -141,6 +141,60 @@ class TestAgent:
         assert isinstance(response, str)
         assert response == "United States has the highest gdp"
 
+    def test_code_generation(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.pipeline.code_generation_pipeline.run = Mock()
+        agent.pipeline.code_generation_pipeline.run.return_value = (
+            "print(United States has the highest gdp)"
+        )
+        # Test the chat function
+        response = agent.generate_code("Which country has the highest gdp?")
+        assert agent.pipeline.code_generation_pipeline.run.called
+        assert isinstance(response, str)
+        assert response == "print(United States has the highest gdp)"
+
+    def test_code_generation_failure(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.pipeline.code_generation_pipeline.run = Mock()
+        agent.pipeline.code_generation_pipeline.run.side_effect = Exception(
+            "Raise an exception"
+        )
+        # Test the chat function
+        response = agent.generate_code("Which country has the highest gdp?")
+        assert agent.pipeline.code_generation_pipeline.run.called
+        assert (
+            response
+            == "Unfortunately, I was not able to answer your question, because of the following error:\n\nRaise an exception\n"
+        )
+
+    def test_code_execution(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.pipeline.code_execution_pipeline.run = Mock()
+        agent.pipeline.code_execution_pipeline.run.side_effect = Exception(
+            "Raise an exception"
+        )
+        response = agent.execute_code("print(United States has the highest gdp)")
+        assert agent.pipeline.code_execution_pipeline.run.called
+        assert (
+            response
+            == "Unfortunately, I was not able to answer your question, because of the following error:\n\nRaise an exception\n"
+        )
+
+    def test_code_execution_failure(self, sample_df, config):
+        # Create an Agent instance for testing
+        agent = Agent(sample_df, config)
+        agent.pipeline.code_execution_pipeline.run = Mock()
+        agent.pipeline.code_execution_pipeline.run.return_value = (
+            "United States has the highest gdp"
+        )
+        response = agent.execute_code("print(United States has the highest gdp)")
+        assert agent.pipeline.code_execution_pipeline.run.called
+        assert isinstance(response, str)
+        assert response == "United States has the highest gdp"
+
     def test_start_new_conversation(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)
         agent.context.memory.add("Which country has the highest gdp?", True)
