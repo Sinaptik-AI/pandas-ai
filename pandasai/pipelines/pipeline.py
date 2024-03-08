@@ -137,3 +137,28 @@ class Pipeline(AbstractPipeline):
             raise e
 
         return data
+
+    def __or__(self, pipeline: "Pipeline") -> Any:
+        """
+        This functions is responsible to pipe two pipelines
+        Args:
+            pipeline (Pipeline): Second Pipeline which will be Piped to the self.
+            data (Any, optional): Input Data to run the pipeline. Defaults to None.
+
+        Returns:
+            Any: Depends on the type can return anything
+        """
+
+        combined_pipeline = Pipeline(
+            context=self._context,
+            logger=self._logger,
+            query_exec_tracker=self._query_exec_tracker,
+        )
+
+        for step in self._steps:
+            combined_pipeline.add_step(step)
+
+        for step in pipeline._steps:
+            combined_pipeline.add_step(step)
+
+        return combined_pipeline

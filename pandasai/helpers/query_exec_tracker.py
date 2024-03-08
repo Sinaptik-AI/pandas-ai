@@ -88,8 +88,6 @@ class QueryExecTracker:
         """
         for df in dfs:
             head = df.get_schema()
-            print(head)
-            print(type(head))
             self._dataframes.append(self.convert_dataframe_to_dict(head))
 
     def add_skills(self, context: PipelineContext):
