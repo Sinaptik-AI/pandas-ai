@@ -99,7 +99,7 @@ class GoogleVertexAI(BaseGoogle):
         if not self.model:
             raise ValueError("model is required.")
 
-    def _generate_text(self, prompt: str, memory: Memory = None) -> str:
+    def _generate_text(self, prompt: str, memory: Optional[Memory] = None) -> str:
         """
         Generates text for prompt.
 

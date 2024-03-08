@@ -23,7 +23,7 @@ from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM
+from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
 from ..prompts.check_if_relevant_to_conversation import (
@@ -162,7 +162,7 @@ class Agent:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-        if LangchainLLM.is_langchain_llm(llm):
+        if is_langchain_llm(llm):
             llm = LangchainLLM(llm)
 
         return llm

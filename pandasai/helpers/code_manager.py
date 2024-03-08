@@ -374,6 +374,69 @@ Code running:
                     if table_name not in allowed_table_names
                 ]
 
+    def _get_target_names(self, targets):
+        target_names = []
+        is_slice = False
+
+        for target in targets:
+            if isinstance(target, ast.Name) or (
+                isinstance(target, ast.Subscript) and isinstance(target.value, ast.Name)
+            ):
+                target_names.append(
+                    target.id if isinstance(target, ast.Name) else target.value.id
+                )
+                is_slice = isinstance(target, ast.Subscript)
+
+        return target_names, is_slice, target
+
+    def _check_is_df_declaration(self, node: ast.AST):
+        value = node.value
+        return (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Attribute)
+            and value.func.value.id == "pd"
+            and value.func.attr == "DataFrame"
+        )
+
+    def _extract_fix_dataframe_redeclarations(self, node: ast.AST) -> ast.AST:
+        if isinstance(node, ast.Assign):
+            target_names, is_slice, target = self._get_target_names(node.targets)
+
+            if target_names and self._check_is_df_declaration(node):
+                value = node.value
+
+                # Construct dataframe from node
+                dataframe_code = compile(
+                    ast.Expression(body=value), filename="<ast>", mode="eval"
+                )
+                result = eval(dataframe_code)
+                df_generated = result
+
+                # check if exists in provided dfs
+                for index, df in enumerate(self._dfs):
+                    head = df.get_head()
+                    if head.shape == df_generated.shape and head.columns.equals(
+                        df_generated.columns
+                    ):
+                        target_var = (
+                            ast.Subscript(
+                                value=ast.Name(id=target_names[0], ctx=ast.Load()),
+                                slice=target.slice,
+                                ctx=ast.Store(),
+                            )
+                            if is_slice
+                            else ast.Name(id=target_names[0], ctx=ast.Store())
+                        )
+                        return ast.Assign(
+                            targets=[target_var],
+                            value=ast.Subscript(
+                                value=ast.Name(id="dfs", ctx=ast.Load()),
+                                slice=ast.Index(value=ast.Num(n=index)),
+                                ctx=ast.Load(),
+                            ),
+                        )
+        return None
+
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
         """
         A method to clean the code to prevent malicious code execution.
@@ -437,7 +500,7 @@ Code running:
 
             self.find_function_calls(node, context)
 
-            new_body.append(node)
+            new_body.append(self._extract_fix_dataframe_redeclarations(node) or node)
 
         # Enforcing use of execute_sql_query via Error Prompt Pipeline
         if self._config.direct_sql and not execute_sql_query_used:

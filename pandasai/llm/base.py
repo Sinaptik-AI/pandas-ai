@@ -453,7 +453,7 @@ class BaseGoogle(LLM):
             raise ValueError("max_output_tokens must be greater than zero")
 
     @abstractmethod
-    def _generate_text(self, prompt: str, memory: Memory) -> str:
+    def _generate_text(self, prompt: str, memory: Optional[Memory] = None) -> str:
         """
         Generates text for prompt, specific to implementation.
 

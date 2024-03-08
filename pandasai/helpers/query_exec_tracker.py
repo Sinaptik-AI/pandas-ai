@@ -70,7 +70,14 @@ class QueryExecTracker:
         }
 
     def convert_dataframe_to_dict(self, df):
-        json_data = json.loads(df.to_json(orient="split", date_format="iso"))
+        json_data = json.loads(
+            df.to_json(
+                orient="split",
+                date_format="iso",
+                default_handler=str,
+                force_ascii=False,
+            )
+        )
         return {"headers": json_data["columns"], "rows": json_data["data"]}
 
     def add_dataframes(self, dfs: List[BaseConnector]) -> None:

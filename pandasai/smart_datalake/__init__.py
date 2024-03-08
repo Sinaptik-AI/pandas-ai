@@ -38,7 +38,6 @@ class SmartDatalake:
         Args:
             dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
             config (Union[Config, dict], optional): Config to be used. Defaults to None.
-            logger (Logger, optional): Logger to be used. Defaults to None.
         """
         self._agent = Agent(dfs, config=config)
 

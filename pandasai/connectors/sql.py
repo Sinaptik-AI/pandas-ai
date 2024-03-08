@@ -576,7 +576,9 @@ class PostgreSQLConnector(SQLConnector):
         Args:
             config (ConnectorConfig): The configuration for the PostgreSQL connector.
         """
-        config["dialect"] = "postgresql"
+        if "dialect" not in config:
+            config["dialect"] = "postgresql"
+
         config["driver"] = "psycopg2"
 
         if isinstance(config, dict):
