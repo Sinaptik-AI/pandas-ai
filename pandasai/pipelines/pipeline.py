@@ -149,7 +149,4 @@ class Pipeline(AbstractPipeline):
             Any: Depends on the type can return anything
         """
 
-        for step in pipeline._steps:
-            self.add_step(step)
-
-        return self.run(data)
+        return pipeline.run(self.run(data))
