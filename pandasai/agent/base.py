@@ -4,7 +4,6 @@ import uuid
 from typing import List, Optional, Type, Union
 
 import pandasai.pandas as pd
-
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )

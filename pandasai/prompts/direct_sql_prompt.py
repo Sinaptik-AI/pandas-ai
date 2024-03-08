@@ -1,4 +1,5 @@
 """ Prompt to explain code generation by the LLM"""
+import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -9,8 +10,6 @@ from .generate_python_code import (
     GeneratePythonCodePrompt,
     SimpleReasoningPrompt,
 )
-
-import pandasai.pandas as pd
 
 
 class DirectSQLPrompt(GeneratePythonCodePrompt):
