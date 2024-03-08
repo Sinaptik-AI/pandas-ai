@@ -59,7 +59,7 @@ class ResultParsing(BaseLogicUnit):
             return
 
         if result["type"] in ["string", "number"]:
-            context.memory.add(result["value"], False)
+            context.memory.add(str(result["value"]), False)
         elif result["type"] == "dataframe":
             context.memory.add("Check it out: <dataframe>", False)
         elif result["type"] == "plot":
