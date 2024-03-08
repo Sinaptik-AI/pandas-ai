@@ -248,7 +248,7 @@ print(dfs)"""
             "because of the following error:\n"
             "\nNo code found in the answer.\n"
         )
-        assert agent.last_error == ("No code found in the answer.", None)
+        assert agent.last_error == "No code found in the answer."
 
     def test_custom_whitelisted_dependencies(
         self, code_manager: CodeManager, llm, exec_context: MagicMock
