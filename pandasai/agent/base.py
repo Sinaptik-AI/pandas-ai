@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import List, Optional, Type, Union
 
-import pandas as pd
+import pandasai.pandas as pd
 
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
@@ -55,7 +55,7 @@ class Agent:
     ):
         """
         Args:
-            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas dataframe
+            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas or Modin dataframe
             Polars or Database connectors
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.

@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 
-import pandas as pd
+import pandasai.pandas as pd
 import yaml
 
 

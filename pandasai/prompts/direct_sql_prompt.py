@@ -10,6 +10,8 @@ from .generate_python_code import (
     SimpleReasoningPrompt,
 )
 
+import pandasai.pandas as pd
+
 
 class DirectSQLPrompt(GeneratePythonCodePrompt):
     """Prompt to explain code generation by the LLM"""
@@ -48,7 +50,7 @@ class DirectSQLPrompt(GeneratePythonCodePrompt):
         self.set_var("prev_conversation", kwargs.pop("prev_conversation", ""))
 
     def on_prompt_generation(self) -> None:
-        default_import = "import pandas as pd"
+        default_import = f"import {pd.__name__} as pd"
 
         self.set_var("default_import", default_import)
         self.set_var("reasoning", SimpleReasoningPrompt())

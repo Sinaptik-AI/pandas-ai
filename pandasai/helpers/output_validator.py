@@ -1,7 +1,7 @@
 import re
 from typing import Any, Iterable
 
-import pandas as pd
+import pandasai.pandas as pd
 
 
 class OutputValidator:
