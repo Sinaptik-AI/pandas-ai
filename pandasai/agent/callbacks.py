@@ -30,7 +30,7 @@ class Callbacks:
         Args:
             code (str): A python code
         """
-        self.agent.last_code_executed = code
+        self.agent.last_code_executed = self.agent.context.get("last_code_executed")
 
     def on_result(self, result):
         """
