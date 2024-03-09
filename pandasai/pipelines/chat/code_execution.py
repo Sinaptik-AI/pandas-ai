@@ -24,7 +24,7 @@ class CodeExecution(BaseLogicUnit):
         on_retry: Callable[[str, Exception], None] = None,
         **kwargs,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.on_failure = on_failure
         self.on_retry = on_retry
 
