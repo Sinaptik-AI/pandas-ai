@@ -394,7 +394,7 @@ Code running:
         return (
             isinstance(value, ast.Call)
             and isinstance(value.func, ast.Attribute)
-            and hasattr(value.func.value, "id")
+            and isinstance(value.func.value, ast.Name)
             and value.func.value.id == "pd"
             and value.func.attr == "DataFrame"
         )
