@@ -225,6 +225,14 @@ print(os.listdir())
         with pytest.raises(BadImportError):
             code_manager.execute_code(malicious_code, exec_context)
 
+    def test_clean_code_accesses_node_id(
+        self, code_manager: CodeManager, exec_context: MagicMock
+    ):
+        """Test that value.func.value.id is accessed safely in _check_is_df_declaration."""
+        pandas_code = """unique_countries = dfs[0]['country'].unique()
+smallest_countries = df.sort_values(by='area').head()"""
+        assert code_manager._clean_code(pandas_code, exec_context) == pandas_code
+
     def test_remove_dfs_overwrites(
         self, code_manager: CodeManager, exec_context: MagicMock
     ):
