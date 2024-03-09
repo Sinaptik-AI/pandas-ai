@@ -100,6 +100,8 @@ class CodeExecution(BaseLogicUnit):
                     code_to_run, self.context, self.logger, e
                 )
 
+        self.context.add("last_code_executed", code_manager.last_code_executed)
+
         return LogicUnitOutput(
             result,
             True,

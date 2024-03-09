@@ -74,7 +74,7 @@ class GenerateChatPipeline:
             query_exec_tracker=self.query_exec_tracker,
             steps=[
                 CodeExecution(
-                    before_execution=on_code_execution,
+                    on_execution=on_code_execution,
                     on_failure=self.on_code_execution_failure,
                     on_retry=self.on_code_retry,
                 ),
