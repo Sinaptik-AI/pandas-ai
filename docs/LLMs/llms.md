@@ -211,3 +211,33 @@ PandasAI will automatically detect that you are using a LangChain LLM and will c
 ### More information
 
 For more information about LangChain models, please refer to the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).
+
+## Local models
+
+PandasAI supports local models, though smaller models typically don't perform as well. To use local models, first host one on a local inference server that adheres to the OpenAI API. This has been tested to work with [Ollama](https://ollama.com/) and [LM Studio](https://lmstudio.ai/).
+
+### Ollama
+
+Ollama's compatibility is experimental (see [docs](https://github.com/ollama/ollama/blob/main/docs/openai.md)).
+
+With an Ollama server, you can instantiate an LLM object by specifying the model name:
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm.local_llm import LocalLLM
+
+ollama_llm = LocalLLM(model="codellama", api_base="http://localhost:11434/v1")
+df = SmartDataframe("data.csv", config={"llm": ollama_llm})
+```
+
+### LM Studio
+
+An LM Studio server only hosts one model, so you can instantiate an LLM object with any model name:
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm.local_llm import LocalLLM
+
+lm_studio_llm = LocalLLM(model="ignored", api_base="http://localhost:1234/v1")
+df = SmartDataframe("data.csv", config={"llm": lm_studio_llm})
+```
