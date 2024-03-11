@@ -22,6 +22,7 @@ from ..pipeline import Pipeline
 from ..pipeline_context import PipelineContext
 from .cache_lookup import CacheLookup
 from .cache_population import CachePopulation
+from .code_cleaning import CodeCleaning
 from .code_execution import CodeExecution
 from .code_generator import CodeGenerator
 from .prompt_generation import PromptGeneration
@@ -65,6 +66,7 @@ class GenerateChatPipeline:
                     on_execution=on_code_generation,
                 ),
                 CachePopulation(skip_if=self.is_cached),
+                CodeCleaning(skip_if=self.is_cached),
             ],
         )
 
