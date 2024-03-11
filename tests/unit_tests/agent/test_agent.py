@@ -14,10 +14,10 @@ from pandasai.connectors.sql import (
     SQLConnectorConfig,
 )
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
-from pandasai.pipelines.chat.code_cleaning import CodeManager
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.llm.langchain import LangchainLLM
+from pandasai.pipelines.chat.code_cleaning import CodeManager
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 

@@ -6,11 +6,11 @@ from pandasai.exceptions import InvalidLLMOutputType, InvalidOutputValueMismatch
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.responses.response_serializer import ResponseSerializer
 
-from .code_cleaning import CodeExecutionContext, CodeManager
 from ...helpers.logger import Logger
 from ...helpers.output_validator import OutputValidator
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
+from .code_cleaning import CodeExecutionContext, CodeManager
 
 
 class CodeExecution(BaseLogicUnit):

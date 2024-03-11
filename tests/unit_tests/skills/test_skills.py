@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
-from pandasai.pipelines.chat.code_cleaning import CodeExecutionContext, CodeManager
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.chat.code_cleaning import CodeExecutionContext, CodeManager
 from pandasai.skills import Skill, skill
 
 
