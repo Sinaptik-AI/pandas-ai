@@ -338,23 +338,7 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
-        messages = []
-        if memory:
-            if memory.agent_info:
-                messages.append(
-                    {
-                        "role": "system",
-                        "content": memory.get_system_prompt(),
-                    }
-                )
-
-            for message in memory.all():
-                if message["is_user"]:
-                    messages.append({"role": "user", "content": message["message"]})
-                else:
-                    messages.append(
-                        {"role": "assistant", "content": message["message"]}
-                    )
+        messages = memory.to_openai_messages() if memory else []
 
         # adding current prompt as latest query message
         messages.append(
