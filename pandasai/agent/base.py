@@ -141,7 +141,7 @@ class Agent:
 
         config = load_config_from_json(config)
 
-        if isinstance(config, dict) and config.get("llm") is None:
+        if isinstance(config, dict) and config.get("llm") is not None:
             config["llm"] = self.get_llm(config["llm"])
 
         config = Config(**config)

@@ -402,9 +402,9 @@ How much has the total salary expense increased?
     def test_load_llm_with_langchain_llm(self, agent: Agent, llm):
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
-        llm = agent.get_llm(langchain_llm)
-        assert isinstance(llm, LangchainLLM)
-        assert llm.langchain_llm == langchain_llm
+        config = agent.get_config({"llm": langchain_llm})
+        assert isinstance(config.llm, LangchainLLM)
+        assert config.llm.langchain_llm == langchain_llm
 
     @patch(
         "pandasai.pipelines.chat.code_execution.CodeManager.last_code_executed",
