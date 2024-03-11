@@ -79,6 +79,25 @@ class Memory:
                 messages.append({"role": "assistant", "message": message["message"]})
         return messages
 
+    def to_openai_messages(self):
+        """
+        Returns the conversation messages in the format expected by the OpenAI API
+        """
+        messages = []
+        if self.agent_info:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": self.get_system_prompt(),
+                }
+            )
+        for message in self.all():
+            if message["is_user"]:
+                messages.append({"role": "user", "content": message["message"]})
+            else:
+                messages.append({"role": "assistant", "content": message["message"]})
+        return messages
+
     def clear(self):
         self._messages = []
 
