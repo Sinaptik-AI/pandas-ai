@@ -14,7 +14,7 @@ from pandasai.connectors.sql import (
     SQLConnectorConfig,
 )
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
-from pandasai.helpers.code_manager import CodeManager
+from pandasai.pipelines.chat.code_cleaning import CodeManager
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.llm.langchain import LangchainLLM
