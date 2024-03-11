@@ -53,7 +53,7 @@ class TestLocalLLM:
         mock_create.assert_called_once()
 
     def test_chat_completion_with_memory(self, local_llm, client):
-        expected_text = "This is the generated text with memory."
+        expected_text = "This is the generated text."
         memory = Memory()
         memory.add("Previous user message", True)
         memory.add("Previous assistant message", False)
@@ -72,7 +72,7 @@ class TestLocalLLM:
         assert len(kwargs["messages"]) == 3
 
     def test_call_method(self, local_llm, client, prompt):
-        expected_text = "This is the generated text from call."
+        expected_text = "This is the generated text."
         mock_response = MagicMock(
             choices=[MagicMock(message=MagicMock(content=expected_text))]
         )
