@@ -208,6 +208,35 @@ df = SmartDataframe("data.csv", config={"llm": langchain_llm})
 
 PandasAI will automatically detect that you are using a LangChain LLM and will convert it to a PandasAI LLM.
 
+## Amazon Bedrock models
+In order to use Amazon Bedrock models, you need to have an [AWS AKSK](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) and gain the [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html). 
+
+Currently, only Claude 3 Sonnet is supported.
+
+In order to use Bedrock models, you need to install the `bedrock` package.
+
+```bash
+pip install pandasai[bedrock]
+```
+
+Then you can use the Bedrock models as follows
+
+```python
+from pandasai import SmartDataframe
+from bedrock_claude import BedrockClaude
+import boto3
+
+bedrock_runtime_client = boto3.client(
+    'bedrock-runtime',
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY
+)
+
+llm = BedrockClaude(bedrock_runtime_client)
+df = SmartDataframe("data.csv", config={"llm": llm})
+```
+More ways to create the bedrock_runtime_client can be found [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+
 ### More information
 
 For more information about LangChain models, please refer to the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).

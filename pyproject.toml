@@ -83,6 +83,8 @@ text-generation = ["fsspec", "huggingface-hub", "text-generation"]
 yfinance = ["yfinance"]
 modin = ["modin", "ray"]
 chromadb = ["chromadb"]
+bedrock = ["boto3"]
+
 
 [tool.poetry.group.docs]
 optional = true
