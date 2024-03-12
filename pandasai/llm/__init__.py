@@ -8,7 +8,6 @@ from .google_vertexai import GoogleVertexAI
 from .huggingface_text_gen import HuggingFaceTextGen
 from .langchain import LangchainLLM
 from .openai import OpenAI
-from .bedrock_claude import BedrockClaude
 
 __all__ = [
     "LLM",
