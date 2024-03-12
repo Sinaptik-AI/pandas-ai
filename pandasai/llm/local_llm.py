@@ -13,10 +13,9 @@ if TYPE_CHECKING:
 
 
 class LocalLLM(LLM):
-    def __init__(self, api_base: str, model: str, **kwargs):
-        self.api_base = api_base
+    def __init__(self, api_base: str, model: str = "", api_key: str = "", **kwargs):
         self.model = model
-        self.client = OpenAI(base_url=api_base, api_key="ignored").chat.completions
+        self.client = OpenAI(base_url=api_base, api_key=api_key).chat.completions
         self._invocation_params = kwargs
 
     def chat_completion(self, value: str, memory: Memory) -> str:

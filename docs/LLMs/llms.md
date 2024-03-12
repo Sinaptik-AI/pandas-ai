@@ -209,7 +209,8 @@ df = SmartDataframe("data.csv", config={"llm": langchain_llm})
 PandasAI will automatically detect that you are using a LangChain LLM and will convert it to a PandasAI LLM.
 
 ## Amazon Bedrock models
-In order to use Amazon Bedrock models, you need to have an [AWS AKSK](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) and gain the [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html). 
+
+In order to use Amazon Bedrock models, you need to have an [AWS AKSK](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) and gain the [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html).
 
 Currently, only Claude 3 Sonnet is supported.
 
@@ -235,6 +236,7 @@ bedrock_runtime_client = boto3.client(
 llm = BedrockClaude(bedrock_runtime_client)
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
+
 More ways to create the bedrock_runtime_client can be found [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
 
 ### More information
@@ -255,18 +257,18 @@ With an Ollama server, you can instantiate an LLM object by specifying the model
 from pandasai import SmartDataframe
 from pandasai.llm.local_llm import LocalLLM
 
-ollama_llm = LocalLLM(model="codellama", api_base="http://localhost:11434/v1")
+ollama_llm = LocalLLM(api_base="http://localhost:11434/v1", model="codellama")
 df = SmartDataframe("data.csv", config={"llm": ollama_llm})
 ```
 
 ### LM Studio
 
-An LM Studio server only hosts one model, so you can instantiate an LLM object with any model name:
+An LM Studio server only hosts one model, so you can instantiate an LLM object without specifying the model name:
 
 ```python
 from pandasai import SmartDataframe
 from pandasai.llm.local_llm import LocalLLM
 
-lm_studio_llm = LocalLLM(model="ignored", api_base="http://localhost:1234/v1")
+lm_studio_llm = LocalLLM(api_base="http://localhost:1234/v1")
 df = SmartDataframe("data.csv", config={"llm": lm_studio_llm})
 ```
