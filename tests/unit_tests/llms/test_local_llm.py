@@ -40,6 +40,14 @@ class TestLocalLLM:
     def test_local_llm_type(self, local_llm):
         assert local_llm.type == "local"
 
+    def test_api_key_not_empty(self, client):
+        LocalLLM(api_base="http://localhost:1234/v1")
+
+        client.assert_called_once()
+        _, kwargs = client.call_args
+        assert "api_key" in kwargs
+        assert kwargs["api_key"] != ""
+
     def test_chat_completion_no_memory(self, local_llm, client):
         expected_text = "This is the generated text."
         mock_response = MagicMock(
