@@ -55,6 +55,11 @@ class Pipeline(AbstractPipeline):
         )
 
         self._context = context
+
+        if steps:
+            for i in range(len(steps) - 1):
+                steps[i].next_unit = steps[i + 1]
+
         self._steps = steps or []
         self._query_exec_tracker = query_exec_tracker or QueryExecTracker(
             server_config=self._context.config.log_server
@@ -72,6 +77,9 @@ class Pipeline(AbstractPipeline):
                 "must implement execute method"
             )
 
+        if self._steps:
+            self._steps[-1].next_step = logic
+
         self._steps.append(logic)
 
     def run(self, data: Any = None) -> Any:
@@ -84,15 +92,17 @@ class Pipeline(AbstractPipeline):
             Any: Depends on the type can return anything
         """
         try:
-            for index, logic in enumerate(self._steps):
+            for _, logic in enumerate(self._steps):
+                step_name = logic.__class__.__name__
+
                 # Callback function before execution
                 if logic.before_execution is not None:
                     logic.before_execution(data)
 
-                self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
+                self._logger.log(f"Executing {step_name} step")
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
-                    self._logger.log(f"Executing Step {index}: Skipping...")
+                    self._logger.log(f"Skipping {step_name} step...")
                     continue
 
                 start_time = time.time()
@@ -133,7 +143,7 @@ class Pipeline(AbstractPipeline):
                     logic.on_execution(data)
 
         except Exception as e:
-            self._logger.log(f"Pipeline failed on step {index}: {e}", logging.ERROR)
+            self._logger.log(f"Pipeline failed on {step_name} step: {e}", logging.ERROR)
             raise e
 
         return data
