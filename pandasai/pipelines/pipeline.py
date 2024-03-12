@@ -58,7 +58,7 @@ class Pipeline(AbstractPipeline):
 
         if steps:
             for i in range(len(steps) - 1):
-                steps[i].next_unit = steps[i + 1]
+                steps[i].next_step = steps[i + 1]
 
         self._steps = steps or []
         self._query_exec_tracker = query_exec_tracker or QueryExecTracker(
@@ -91,8 +91,12 @@ class Pipeline(AbstractPipeline):
         Returns:
             Any: Depends on the type can return anything
         """
+        if not self._steps:
+            return data
+
         try:
-            for _, logic in enumerate(self._steps):
+            logic = self._steps[0]
+            while logic:
                 step_name = logic.__class__.__name__
 
                 # Callback function before execution
@@ -103,6 +107,7 @@ class Pipeline(AbstractPipeline):
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
                     self._logger.log(f"Skipping {step_name} step...")
+                    logic = logic.next_step
                     continue
 
                 start_time = time.time()
@@ -141,6 +146,8 @@ class Pipeline(AbstractPipeline):
                 # Callback function after execution
                 if logic.on_execution is not None:
                     logic.on_execution(data)
+
+                logic = logic.next_step
 
         except Exception as e:
             self._logger.log(f"Pipeline failed on {step_name} step: {e}", logging.ERROR)
