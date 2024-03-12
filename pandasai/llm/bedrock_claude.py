@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
-from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
-
 from .base import LLM
-import json
 
 if TYPE_CHECKING:
     from pandasai.pipelines.pipeline_context import PipelineContext

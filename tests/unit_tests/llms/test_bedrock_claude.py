@@ -1,12 +1,13 @@
 """Unit tests for the openai LLM class"""
+import io
+import json
 from unittest.mock import MagicMock
+
 import pytest
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import BedrockClaude
 from pandasai.prompts import BasePrompt
-import json
-import io
 
 
 class MockBedrockRuntimeClient:
