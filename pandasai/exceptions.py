@@ -186,6 +186,14 @@ class InvalidLLMOutputType(Exception):
     """
 
 
+class InvalidOutputValueMismatch(Exception):
+    """
+    Raise error if the output value doesn't match with type
+    Args:
+        Exception (Exception): InvalidOutputValueMismatch
+    """
+
+
 class ExecuteSQLQueryNotUsed(Exception):
     """
     Raise error if Execute SQL Query is not used

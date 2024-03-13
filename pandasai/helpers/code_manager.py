@@ -357,22 +357,84 @@ Code running:
                 )
         return False
 
-    def _get_sql_irrelevant_tables(self, node: ast.Assign):
-        for target in node.targets:
+    # def _get_sql_irrelevant_tables(self, node: ast.Assign):
+    #     for target in node.targets:
+    #         if (
+    #             isinstance(target, ast.Name)
+    #             and target.id in "sql_query"
+    #             and isinstance(node.value, ast.Constant)
+    #             and isinstance(node.value.value, str)
+    #         ):
+    #             sql_query = node.value.value
+    #             table_names = extract_table_names(sql_query)
+    #             allowed_table_names = [df.name for df in self._dfs]
+    #             return [
+    #                 table_name
+    #                 for table_name in table_names
+    #                 if table_name not in allowed_table_names
+    #             ]
+
+    def _replace_table_names(
+        self, sql_query: str, table_names: list, allowed_table_names: list
+    ):
+        regex_patterns = {
+            table_name: re.compile(r"\b" + re.escape(table_name) + r"\b")
+            for table_name in table_names
+        }
+        for table_name in table_names:
+            if table_name in allowed_table_names.keys():
+                quoted_table_name = allowed_table_names[table_name]
+                sql_query = regex_patterns[table_name].sub(quoted_table_name, sql_query)
+            else:
+                raise MaliciousQueryError(
+                    f"Query uses unauthorized table: {table_name}."
+                )
+
+        return sql_query
+
+    def _validate_and_make_table_name_case_sensitive(self, node: ast.Assign):
+        """
+        Validates whether table exists in specified dataset and convert name to case-sensitive
+        Args:
+            node (ast.Assign): code tree node
+
+        Returns:
+            node: return updated or same node
+        """
+        if isinstance(node, ast.Assign):
+            # Check if the assigned value is a string constant and the target is 'sql_query'
             if (
-                isinstance(target, ast.Name)
-                and target.id in "sql_query"
-                and isinstance(node.value, ast.Constant)
+                isinstance(node.value, ast.Constant)
                 and isinstance(node.value.value, str)
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id in ["sql_query", "query"]
             ):
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
-                allowed_table_names = [df.name for df in self._dfs]
-                return [
-                    table_name
-                    for table_name in table_names
-                    if table_name not in allowed_table_names
-                ]
+                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                sql_query = self._replace_table_names(
+                    sql_query, table_names, allowed_table_names
+                )
+                node.value.value = sql_query
+
+        elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            # Check if the function call is to 'execute_sql_query' and has a string constant argument
+            if (
+                isinstance(node.value.func, ast.Name)
+                and node.value.func.id == "execute_sql_query"
+                and len(node.value.args) == 1
+                and isinstance(node.value.args[0], ast.Constant)
+                and isinstance(node.value.args[0].value, str)
+            ):
+                sql_query = node.value.args[0].value
+                table_names = extract_table_names(sql_query)
+                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                sql_query = self._replace_table_names(
+                    sql_query, table_names, allowed_table_names
+                )
+                node.value.args[0].value = sql_query
+
+        return node
 
     def _get_target_names(self, targets):
         target_names = []
@@ -490,14 +552,8 @@ Code running:
                 execute_sql_query_used = True
 
             # Sanity for sql query the code should only use allowed tables
-            if (
-                isinstance(node, ast.Assign)
-                and self._config.direct_sql
-                and (unauthorized_tables := self._get_sql_irrelevant_tables(node))
-            ):
-                raise MaliciousQueryError(
-                    f"Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
-                )
+            if isinstance(node, ast.Assign) and self._config.direct_sql:
+                node = self._validate_and_make_table_name_case_sensitive(node)
 
             self.find_function_calls(node, context)
 

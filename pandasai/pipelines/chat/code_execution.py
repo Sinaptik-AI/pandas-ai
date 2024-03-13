@@ -2,7 +2,7 @@ import logging
 import traceback
 from typing import Any, Callable
 
-from pandasai.exceptions import InvalidLLMOutputType
+from pandasai.exceptions import InvalidLLMOutputType, InvalidOutputValueMismatch
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.responses.response_serializer import ResponseSerializer
 
@@ -72,6 +72,12 @@ class CodeExecution(BaseLogicUnit):
 
                     if not validation_ok:
                         raise InvalidLLMOutputType(validation_errors)
+
+                if not OutputValidator.validate_result(result):
+                    raise InvalidOutputValueMismatch(
+                        f'Value must match with type {result["type"]}'
+                    )
+
                 break
 
             except Exception as e:

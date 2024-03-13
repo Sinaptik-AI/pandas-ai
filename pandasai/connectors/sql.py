@@ -145,7 +145,7 @@ class SQLConnector(BaseConnector):
             raise ValueError(f"Invalid column name: {column_name}")
 
     def _build_query(self, limit=None, order=None):
-        base_query = select("*").select_from(text(self.config.table))
+        base_query = select("*").select_from(text(self.cs_table_name))
         if self.config.where or self._additional_filters:
             # conditions is the list of where + additional filters
             conditions = []
@@ -326,7 +326,7 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get the number of rows
-        query = select(text("COUNT(*)")).select_from(text(self.config.table))
+        query = select(text("COUNT(*)")).select_from(text(self.cs_table_name))
 
         # Return the number of rows
         self._rows_count = self._connection.execute(query).fetchone()[0]
@@ -439,6 +439,10 @@ class SQLConnector(BaseConnector):
 
         return pd.read_sql(sql_query, self._connection)
 
+    @property
+    def cs_table_name(self):
+        return self.config.table
+
 
 class SqliteConnector(SQLConnector):
     """
@@ -513,6 +517,10 @@ class SqliteConnector(SQLConnector):
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
+
+    @property
+    def cs_table_name(self):
+        return f'"{self.config.table}"'
 
     def __repr__(self):
         """
@@ -614,3 +622,7 @@ class PostgreSQLConnector(SQLConnector):
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
+
+    @property
+    def cs_table_name(self):
+        return f'"{self.config.table}"'

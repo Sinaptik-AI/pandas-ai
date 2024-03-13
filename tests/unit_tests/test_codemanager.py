@@ -30,6 +30,17 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.schemas.df_config import Config
 
 
+class MockDataframe:
+    table_name = "allowed_table"
+
+    def __init__(self, table_name="test"):
+        self.name = table_name
+
+    @property
+    def cs_table_name(self):
+        return self.name
+
+
 class TestCodeManager:
     """Unit tests for the CodeManager class"""
 
@@ -478,23 +489,22 @@ np.array()"""
     ):
         mock_node = ast.parse("sql_query = 'SELECT * FROM your_table'").body[0]
 
-        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+        code_manager._dfs = [MockDataframe("allowed_table")]
 
-        assert len(irrelevant_tables) > 0
+        with pytest.raises(MaliciousQueryError):
+            code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
     def test_check_is_query_using_relevant_table_valid_query(
         self, code_manager: CodeManager
     ):
         mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
 
-        class MockObject:
-            name = "allowed_table"
+        code_manager._dfs = [MockDataframe("allowed_table")]
 
-        code_manager._dfs = [MockObject()]
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
-        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
-
-        assert len(irrelevant_tables) == 0
+        assert isinstance(node, ast.Assign)
+        assert node.value.value == "SELECT * FROM allowed_table"
 
     def test_check_is_query_using_relevant_table_multiple_tables(
         self, code_manager: CodeManager
@@ -503,37 +513,21 @@ np.array()"""
             "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
         ).body[0]
 
-        class MockObject:
-            table_name = "allowed_table"
+        code_manager._dfs = [MockDataframe("table1"), MockDataframe("table2")]
 
-            def __init__(self, table_name):
-                self.name = table_name
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
-        code_manager._dfs = [MockObject("table1"), MockObject("table2")]
+        assert isinstance(node, ast.Assign)
+        assert (
+            node.value.value
+            == "SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id"
+        )
 
-        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
-
-        assert len(irrelevant_tables) == 0
-
-    def test_check_is_query_using_relevant_table_unknown_table(
-        self, code_manager: CodeManager
-    ):
-        mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
-
-        class MockObject:
-            name = "allowed_table"
-
-        code_manager._dfs = [MockObject()]
-
-        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
-
-        assert len(irrelevant_tables) == 1
-
-    def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
+    def test_check_is_query_using_relevant_table_multiple_tables_using_alias_with_quote(
         self, code_manager: CodeManager
     ):
         mock_node = ast.parse(
-            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+            "sql_query = 'SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id'"
         ).body[0]
 
         class MockObject:
@@ -542,11 +536,66 @@ np.array()"""
             def __init__(self, table_name):
                 self.name = table_name
 
-        code_manager._dfs = [MockObject("table1"), MockObject("unknown_table")]
+            @property
+            def cs_table_name(self):
+                return f'"{self.name}"'
 
-        irrelevant_tables = code_manager._get_sql_irrelevant_tables(mock_node)
+        code_manager._dfs = [
+            MockObject("table1"),
+            MockObject("table2"),
+            MockObject("table3"),
+        ]
 
-        assert len(irrelevant_tables) == 1
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        assert (
+            node.value.value
+            == 'SELECT "table1".id AS id, "table1".author_id, "table2".hidden AS is_hidden, "table3".text AS comment_text FROM "table1" LEFT JOIN "table2" ON "table1".id = "table2".feed_message_id LEFT JOIN "table3" ON "table1".id = "table3".feed_message_id'
+        )
+
+    def test_check_relevant_table_multiple_tables_passing_directly_to_function(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "execute_sql_query('SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id')"
+        ).body[0]
+
+        code_manager._dfs = [
+            MockDataframe("table1"),
+            MockDataframe("table2"),
+            MockDataframe("table3"),
+        ]
+
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Expr)
+        assert (
+            node.value.args[0].value
+            == "SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id"
+        )
+
+    def test_check_is_query_using_relevant_table_unknown_table(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
+
+        code_manager._dfs = [MockDataframe()]
+
+        with pytest.raises(MaliciousQueryError):
+            code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+    def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
+        ).body[0]
+
+        code_manager._dfs = [MockDataframe("table1"), MockDataframe("unknown_table")]
+
+        with pytest.raises(MaliciousQueryError):
+            code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
     def test_clean_code_using_correct_sql_table(
         self,
@@ -560,7 +609,10 @@ np.array()"""
         safe_code = (
             """sql_query = 'SELECT * FROM your_table'\nexecute_sql_query(sql_query)"""
         )
-        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+        assert (
+            code_manager._clean_code(safe_code, exec_context)
+            == "sql_query = 'SELECT * FROM \"your_table\"'\nexecute_sql_query(sql_query)"
+        )
 
     def test_clean_code_with_no_execute_sql_query_usage(
         self,
@@ -607,9 +659,7 @@ np.array()"""
         with pytest.raises(MaliciousQueryError) as excinfo:
             code_manager._clean_code(safe_code, exec_context)
 
-        assert str(excinfo.value) == (
-            "Query uses unauthorized tables: ['unknown_table']. Please add them as new datatables or update the query."
-        )
+        assert str(excinfo.value) == ("Query uses unauthorized table: unknown_table.")
 
     def test_clean_code_using_multi_incorrect_sql_table(
         self,
@@ -624,9 +674,7 @@ np.array()"""
         with pytest.raises(MaliciousQueryError) as excinfo:
             code_manager._clean_code(safe_code, exec_context)
 
-        assert str(excinfo.value) == (
-            "Query uses unauthorized tables: ['table1', 'table2']. Please add them as new datatables or update the query."
-        )
+        assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations(
