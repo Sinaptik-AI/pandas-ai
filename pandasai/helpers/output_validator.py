@@ -2,6 +2,7 @@ import re
 from typing import Any, Iterable
 
 import pandasai.pandas as pd
+from pandasai.exceptions import InvalidOutputValueMismatch
 
 
 class OutputValidator:
@@ -60,3 +61,26 @@ class OutputValidator:
 
             path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
             return bool(re.match(path_to_plot_pattern, self))
+
+    @staticmethod
+    def validate_result(result: dict) -> bool:
+        if not isinstance(result, dict):
+            raise InvalidOutputValueMismatch(
+                "Result must be in the format of dictionary of type and value"
+            )
+
+        if not result["type"]:
+            return False
+
+        elif result["type"] == "number":
+            return isinstance(result["value"], (int, float))
+        elif result["type"] == "string":
+            return isinstance(result["value"], str)
+        elif result["type"] == "dataframe":
+            return isinstance(result["value"], (pd.DataFrame, pd.Series))
+        elif result["type"] == "plot":
+            if not isinstance(result["value"], str):
+                return False
+
+            path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
+            return bool(re.match(path_to_plot_pattern, result["value"]))

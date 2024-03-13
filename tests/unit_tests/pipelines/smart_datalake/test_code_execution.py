@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
+from pandasai.exceptions import InvalidOutputValueMismatch
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
@@ -169,3 +170,55 @@ class TestCodeExecution:
         assert result.output == {"type": "string", "value": "5"}
         assert result.message == "Code Executed Successfully"
         assert result.success is True
+
+    def test_code_execution_output_type_mismatch(self, context, logger):
+        # Test Flow : Code Execution Successful with no exceptions
+        code_execution = CodeExecution()
+
+        mock_code_manager = Mock()
+        mock_code_manager.execute_code = Mock(return_value="Mocked Result")
+
+        def mock_intermediate_values(key: str):
+            if key == "last_prompt_id":
+                return "Mocked Prompt ID"
+            elif key == "skills":
+                return SkillsManager()
+            elif key == "code_manager":
+                return mock_code_manager
+
+        context.get = Mock(side_effect=mock_intermediate_values)
+        # context._query_exec_tracker = Mock()
+        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
+
+        with pytest.raises(InvalidOutputValueMismatch):
+            code_execution.execute(
+                input='result={"type":"string", "value":5}',
+                context=context,
+                logger=logger,
+            )
+
+    def test_code_execution_output_is_not_dict(self, context, logger):
+        # Test Flow : Code Execution Successful with no exceptions
+        code_execution = CodeExecution()
+
+        mock_code_manager = Mock()
+        mock_code_manager.execute_code = Mock(return_value="Mocked Result")
+
+        def mock_intermediate_values(key: str):
+            if key == "last_prompt_id":
+                return "Mocked Prompt ID"
+            elif key == "skills":
+                return SkillsManager()
+            elif key == "code_manager":
+                return mock_code_manager
+
+        context.get = Mock(side_effect=mock_intermediate_values)
+        # context._query_exec_tracker = Mock()
+        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
+
+        with pytest.raises(InvalidOutputValueMismatch):
+            code_execution.execute(
+                input="result=5",
+                context=context,
+                logger=logger,
+            )

@@ -124,6 +124,9 @@ class DataframeSerializer:
 
         result = df_info | data
 
+        if "is_direct_sql" in extras and extras["is_direct_sql"]:
+            return result
+
         return {df_number_key: result}
 
     def convert_df_to_json_str(self, df: pd.DataFrame, extras: dict) -> str:
