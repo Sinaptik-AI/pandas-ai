@@ -535,7 +535,7 @@ Code running:
                 execute_sql_query_used = True
 
             # Sanity for sql query the code should only use allowed tables
-            if isinstance(node, ast.Assign) and self._config.direct_sql:
+            if self._config.direct_sql:
                 node = self._validate_and_make_table_name_case_sensitive(node)
 
             self.find_function_calls(node, context)
