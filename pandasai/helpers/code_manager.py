@@ -440,6 +440,7 @@ Code running:
             isinstance(value, ast.Call)
             and isinstance(value.func, ast.Attribute)
             and isinstance(value.func.value, ast.Name)
+            and hasattr(value.func.value, "id")
             and value.func.value.id == "pd"
             and value.func.attr == "DataFrame"
         )
