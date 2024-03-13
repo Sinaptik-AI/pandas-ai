@@ -357,23 +357,6 @@ Code running:
                 )
         return False
 
-    # def _get_sql_irrelevant_tables(self, node: ast.Assign):
-    #     for target in node.targets:
-    #         if (
-    #             isinstance(target, ast.Name)
-    #             and target.id in "sql_query"
-    #             and isinstance(node.value, ast.Constant)
-    #             and isinstance(node.value.value, str)
-    #         ):
-    #             sql_query = node.value.value
-    #             table_names = extract_table_names(sql_query)
-    #             allowed_table_names = [df.name for df in self._dfs]
-    #             return [
-    #                 table_name
-    #                 for table_name in table_names
-    #                 if table_name not in allowed_table_names
-    #             ]
-
     def _replace_table_names(
         self, sql_query: str, table_names: list, allowed_table_names: list
     ):
