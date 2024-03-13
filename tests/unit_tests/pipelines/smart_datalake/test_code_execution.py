@@ -3,8 +3,8 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
-from pandasai.exceptions import InvalidOutputValueMismatch
 
+from pandasai.exceptions import InvalidOutputValueMismatch
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM

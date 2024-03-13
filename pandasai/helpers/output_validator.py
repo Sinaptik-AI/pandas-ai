@@ -1,8 +1,8 @@
 import re
 from typing import Any, Iterable
-from pandasai.exceptions import InvalidOutputValueMismatch
 
 import pandasai.pandas as pd
+from pandasai.exceptions import InvalidOutputValueMismatch
 
 
 class OutputValidator:
