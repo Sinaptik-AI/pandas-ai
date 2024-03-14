@@ -55,11 +55,6 @@ class Pipeline(AbstractPipeline):
         )
 
         self._context = context
-
-        if steps:
-            for i in range(len(steps) - 1):
-                steps[i].next_step = steps[i + 1]
-
         self._steps = steps or []
         self._query_exec_tracker = query_exec_tracker or QueryExecTracker(
             server_config=self._context.config.log_server
@@ -77,9 +72,6 @@ class Pipeline(AbstractPipeline):
                 "must implement execute method"
             )
 
-        if self._steps:
-            self._steps[-1].next_step = logic
-
         self._steps.append(logic)
 
     def run(self, data: Any = None) -> Any:
@@ -91,23 +83,16 @@ class Pipeline(AbstractPipeline):
         Returns:
             Any: Depends on the type can return anything
         """
-        if not self._steps:
-            return data
-
         try:
-            logic = self._steps[0]
-            while logic:
-                step_name = logic.__class__.__name__
-
+            for index, logic in enumerate(self._steps):
                 # Callback function before execution
                 if logic.before_execution is not None:
                     logic.before_execution(data)
 
-                self._logger.log(f"Executing {step_name} step")
+                self._logger.log(f"Executing Step {index}: {logic.__class__.__name__}")
 
                 if logic.skip_if is not None and logic.skip_if(self._context):
-                    self._logger.log(f"Skipping {step_name} step...")
-                    logic = logic.next_step
+                    self._logger.log(f"Executing Step {index}: Skipping...")
                     continue
 
                 start_time = time.time()
@@ -147,10 +132,8 @@ class Pipeline(AbstractPipeline):
                 if logic.on_execution is not None:
                     logic.on_execution(data)
 
-                logic = logic.next_step
-
         except Exception as e:
-            self._logger.log(f"Pipeline failed on {step_name} step: {e}", logging.ERROR)
+            self._logger.log(f"Pipeline failed on step {index}: {e}", logging.ERROR)
             raise e
 
         return data

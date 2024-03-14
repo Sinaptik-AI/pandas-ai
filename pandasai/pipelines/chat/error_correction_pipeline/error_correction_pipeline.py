@@ -2,6 +2,7 @@ from typing import Optional
 
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 from pandasai.pipelines.chat.code_generator import CodeGenerator
 from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
@@ -35,6 +36,7 @@ class ErrorCorrectionPipeline:
             steps=[
                 ErrorPromptGeneration(on_prompt_generation=on_prompt_generation),
                 CodeGenerator(),
+                CodeCleaning(),
             ],
         )
         self._context = context

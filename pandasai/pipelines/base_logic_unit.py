@@ -9,14 +9,11 @@ class BaseLogicUnit(ABC):
     Logic units for pipeline each logic unit should be inherited from this Logic unit
     """
 
-    def __init__(
-        self, skip_if=None, on_execution=None, before_execution=None, next_step=None
-    ):
+    def __init__(self, skip_if=None, on_execution=None, before_execution=None):
         super().__init__()
         self.skip_if = skip_if
         self.on_execution = on_execution
         self.before_execution = before_execution
-        self.next_step = next_step
 
     @abstractmethod
     def execute(self, input: Any, **kwargs) -> LogicUnitOutput:

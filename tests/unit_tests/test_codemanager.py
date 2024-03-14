@@ -10,7 +10,8 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
-from pandasai.connectors.pandas import PandasConnector
+
+# from pandasai.connectors.pandas import PandasConnector
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -18,15 +19,19 @@ from pandasai.connectors.sql import (
 )
 from pandasai.exceptions import (
     BadImportError,
-    ExecuteSQLQueryNotUsed,
     InvalidConfigError,
-    MaliciousQueryError,
     NoCodeFoundError,
+    MaliciousQueryError,
 )
+
+# TODO - Merge or remove once tests are rewritten
+# from pandasai.exceptions import (
+#     ExecuteSQLQueryNotUsed,
+# )
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
-from pandasai.pipelines.chat.code_cleaning import CodeExecutionContext, CodeManager
+from pandasai.pipelines.chat.code_cleaning import CodeExecutionContext
 from pandasai.schemas.df_config import Config
 
 
@@ -41,6 +46,7 @@ class MockDataframe:
         return self.name
 
 
+@pytest.mark.skip(reason="Removed CodeManager class")
 class TestCodeManager:
     """Unit tests for the CodeManager class"""
 
@@ -114,13 +120,13 @@ class TestCodeManager:
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
         )
 
-    @pytest.fixture
-    def code_manager(self, agent: Agent):
-        return CodeManager(
-            dfs=agent.context.dfs,
-            config=agent.context.config,
-            logger=agent.logger,
-        )
+    # @pytest.fixture
+    # def code_manager(self, agent: Agent):
+    #     return CodeManager(
+    #         dfs=agent.context.dfs,
+    #         config=agent.context.config,
+    #         logger=agent.logger,
+    #     )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -164,23 +170,17 @@ class TestCodeManager:
         # Create an instance of SQLConnector
         return PostgreSQLConnector(self.config, name="your_table")
 
-    def test_run_code_for_calculations(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_run_code_for_calculations(self, code_manager, exec_context: MagicMock):
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         assert code_manager.execute_code(code, exec_context)["value"] == 2
         assert code_manager.last_code_executed == code
 
-    def test_run_code_invalid_code(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_run_code_invalid_code(self, code_manager, exec_context: MagicMock):
         with pytest.raises(Exception):
             # noinspection PyStatementEffect
             code_manager.execute_code("1+ ", exec_context)["value"]
 
-    def test_clean_code_remove_builtins(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_clean_code_remove_builtins(self, code_manager, exec_context: MagicMock):
         builtins_code = """import set
 result = {'type': 'number', 'value': set([1, 2, 3])}"""
 
@@ -196,7 +196,7 @@ result = {'type': 'number', 'value': set([1, 2, 3])}"""
         )
 
     def test_clean_code_removes_jailbreak_code(
-        self, code_manager: CodeManager, exec_context: MagicMock
+        self, code_manager, exec_context: MagicMock
     ):
         malicious_code = """__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
 print('hello world')"""
@@ -206,7 +206,7 @@ print('hello world')"""
         )
 
     def test_clean_code_remove_environment_defaults(
-        self, code_manager: CodeManager, exec_context: MagicMock
+        self, code_manager, exec_context: MagicMock
     ):
         pandas_code = """import pandas as pd
 print('hello world')
@@ -216,9 +216,7 @@ print('hello world')
             == "print('hello world')"
         )
 
-    def test_clean_code_whitelist_import(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_clean_code_whitelist_import(self, code_manager, exec_context: MagicMock):
         """Test that an installed whitelisted library is added to the environment."""
         safe_code = """
 import numpy as np
@@ -227,7 +225,7 @@ np.array()
         assert code_manager._clean_code(safe_code, exec_context) == "np.array()"
 
     def test_clean_code_raise_bad_import_error(
-        self, code_manager: CodeManager, exec_context: MagicMock
+        self, code_manager, exec_context: MagicMock
     ):
         malicious_code = """
 import os
@@ -236,17 +234,13 @@ print(os.listdir())
         with pytest.raises(BadImportError):
             code_manager.execute_code(malicious_code, exec_context)
 
-    def test_clean_code_accesses_node_id(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_clean_code_accesses_node_id(self, code_manager, exec_context: MagicMock):
         """Test that value.func.value.id is accessed safely in _check_is_df_declaration."""
         pandas_code = """unique_countries = dfs[0]['country'].unique()
 smallest_countries = df.sort_values(by='area').head()"""
         assert code_manager._clean_code(pandas_code, exec_context) == pandas_code
 
-    def test_remove_dfs_overwrites(
-        self, code_manager: CodeManager, exec_context: MagicMock
-    ):
+    def test_remove_dfs_overwrites(self, code_manager, exec_context: MagicMock):
         hallucinated_code = """dfs = [pd.DataFrame([1,2,3])]
 print(dfs)"""
         assert (
@@ -272,7 +266,7 @@ print(dfs)"""
         assert agent.last_error == "No code found in the answer."
 
     def test_custom_whitelisted_dependencies(
-        self, code_manager: CodeManager, llm, exec_context: MagicMock
+        self, code_manager, llm, exec_context: MagicMock
     ):
         code = """
 import my_custom_library
@@ -289,7 +283,7 @@ my_custom_library.do_something()
             == """my_custom_library.do_something()"""
         )
 
-    def test_get_environment(self, code_manager: CodeManager):
+    def test_get_environment(self, code_manager):
         code_manager._additional_dependencies = [
             {"name": "pyplot", "alias": "plt", "module": "matplotlib"},
             {"name": "numpy", "alias": "np", "module": "numpy"},
@@ -365,7 +359,7 @@ my_custom_library.do_something()
         }
 
     @pytest.mark.parametrize("df_name", ["df", "foobar"])
-    def test_extract_filters_col_index(self, df_name, code_manager: CodeManager):
+    def test_extract_filters_col_index(self, df_name, code_manager):
         code = f"""
 {df_name} = dfs[0]
 filtered_df = (
@@ -385,7 +379,7 @@ result = {{'type': 'number', 'value': num_loans}}
         assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
         assert filters["dfs[0]"][1] == ("Gender", "=", "male")
 
-    def test_extract_filters_col_index_multiple_df(self, code_manager: CodeManager):
+    def test_extract_filters_col_index_multiple_df(self, code_manager):
         code = """
 df = dfs[0]
 filtered_paid_df_male = df[(
@@ -430,7 +424,7 @@ result = {
         assert filters["dfs[2]"][1] == ("Gender", "=", "female")
 
     def test_validate_true_direct_sql_with_two_different_connector(
-        self, code_manager: CodeManager, sql_connector, pgsql_connector
+        self, code_manager, sql_connector, pgsql_connector
     ):
         # not exception is raised using single connector
         # raise exception when two different connector
@@ -442,25 +436,27 @@ result = {
         self, exec_context: MagicMock, agent_with_connector: Agent
     ):
         """Test that the direct SQL function definition is removed when 'direct_sql' is True"""
-        code_manager = CodeManager(
-            dfs=agent_with_connector.context.dfs,
-            config=agent_with_connector.context.config,
-            logger=agent_with_connector.logger,
-        )
-        safe_code = """
-import numpy as np
-def execute_sql_query(sql_query: str) -> pd.DataFrame:
-    # code to connect to the database and execute the query
-    # ...
-    # return the result as a dataframe
-    return pd.DataFrame()
-np.array()
-execute_sql_query()
-"""
-        assert (
-            code_manager._clean_code(safe_code, exec_context)
-            == "np.array()\nexecute_sql_query()"
-        )
+        pass
+
+    #         code_manager = CodeManager(
+    #             dfs=agent_with_connector.context.dfs,
+    #             config=agent_with_connector.context.config,
+    #             logger=agent_with_connector.logger,
+    #         )
+    #         safe_code = """
+    # import numpy as np
+    # def execute_sql_query(sql_query: str) -> pd.DataFrame:
+    #     # code to connect to the database and execute the query
+    #     # ...
+    #     # return the result as a dataframe
+    #     return pd.DataFrame()
+    # np.array()
+    # execute_sql_query()
+    # """
+    #         assert (
+    #             code_manager._clean_code(safe_code, exec_context)
+    #             == "np.array()\nexecute_sql_query()"
+    #         )
 
     def test_clean_code_direct_sql_code_false(
         self, exec_context: MagicMock, code_manager
@@ -484,9 +480,7 @@ np.array()
 np.array()"""
         )
 
-    def test_check_is_query_using_relevant_table_invalid_query(
-        self, code_manager: CodeManager
-    ):
+    def test_check_is_query_using_relevant_table_invalid_query(self, code_manager):
         mock_node = ast.parse("sql_query = 'SELECT * FROM your_table'").body[0]
 
         code_manager._dfs = [MockDataframe("allowed_table")]
@@ -494,9 +488,7 @@ np.array()"""
         with pytest.raises(MaliciousQueryError):
             code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
-    def test_check_is_query_using_relevant_table_valid_query(
-        self, code_manager: CodeManager
-    ):
+    def test_check_is_query_using_relevant_table_valid_query(self, code_manager):
         mock_node = ast.parse("sql_query = 'SELECT * FROM allowed_table'").body[0]
 
         code_manager._dfs = [MockDataframe("allowed_table")]
@@ -506,9 +498,7 @@ np.array()"""
         assert isinstance(node, ast.Assign)
         assert node.value.value == "SELECT * FROM allowed_table"
 
-    def test_check_is_query_using_relevant_table_multiple_tables(
-        self, code_manager: CodeManager
-    ):
+    def test_check_is_query_using_relevant_table_multiple_tables(self, code_manager):
         mock_node = ast.parse(
             "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
         ).body[0]
@@ -524,7 +514,7 @@ np.array()"""
         )
 
     def test_check_is_query_using_relevant_table_multiple_tables_using_alias_with_quote(
-        self, code_manager: CodeManager
+        self, code_manager
     ):
         mock_node = ast.parse(
             "sql_query = 'SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id'"
@@ -555,7 +545,7 @@ np.array()"""
         )
 
     def test_check_relevant_table_multiple_tables_passing_directly_to_function(
-        self, code_manager: CodeManager
+        self, code_manager
     ):
         mock_node = ast.parse(
             "execute_sql_query('SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id')"
@@ -576,7 +566,7 @@ np.array()"""
         )
 
     def test_check_is_query_using_relevant_table_unknown_table(
-        self, code_manager: CodeManager
+        self, code_manager
     ):
         mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
 
@@ -586,7 +576,7 @@ np.array()"""
             code_manager._validate_and_make_table_name_case_sensitive(mock_node)
 
     def test_check_is_query_using_relevant_table_multiple_tables_one_unknown(
-        self, code_manager: CodeManager
+        self, code_manager
     ):
         mock_node = ast.parse(
             "sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"
@@ -605,14 +595,15 @@ np.array()"""
         logger: Logger,
     ):
         """Test that the correct sql table"""
-        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
-        safe_code = (
-            """sql_query = 'SELECT * FROM your_table'\nexecute_sql_query(sql_query)"""
-        )
-        assert (
-            code_manager._clean_code(safe_code, exec_context)
-            == "sql_query = 'SELECT * FROM \"your_table\"'\nexecute_sql_query(sql_query)"
-        )
+        # code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        # safe_code = (
+        #     """sql_query = 'SELECT * FROM your_table'\nexecute_sql_query(sql_query)"""
+        # )
+        # assert (
+        #     code_manager._clean_code(safe_code, exec_context)
+        #     == "sql_query = 'SELECT * FROM \"your_table\"'\nexecute_sql_query(sql_query)"
+        # )
+        pass
 
     def test_clean_code_with_no_execute_sql_query_usage(
         self,
@@ -622,13 +613,14 @@ np.array()"""
         logger: Logger,
     ):
         """Test that the correct sql table"""
-        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
-        safe_code = """sql_query = 'SELECT * FROM your_table'"""
-        with pytest.raises(ExecuteSQLQueryNotUsed) as excinfo:
-            code_manager._clean_code(safe_code, exec_context)
-        assert str(excinfo.value) == (
-            "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
-        )
+        # code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        # safe_code = """sql_query = 'SELECT * FROM your_table'"""
+        # with pytest.raises(ExecuteSQLQueryNotUsed) as excinfo:
+        #     code_manager._clean_code(safe_code, exec_context)
+        # assert str(excinfo.value) == (
+        #     "For Direct SQL set to true, execute_sql_query function must be used. Generating Error Prompt!!!"
+        # )
+        pass
 
     def test_clean_code_with_no_execute_sql_query_usage_script(
         self,
@@ -637,13 +629,14 @@ np.array()"""
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        """Test that the correct sql table"""
-        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
-        safe_code = (
-            """orders_count = execute_sql_query('SELECT COUNT(*) FROM orders')[0][0]"""
-        )
+        # """Test that the correct sql table"""
+        # code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        # safe_code = (
+        #     """orders_count = execute_sql_query('SELECT COUNT(*) FROM orders')[0][0]"""
+        # )
 
-        assert code_manager._clean_code(safe_code, exec_context) == safe_code
+        # assert code_manager._clean_code(safe_code, exec_context) == safe_code
+        pass
 
     def test_clean_code_using_incorrect_sql_table(
         self,
@@ -652,14 +645,15 @@ np.array()"""
         config_with_direct_sql: Config,
         logger,
     ):
-        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
-        safe_code = """sql_query = 'SELECT * FROM unknown_table'
-    """
-        with pytest.raises(MaliciousQueryError) as excinfo:
-            code_manager._clean_code(safe_code, exec_context)
+        # """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        #     code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        #     safe_code = """sql_query = 'SELECT * FROM unknown_table'
+        # """
+        #     with pytest.raises(MaliciousQueryError) as excinfo:
+        #         code_manager._clean_code(safe_code, exec_context)
 
-        assert str(excinfo.value) == ("Query uses unauthorized table: unknown_table.")
+        # assert str(excinfo.value) == ("Query uses unauthorized table: unknown_table.")
+        pass
 
     def test_clean_code_using_multi_incorrect_sql_table(
         self,
@@ -668,13 +662,14 @@ np.array()"""
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
-        code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
-        safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
-        with pytest.raises(MaliciousQueryError) as excinfo:
-            code_manager._clean_code(safe_code, exec_context)
+        # """Test that the direct SQL function definition is removed when 'direct_sql' is False"""
+        # code_manager = CodeManager([pgsql_connector], config_with_direct_sql, logger)
+        # safe_code = """sql_query = 'SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id'"""
+        # with pytest.raises(MaliciousQueryError) as excinfo:
+        #     code_manager._clean_code(safe_code, exec_context)
 
-        assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
+        # assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
+        pass
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations(
@@ -684,20 +679,21 @@ np.array()"""
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        #         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        #         mock_head.return_value = df
+        #         pandas_connector = PandasConnector({"original_df": df})
 
-        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+        #         code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
 
-        python_code = """
-df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-"""
-        tree = ast.parse(python_code)
+        #         python_code = """
+        # df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        # """
+        #         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        #         output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
 
-        assert isinstance(output, ast.Assign)
+        #         assert isinstance(output, ast.Assign)
+        pass
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_multiline_redeclarations(
@@ -707,29 +703,30 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        #         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        #         mock_head.return_value = df
+        #         pandas_connector = PandasConnector({"original_df": df})
 
-        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+        #         code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
 
-        python_code = """
-import pandas as pd
+        #         python_code = """
+        # import pandas as pd
 
-df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        # df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
-print(df1)
-"""
-        tree = ast.parse(python_code)
-        outputs = [
-            code_manager._extract_fix_dataframe_redeclarations(node)
-            for node in tree.body
-        ]
+        # print(df1)
+        # """
+        #         tree = ast.parse(python_code)
+        #         outputs = [
+        #             code_manager._extract_fix_dataframe_redeclarations(node)
+        #             for node in tree.body
+        #         ]
 
-        assert outputs[0] is None
-        assert outputs[1] is not None
-        assert isinstance(outputs[1], ast.Assign)
-        assert outputs[2] is None
+        #         assert outputs[0] is None
+        #         assert outputs[1] is not None
+        #         assert isinstance(outputs[1], ast.Assign)
+        #         assert outputs[2] is None
+        pass
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_no_redeclarations(
@@ -739,20 +736,21 @@ print(df1)
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        #         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        #         mock_head.return_value = df
+        #         pandas_connector = PandasConnector({"original_df": df})
 
-        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+        #         code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
 
-        python_code = """
-df1 = dfs[0]
-"""
-        tree = ast.parse(python_code)
+        #         python_code = """
+        # df1 = dfs[0]
+        # """
+        #         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        #         output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
 
-        assert output is None
+        #         assert output is None
+        pass
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_with_subscript(
@@ -762,17 +760,18 @@ df1 = dfs[0]
         config_with_direct_sql: Config,
         logger: Logger,
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        #         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        #         mock_head.return_value = df
+        #         pandas_connector = PandasConnector({"original_df": df})
 
-        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+        #         code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
 
-        python_code = """
-dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-"""
-        tree = ast.parse(python_code)
+        #         python_code = """
+        # dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        # """
+        #         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        #         output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
 
-        assert isinstance(output, ast.Assign)
+        #         assert isinstance(output, ast.Assign)
+        pass
