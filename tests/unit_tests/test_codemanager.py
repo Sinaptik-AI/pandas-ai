@@ -20,8 +20,8 @@ from pandasai.connectors.sql import (
 from pandasai.exceptions import (
     BadImportError,
     InvalidConfigError,
-    NoCodeFoundError,
     MaliciousQueryError,
+    NoCodeFoundError,
 )
 
 # TODO - Merge or remove once tests are rewritten
@@ -565,9 +565,7 @@ np.array()"""
             == "SELECT table1.id AS id, table1.author_id, table2.hidden AS is_hidden, table3.text AS comment_text FROM table1 LEFT JOIN table2 ON table1.id = table2.feed_message_id LEFT JOIN table3 ON table1.id = table3.feed_message_id"
         )
 
-    def test_check_is_query_using_relevant_table_unknown_table(
-        self, code_manager
-    ):
+    def test_check_is_query_using_relevant_table_unknown_table(self, code_manager):
         mock_node = ast.parse("sql_query = 'SELECT * FROM unknown_table'").body[0]
 
         code_manager._dfs = [MockDataframe()]
