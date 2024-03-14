@@ -181,13 +181,15 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key: str):
+        def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+            elif key == "additional_dependencies":
+                return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
         # context._query_exec_tracker = Mock()
@@ -207,13 +209,15 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key: str):
+        def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+            elif key == "additional_dependencies":
+                return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
         # context._query_exec_tracker = Mock()

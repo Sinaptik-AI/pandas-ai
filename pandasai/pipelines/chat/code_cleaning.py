@@ -82,7 +82,6 @@ class CodeCleaning(BaseLogicUnit):
         ast.NotIn: "not in",
     }
     _current_code_executed: str = None
-    _last_code_executed: str = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -96,12 +95,8 @@ class CodeCleaning(BaseLogicUnit):
 
         code_to_run = self.get_code_to_run(input, context)
 
-        self._last_code_executed = code_to_run
         context.add("additional_dependencies", self._additional_dependencies)
         context.add("current_code_executed", self._current_code_executed)
-
-        # TODO - Should be unnecessary now that this is just the output
-        context.add("last_code_executed", self._last_code_executed)
 
         return LogicUnitOutput(
             code_to_run,
@@ -145,7 +140,6 @@ class CodeCleaning(BaseLogicUnit):
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code, context)
-        self.last_code_executed = code_to_run
         self._logger.log(
             f"""
 Code running:
@@ -553,11 +547,3 @@ Code running:
                     nearest_assignment = f"dfs[{assignment.value.slice.value}]"
             except AttributeError:
                 continue
-
-    @property
-    def last_code_executed(self):
-        return self._last_code_executed
-
-    @last_code_executed.setter
-    def last_code_executed(self, code: str):
-        self._last_code_executed = code

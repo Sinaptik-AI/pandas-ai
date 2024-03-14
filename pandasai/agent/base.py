@@ -104,7 +104,7 @@ class Agent:
                 self.logger,
                 on_prompt_generation=callbacks.on_prompt_generation,
                 on_code_generation=callbacks.on_code_generation,
-                on_code_execution=callbacks.on_code_execution,
+                before_code_execution=callbacks.before_code_execution,
                 on_result=callbacks.on_result,
             )
             if pipeline
@@ -113,7 +113,7 @@ class Agent:
                 self.logger,
                 on_prompt_generation=callbacks.on_prompt_generation,
                 on_code_generation=callbacks.on_code_generation,
-                on_code_execution=callbacks.on_code_execution,
+                before_code_execution=callbacks.before_code_execution,
                 on_result=callbacks.on_result,
             )
         )

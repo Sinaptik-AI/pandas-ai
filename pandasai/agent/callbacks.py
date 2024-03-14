@@ -23,15 +23,14 @@ class Callbacks:
         """
         self.agent.last_code_generated = code
 
-    def on_code_execution(self, code: str):
+    def before_code_execution(self, code: str):
         """
         A method to be called after code execution.
 
         Args:
             code (str): A python code
         """
-        # TODO - Should modify this
-        self.agent.last_code_executed = self.agent.context.get("last_code_executed")
+        self.agent.last_code_executed = code
 
     def on_result(self, result):
         """

@@ -43,7 +43,7 @@ class GenerateChatPipeline:
         logger: Optional[Logger] = None,
         on_prompt_generation=None,
         on_code_generation=None,
-        on_code_execution=None,
+        before_code_execution=None,
         on_result=None,
     ):
         self.query_exec_tracker = QueryExecTracker(
@@ -76,7 +76,7 @@ class GenerateChatPipeline:
             query_exec_tracker=self.query_exec_tracker,
             steps=[
                 CodeExecution(
-                    on_execution=on_code_execution,
+                    before_execution=before_code_execution,
                     on_failure=self.on_code_execution_failure,
                     on_retry=self.on_code_retry,
                 ),
