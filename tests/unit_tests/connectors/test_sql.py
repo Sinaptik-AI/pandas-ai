@@ -199,3 +199,43 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         connector_2 = PostgreSQLConnector(self.config)
 
         assert not self.connector.equals(connector_2)
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_connector_type(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username_differ",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(self.config)
+
+        assert connector_2.type == "PostgreSQL"
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_sql_connector_type(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username_differ",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of SQLConnector
+        connector_2 = SQLConnector(self.config)
+
+        assert connector_2.type == "SQL"

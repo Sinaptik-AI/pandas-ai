@@ -443,6 +443,10 @@ class SQLConnector(BaseConnector):
     def cs_table_name(self):
         return self.config.table
 
+    @property
+    def type(self):
+        return "SQL"
+
 
 class SqliteConnector(SQLConnector):
     """
@@ -522,6 +526,10 @@ class SqliteConnector(SQLConnector):
     def cs_table_name(self):
         return f'"{self.config.table}"'
 
+    @property
+    def type(self):
+        return "SQLite"
+
     def __repr__(self):
         """
         Return the string representation of the SQL connector.
@@ -566,6 +574,10 @@ class MySQLConnector(SQLConnector):
             config = self._populate_config_from_env(config, mysql_env_vars)
 
         super().__init__(config, **kwargs)
+
+    @property
+    def type(self):
+        return "MySQL"
 
 
 class PostgreSQLConnector(SQLConnector):
@@ -626,3 +638,7 @@ class PostgreSQLConnector(SQLConnector):
     @property
     def cs_table_name(self):
         return f'"{self.config.table}"'
+
+    @property
+    def type(self):
+        return "PostgreSQL"
