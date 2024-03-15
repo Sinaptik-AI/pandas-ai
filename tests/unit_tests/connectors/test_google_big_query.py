@@ -108,3 +108,51 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "yourtable")
+
+    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    def test_constructor_and_properties_equal_func(self, mock_create_engine):
+        self.mock_engine = Mock()
+        self.mock_connection = Mock()
+        self.mock_engine.connect.return_value = self.mock_connection
+        mock_create_engine.return_value = self.mock_engine
+
+        self.config = GoogleBigQueryConnectorConfig(
+            dialect="bigquery",
+            database="database",
+            table="yourtable",
+            credentials_base64="base64_str",
+            projectID="project_id",
+        ).dict()
+
+        self.connector = GoogleBigQueryConnector(self.config)
+        connector_2 = GoogleBigQueryConnector(self.config)
+
+        assert self.connector.equals(connector_2)
+
+    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    def test_constructor_and_properties_not_equal_func(self, mock_create_engine):
+        self.mock_engine = Mock()
+        self.mock_connection = Mock()
+        self.mock_engine.connect.return_value = self.mock_connection
+        mock_create_engine.return_value = self.mock_engine
+
+        self.config = GoogleBigQueryConnectorConfig(
+            dialect="bigquery",
+            database="database",
+            table="yourtable",
+            credentials_base64="base64_str",
+            projectID="project_id",
+        ).dict()
+
+        config2 = GoogleBigQueryConnectorConfig(
+            dialect="bigquery",
+            database="database2",
+            table="yourtable",
+            credentials_base64="base64_str",
+            projectID="project_id",
+        ).dict()
+
+        self.connector = GoogleBigQueryConnector(self.config)
+        connector_2 = GoogleBigQueryConnector(config2)
+
+        assert not self.connector.equals(connector_2)

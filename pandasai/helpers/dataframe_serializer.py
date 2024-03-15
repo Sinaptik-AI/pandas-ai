@@ -97,7 +97,11 @@ class DataframeSerializer:
         df_info = {
             "name": df.name,
             "description": df.description,
-            "type": extras["type"],
+            "type": (
+                df.type
+                if "is_direct_sql" in extras and extras["is_direct_sql"]
+                else extras["type"]
+            ),
         }
         # Add DataFrame details to the result
         data = {

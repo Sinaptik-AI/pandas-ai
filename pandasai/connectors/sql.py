@@ -443,6 +443,10 @@ class SQLConnector(BaseConnector):
     def cs_table_name(self):
         return self.config.table
 
+    @property
+    def type(self):
+        return self.config.dialect
+
 
 class SqliteConnector(SQLConnector):
     """

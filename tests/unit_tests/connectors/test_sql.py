@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pandas as pd
 
 from pandasai.connectors.sql import (
+    MySQLConnector,
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
@@ -184,8 +185,8 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
     def test_equals_different_connector(self, mock_init_connection):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
+            dialect="postgresql",
+            driver="psycopg2",
             username="your_username_differ",
             password="your_password",
             host="your_host",
@@ -199,3 +200,40 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         connector_2 = PostgreSQLConnector(self.config)
 
         assert not self.connector.equals(connector_2)
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_connector_type(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 443,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(config)
+
+        assert connector_2.type == "postgresql"
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_sql_connector_type(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 443,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of SQLConnector
+        connector_2 = MySQLConnector(config)
+
+        assert connector_2.type == "mysql"

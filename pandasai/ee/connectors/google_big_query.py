@@ -87,3 +87,22 @@ class GoogleBigQueryConnector(SQLConnector):
             f"<{self.__class__.__name__} dialect={self.config.dialect} "
             f"projectid= {self.config.projectID} database={self.config.database} >"
         )
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self.config.dialect,
+                self.config.driver,
+                self.config.credentials_path,
+                self.config.credentials_base64,
+                self.config.database,
+                self.config.projectID,
+            ) == (
+                other.config.dialect,
+                other.config.driver,
+                other.config.credentials_path,
+                other.config.credentials_base64,
+                other.config.database,
+                other.config.projectID,
+            )
+        return False
