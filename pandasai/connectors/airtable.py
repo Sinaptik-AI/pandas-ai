@@ -284,7 +284,3 @@ class AirtableConnector(BaseConnector):
         columns_str = "|".join(self._instance.columns)
         columns_str += f"WHERE{self._build_formula()}"
         return hashlib.sha256(columns_str.encode("utf-8")).hexdigest()
-
-    @property
-    def type(self):
-        return "SQL"

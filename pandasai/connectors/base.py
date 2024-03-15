@@ -191,10 +191,7 @@ class BaseConnector(ABC):
 
     @property
     def type(self):
-        """
-        type of the connector
-        """
-        pass
+        return "pd.DataFrame"
 
     def equals(self, other):
         return self.__dict__ == other.__dict__

@@ -146,10 +146,6 @@ class PandasConnector(BaseConnector):
         """
         pass
 
-    @property
-    def type(self):
-        return "pd.DataFrame"
-
     def equals(self, other: BaseConnector):
         """
         Return whether the data source that the connector is connected to is
