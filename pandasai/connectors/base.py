@@ -190,6 +190,7 @@ class BaseConnector(ABC):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def type(self):
         """
         Return the name of the table that the connector is connected to.
