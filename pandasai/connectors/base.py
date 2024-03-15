@@ -190,12 +190,11 @@ class BaseConnector(ABC):
         raise NotImplementedError
 
     @property
-    @abstractmethod
     def type(self):
         """
-        Return the name of the table that the connector is connected to.
+        type of the connector
         """
-        raise NotImplementedError
+        pass
 
     def equals(self, other):
         return self.__dict__ == other.__dict__
