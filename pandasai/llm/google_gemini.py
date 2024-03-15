@@ -87,12 +87,16 @@ class GoogleGemini(BaseGoogle):
         updated_prompt = self.prepend_system_prompt(prompt, memory)
 
         self.last_prompt = updated_prompt
-        completion = self.google.GoogleGemini.generate_content(
+        completion = self.google_gemini.generate_content(
             contents=prompt,
-            temperature=self.temperature,
-            top_p=self.top_p,
-            top_k=self.top_k,
-            max_output_tokens=self.max_output_tokens,
+            generation_config=dict(
+                {
+                    "temperature": self.temperature,
+                    "top_p": self.top_p,
+                    "top_k": self.top_k,
+                    "max_output_tokens": self.max_output_tokens,
+                }
+            ),
         )
 
         return completion.text
