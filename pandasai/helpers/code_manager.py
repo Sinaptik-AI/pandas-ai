@@ -395,6 +395,10 @@ Code running:
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
                 allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                allowed_table_names |= {
+                    f'"{df.name}"': df.cs_table_name for df in self._dfs
+                }
+
                 sql_query = self._replace_table_names(
                     sql_query, table_names, allowed_table_names
                 )
@@ -412,6 +416,9 @@ Code running:
                 sql_query = node.value.args[0].value
                 table_names = extract_table_names(sql_query)
                 allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                allowed_table_names |= {
+                    f'"{df.name}"': df.cs_table_name for df in self._dfs
+                }
                 sql_query = self._replace_table_names(
                     sql_query, table_names, allowed_table_names
                 )

@@ -776,3 +776,15 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
 
         assert isinstance(output, ast.Assign)
+
+    def test_check_is_query_using_quote_with_table_name(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse("""sql_query = 'SELECT * FROM "allowed_table"'""").body[0]
+
+        code_manager._dfs = [MockDataframe("allowed_table")]
+
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        assert node.value.value == 'SELECT * FROM "allowed_table"'
