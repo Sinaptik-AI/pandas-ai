@@ -44,3 +44,12 @@ class TestPandasConnector:
         assert "description" in data
         assert "head" in data
         assert isinstance(data["head"], list)
+
+    def test_type_name_property(self):
+        input_data = [
+            {"column1": 1, "column2": 4},
+            {"column1": 2, "column2": 5},
+            {"column1": 3, "column2": 6},
+        ]
+        connector = PandasConnector({"original_df": input_data})
+        assert connector.type == "pd.DataFrame"

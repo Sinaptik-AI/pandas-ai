@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
+from pandasai.connectors.sql import PostgreSQLConnector
 from pandasai.ee.connectors import GoogleBigQueryConnector
 from pandasai.ee.connectors.google_big_query import GoogleBigQueryConnectorConfig
 
@@ -154,5 +155,40 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
 
         self.connector = GoogleBigQueryConnector(self.config)
         connector_2 = GoogleBigQueryConnector(config2)
+
+        assert not self.connector.equals(connector_2)
+
+    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_constructor_and_properties_different_type(
+        self, mock_connection, mock_create_engine
+    ):
+        self.mock_engine = Mock()
+        self.mock_connection = Mock()
+        self.mock_engine.connect.return_value = self.mock_connection
+        mock_create_engine.return_value = self.mock_engine
+
+        self.config = GoogleBigQueryConnectorConfig(
+            dialect="bigquery",
+            database="database",
+            table="yourtable",
+            credentials_base64="base64_str",
+            projectID="project_id",
+        ).dict()
+
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 443,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(config)
+
+        self.connector = GoogleBigQueryConnector(self.config)
 
         assert not self.connector.equals(connector_2)
