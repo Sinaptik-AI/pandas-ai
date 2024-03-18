@@ -32,7 +32,7 @@ df = pd.DataFrame({
     'payment_id': [101, 102, 103],
     'payment_provider': ['PayPal', 'Stripe', 'PayPal']
 })
-connector = PandasConnector(df, field_descriptions=field_descriptions)
+connector = PandasConnector({"original_df": df}, field_descriptions=field_descriptions)
 sdf = SmartDataframe(connector)
 sdf.chat("What is the most common payment provider?")
 # Output: PayPal
