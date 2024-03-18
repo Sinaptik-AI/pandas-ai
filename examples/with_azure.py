@@ -2,7 +2,6 @@
 
 import pandas as pd
 from data.sample_dataframe import dataframe
-
 from pandasai import Agent
 from pandasai.llm import AzureOpenAI
 
@@ -22,7 +21,7 @@ llm = AzureOpenAI(
     # is_chat_model=False,  # Comment in if you deployed a completion model
 )
 
-df = Agent([df], config={"llm": llm})
-response = df.chat("Calculate the sum of the gdp of north american countries")
+agent = Agent(df, config={"llm": llm})
+response = agent.chat("Calculate the sum of the gdp of north american countries")
 print(response)
 # Output: 20901884461056

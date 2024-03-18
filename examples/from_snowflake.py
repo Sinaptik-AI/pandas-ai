@@ -1,10 +1,10 @@
 """Example of using PandasAI with a Snowflake"""
 
+import os
 from pandasai import Agent
 
 # A license might be required for using Snowflake with PandasAI
 from pandasai.ee.connectors import SnowFlakeConnector
-from pandasai.llm import OpenAI
 
 snowflake_connector = SnowFlakeConnector(
     config={
@@ -23,8 +23,11 @@ snowflake_connector = SnowFlakeConnector(
     }
 )
 
-llm = OpenAI(api_token="OPEN_API_KEY")
-df = Agent([snowflake_connector], config={"llm": llm})
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
-response = df.chat("How many records has status 'F'?")
+agent = Agent(snowflake_connector)
+
+response = agent.chat("How many records has status 'F'?")
 print(response)

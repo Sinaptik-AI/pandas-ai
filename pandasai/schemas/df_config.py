@@ -5,7 +5,7 @@ from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.pydantic import BaseModel, Field, validator
 
 from ..exceptions import LLMNotFoundError
-from ..llm import LLM, LangchainLLM
+from ..llm import LLM, LangchainLLM, BambooLLM
 
 
 class LogServerConfig(TypedDict):
@@ -26,7 +26,7 @@ class Config(BaseModel):
     max_retries: int = 3
     lazy_load_connector: bool = True
     response_parser: Any = None
-    llm: Any = None
+    llm: LLM = BambooLLM()
     data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False

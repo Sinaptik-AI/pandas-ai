@@ -1,9 +1,9 @@
 import os
-
 from pandasai import Agent
 
-# Set your PandasAI API key (you can generate one signing up at https://pandabi.ai)
-os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent("examples/data/Loan payments data.csv")
 

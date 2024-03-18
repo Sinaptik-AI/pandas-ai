@@ -5,11 +5,9 @@ You can add customs functions for the agent to use, allowing the agent to expand
 ## Example Usage
 
 ```python
-
+import os
 import pandas as pd
 from pandasai import Agent
-
-from pandasai.llm.openai import OpenAI
 from pandasai.skills import skill
 
 employees_data = {
@@ -44,26 +42,24 @@ def plot_salaries(names: list[str], salaries: list[int]):
     plt.title("Employee Salaries")
     plt.xticks(rotation=45)
 
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-
-llm = OpenAI("YOUR_API_KEY")
-agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
-
+agent = Agent([employees_df, salaries_df], memory_size=10)
 agent.add_skills(plot_salaries)
 
 # Chat with the agent
 response = agent.chat("Plot the employee salaries against names")
-
 
 ```
 
 ## Add Streamlit Skill
 
 ```python
+import os
 import pandas as pd
 from pandasai import Agent
-
-from pandasai.llm.openai import OpenAI
 from pandasai.skills import skill
 import streamlit as st
 
@@ -101,10 +97,11 @@ def plot_salaries(names: list[str], salaries: list[int]):
     fig = plt.gcf()
     st.pyplot(fig)
 
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-llm = OpenAI("YOUR_API_KEY")
-agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
-
+agent = Agent([employees_df, salaries_df], memory_size=10)
 agent.add_skills(plot_salaries)
 
 # Chat with the agent

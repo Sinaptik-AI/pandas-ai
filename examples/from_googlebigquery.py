@@ -1,17 +1,15 @@
+import os
 import base64
 import json
-
 from pandasai import SmartDataframe
 
 # A license might be required for using Snowflake with PandasAI
 from pandasai.ee.connectors import GoogleBigQueryConnector
-from pandasai.llm import OpenAI
 
 # ENV's
 # BIG_QUERY_DATABASE
 # KEYFILE_PATH
 # PROJECT_ID
-
 
 # EXAMPLE 1
 bigquery_connectors = GoogleBigQueryConnector(
@@ -24,10 +22,13 @@ bigquery_connectors = GoogleBigQueryConnector(
     }
 )
 
-llm = OpenAI("OPEN-API_KEY")
-df = SmartDataframe(bigquery_connectors, config={"llm": llm})
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
-response = df.chat("How many rows are there in data ?")
+sdf = SmartDataframe(bigquery_connectors)
+
+response = sdf.chat("How many rows are there in data ?")
 print(response)
 
 # EXAMPLE 2
@@ -50,8 +51,7 @@ bigquery_connectors = GoogleBigQueryConnector(
     }
 )
 
-llm = OpenAI("OPEN-API_KEY")
-df = SmartDataframe(bigquery_connectors, config={"llm": llm})
+sdf = SmartDataframe(bigquery_connectors)
 
-response = df.chat("How many rows are there in data ?")
+response = sdf.chat("How many rows are there in data ?")
 print(response)

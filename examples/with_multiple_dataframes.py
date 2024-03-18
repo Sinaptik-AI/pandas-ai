@@ -1,9 +1,8 @@
 """Example of using PandasAI on multiple Pandas DataFrame"""
 
 import pandas as pd
-
 from pandasai import Agent
-from pandasai.llm import OpenAI
+import os
 
 employees_df = pd.DataFrame(
     {
@@ -20,11 +19,11 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI()
-dl = Agent(
-    [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True},
-)
-response = dl.chat("Plot salaries against name")
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = Agent([employees_df, salaries_df])
+response = agent.chat("Plot salaries against name")
 print(response)
 # Output: <displays the plot>

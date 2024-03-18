@@ -43,9 +43,9 @@ You can replace `extra-dependency-name` with any of the following:
 The `SmartDataframe` class is the main class of `pandasai`. It is used to interact with a single dataframe. Below is simple example to get started with `pandasai`.
 
 ```python
+import os
 import pandas as pd
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
 # Sample DataFrame
 sales_by_country = pd.DataFrame({
@@ -53,10 +53,11 @@ sales_by_country = pd.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-# Instantiate a LLM
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-df = SmartDataframe(sales_by_country, config={"llm": llm})
+df = SmartDataframe(sales_by_country)
 df.chat('Which are the top 5 countries by sales?')
 # Output: China, United States, Japan, Germany, Australia
 ```
@@ -64,6 +65,14 @@ df.chat('Which are the top 5 countries by sales?')
 If you want to learn more about the `SmartDataframe` class, check out this video:
 
 [![Intro to SmartDataframe](https://cdn.loom.com/sessions/thumbnails/1ec1b8fbaa0e4ae0ab99b728b8b05fdb-00001.jpg)](https://www.loom.com/embed/1ec1b8fbaa0e4ae0ab99b728b8b05fdb?sid=7370854b-57c3-4f00-801b-69811a98d970 "Intro to the SmartDataframe")
+
+### Hot to generate a BambooLLM API Token
+
+In order to use BambooLLM, you need to generate an API token. Follow these simple steps to generate a token with [PandaBI](https://pandabi.ai):
+
+1. Go to https://pandabi.ai and signup with your email address or connect your Google Account.
+2. Go to the API section on the settings page.
+3. Select Create new API key.
 
 ### How to generate an OpenAI API Token
 
@@ -91,9 +100,9 @@ PandasAI also supports queries with multiple dataframes. To perform such queries
 Similarly to a `SmartDataframe`, you can instantiate a `SmartDatalake` as follows:
 
 ```python
+import os
 import pandas as pd
 from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -109,10 +118,12 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-llm = OpenAI()
-dl = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
-dl.chat("Who gets paid the most?")
+lake = SmartDatalake([employees_df, salaries_df])
+lake.chat("Who gets paid the most?")
 # Output: Olivia gets paid the most
 ```
 
@@ -127,10 +138,9 @@ While a `SmartDataframe` or a `SmartDatalake` can be used to answer a single que
 To instantiate an agent, you can use the following code:
 
 ```python
+import os
 from pandasai import Agent
 import pandas as pd
-from pandasai.llm import OpenAI
-
 
 # Sample DataFrames
 sales_by_country = pd.DataFrame({
@@ -140,8 +150,12 @@ sales_by_country = pd.DataFrame({
     "deals_closed": [120, 70, 60, 80, 50, 40, 30, 20, 100, 110]
 })
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
-agent = Agent([sales_by_country], config={"llm": llm})
+
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = Agent(sales_by_country)
 agent.chat('Which are the top 5 countries by sales?')
 # Output: China, United States, Japan, Germany, Australia
 ```

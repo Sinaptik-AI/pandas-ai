@@ -9,6 +9,6 @@
   "save_charts": false,
   "save_charts_path": "exports/charts",
   "custom_whitelisted_dependencies": [],
-  "llm": "OpenAI",
+  "llm": "BambooLLM",
   "llm_options": null
 }

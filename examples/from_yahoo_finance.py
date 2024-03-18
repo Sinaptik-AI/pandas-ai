@@ -1,11 +1,14 @@
+import os
 from pandasai import Agent
 from pandasai.connectors.yahoo_finance import YahooFinanceConnector
-from pandasai.llm import OpenAI
 
 yahoo_connector = YahooFinanceConnector("MSFT")
 
-llm = OpenAI(api_token="OPEN_API_KEY")
-df = Agent([yahoo_connector], config={"llm": llm})
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
-response = df.chat("What is the closing price for yesterday?")
+agent = Agent(yahoo_connector)
+
+response = agent.chat("What is the closing price for yesterday?")
 print(response)
