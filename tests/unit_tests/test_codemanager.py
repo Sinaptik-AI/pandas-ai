@@ -695,7 +695,11 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 """
         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        clean_code = ["df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})"]
+
+        output = code_manager._extract_fix_dataframe_redeclarations(
+            tree.body[0], clean_code
+        )
 
         assert isinstance(output, ast.Assign)
 
@@ -721,8 +725,12 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 print(df1)
 """
         tree = ast.parse(python_code)
+        clean_codes = [
+            "df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})",
+        ]
+
         outputs = [
-            code_manager._extract_fix_dataframe_redeclarations(node)
+            code_manager._extract_fix_dataframe_redeclarations(node, clean_codes)
             for node in tree.body
         ]
 
@@ -750,7 +758,11 @@ df1 = dfs[0]
 """
         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        code_list = ["df1 = dfs[0]"]
+
+        output = code_manager._extract_fix_dataframe_redeclarations(
+            tree.body[0], code_list
+        )
 
         assert output is None
 
@@ -773,7 +785,83 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 """
         tree = ast.parse(python_code)
 
-        output = code_manager._extract_fix_dataframe_redeclarations(tree.body[0])
+        code_list = ["dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})"]
+
+        output = code_manager._extract_fix_dataframe_redeclarations(
+            tree.body[0], code_list
+        )
+
+        assert isinstance(output, ast.Assign)
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_redeclarations_with_subscript_and_data_variable(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        data = {
+            "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
+            "sales": [8000, 6000, 4000, 3500, 3000],
+        }
+        df = pd.DataFrame(data)
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+data = {'country': ['China', 'United States', 'Japan', 'Germany', 'United Kingdom'],
+        'sales': [8000, 6000, 4000, 3500, 3000]}
+dfs[0] = pd.DataFrame(data)
+"""
+        tree = ast.parse(python_code)
+
+        code_list = [
+            "data = {'country': ['China', 'United States', 'Japan', 'Germany', 'United Kingdom'],'sales': [8000, 6000, 4000, 3500, 3000]}",
+            "dfs[0] = pd.DataFrame(data)",
+        ]
+
+        output = code_manager._extract_fix_dataframe_redeclarations(
+            tree.body[1], code_list
+        )
+
+        assert isinstance(output, ast.Assign)
+
+    @patch("pandasai.connectors.pandas.PandasConnector.head")
+    def test_fix_dataframe_redeclarations_and_data_variable(
+        self,
+        mock_head,
+        exec_context: MagicMock,
+        config_with_direct_sql: Config,
+        logger: Logger,
+    ):
+        data = {
+            "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
+            "sales": [8000, 6000, 4000, 3500, 3000],
+        }
+        df = pd.DataFrame(data)
+        mock_head.return_value = df
+        pandas_connector = PandasConnector({"original_df": df})
+
+        code_manager = CodeManager([pandas_connector], config_with_direct_sql, logger)
+
+        python_code = """
+data = {'country': ['China', 'United States', 'Japan', 'Germany', 'United Kingdom'],
+        'sales': [8000, 6000, 4000, 3500, 3000]}
+df = pd.DataFrame(data)
+"""
+        tree = ast.parse(python_code)
+
+        code_list = [
+            "data = {'country': ['China', 'United States', 'Japan', 'Germany', 'United Kingdom'],'sales': [8000, 6000, 4000, 3500, 3000]}",
+            "df = pd.DataFrame(data)",
+        ]
+
+        output = code_manager._extract_fix_dataframe_redeclarations(
+            tree.body[1], code_list
+        )
 
         assert isinstance(output, ast.Assign)
 

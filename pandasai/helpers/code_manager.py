@@ -1,4 +1,5 @@
 import ast
+import copy
 import logging
 import re
 import traceback
@@ -452,19 +453,24 @@ Code running:
             and value.func.attr == "DataFrame"
         )
 
-    def _extract_fix_dataframe_redeclarations(self, node: ast.AST) -> ast.AST:
+    def _extract_fix_dataframe_redeclarations(
+        self, node: ast.AST, code_lines: list[str]
+    ) -> ast.AST:
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
 
             if target_names and self._check_is_df_declaration(node):
-                value = node.value
-
                 # Construct dataframe from node
-                dataframe_code = compile(
-                    ast.Expression(body=value), filename="<ast>", mode="eval"
+                code = "\n".join(code_lines)
+                env = self._get_environment()
+                env["dfs"] = copy.deepcopy(self._dfs)
+                exec(code, env)
+
+                df_generated = (
+                    env[target_names[0]][target.slice.value]
+                    if is_slice
+                    else env[target_names[0]]
                 )
-                result = eval(dataframe_code)
-                df_generated = result
 
                 # check if exists in provided dfs
                 for index, df in enumerate(self._dfs):
@@ -505,6 +511,8 @@ Code running:
 
         # Clear recent optional dependencies
         self._additional_dependencies = []
+
+        clean_code_lines = []
 
         tree = ast.parse(code)
 
@@ -548,7 +556,12 @@ Code running:
 
             self.find_function_calls(node, context)
 
-            new_body.append(self._extract_fix_dataframe_redeclarations(node) or node)
+            clean_code_lines.append(astor.to_source(node))
+
+            new_body.append(
+                self._extract_fix_dataframe_redeclarations(node, clean_code_lines)
+                or node
+            )
 
         # Enforcing use of execute_sql_query via Error Prompt Pipeline
         if self._config.direct_sql and not execute_sql_query_used:
