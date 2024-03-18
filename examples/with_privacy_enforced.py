@@ -1,6 +1,8 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 import os
+
 import pandas as pd
+
 from pandasai import Agent
 
 from .data.sample_dataframe import dataframe

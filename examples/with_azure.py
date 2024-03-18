@@ -2,6 +2,7 @@
 
 import pandas as pd
 from data.sample_dataframe import dataframe
+
 from pandasai import Agent
 from pandasai.llm import AzureOpenAI
 

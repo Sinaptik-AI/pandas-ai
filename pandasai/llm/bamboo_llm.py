@@ -1,8 +1,8 @@
 from typing import Optional
 
 from ..helpers.request import Session
-from .base import LLM
 from ..prompts.base import BasePrompt
+from .base import LLM
 
 
 class BambooLLM(LLM):

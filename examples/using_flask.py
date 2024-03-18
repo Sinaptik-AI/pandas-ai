@@ -5,8 +5,10 @@ Usage:
 flask –-app using_flask.py run
 """
 import os
+
 import pandas as pd
 from flask import Flask, render_template, request
+
 from pandasai import SmartDatalake
 from pandasai.responses.response_parser import ResponseParser
 

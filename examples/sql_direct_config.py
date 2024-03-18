@@ -1,5 +1,6 @@
 """Example of using PandasAI with a CSV file."""
 import os
+
 from pandasai import Agent
 from pandasai.connectors import PostgreSQLConnector
 

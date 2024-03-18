@@ -1,4 +1,5 @@
 import os
+
 from pandasai import Agent
 from pandasai.connectors.yahoo_finance import YahooFinanceConnector
 

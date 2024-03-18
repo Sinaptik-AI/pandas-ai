@@ -1,6 +1,7 @@
 """Example of using PandasAI with am Excel file."""
 
 import os
+
 from pandasai import Agent
 
 # Betas & Bludgers Writing Competitions List (source: https://heystacks.com/?type=sheets&tags=data)

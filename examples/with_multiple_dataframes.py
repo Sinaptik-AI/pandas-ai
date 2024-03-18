@@ -1,8 +1,10 @@
 """Example of using PandasAI on multiple Pandas DataFrame"""
 
-import pandas as pd
-from pandasai import Agent
 import os
+
+import pandas as pd
+
+from pandasai import Agent
 
 employees_df = pd.DataFrame(
     {

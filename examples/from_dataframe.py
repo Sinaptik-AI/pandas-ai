@@ -1,8 +1,10 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 
 import os
+
 import pandas as pd
 from data.sample_dataframe import dataframe
+
 from pandasai import Agent
 
 df = pd.DataFrame(dataframe)

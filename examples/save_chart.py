@@ -1,8 +1,10 @@
 """Example of using PandasAI to generate and save a chart from a Pandas DataFrame"""
 
 import os
+
 import pandas as pd
 from data.sample_dataframe import dataframe
+
 from pandasai import Agent
 from pandasai.helpers import path
 

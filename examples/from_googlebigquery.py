@@ -1,6 +1,7 @@
-import os
 import base64
 import json
+import os
+
 from pandasai import SmartDataframe
 
 # A license might be required for using Snowflake with PandasAI

@@ -1,6 +1,7 @@
 """Example of using PandasAI with a DataBricks"""
 
 import os
+
 from pandasai import Agent
 
 # A license might be required for using Snowflake with PandasAI

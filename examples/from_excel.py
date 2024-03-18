@@ -1,6 +1,7 @@
 """Example of using PandasAI with am Excel file."""
 
 import os
+
 from pandasai import Agent
 
 # Get your FREE API key signing up at https://pandabi.ai.
