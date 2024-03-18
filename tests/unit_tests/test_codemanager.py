@@ -876,3 +876,64 @@ df = pd.DataFrame(data)
 
         assert isinstance(node, ast.Assign)
         assert node.value.value == 'SELECT * FROM "allowed_table"'
+
+    def test_check_is_query_not_extract_created_at(self, code_manager: CodeManager):
+        mock_node = ast.parse(
+            """sql_query = 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM "Users" GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'"""
+        ).body[0]
+
+        code_manager._dfs = [MockDataframe("Users")]
+
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        assert (
+            node.value.value
+            == 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM "Users" GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'
+        )
+
+    def test_check_is_query_not_extract_without_quote_created_at(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            """sql_query = 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM Users GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'"""
+        ).body[0]
+
+        code_manager._dfs = [MockDataframe("Users")]
+
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        print(node.value.value)
+        assert (
+            node.value.value
+            == 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM Users GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'
+        )
+
+    def test_check_is_query_not_extract_postgres_without_quote_created_at(
+        self, code_manager: CodeManager
+    ):
+        mock_node = ast.parse(
+            """sql_query = 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM Users GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'"""
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.name = table_name
+
+            @property
+            def cs_table_name(self):
+                return f'"{self.name}"'
+
+        code_manager._dfs = [MockObject("Users")]
+
+        node = code_manager._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        print(node.value.value)
+        assert (
+            node.value.value
+            == 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM "Users" GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'
+        )
