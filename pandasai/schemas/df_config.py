@@ -4,7 +4,6 @@ from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.pydantic import BaseModel, Field, validator
 
-from ..exceptions import LLMNotFoundError
 from ..llm import LLM, BambooLLM, LangchainLLM
 
 
@@ -26,7 +25,7 @@ class Config(BaseModel):
     max_retries: int = 3
     lazy_load_connector: bool = True
     response_parser: Any = None
-    llm: LLM = BambooLLM()
+    llm: LLM = None
     data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
@@ -38,5 +37,5 @@ class Config(BaseModel):
     @validator("llm")
     def validate_llm(cls, llm):
         if llm is None or not isinstance(llm, LLM or LangchainLLM):
-            raise LLMNotFoundError("LLM is required")
+            cls.llm = BambooLLM()
         return llm
