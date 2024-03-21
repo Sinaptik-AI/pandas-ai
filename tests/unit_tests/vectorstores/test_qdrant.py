@@ -99,3 +99,49 @@ class TestQdrant(unittest.TestCase):
             qdrant._docs_collection_name,
             points_selector=qdrant._convert_ids(ids),
         )
+
+    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    def test_get_relevant_question_answers(self, mock_client):
+        qdrant = Qdrant()
+        qdrant.get_relevant_question_answers("What is AGI?", k=3)
+
+        mock_client.return_value.query.assert_called_once_with(
+            qdrant._qa_collection_name,
+            query_text="What is AGI?",
+            limit=3,
+            score_threshold=None,
+        )
+
+    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    def test_get_relevant_question_answers_by_ids(
+        self,
+        mock_client,
+    ):
+        qdrant = Qdrant()
+        ids = ["test id1", "test id2", "test id3"]
+        qdrant.get_relevant_question_answers_by_id(ids=ids)
+        mock_client.return_value.retrieve.assert_called_once_with(
+            qdrant._qa_collection_name,
+            ids=qdrant._convert_ids(ids),
+        )
+
+    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    def test_get_relevant_docs(self, mock_client):
+        qdrant = Qdrant()
+        qdrant.get_relevant_docs("What is AGI?", k=3)
+        mock_client.return_value.query.assert_called_once_with(
+            qdrant._docs_collection_name,
+            query_text="What is AGI?",
+            limit=3,
+            score_threshold=None,
+        )
+
+    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    def test_get_relevant_docs_by_id(self, mock_client):
+        qdrant = Qdrant()
+        ids = ["test id1", "test id2", "test id3"]
+        qdrant.get_relevant_docs_by_id(ids)
+        mock_client.return_value.retrieve.assert_called_once_with(
+            qdrant._docs_collection_name,
+            ids=qdrant._convert_ids(ids),
+        )
