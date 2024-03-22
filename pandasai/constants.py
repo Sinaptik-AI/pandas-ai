@@ -98,4 +98,5 @@ WHITELISTED_LIBRARIES = [
     "scipy",
     "streamlit",
     "modin",
+    "scikit-learn",
 ]

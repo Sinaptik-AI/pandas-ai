@@ -1,7 +1,8 @@
+import os
+
 import pandas as pd
 
 from pandasai import Agent
-from pandasai.llm.openai import OpenAI
 from pandasai.skills import skill
 
 employees_data = {
@@ -37,9 +38,11 @@ def plot_salaries(names: list[str], salaries: list[int]):
     plt.xticks(rotation=45)
 
 
-llm = OpenAI("YOUR-API-KEY")
-agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
+agent = Agent([employees_df, salaries_df], memory_size=10)
 agent.add_skills(plot_salaries)
 
 # Chat with the agent

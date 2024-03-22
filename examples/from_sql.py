@@ -1,8 +1,9 @@
 """Example of using PandasAI with a CSV file."""
 
+import os
+
 from pandasai import Agent
 from pandasai.connectors import MySQLConnector, PostgreSQLConnector, SqliteConnector
-from pandasai.llm import OpenAI
 
 # With a MySQL database
 loan_connector = MySQLConnector(
@@ -47,8 +48,12 @@ invoice_connector = SqliteConnector(
         "where": [["status", "=", "pending"]],
     }
 )
-llm = OpenAI()
-df = Agent([loan_connector, payment_connector, invoice_connector], config={"llm": llm})
-response = df.chat("How many people from the United states?")
+
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
+
+agent = Agent([loan_connector, payment_connector, invoice_connector])
+response = agent.chat("How many people from the United states?")
 print(response)
 # Output: 247 loans have been paid off by men.

@@ -1,4 +1,5 @@
 from .azure_openai import AzureOpenAI
+from .bamboo_llm import BambooLLM
 from .base import LLM
 from .bedrock_claude import BedrockClaude
 from .google_gemini import GoogleGemini
@@ -10,6 +11,7 @@ from .openai import OpenAI
 
 __all__ = [
     "LLM",
+    "BambooLLM",
     "AzureOpenAI",
     "OpenAI",
     "GooglePalm",

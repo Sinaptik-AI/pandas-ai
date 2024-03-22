@@ -1,4 +1,5 @@
 import ast
+import copy
 import re
 import uuid
 from typing import Any, Generator, List, Union
@@ -245,22 +246,74 @@ Code running:
                 )
         return False
 
-    def _get_sql_irrelevant_tables(self, node: ast.Assign):
-        for target in node.targets:
+    def _replace_table_names(
+        self, sql_query: str, table_names: list, allowed_table_names: list
+    ):
+        regex_patterns = {
+            table_name: re.compile(r"\b" + re.escape(table_name) + r"\b")
+            for table_name in table_names
+        }
+        for table_name in table_names:
+            if table_name in allowed_table_names.keys():
+                quoted_table_name = allowed_table_names[table_name]
+                sql_query = regex_patterns[table_name].sub(quoted_table_name, sql_query)
+            else:
+                raise MaliciousQueryError(
+                    f"Query uses unauthorized table: {table_name}."
+                )
+
+        return sql_query
+
+    def _validate_and_make_table_name_case_sensitive(self, node: ast.Assign):
+        """
+        Validates whether table exists in specified dataset and convert name to case-sensitive
+        Args:
+            node (ast.Assign): code tree node
+
+        Returns:
+            node: return updated or same node
+        """
+        if isinstance(node, ast.Assign):
+            # Check if the assigned value is a string constant and the target is 'sql_query'
             if (
-                isinstance(target, ast.Name)
-                and target.id in "sql_query"
-                and isinstance(node.value, ast.Constant)
+                isinstance(node.value, ast.Constant)
                 and isinstance(node.value.value, str)
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id in ["sql_query", "query"]
             ):
                 sql_query = node.value.value
                 table_names = extract_table_names(sql_query)
-                allowed_table_names = [df.name for df in self._dfs]
-                return [
-                    table_name
-                    for table_name in table_names
-                    if table_name not in allowed_table_names
-                ]
+                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                allowed_table_names |= {
+                    f'"{df.name}"': df.cs_table_name for df in self._dfs
+                }
+
+                sql_query = self._replace_table_names(
+                    sql_query, table_names, allowed_table_names
+                )
+                node.value.value = sql_query
+
+        elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            # Check if the function call is to 'execute_sql_query' and has a string constant argument
+            if (
+                isinstance(node.value.func, ast.Name)
+                and node.value.func.id == "execute_sql_query"
+                and len(node.value.args) == 1
+                and isinstance(node.value.args[0], ast.Constant)
+                and isinstance(node.value.args[0].value, str)
+            ):
+                sql_query = node.value.args[0].value
+                table_names = extract_table_names(sql_query)
+                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
+                allowed_table_names |= {
+                    f'"{df.name}"': df.cs_table_name for df in self._dfs
+                }
+                sql_query = self._replace_table_names(
+                    sql_query, table_names, allowed_table_names
+                )
+                node.value.args[0].value = sql_query
+
+        return node
 
     def _get_target_names(self, targets):
         target_names = []
@@ -283,23 +336,29 @@ Code running:
             isinstance(value, ast.Call)
             and isinstance(value.func, ast.Attribute)
             and isinstance(value.func.value, ast.Name)
+            and hasattr(value.func.value, "id")
             and value.func.value.id == "pd"
             and value.func.attr == "DataFrame"
         )
 
-    def _extract_fix_dataframe_redeclarations(self, node: ast.AST) -> ast.AST:
+    def _extract_fix_dataframe_redeclarations(
+        self, node: ast.AST, code_lines: list[str]
+    ) -> ast.AST:
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
 
             if target_names and self._check_is_df_declaration(node):
-                value = node.value
-
                 # Construct dataframe from node
-                dataframe_code = compile(
-                    ast.Expression(body=value), filename="<ast>", mode="eval"
+                code = "\n".join(code_lines)
+                env = self._get_environment()
+                env["dfs"] = copy.deepcopy(self._dfs)
+                exec(code, env)
+
+                df_generated = (
+                    env[target_names[0]][target.slice.value]
+                    if is_slice
+                    else env[target_names[0]]
                 )
-                result = eval(dataframe_code)
-                df_generated = result
 
                 # check if exists in provided dfs
                 for index, df in enumerate(self._dfs):
@@ -341,6 +400,8 @@ Code running:
         # Clear recent optional dependencies
         self._additional_dependencies = []
 
+        clean_code_lines = []
+
         tree = ast.parse(code)
 
         # Check for imports and the node where analyze_data is defined
@@ -348,7 +409,7 @@ Code running:
         execute_sql_query_used = False
 
         # find function calls
-        self._function_call_visitor.visit(tree)
+        self._function_call_vistor.visit(tree)
 
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -373,23 +434,22 @@ Code running:
             # if generated code contain execute_sql_query usage
             if (
                 self._validate_direct_sql(self._dfs)
-                and "execute_sql_query" in self._function_call_visitor.function_calls
+                and "execute_sql_query" in self._function_call_vistor.function_calls
             ):
                 execute_sql_query_used = True
 
             # Sanity for sql query the code should only use allowed tables
-            if (
-                isinstance(node, ast.Assign)
-                and self._config.direct_sql
-                and (unauthorized_tables := self._get_sql_irrelevant_tables(node))
-            ):
-                raise MaliciousQueryError(
-                    f"Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
-                )
+            if self._config.direct_sql:
+                node = self._validate_and_make_table_name_case_sensitive(node)
 
             self.find_function_calls(node, context)
 
-            new_body.append(self._extract_fix_dataframe_redeclarations(node) or node)
+            clean_code_lines.append(astor.to_source(node))
+
+            new_body.append(
+                self._extract_fix_dataframe_redeclarations(node, clean_code_lines)
+                or node
+            )
 
         # Enforcing use of execute_sql_query via Error Prompt Pipeline
         if self._config.direct_sql and not execute_sql_query_used:

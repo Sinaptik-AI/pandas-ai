@@ -15,7 +15,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "application_default_credentials.
 llm = GoogleVertexAI(
     project_id="generative-ai-training", location="us-central1", model="text-bison@001"
 )
-df = Agent([df], config={"llm": llm})
-response = df.chat("How many loans are from men and have been paid off?")
+agent = Agent(df, config={"llm": llm})
+response = agent.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.

@@ -477,4 +477,4 @@ class Agent:
 
     @property
     def last_query_log_id(self):
-        return self.pipeline.last_error
+        return self.pipeline.get_last_track_log_id()

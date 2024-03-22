@@ -8,10 +8,9 @@ You have the option to provide a custom parser, such as `StreamlitResponse`, to 
 
 ```python
 
+import os
 import pandas as pd
-
 from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
 from pandasai.responses.response_parser import ResponseParser
 
 # This class overrides default behaviour how dataframe is returned
@@ -41,13 +40,16 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("OPENAI-KEY")
-dl = SmartDatalake(
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = SmartDatalake(
     [employees_df, salaries_df],
     config={"llm": llm, "verbose": True, "response_parser": PandasDataFrame},
 )
 
-response = dl.chat("Return a dataframe of name against salaries")
+response = agent.chat("Return a dataframe of name against salaries")
 # Returns the response as Pandas DataFrame
 
 ```
@@ -56,12 +58,10 @@ response = dl.chat("Return a dataframe of name against salaries")
 
 ```python
 
+import os
 import pandas as pd
-
 from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
 from pandasai.responses.streamlit_response import StreamlitResponse
-
 
 employees_df = pd.DataFrame(
     {
@@ -78,11 +78,15 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI()
-dl = SmartDatalake(
+
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = SmartDatalake(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True, "response_parser": StreamlitResponse},
+    config={"verbose": True, "response_parser": StreamlitResponse},
 )
 
-dl.chat("Plot salaries against name")
+agent.chat("Plot salaries against name")
 ```

@@ -3,8 +3,6 @@ import os
 import pandas as pd
 
 from pandasai import Agent
-from pandasai.llm.openai import OpenAI
-from pandasai.schemas.df_config import Config
 
 employees_data = {
     "EmployeeID": [1, 2, 3, 4, 5],
@@ -20,17 +18,13 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 os.environ["PANDASAI_WORKSPACE"] = "workspace dir path"
-
-
-llm = OpenAI("YOUR_API_KEY")
-config__ = {"llm": llm, "save_charts": False}
-
 
 agent = Agent(
     [employees_df, salaries_df],
-    config=Config(**config__),
     memory_size=10,
 )
 

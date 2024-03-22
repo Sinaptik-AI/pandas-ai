@@ -4,10 +4,11 @@ Example of using displaying PandasAI charts in Streamlit
 Usage:
 streamlit run examples/using_streamlit.py
 """
+import os
+
 import pandas as pd
 
 from pandasai import Agent
-from pandasai.llm import OpenAI
 from pandasai.responses.streamlit_response import StreamlitResponse
 
 employees_df = pd.DataFrame(
@@ -25,10 +26,13 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI()
-dl = Agent(
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = Agent(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True, "response_parser": StreamlitResponse},
+    config={"verbose": True, "response_parser": StreamlitResponse},
 )
 
-dl.chat("Plot salaries against employee name")
+agent.chat("Plot salaries against employee name")

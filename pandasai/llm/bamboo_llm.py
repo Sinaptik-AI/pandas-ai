@@ -1,9 +1,8 @@
 from typing import Optional
 
-from pandasai.helpers.request import Session
-from pandasai.llm.base import LLM
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.prompts.base import BasePrompt
+from ..helpers.request import Session
+from ..prompts.base import BasePrompt
+from .base import LLM
 
 
 class BambooLLM(LLM):
@@ -14,7 +13,7 @@ class BambooLLM(LLM):
     ):
         self._session = Session(endpoint_url=endpoint_url, api_key=api_key)
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, _context=None) -> str:
         data = instruction.to_json()
         response = self._session.post("/llm/chat", json=data)
         return response["data"]

@@ -4,11 +4,12 @@ Example of using displaying PandasAI charts in Flask
 Usage:
 flask –-app using_flask.py run
 """
+import os
+
 import pandas as pd
 from flask import Flask, render_template, request
 
 from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
 from pandasai.responses.response_parser import ResponseParser
 
 app = Flask(__name__)
@@ -40,10 +41,13 @@ salaries_df = pd.DataFrame(
     }
 )
 
-llm = OpenAI("OPENAI-KEY")
-dl = SmartDatalake(
+# Get your FREE API key signing up at https://pandabi.ai.
+# You can also configure it in your .env file.
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
+
+agent = SmartDatalake(
     [employees_df, salaries_df],
-    config={"llm": llm, "verbose": True, "response_parser": PandasDataFrame},
+    config={"verbose": True, "response_parser": PandasDataFrame},
 )
 
 
@@ -52,7 +56,7 @@ def pandasai():
     if request.method == "POST":
         # prompt question such as "Return a dataframe of name against salaries"
         query = request.form["query"]
-        response = dl.chat(query)
+        response = agent.chat(query)
 
         # Returns the response as Pandas DataFrame object in html
         return render_template("sample_flask_salaries.html", response=response)

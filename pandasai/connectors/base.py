@@ -189,6 +189,10 @@ class BaseConnector(ABC):
         """
         raise NotImplementedError
 
+    @property
+    def type(self):
+        return "pd.DataFrame"
+
     def equals(self, other):
         return self.__dict__ == other.__dict__
 
@@ -270,7 +274,7 @@ class BaseConnector(ABC):
             self,
             extras={
                 "index": index,
-                "type": "sql" if is_direct_sql else "pd.DataFrame",
+                "type": "pd.DataFrame",
                 "is_direct_sql": is_direct_sql,
             },
             type_=serializer,
