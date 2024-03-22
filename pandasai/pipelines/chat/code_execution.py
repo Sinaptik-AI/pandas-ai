@@ -277,7 +277,7 @@ class CodeExecution(BaseLogicUnit):
             self.logger.log(
                 "Unable to extract filters for passed code", level=logging.ERROR
             )
-            self.logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
+            self.logger.log(f"Error: {traceback.format_exc()}", level=logging.DEBUG)
             return {}
 
         return filters
