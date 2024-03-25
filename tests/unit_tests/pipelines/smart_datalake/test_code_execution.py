@@ -3,12 +3,12 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
-from pandasai.agent.base import Agent
-from pandasai.helpers.optional import get_environment
 import pytest
 
+from pandasai.agent.base import Agent
 from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger
+from pandasai.helpers.optional import get_environment
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_execution import CodeExecution

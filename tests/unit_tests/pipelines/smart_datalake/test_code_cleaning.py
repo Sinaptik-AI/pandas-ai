@@ -6,9 +6,6 @@ from typing import Optional
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from pandasai.pipelines.chat.code_cleaning import CodeCleaning, CodeExecutionContext
-from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-from pandasai.pipelines.pipeline_context import PipelineContext
 import pytest
 
 from pandasai import Agent
@@ -23,10 +20,12 @@ from pandasai.exceptions import (
     InvalidConfigError,
     MaliciousQueryError,
 )
-
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning, CodeExecutionContext
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
 
 

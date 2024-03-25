@@ -10,10 +10,10 @@ import sys
 import warnings
 from typing import TYPE_CHECKING, List
 
+import pandas as pd
 from pandas.util.version import Version
 
 from pandasai.constants import WHITELISTED_BUILTINS
-import pandas as pd
 
 if TYPE_CHECKING:
     import types

@@ -4,7 +4,6 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
-from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 import pytest
 from langchain import OpenAI
 
@@ -18,6 +17,7 @@ from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.llm.langchain import LangchainLLM
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 
 # from pandasai.pipelines.chat.code_cleaning import CodeManager
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
