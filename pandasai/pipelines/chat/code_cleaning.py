@@ -6,6 +6,7 @@ from typing import Any, Generator, List, Union
 
 import astor
 
+from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
@@ -70,18 +71,7 @@ class CodeCleaning(BaseLogicUnit):
     _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
-    _ast_comparator_map: dict = {
-        ast.Eq: "=",
-        ast.NotEq: "!=",
-        ast.Lt: "<",
-        ast.LtE: "<=",
-        ast.Gt: ">",
-        ast.GtE: ">=",
-        ast.Is: "is",
-        ast.IsNot: "is not",
-        ast.In: "in",
-        ast.NotIn: "not in",
-    }
+
     _current_code_executed: str = None
 
     def __init__(self, **kwargs):
@@ -350,7 +340,7 @@ Code running:
             if target_names and self._check_is_df_declaration(node):
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
-                env = self._get_environment()
+                env = get_environment(self._additional_dependencies)
                 env["dfs"] = copy.deepcopy(self._dfs)
                 exec(code, env)
 
@@ -409,7 +399,7 @@ Code running:
         execute_sql_query_used = False
 
         # find function calls
-        self._function_call_vistor.visit(tree)
+        self._function_call_visitor.visit(tree)
 
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -434,7 +424,7 @@ Code running:
             # if generated code contain execute_sql_query usage
             if (
                 self._validate_direct_sql(self._dfs)
-                and "execute_sql_query" in self._function_call_vistor.function_calls
+                and "execute_sql_query" in self._function_call_visitor.function_calls
             ):
                 execute_sql_query_used = True
 
@@ -510,100 +500,3 @@ Code running:
 
         if library not in WHITELISTED_BUILTINS:
             raise BadImportError(library)
-
-    @staticmethod
-    def _get_nearest_func_call(current_lineno, calls, func_name):
-        """
-        Utility function to get the nearest previous call node.
-
-        Sort call nodes list (copy of the list) by line number.
-        Iterate over the call nodes list. If the call node's function name
-        equals to `func_name`, set `nearest_call` to the node object.
-
-        Args:
-            current_lineno (int): Number of the current processed line.
-            calls (list[ast.Assign]): List of call nodes.
-            func_name (str): Name of the target function.
-
-        Returns:
-            ast.Call: The node of the nearest previous call `<func_name>()`.
-        """
-        for call in reversed(calls):
-            if call.lineno < current_lineno:
-                try:
-                    if call.func.attr == func_name:
-                        return call
-                except AttributeError:
-                    continue
-
-        return None
-
-    @staticmethod
-    def _tokenize_operand(operand_node: ast.expr) -> Generator[str, None, None]:
-        """
-        Utility generator function to get subscript slice constants.
-
-        Args:
-            operand_node (ast.expr):
-                The node to be tokenized.
-        Yields:
-            str: Token string.
-
-        Examples:
-            >>> code = '''
-            ... foo = [1, [2, 3], [[4, 5], [6, 7]]]
-            ... print(foo[2][1][0])
-            ... '''
-            >>> tree = ast.parse(code)
-            >>> res = CodeManager._tokenize_operand(tree.body[1].value.args[0])
-            >>> print(list(res))
-            ['foo', 2, 1, 0]
-        """
-        if isinstance(operand_node, ast.Call):
-            yield operand_node.func.attr
-
-        if isinstance(operand_node, ast.Subscript):
-            slice_ = operand_node.slice.value
-            yield from CodeCleaning._tokenize_operand(operand_node.value)
-            yield slice_
-
-        if isinstance(operand_node, ast.Name):
-            yield operand_node.id
-
-        if isinstance(operand_node, ast.Constant):
-            yield operand_node.value
-
-    @staticmethod
-    def _get_df_id_by_nearest_assignment(
-        current_lineno: int, assignments: list[ast.Assign], target_name: str
-    ):
-        """
-        Utility function to get df label by finding the nearest assignment.
-
-        Sort assignment nodes list (copy of the list) by line number.
-        Iterate over the assignment nodes list. If the assignment node's value
-        looks like `dfs[<index>]` and target label equals to `target_name`,
-        set `nearest_assignment` to "dfs[<index>]".
-
-        Args:
-            current_lineno (int): Number of the current processed line.
-            assignments (list[ast.Assign]): List of assignment nodes.
-            target_name (str): Name of the target variable. The assignment
-                node is supposed to assign to this name.
-
-        Returns:
-            str: The string representing df label, looks like "dfs[<index>]".
-        """
-        nearest_assignment = None
-        assignments = sorted(assignments, key=lambda node: node.lineno)
-        for assignment in assignments:
-            if assignment.lineno > current_lineno:
-                return nearest_assignment
-            try:
-                is_subscript = isinstance(assignment.value, ast.Subscript)
-                dfs_on_the_right = assignment.value.value.id == "dfs"
-                assign_to_target = assignment.targets[0].id == target_name
-                if is_subscript and dfs_on_the_right and assign_to_target:
-                    nearest_assignment = f"dfs[{assignment.value.slice.value}]"
-            except AttributeError:
-                continue

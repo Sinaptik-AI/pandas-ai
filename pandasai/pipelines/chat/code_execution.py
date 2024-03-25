@@ -2,7 +2,7 @@ import ast
 import logging
 import traceback
 from collections import defaultdict
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, Generator, List, Union
 
 import pandasai.pandas as pd
 from pandasai.exceptions import InvalidLLMOutputType, InvalidOutputValueMismatch
@@ -13,7 +13,7 @@ from ...constants import WHITELISTED_BUILTINS
 from ...exceptions import NoResultFoundError
 from ...helpers.logger import Logger
 from ...helpers.node_visitors import AssignmentVisitor, CallVisitor
-from ...helpers.optional import import_dependency
+from ...helpers.optional import get_environment, import_dependency
 from ...helpers.output_validator import OutputValidator
 from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
@@ -31,6 +31,18 @@ class CodeExecution(BaseLogicUnit):
     _additional_dependencies: List[dict] = []
     _current_code_executed: str = None
     _retry_if_fail: bool = False
+    _ast_comparator_map: dict = {
+        ast.Eq: "=",
+        ast.NotEq: "!=",
+        ast.Lt: "<",
+        ast.LtE: "<=",
+        ast.Gt: ">",
+        ast.GtE: ">=",
+        ast.Is: "is",
+        ast.IsNot: "is not",
+        ast.In: "in",
+        ast.NotIn: "not in",
+    }
 
     def __init__(
         self,
@@ -144,7 +156,7 @@ class CodeExecution(BaseLogicUnit):
         # List the required dfs, so we can avoid to run the connectors
         # if the code does not need them
         dfs = self._required_dfs(code)
-        environment: dict = self._get_environment()
+        environment: dict = get_environment(self._additional_dependencies)
         environment["dfs"] = self._get_originals(dfs)
 
         if self._config.direct_sql:
@@ -190,29 +202,6 @@ class CodeExecution(BaseLogicUnit):
             else:
                 required_dfs.append(None)
         return required_dfs or self._dfs
-
-    def _get_environment(self) -> dict:
-        """
-        Returns the environment for the code to be executed.
-
-        Returns (dict): A dictionary of environment variables
-        """
-        return {
-            "pd": pd,
-            **{
-                lib["alias"]: (
-                    getattr(import_dependency(lib["module"]), lib["name"])
-                    if hasattr(import_dependency(lib["module"]), lib["name"])
-                    else import_dependency(lib["module"])
-                )
-                for lib in self._additional_dependencies
-            },
-            "__builtins__": {
-                **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
-                "__build_class__": __build_class__,
-                "__name__": "__main__",
-            },
-        }
 
     def _get_originals(self, dfs):
         """
@@ -273,7 +262,8 @@ class CodeExecution(BaseLogicUnit):
 
         try:
             filters = self._extract_comparisons(parsed_tree)
-        except Exception:
+        except Exception as e:
+            raise e
             self.logger.log(
                 "Unable to extract filters for passed code", level=logging.ERROR
             )
@@ -358,3 +348,100 @@ class CodeExecution(BaseLogicUnit):
             return self.on_retry(code, e)
         else:
             raise e
+
+    @staticmethod
+    def _tokenize_operand(operand_node: ast.expr) -> Generator[str, None, None]:
+        """
+        Utility generator function to get subscript slice constants.
+
+        Args:
+            operand_node (ast.expr):
+                The node to be tokenized.
+        Yields:
+            str: Token string.
+
+        Examples:
+            >>> code = '''
+            ... foo = [1, [2, 3], [[4, 5], [6, 7]]]
+            ... print(foo[2][1][0])
+            ... '''
+            >>> tree = ast.parse(code)
+            >>> res = CodeManager._tokenize_operand(tree.body[1].value.args[0])
+            >>> print(list(res))
+            ['foo', 2, 1, 0]
+        """
+        if isinstance(operand_node, ast.Call):
+            yield operand_node.func.attr
+
+        if isinstance(operand_node, ast.Subscript):
+            slice_ = operand_node.slice.value
+            yield from CodeExecution._tokenize_operand(operand_node.value)
+            yield slice_
+
+        if isinstance(operand_node, ast.Name):
+            yield operand_node.id
+
+        if isinstance(operand_node, ast.Constant):
+            yield operand_node.value
+
+    @staticmethod
+    def _get_nearest_func_call(current_lineno, calls, func_name):
+        """
+        Utility function to get the nearest previous call node.
+
+        Sort call nodes list (copy of the list) by line number.
+        Iterate over the call nodes list. If the call node's function name
+        equals to `func_name`, set `nearest_call` to the node object.
+
+        Args:
+            current_lineno (int): Number of the current processed line.
+            calls (list[ast.Assign]): List of call nodes.
+            func_name (str): Name of the target function.
+
+        Returns:
+            ast.Call: The node of the nearest previous call `<func_name>()`.
+        """
+        for call in reversed(calls):
+            if call.lineno < current_lineno:
+                try:
+                    if call.func.attr == func_name:
+                        return call
+                except AttributeError:
+                    continue
+
+        return None
+
+    @staticmethod
+    def _get_df_id_by_nearest_assignment(
+        current_lineno: int, assignments: list[ast.Assign], target_name: str
+    ):
+        """
+        Utility function to get df label by finding the nearest assignment.
+
+        Sort assignment nodes list (copy of the list) by line number.
+        Iterate over the assignment nodes list. If the assignment node's value
+        looks like `dfs[<index>]` and target label equals to `target_name`,
+        set `nearest_assignment` to "dfs[<index>]".
+
+        Args:
+            current_lineno (int): Number of the current processed line.
+            assignments (list[ast.Assign]): List of assignment nodes.
+            target_name (str): Name of the target variable. The assignment
+                node is supposed to assign to this name.
+
+        Returns:
+            str: The string representing df label, looks like "dfs[<index>]".
+        """
+        nearest_assignment = None
+        assignments = sorted(assignments, key=lambda node: node.lineno)
+        for assignment in assignments:
+            if assignment.lineno > current_lineno:
+                return nearest_assignment
+            try:
+                is_subscript = isinstance(assignment.value, ast.Subscript)
+                dfs_on_the_right = assignment.value.value.id == "dfs"
+                assign_to_target = assignment.targets[0].id == target_name
+                if is_subscript and dfs_on_the_right and assign_to_target:
+                    nearest_assignment = f"dfs[{assignment.value.slice.value}]"
+            except AttributeError:
+                continue

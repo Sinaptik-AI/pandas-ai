@@ -4,6 +4,7 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 import pytest
 from langchain import OpenAI
 
@@ -630,8 +631,8 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             agent.train(codes)
 
     @patch.object(
-        CodeManager,
-        "execute_code",
+        CodeCleaning,
+        "execute",
         return_value={
             "type": "string",
             "value": "There are 10 countries in the dataframe.",

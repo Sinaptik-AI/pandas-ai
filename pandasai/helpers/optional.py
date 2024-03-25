@@ -2,14 +2,18 @@
 
 Source: Taken from pandas/compat/_optional.py
 """
+
 from __future__ import annotations
 
 import importlib
 import sys
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from pandas.util.version import Version
+
+from pandasai.constants import WHITELISTED_BUILTINS
+import pandas as pd
 
 if TYPE_CHECKING:
     import types
@@ -40,6 +44,30 @@ def get_version(module: types.ModuleType) -> str:
         raise ImportError(f"Can't determine version for {module.__name__}")
 
     return version
+
+
+def get_environment(additional_deps: List[dict]) -> dict:
+    """
+    Returns the environment for the code to be executed.
+
+    Returns (dict): A dictionary of environment variables
+    """
+    return {
+        "pd": pd,
+        **{
+            lib["alias"]: (
+                getattr(import_dependency(lib["module"]), lib["name"])
+                if hasattr(import_dependency(lib["module"]), lib["name"])
+                else import_dependency(lib["module"])
+            )
+            for lib in additional_deps
+        },
+        "__builtins__": {
+            **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
+            "__build_class__": __build_class__,
+            "__name__": "__main__",
+        },
+    }
 
 
 def import_dependency(

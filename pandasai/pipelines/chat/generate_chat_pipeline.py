@@ -66,7 +66,7 @@ class GenerateChatPipeline:
                     on_execution=on_code_generation,
                 ),
                 CachePopulation(skip_if=self.is_cached),
-                CodeCleaning(skip_if=self.is_cached),
+                CodeCleaning(),
             ],
         )
 
