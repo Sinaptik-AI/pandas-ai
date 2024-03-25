@@ -10,7 +10,7 @@ import sys
 import warnings
 from typing import TYPE_CHECKING, List
 
-import pandas as pd
+import pandasai.pandas as pd
 from pandas.util.version import Version
 
 from pandasai.constants import WHITELISTED_BUILTINS
