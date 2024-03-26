@@ -1,8 +1,10 @@
 import logging
 import uuid
 from typing import Any, Dict, Iterable, List, Optional
+
 import qdrant_client
 from qdrant_client import models
+
 from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
 
