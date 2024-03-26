@@ -1,11 +1,14 @@
+import os
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
 
-from pandasai.exceptions import InvalidOutputValueMismatch
+from pandasai.agent.base import Agent
+from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger
+from pandasai.helpers.optional import get_environment
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_execution import CodeExecution
@@ -65,7 +68,15 @@ class TestCodeExecution:
         )
 
     @pytest.fixture
+    def agent(self, llm, sample_df):
+        return Agent([sample_df], config={"llm": llm, "enable_cache": False})
+
+    @pytest.fixture
     def config(self, llm):
+        return {"llm": llm, "enable_cache": True}
+
+    @pytest.fixture
+    def code(self, llm):
         return {"llm": llm, "enable_cache": True}
 
     @pytest.fixture
@@ -75,6 +86,10 @@ class TestCodeExecution:
     @pytest.fixture
     def logger(self):
         return Logger(True, False)
+
+    @pytest.fixture
+    def code_execution(self):
+        return CodeExecution()
 
     def test_init(self, context, config):
         # Test the initialization of the CodeExecution
@@ -88,13 +103,15 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key: str):
+        def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+            elif key == "additional_dependencies":
+                return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
         # context._query_exec_tracker = Mock()
@@ -141,6 +158,7 @@ class TestCodeExecution:
         except Exception:
             assert result is None
 
+    @pytest.mark.skip(reason="Removed CodeManager class")
     def test_code_execution_successful_at_retry(self, context, logger):
         # Test Flow : Code Execution Successful with no exceptions
         code_execution = CodeExecution()
@@ -178,13 +196,15 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key: str):
+        def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+            elif key == "additional_dependencies":
+                return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
         # context._query_exec_tracker = Mock()
@@ -204,13 +224,15 @@ class TestCodeExecution:
         mock_code_manager = Mock()
         mock_code_manager.execute_code = Mock(return_value="Mocked Result")
 
-        def mock_intermediate_values(key: str):
+        def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
             elif key == "skills":
                 return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
+            elif key == "additional_dependencies":
+                return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
         # context._query_exec_tracker = Mock()
@@ -222,3 +244,163 @@ class TestCodeExecution:
                 context=context,
                 logger=logger,
             )
+
+    @patch(
+        "pandasai.pipelines.chat.code_execution.CodeExecution.execute_code",
+        autospec=True,
+    )
+    def test_exception_handling(self, mock_execute_code: MagicMock, agent: Agent):
+        os.environ["PANDASAI_API_URL"] = ""
+        os.environ["PANDASAI_API_KEY"] = ""
+
+        mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
+        result = agent.chat("How many countries are in the dataframe?")
+        assert result == (
+            "Unfortunately, I was not able to answer your question, "
+            "because of the following error:\n"
+            "\nNo code found in the answer.\n"
+        )
+        assert agent.last_error == "No code found in the answer."
+
+    def test_get_environment(self):
+        additional_dependencies = [
+            {"name": "pyplot", "alias": "plt", "module": "matplotlib"},
+            {"name": "numpy", "alias": "np", "module": "numpy"},
+        ]
+        environment = get_environment(additional_dependencies)
+
+        assert "pd" in environment
+        assert "plt" in environment
+        assert "np" in environment
+        assert environment["__builtins__"] == {
+            "abs": abs,
+            "all": all,
+            "any": any,
+            "ascii": ascii,
+            "bin": bin,
+            "bool": bool,
+            "bytearray": bytearray,
+            "bytes": bytes,
+            "callable": callable,
+            "chr": chr,
+            "classmethod": classmethod,
+            "complex": complex,
+            "delattr": delattr,
+            "dict": dict,
+            "dir": dir,
+            "divmod": divmod,
+            "enumerate": enumerate,
+            "filter": filter,
+            "float": float,
+            "format": format,
+            "frozenset": frozenset,
+            "getattr": getattr,
+            "hasattr": hasattr,
+            "hash": hash,
+            "help": help,
+            "hex": hex,
+            "id": id,
+            "int": int,
+            "isinstance": isinstance,
+            "issubclass": issubclass,
+            "iter": iter,
+            "len": len,
+            "list": list,
+            "locals": locals,
+            "map": map,
+            "max": max,
+            "memoryview": memoryview,
+            "min": min,
+            "next": next,
+            "object": object,
+            "oct": oct,
+            "ord": ord,
+            "pow": pow,
+            "print": print,
+            "property": property,
+            "range": range,
+            "repr": repr,
+            "reversed": reversed,
+            "round": round,
+            "set": set,
+            "setattr": setattr,
+            "slice": slice,
+            "sorted": sorted,
+            "staticmethod": staticmethod,
+            "str": str,
+            "sum": sum,
+            "super": super,
+            "tuple": tuple,
+            "type": type,
+            "vars": vars,
+            "zip": zip,
+            "__build_class__": __build_class__,
+            "__name__": "__main__",
+        }
+
+    @pytest.mark.parametrize("df_name", ["df", "foobar"])
+    def test_extract_filters_col_index(self, df_name, code_execution):
+        code = f"""
+{df_name} = dfs[0]
+filtered_df = (
+    {df_name}[
+        ({df_name}['loan_status'] == 'PAIDOFF') & ({df_name}['Gender'] == 'male')
+    ]
+)
+num_loans = len(filtered_df)
+result = {{'type': 'number', 'value': num_loans}}
+"""
+        filters = code_execution._extract_filters(code)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
+
+    def test_extract_filters_col_index_multiple_df(self, code_execution, logger):
+        code = """
+df = dfs[0]
+filtered_paid_df_male = df[(
+    df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'male'
+)]
+num_loans_paid_off_male = len(filtered_paid_df)
+
+df = dfs[1]
+filtered_pend_df_male = df[(
+    df['loan_status'] == 'PENDING') & (df['Gender'] == 'male'
+)]
+num_loans_pending_male = len(filtered_pend_df)
+
+df = dfs[2]
+filtered_paid_df_female = df[(
+    df['loan_status'] == 'PAIDOFF') & (df['Gender'] == 'female'
+)]
+num_loans_paid_off_female = len(filtered_pend_df)
+
+value = num_loans_paid_off + num_loans_pending + num_loans_paid_off_female
+result = {
+    'type': 'number',
+    'value': value
+}
+"""
+        code_execution.logger = logger
+        filters = code_execution._extract_filters(code)
+        print(filters)
+        assert isinstance(filters, dict)
+        assert "dfs[0]" in filters
+        assert "dfs[1]" in filters
+        assert "dfs[2]" in filters
+        assert isinstance(filters["dfs[0]"], list)
+        assert len(filters["dfs[0]"]) == 2
+        assert len(filters["dfs[1]"]) == 2
+
+        assert filters["dfs[0]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[0]"][1] == ("Gender", "=", "male")
+
+        assert filters["dfs[1]"][0] == ("loan_status", "=", "PENDING")
+        assert filters["dfs[1]"][1] == ("Gender", "=", "male")
+
+        assert filters["dfs[2]"][0] == ("loan_status", "=", "PAIDOFF")
+        assert filters["dfs[2]"][1] == ("Gender", "=", "female")

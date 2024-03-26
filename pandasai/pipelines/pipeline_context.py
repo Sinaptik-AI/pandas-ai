@@ -53,5 +53,5 @@ class PipelineContext:
     def add_many(self, values: dict):
         self.intermediate_values.update(values)
 
-    def get(self, key: str):
-        return self.intermediate_values.get(key, "")
+    def get(self, key: str, default: Any = ""):
+        return self.intermediate_values.get(key, default)
