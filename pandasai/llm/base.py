@@ -293,6 +293,7 @@ class BaseOpenAI(LLM):
     def _client_params(self) -> Dict[str, any]:
         return {
             "api_key": self.api_token,
+            "base_url": self.api_base,
             "timeout": self.request_timeout,
             "max_retries": self.max_retries,
             "default_headers": self.default_headers,
