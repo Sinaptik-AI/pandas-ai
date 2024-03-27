@@ -69,8 +69,10 @@ class OpenAI(BaseOpenAI):
 
         if not self.api_token:
             raise APIKeyNotFoundError("OpenAI API key is required")
-        
-        self.api_base = kwargs.get("api_base") or os.getenv("OPENAI_API_BASE") or self.api_base
+
+        self.api_base = (
+            kwargs.get("api_base") or os.getenv("OPENAI_API_BASE") or self.api_base
+        )
         self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
         if self.openai_proxy:
             openai.proxy = {"http": self.openai_proxy, "https": self.openai_proxy}
