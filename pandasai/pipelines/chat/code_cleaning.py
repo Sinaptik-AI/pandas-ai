@@ -2,7 +2,7 @@ import ast
 import copy
 import re
 import uuid
-from typing import Any, Generator, List, Union
+from typing import Any, List, Union
 
 import astor
 
@@ -331,6 +331,28 @@ Code running:
             and value.func.attr == "DataFrame"
         )
 
+    def _get_originals(self, dfs):
+        """
+        Get original dfs
+
+        Args:
+            dfs (list): List of dfs
+
+        Returns:
+            list: List of dfs
+        """
+        original_dfs = []
+        for df in dfs:
+            if df is None:
+                original_dfs.append(None)
+                continue
+
+            df.execute()
+
+            original_dfs.append(df.pandas_df)
+
+        return original_dfs
+
     def _extract_fix_dataframe_redeclarations(
         self, node: ast.AST, code_lines: list[str]
     ) -> ast.AST:
@@ -341,7 +363,7 @@ Code running:
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
                 env = get_environment(self._additional_dependencies)
-                env["dfs"] = copy.deepcopy(self._dfs)
+                env["dfs"] = copy.deepcopy(self._get_originals(self._dfs))
                 exec(code, env)
 
                 df_generated = (
