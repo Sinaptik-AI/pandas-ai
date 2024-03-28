@@ -146,7 +146,7 @@ import pandasai.pandas as pd
 sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000],
-    "deals_opened": [142, 80, 70, 90, 60, 50, 40, 30, 110, 120]
+    "deals_opened": [142, 80, 70, 90, 60, 50, 40, 30, 110, 120],
     "deals_closed": [120, 70, 60, 80, 50, 40, 30, 20, 100, 110]
 })
 
@@ -175,7 +175,7 @@ An agent will also be able to ask clarification questions if it does not have en
 agent.clarification_question('What is the GDP of the United States?')
 ```
 
-this will return up to 3 clarification questions that the agent can ask to the user to get more information to answer the query.
+this will return up to 3 clarification questions that the agent can ask the user to get more information to answer the query.
 
 ### Explanation
 
