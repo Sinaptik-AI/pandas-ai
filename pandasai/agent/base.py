@@ -2,9 +2,9 @@ import json
 import os
 import uuid
 from typing import List, Optional, Type, Union
-from pandasai.llm.bamboo_llm import BambooLLM
 
 import pandasai.pandas as pd
+from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
