@@ -84,7 +84,11 @@ class CodeCleaning(BaseLogicUnit):
         self._config = context.config
         self._logger = kwargs.get("logger")
 
-        code_to_run = self.get_code_to_run(input, context)
+        code_context = CodeExecutionContext(
+            context.get("last_prompt_id"), context.skills_manager
+        )
+
+        code_to_run = self.get_code_to_run(input, code_context)
 
         context.add("additional_dependencies", self._additional_dependencies)
         context.add("current_code_executed", self._current_code_executed)
