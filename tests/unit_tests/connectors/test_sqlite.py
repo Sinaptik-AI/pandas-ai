@@ -83,3 +83,29 @@ class TestSqliteConnector(unittest.TestCase):
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "yourtable")
+
+    @patch("pandasai.connectors.SqliteConnector._init_connection")
+    def test_two_connector_equal(self, mock_init_connection):
+        conn1 = SqliteConnector(self.config)
+
+        conn2 = SqliteConnector(self.config)
+
+        assert conn1.equals(conn2)
+
+        config2 = SqliteConnectorConfig(
+            dialect="sqlite", database="path_todb.db", table="different_table"
+        ).dict()
+        conn3 = SqliteConnector(config2)
+
+        assert conn1.equals(conn3)
+
+    @patch("pandasai.connectors.SqliteConnector._init_connection")
+    def test_two_connector_not_equal(self, mock_init_connection):
+        conn1 = SqliteConnector(self.config)
+
+        config2 = SqliteConnectorConfig(
+            dialect="sqlite", database="path_todb2.db", table="yourtable"
+        ).dict()
+        conn3 = SqliteConnector(config2)
+
+        assert not conn1.equals(conn3)
