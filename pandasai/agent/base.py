@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from typing import List, Optional, Type, Union
+from pandasai.llm.bamboo_llm import BambooLLM
 
 import pandasai.pandas as pd
 from pandasai.pipelines.chat.chat_pipeline_input import (
@@ -145,6 +146,9 @@ class Agent:
             config["llm"] = self.get_llm(config["llm"])
 
         config = Config(**config)
+
+        if config.llm is None:
+            config.llm = BambooLLM()
 
         return config
 
