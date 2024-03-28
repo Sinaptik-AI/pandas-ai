@@ -4,7 +4,6 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
-from pandasai.llm.bamboo_llm import BambooLLM
 import pytest
 from langchain import OpenAI
 
@@ -16,6 +15,7 @@ from pandasai.connectors.sql import (
 )
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
+from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from pandasai.llm.langchain import LangchainLLM
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
