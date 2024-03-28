@@ -539,6 +539,21 @@ class SqliteConnector(SQLConnector):
             f"table={self.config.table}>"
         )
 
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            print(self.config.database)
+            print(other.config.database)
+            return (
+                self.config.dialect,
+                self.config.driver,
+                self.config.database,
+            ) == (
+                other.config.dialect,
+                other.config.driver,
+                other.config.database,
+            )
+        return False
+
 
 class MySQLConnector(SQLConnector):
     """
