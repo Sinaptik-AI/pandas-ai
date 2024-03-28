@@ -4,6 +4,7 @@ import uuid
 from typing import List, Optional, Type, Union
 
 import pandasai.pandas as pd
+from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
@@ -145,6 +146,9 @@ class Agent:
             config["llm"] = self.get_llm(config["llm"])
 
         config = Config(**config)
+
+        if config.llm is None:
+            config.llm = BambooLLM()
 
         return config
 

@@ -15,6 +15,7 @@ from pandasai.connectors.sql import (
 )
 from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
+from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from pandasai.llm.langchain import LangchainLLM
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
@@ -407,6 +408,10 @@ How much has the total salary expense increased?
         config = agent.get_config({"llm": langchain_llm})
         assert isinstance(config.llm, LangchainLLM)
         assert config.llm.langchain_llm == langchain_llm
+
+    def test_load_llm_none(self, agent: Agent, llm):
+        config = agent.get_config({"llm": None})
+        assert isinstance(config.llm, BambooLLM)
 
     @pytest.mark.skip(reason="Removed CodeManager class")
     @patch(
