@@ -2,9 +2,9 @@ import os
 from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.agent.base import Agent
 from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger

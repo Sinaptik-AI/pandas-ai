@@ -1,8 +1,8 @@
 import os
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.agent import Agent
 from pandasai.helpers import (
     OpenAICallbackHandler,

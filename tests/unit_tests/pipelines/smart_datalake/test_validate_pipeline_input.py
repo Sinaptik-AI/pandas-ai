@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import patch
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,

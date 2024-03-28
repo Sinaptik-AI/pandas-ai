@@ -23,7 +23,7 @@ connector = BaseConnector(config, name='My Connector', field_descriptions=field_
 Another example using a pandas connector:
 
 ```python
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai.connectors import PandasConnector
 from pandasai import SmartDataframe
 

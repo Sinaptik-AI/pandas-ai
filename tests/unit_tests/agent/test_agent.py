@@ -3,10 +3,10 @@ import sys
 from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
-import pandas as pd
 import pytest
 from langchain import OpenAI
 
+import pandasai.pandas as pd
 from pandasai.agent import Agent
 from pandasai.connectors.sql import (
     PostgreSQLConnector,

@@ -1,6 +1,6 @@
 from typing import Union
 
-import pandas as pd
+import pandasai.pandas as pd
 
 
 def _import_modin():

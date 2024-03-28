@@ -1,8 +1,8 @@
 from typing import Optional
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.connectors import PandasConnector
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration

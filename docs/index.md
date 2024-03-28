@@ -45,7 +45,7 @@ Once you have installed PandasAI, you can start using it by importing the `Smart
 
 ```python
 import os
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai import Agent
 
 # Sample DataFrame

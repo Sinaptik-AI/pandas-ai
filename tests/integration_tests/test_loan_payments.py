@@ -1,7 +1,6 @@
 import unittest
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai.agent.base import Agent
 from pandasai.llm import OpenAI
 

@@ -1,8 +1,7 @@
 """Unit tests for the correct error prompt class"""
 import sys
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.connectors import PandasConnector
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType

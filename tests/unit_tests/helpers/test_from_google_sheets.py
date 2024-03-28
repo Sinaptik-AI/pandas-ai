@@ -1,6 +1,6 @@
-import pandas as pd
 from pandas.testing import assert_frame_equal
 
+import pandasai.pandas as pd
 from pandasai.helpers import from_google_sheets
 
 

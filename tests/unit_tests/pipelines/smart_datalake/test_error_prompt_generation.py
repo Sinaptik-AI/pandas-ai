@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.exceptions import InvalidLLMOutputType
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.error_correction_pipeline.error_prompt_generation import (

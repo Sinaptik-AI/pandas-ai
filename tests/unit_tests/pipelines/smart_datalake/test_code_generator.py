@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import Mock, patch
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_generator import CodeGenerator

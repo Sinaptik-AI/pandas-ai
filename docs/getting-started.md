@@ -44,7 +44,7 @@ The `SmartDataframe` class is the main class of `pandasai`. It is used to intera
 
 ```python
 import os
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai import SmartDataframe
 
 # Sample DataFrame
@@ -101,7 +101,7 @@ Similarly to a `SmartDataframe`, you can instantiate a `SmartDatalake` as follow
 
 ```python
 import os
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai import SmartDatalake
 
 employees_data = {
@@ -140,7 +140,7 @@ To instantiate an agent, you can use the following code:
 ```python
 import os
 from pandasai import Agent
-import pandas as pd
+import pandasai.pandas as pd
 
 # Sample DataFrames
 sales_by_country = pd.DataFrame({

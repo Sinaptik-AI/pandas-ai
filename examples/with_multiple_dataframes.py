@@ -2,8 +2,7 @@
 
 import os
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai import Agent
 
 employees_df = pd.DataFrame(

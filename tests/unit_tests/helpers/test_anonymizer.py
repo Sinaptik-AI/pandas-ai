@@ -1,5 +1,4 @@
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai.helpers.anonymizer import Anonymizer
 
 

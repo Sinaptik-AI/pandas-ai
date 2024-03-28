@@ -1,8 +1,8 @@
 """Example of using PandasAI with a Pandas DataFrame"""
 
-import pandas as pd
 from data.sample_dataframe import dataframe
 
+import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.llm import AzureOpenAI
 

@@ -4,9 +4,9 @@ import os
 import sys
 from unittest.mock import patch
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.connectors import PandasConnector
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType

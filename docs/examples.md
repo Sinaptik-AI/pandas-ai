@@ -10,7 +10,7 @@ Using PandasAI with a Pandas DataFrame
 ```python
 import os
 from pandasai import SmartDataframe
-import pandas as pd
+import pandasai.pandas as pd
 
 # pandas dataframe
 sales_by_country = pd.DataFrame({
@@ -244,7 +244,7 @@ Example of using PandasAI with multiple dataframes. In order to use multiple dat
 ```python
 import os
 from pandasai import SmartDatalake
-import pandas as pd
+import pandasai.pandas as pd
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -286,7 +286,7 @@ Feel free to initiate conversations, seek clarifications, and explore explanatio
 
 ```python
 import os
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai import Agent
 
 employees_data = {
@@ -356,7 +356,7 @@ You can add customs functions for the agent to use, allowing the agent to expand
 
 ```python
 import os
-import pandas as pd
+import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.skills import skill
 

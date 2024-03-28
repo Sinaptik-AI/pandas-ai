@@ -2,8 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai.connectors import AirtableConnector
 from pandasai.connectors.airtable import AirtableConnectorConfig
 

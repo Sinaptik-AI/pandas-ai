@@ -1,7 +1,6 @@
 import os
 
-import pandas as pd
-
+import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.skills import skill
 

@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import Mock
 
-import pandas as pd
 import pytest
 
+import pandasai.pandas as pd
 from pandasai.agent import Agent
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
