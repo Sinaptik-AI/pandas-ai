@@ -4,6 +4,7 @@ from typing import Optional
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pandas as pd
+from pandasai.llm.bamboo_llm import BambooLLM
 import pytest
 from langchain import OpenAI
 
@@ -407,6 +408,10 @@ How much has the total salary expense increased?
         config = agent.get_config({"llm": langchain_llm})
         assert isinstance(config.llm, LangchainLLM)
         assert config.llm.langchain_llm == langchain_llm
+
+    def test_load_llm_none(self, agent: Agent, llm):
+        config = agent.get_config({"llm": None})
+        assert isinstance(config.llm, BambooLLM)
 
     @pytest.mark.skip(reason="Removed CodeManager class")
     @patch(
