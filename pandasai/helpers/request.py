@@ -17,16 +17,17 @@ class Session:
     def __init__(
         self, endpoint_url: str = None, api_key: str = None, logger: Logger = None
     ) -> None:
-        if api_key is None:
-            api_key = os.environ.get("PANDASAI_API_KEY") or None
-        if api_key is None:
+        api_key = api_key or os.environ.get("PANDASAI_API_KEY", None)
+
+        if not api_key:
             raise PandasAIApiKeyError()
+
         self._api_key = api_key
 
-        if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
+        self._endpoint_url = endpoint_url or os.environ.get(
+            "PANDASAI_API_URL", "https://api.domer.ai"
+        )
 
-        self._endpoint_url = endpoint_url
         self._version_path = "/api"
         self._logger = logger or Logger()
 
@@ -67,7 +68,10 @@ class Session:
             )
 
             data = response.json()
-            if response.status_code == 400:
+
+            if response.status_code == 401:
+                raise PandasAIApiCallError(data["error"])
+            elif response.status_code != 200:
                 raise PandasAIApiCallError(data["message"])
 
             return data

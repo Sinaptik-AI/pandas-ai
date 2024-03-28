@@ -18,6 +18,8 @@ nav:
       - LLMs/llms.md
   - Pipelines:
       - pipelines/pipelines.md
+  - Workspace:
+      - workspace/workspace.md
   - Advanced usage:
       - cache.md
       - custom-head.md
