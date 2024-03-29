@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import pandasai.pandas as pd
+import pandas as pd
+
 from pandasai.ee.connectors import SnowFlakeConnector
 from pandasai.ee.connectors.snowflake import SnowFlakeConnectorConfig
 

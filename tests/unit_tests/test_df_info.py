@@ -1,9 +1,9 @@
 import unittest
 
 import modin.pandas as mpd
+import pandas as pd
 import polars as pl
 
-import pandasai.pandas as pd
 from pandasai.helpers.df_info import df_type
 
 

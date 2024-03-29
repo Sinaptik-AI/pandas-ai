@@ -6,9 +6,9 @@ from typing import Optional
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
 
+import pandas as pd
 import pytest
 
-import pandasai.pandas as pd
 from pandasai.connectors import PandasConnector
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.llm.fake import FakeLLM

@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 
-import pandasai.pandas as pd
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.result_validation import ResultValidation

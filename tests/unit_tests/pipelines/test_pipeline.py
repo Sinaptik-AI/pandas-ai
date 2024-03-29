@@ -1,9 +1,9 @@
 from typing import Any, Optional
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 
-import pandasai.pandas as pd
 from pandasai.connectors import BaseConnector, PandasConnector
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit

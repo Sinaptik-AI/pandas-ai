@@ -2,9 +2,9 @@ import uuid
 from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 
+import pandas as pd
 import pytest
 
-import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM

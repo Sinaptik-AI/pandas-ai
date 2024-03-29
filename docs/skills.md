@@ -6,7 +6,7 @@ You can add customs functions for the agent to use, allowing the agent to expand
 
 ```python
 import os
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai import Agent
 from pandasai.skills import skill
 
@@ -58,7 +58,7 @@ response = agent.chat("Plot the employee salaries against names")
 
 ```python
 import os
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai import Agent
 from pandasai.skills import skill
 import streamlit as st

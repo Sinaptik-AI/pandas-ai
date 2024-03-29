@@ -6,7 +6,8 @@ streamlit run examples/using_streamlit.py
 """
 import os
 
-import pandasai.pandas as pd
+import pandas as pd
+
 from pandasai import Agent
 from pandasai.responses.streamlit_response import StreamlitResponse
 

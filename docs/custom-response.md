@@ -9,7 +9,7 @@ You have the option to provide a custom parser, such as `StreamlitResponse`, to 
 ```python
 
 import os
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai import SmartDatalake
 from pandasai.responses.response_parser import ResponseParser
 
@@ -59,7 +59,7 @@ response = agent.chat("Return a dataframe of name against salaries")
 ```python
 
 import os
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai import SmartDatalake
 from pandasai.responses.streamlit_response import StreamlitResponse
 

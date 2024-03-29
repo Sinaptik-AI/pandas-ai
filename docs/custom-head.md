@@ -4,7 +4,7 @@ In some cases, you might want to share a custom sample head to the LLM. For exam
 
 ```python
 from pandasai import SmartDataframe
-import pandasai.pandas as pd
+import pandas as pd
 
 # head df
 head_df = pd.DataFrame({

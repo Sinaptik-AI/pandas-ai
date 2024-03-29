@@ -1,6 +1,7 @@
 import os
 
-import pandasai.pandas as pd
+import pandas as pd
+
 from pandasai import Agent
 
 employees_data = {
