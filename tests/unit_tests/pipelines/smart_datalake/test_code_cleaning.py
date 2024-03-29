@@ -186,7 +186,7 @@ class TestCodeCleaning:
         logger: Logger,
     ):
         with pytest.raises(Exception):
-            output = code_cleaning.execute("1 +", context=context, logger=logger)
+            code_cleaning.execute("1 +", context=context, logger=logger)
 
     def test_clean_code_remove_builtins(
         self,

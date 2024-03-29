@@ -4,16 +4,14 @@ import traceback
 from collections import defaultdict
 from typing import Any, Callable, Generator, List, Union
 
-import pandasai.pandas as pd
 from pandasai.exceptions import InvalidLLMOutputType, InvalidOutputValueMismatch
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.responses.response_serializer import ResponseSerializer
 
-from ...constants import WHITELISTED_BUILTINS
 from ...exceptions import NoResultFoundError
 from ...helpers.logger import Logger
 from ...helpers.node_visitors import AssignmentVisitor, CallVisitor
-from ...helpers.optional import get_environment, import_dependency
+from ...helpers.optional import get_environment
 from ...helpers.output_validator import OutputValidator
 from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
