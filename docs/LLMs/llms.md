@@ -224,7 +224,7 @@ Then you can use the Bedrock models as follows
 
 ```python
 from pandasai import SmartDataframe
-from bedrock_claude import BedrockClaude
+from pandasai.llm import BedrockClaude
 import boto3
 
 bedrock_runtime_client = boto3.client(
