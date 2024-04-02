@@ -81,7 +81,7 @@ You can count the number of tokens used by a prompt as follows:
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 from pandasai.helpers.openai_info import get_openai_callback
-import pandasai.pandas as pd
+import pandas as pd
 
 llm = OpenAI()
 

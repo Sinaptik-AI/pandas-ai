@@ -5,9 +5,9 @@ import uuid
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
+import pandas as pd
 import pytest
 
-import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.connectors.sql import (

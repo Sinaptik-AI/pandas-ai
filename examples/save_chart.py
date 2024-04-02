@@ -2,9 +2,9 @@
 
 import os
 
+import pandas as pd
 from data.sample_dataframe import dataframe
 
-import pandasai.pandas as pd
 from pandasai import Agent
 from pandasai.helpers import path
 

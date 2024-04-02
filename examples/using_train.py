@@ -17,7 +17,7 @@ print(response)
 # Example #2: train the model with Q/A
 query = "How many loans were paid off?"
 code = """
-import pandasai.pandas as pd
+import pandas as pd
 
 df = dfs[0]
 df['loan_status'].value_counts()

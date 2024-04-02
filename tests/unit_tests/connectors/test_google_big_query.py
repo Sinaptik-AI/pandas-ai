@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import pandasai.pandas as pd
+import pandas as pd
+
 from pandasai.connectors.sql import PostgreSQLConnector
 from pandasai.ee.connectors import GoogleBigQueryConnector
 from pandasai.ee.connectors.google_big_query import GoogleBigQueryConnectorConfig
