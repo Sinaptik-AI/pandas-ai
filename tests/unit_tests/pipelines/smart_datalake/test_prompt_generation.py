@@ -93,3 +93,77 @@ class TestPromptGeneration:
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+
+    def test_get_chat_prompt_enforce_privacy(self, context):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = True
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert (
+            gen_prompt.to_string()
+            == """dfs[0]:
+  name: null
+  description: null
+  type: pd.DataFrame
+  rows: 10
+  columns: 3
+  schema:
+    fields:
+    - name: country
+      type: object
+    - name: gdp
+      type: object
+    - name: happiness_index
+      type: float64
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:"""
+        )
+
+    def test_get_chat_prompt_enforce_privacy_false(self, context):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = False
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert "samples" in gen_prompt.to_string()
+
+    def test_get_chat_prompt_enforce_privacy_true_custom_head(self, context, sample_df):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = True
+
+        dataframe = PandasConnector({"original_df": sample_df}, custom_head=sample_df)
+        context.dfs = [dataframe]
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert "samples" in gen_prompt.to_string()
