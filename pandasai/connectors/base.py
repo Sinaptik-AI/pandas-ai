@@ -264,6 +264,7 @@ class BaseConnector(ABC):
         index: int = 0,
         is_direct_sql: bool = False,
         serializer: DataframeSerializerType = None,
+        enforce_privacy: bool = False,
     ) -> str:
         """
         Convert dataframe to string
@@ -276,6 +277,7 @@ class BaseConnector(ABC):
                 "index": index,
                 "type": "pd.DataFrame",
                 "is_direct_sql": is_direct_sql,
+                "enforce_privacy": enforce_privacy,
             },
             type_=serializer,
         )

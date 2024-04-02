@@ -93,3 +93,33 @@ class TestPromptGeneration:
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+
+    def test_get_chat_prompt_enforce_privacy(self, context):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = True
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert "samples" not in gen_prompt.to_string()
+
+    def test_get_chat_prompt_enforce_privacy_false(self, context):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = False
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert "samples" in gen_prompt.to_string()
+
+    def test_get_chat_prompt_enforce_privacy_true_custom_head(self, context, sample_df):
+        # Test case 1: direct_sql is True
+        prompt_generation = PromptGeneration()
+        context.config.enforce_privacy = True
+
+        dataframe = PandasConnector({"original_df": sample_df}, custom_head=sample_df)
+        context.dfs = [dataframe]
+
+        gen_prompt = prompt_generation.get_chat_prompt(context)
+        assert isinstance(gen_prompt, GeneratePythonCodePrompt)
+        assert "samples" in gen_prompt.to_string()

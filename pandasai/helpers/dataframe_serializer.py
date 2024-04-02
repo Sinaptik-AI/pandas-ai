@@ -116,8 +116,10 @@ class DataframeSerializer:
             col_info = {
                 "name": col_name,
                 "type": str(col_dtype),
-                "samples": df_head[col_name].head().tolist(),
             }
+
+            if not extras.get("enforce_privacy") or df.custom_head is not None:
+                col_info["samples"] = df_head[col_name].head().tolist()
 
             # Add column description if available
             if df.field_descriptions and isinstance(df.field_descriptions, dict):
