@@ -22,6 +22,8 @@ import os
 os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAIAPI_KEY"
 ```
 
+It is important that you set the API key, or it will fail with the following error: `No vector store provided. Please provide a vector store to train the agent`.
+
 ## Instructions training
 
 Instructions training is used to teach PandasAI how you expect it to respond to certain queries. You can provide generic instructions about how you expect the model to approach certain types of queries, and PandasAI will use these instructions to generate responses to similar queries.
@@ -76,3 +78,23 @@ print(response)
 ```
 
 Also in this case, your training data is persisted, so you only need to train the model once.
+
+## Troubleshooting
+
+In some cases, you might get an error like this: `No vector store provided. Please provide a vector store to train the agent`. It means no API key has been generated to use the `BambooVectorStore`.
+
+Here are the steps to fix it:
+
+- First of all, you'll need to generated an API key (check the prerequisites paragraph above).
+- Once you have generated the API key, you have 2 options:
+
+  - Override the env variable (`os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"`)
+  - Instantiate the vector store and pass the API key:
+
+    ```python
+    # Instantiate the vector store with the API keys
+    vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
+
+    # Instantiate the agent with the custom vector store
+    agent = Agent(connector, config={...} vectorstore=vector_store)
+    ```
