@@ -70,3 +70,19 @@ class TestBambooVector(unittest.TestCase):
         assert mock_request.call_args_list[0][1] == {
             "params": {"count": 3, "query": "Chroma"}
         }
+
+    @patch("pandasai.helpers.request.Session.make_request", autospec=True)
+    def test_get_qa_raise_exception(self, mock_request):
+        mock_request.side_effect = Exception("Some error occurred")
+        bvs = BambooVectorStore(api_key="dummy_key")
+        docs = bvs.get_relevant_qa_documents("Chroma")
+        mock_request.assert_called_once()
+        assert len(docs) == 0
+
+    @patch("pandasai.helpers.request.Session.make_request", autospec=True)
+    def test_get_docs_raise_exception(self, mock_request):
+        mock_request.side_effect = Exception("Some error occurred")
+        bvs = BambooVectorStore(api_key="dummy_key")
+        docs = bvs.get_relevant_docs_documents("Chroma")
+        mock_request.assert_called_once()
+        assert len(docs) == 0
