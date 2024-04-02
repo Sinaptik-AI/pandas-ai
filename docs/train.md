@@ -83,18 +83,18 @@ Also in this case, your training data is persisted, so you only need to train th
 
 In some cases, you might get an error like this: `No vector store provided. Please provide a vector store to train the agent`. It means no API key has been generated to use the `BambooVectorStore`.
 
-Here are the steps to fix it:
+Here's how to fix it:
 
-- First of all, you'll need to generated an API key (check the prerequisites paragraph above).
-- Once you have generated the API key, you have 2 options:
+First of all, you'll need to generated an API key (check the prerequisites paragraph above).
+Once you have generated the API key, you have 2 options:
 
-  - Override the env variable (`os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"`)
-  - Instantiate the vector store and pass the API key:
+1. Override the env variable (`os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"`)
+2. Instantiate the vector store and pass the API key:
 
-    ```python
-    # Instantiate the vector store with the API keys
-    vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
+```python
+# Instantiate the vector store with the API keys
+vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
 
-    # Instantiate the agent with the custom vector store
-    agent = Agent(connector, config={...} vectorstore=vector_store)
-    ```
+# Instantiate the agent with the custom vector store
+agent = Agent(connector, config={...} vectorstore=vector_store)
+```
