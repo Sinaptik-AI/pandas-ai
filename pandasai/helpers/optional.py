@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, List
 from pandas.util.version import Version
 
 import pandasai.pandas as pd
+import matplotlib.pyplot as plt
 from pandasai.constants import WHITELISTED_BUILTINS
 
 if TYPE_CHECKING:
@@ -54,6 +55,7 @@ def get_environment(additional_deps: List[dict]) -> dict:
     """
     return {
         "pd": pd,
+        "plt": plt,
         **{
             lib["alias"]: (
                 getattr(import_dependency(lib["module"]), lib["name"])

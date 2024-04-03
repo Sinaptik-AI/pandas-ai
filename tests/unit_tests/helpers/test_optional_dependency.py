@@ -8,7 +8,7 @@ import types
 
 import pytest
 
-from pandasai.helpers.optional import VERSIONS, import_dependency
+from pandasai.helpers.optional import VERSIONS, get_environment, import_dependency
 
 
 def test_import_optional():
@@ -84,3 +84,9 @@ def test_no_version_raises(monkeypatch):
 
     with pytest.raises(ImportError, match="Can't determine .* fakemodule"):
         import_dependency(name)
+
+
+def test_env_for_necessary_deps():
+    env = get_environment([])
+    assert "pd" in env
+    assert "plt" in env
