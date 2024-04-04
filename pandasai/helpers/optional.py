@@ -10,6 +10,7 @@ import sys
 import warnings
 from typing import TYPE_CHECKING, List
 
+import matplotlib.pyplot as plt
 from pandas.util.version import Version
 
 import pandasai.pandas as pd
@@ -54,6 +55,7 @@ def get_environment(additional_deps: List[dict]) -> dict:
     """
     return {
         "pd": pd,
+        "plt": plt,
         **{
             lib["alias"]: (
                 getattr(import_dependency(lib["module"]), lib["name"])
