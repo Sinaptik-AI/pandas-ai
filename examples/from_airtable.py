@@ -16,8 +16,8 @@ airtable_connectors = AirtableConnector(
     }
 )
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
 agent = Agent(airtable_connectors)

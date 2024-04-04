@@ -2,8 +2,8 @@ import os
 
 from pandasai import Agent
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent("examples/data/Loan payments data.csv")

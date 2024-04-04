@@ -54,8 +54,8 @@ sales_by_country = pd.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent(sales_by_country)

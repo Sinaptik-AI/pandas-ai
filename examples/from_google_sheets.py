@@ -7,8 +7,8 @@ from pandasai import Agent
 # Betas & Bludgers Writing Competitions List (source: https://heystacks.com/?type=sheets&tags=data)
 google_sheets_url = "https://docs.google.com/spreadsheets/d/1VKkhugv2eF87AoOm4OXjI0sQEHrNhxy6gPL3F7xyw7g/edit#gid=115719017"  # noqa E501
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
 agent = Agent(google_sheets_url)

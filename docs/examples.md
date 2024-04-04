@@ -19,8 +19,8 @@ sales_by_country = pd.DataFrame({
 })
 
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # convert to SmartDataframe
@@ -39,8 +39,8 @@ Example of using PandasAI with a CSV file
 import os
 from pandasai import SmartDataframe
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a CSV file
@@ -65,8 +65,8 @@ Then, you can use PandasAI with an Excel file as follows:
 import os
 from pandasai import SmartDataframe
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to an Excel file
@@ -85,8 +85,8 @@ Example of using PandasAI with a Parquet file
 import os
 from pandasai import SmartDataframe
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a Parquet file
@@ -111,8 +111,8 @@ Then, you can use PandasAI with a Google Sheet as follows:
 import os
 from pandasai import SmartDataframe
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a Google Sheet
@@ -140,8 +140,8 @@ import pandasai
 from pandasai import SmartDataframe
 import modin.pandas as pd
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 sales_by_country = pd.DataFrame({
@@ -174,8 +174,8 @@ import os
 from pandasai import SmartDataframe
 import polars as pl
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a Polars DataFrame
@@ -198,8 +198,8 @@ Example of using PandasAI to plot a chart from a Pandas DataFrame
 import os
 from pandasai import SmartDataframe
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 sdf = SmartDataframe("data/Countries.csv")
@@ -221,8 +221,8 @@ from pandasai import SmartDataframe
 
 user_defined_path = os.getcwd()
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 sdf = SmartDataframe("data/Countries.csv", config={
@@ -260,8 +260,8 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 lake = SmartDatalake([employees_df, salaries_df])
@@ -304,8 +304,8 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent([employees_df, salaries_df], memory_size=10)
@@ -340,8 +340,8 @@ Some examples of descriptions can be:
 import os
 from pandasai import Agent
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent(
@@ -391,8 +391,8 @@ def plot_salaries(merged_df: pd.DataFrame):
     plt.savefig("temp_chart.png")
     plt.close()
 
-# Get your FREE API key signing up at https://pandabi.ai.
-# You can also configure it in your .env file.
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent([employees_df, salaries_df], memory_size=10)
