@@ -8,9 +8,9 @@ More [examples](https://github.com/Sinaptik-AI/pandas-ai/tree/main/examples) are
 Using PandasAI with a Pandas DataFrame
 
 ```python
+import os
 from pandasai import SmartDataframe
 import pandas as pd
-from pandasai.llm import OpenAI
 
 # pandas dataframe
 sales_by_country = pd.DataFrame({
@@ -18,12 +18,15 @@ sales_by_country = pd.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # convert to SmartDataframe
-df = SmartDataframe(sales_by_country, config={"llm": llm})
+sdf = SmartDataframe(sales_by_country)
 
-response = df.chat('Which are the top 5 countries by sales?')
+response = sdf.chat('Which are the top 5 countries by sales?')
 print(response)
 # Output: China, United States, Japan, Germany, Australia
 ```
@@ -33,15 +36,17 @@ print(response)
 Example of using PandasAI with a CSV file
 
 ```python
+import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a CSV file
-df = SmartDataframe("data/Loan payments data.csv", config={"llm": llm})
+sdf = SmartDataframe("data/Loan payments data.csv")
 
-response = df.chat("How many loans are from men and have been paid off?")
+response = sdf.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -57,15 +62,17 @@ pip install pandasai[excel]
 Then, you can use PandasAI with an Excel file as follows:
 
 ```python
+import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to an Excel file
-df = SmartDataframe("data/Loan payments data.xlsx", config={"llm": llm})
+sdf = SmartDataframe("data/Loan payments data.xlsx")
 
-response = df.chat("How many loans are from men and have been paid off?")
+response = sdf.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -75,15 +82,17 @@ print(response)
 Example of using PandasAI with a Parquet file
 
 ```python
+import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a Parquet file
-df = SmartDataframe("data/Loan payments data.parquet", config={"llm": llm})
+sdf = SmartDataframe("data/Loan payments data.parquet")
 
-response = df.chat("How many loans are from men and have been paid off?")
+response = sdf.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -99,14 +108,16 @@ pip install pandasai[google-sheet]
 Then, you can use PandasAI with a Google Sheet as follows:
 
 ```python
+import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a path to a Google Sheet
-df = SmartDataframe("https://docs.google.com/spreadsheets/d/fake/edit#gid=0", config={"llm": llm})
-response = df.chat("How many loans are from men and have been paid off?")
+sdf = SmartDataframe("https://docs.google.com/spreadsheets/d/fake/edit#gid=0")
+response = sdf.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -124,12 +135,14 @@ pip install pandasai[modin]
 Then, you can use PandasAI with a Modin DataFrame as follows:
 
 ```python
+import os
 import pandasai
 from pandasai import SmartDataframe
 import modin.pandas as pd
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
@@ -137,8 +150,8 @@ sales_by_country = pd.DataFrame({
 })
 
 pandasai.set_pd_engine("modin")
-df = SmartDataframe(df, config={"llm": llm})
-response = df.chat('Which are the top 5 countries by sales?')
+sdf = SmartDataframe(sales_by_country)
+response = sdf.chat('Which are the top 5 countries by sales?')
 print(response)
 # Output: China, United States, Japan, Germany, Australia
 
@@ -157,11 +170,13 @@ pip install pandasai[polars]
 Then, you can use PandasAI with a Polars DataFrame as follows:
 
 ```python
+import os
 from pandasai import SmartDataframe
 import polars as pl
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 # You can instantiate a SmartDataframe with a Polars DataFrame
 sales_by_country = pl.DataFrame({
@@ -169,8 +184,8 @@ sales_by_country = pl.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-df = SmartDataframe(df, config={"llm": llm})
-response = df.chat("How many loans are from men and have been paid off?")
+sdf = SmartDataframe(sales_by_country)
+response = sdf.chat("How many loans are from men and have been paid off?")
 print(response)
 # Output: 247 loans have been paid off by men.
 ```
@@ -180,13 +195,15 @@ print(response)
 Example of using PandasAI to plot a chart from a Pandas DataFrame
 
 ```python
+import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-df = SmartDataframe("data/Countries.csv", config={"llm": llm})
-response = df.chat(
+sdf = SmartDataframe("data/Countries.csv")
+response = sdf.chat(
     "Plot the histogram of countries showing for each the gpd, using different colors for each bar",
 )
 print(response)
@@ -201,17 +218,18 @@ Below is the example to Save Charts with user defined location.
 ```python
 import os
 from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
 
 user_defined_path = os.getcwd()
-llm = OpenAI(api_token="YOUR_API_TOKEN")
 
-df = SmartDataframe("data/Countries.csv", config={
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+sdf = SmartDataframe("data/Countries.csv", config={
     "save_charts": True,
     "save_charts_path": user_defined_path,
-    "llm": llm
 })
-response = df.chat(
+response = sdf.chat(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )
@@ -224,9 +242,9 @@ print(response)
 Example of using PandasAI with multiple dataframes. In order to use multiple dataframes as a data source, you need to use a `SmartDatalake` instead of a `SmartDataframe`. You can instantiate a `SmartDatalake` as follows:
 
 ```python
+import os
 from pandasai import SmartDatalake
 import pandas as pd
-from pandasai.llm import OpenAI
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -242,10 +260,12 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-df = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
-response = df.chat("Who gets paid the most?")
+lake = SmartDatalake([employees_df, salaries_df])
+response = lake.chat("Who gets paid the most?")
 print(response)
 # Output: Olivia gets paid the most.
 ```
@@ -265,10 +285,9 @@ With the chat agent, you can engage in dynamic conversations where the agent ret
 Feel free to initiate conversations, seek clarifications, and explore explanations to enhance your interactions with the chat agent!
 
 ```python
+import os
 import pandas as pd
 from pandasai import Agent
-
-from pandasai.llm.openai import OpenAI
 
 employees_data = {
     "EmployeeID": [1, 2, 3, 4, 5],
@@ -285,8 +304,11 @@ employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
 
-llm = OpenAI("OpenAI_API_KEY")
-agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+
+agent = Agent([employees_df, salaries_df], memory_size=10)
 
 query = "Who gets paid the most?"
 
@@ -315,15 +337,15 @@ Some examples of descriptions can be:
 - Act as a data analyst. Every time I ask you a question, you should provide the code to visualize the answer using plotly
 
 ```python
+import os
 from pandasai import Agent
 
-from pandasai.llm.openai import OpenAI
-
-llm = OpenAI("YOUR_API_KEY")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
 agent = Agent(
     "data.csv",
-    config={"llm": llm},
     description="You are a data analysis agent. Your main goal is to help non-technical users to analyze data",
 )
 ```
@@ -333,11 +355,11 @@ agent = Agent(
 You can add customs functions for the agent to use, allowing the agent to expand its capabilities. These custom functions can be seamlessly integrated with the agent's skills, enabling a wide range of user-defined operations.
 
 ```python
+import os
 import pandas as pd
 from pandasai import Agent
-
-from pandasai.llm.openai import OpenAI
 from pandasai.skills import skill
+
 
 employees_data = {
     "EmployeeID": [1, 2, 3, 4, 5],
@@ -369,14 +391,14 @@ def plot_salaries(merged_df: pd.DataFrame):
     plt.savefig("temp_chart.png")
     plt.close()
 
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-llm = OpenAI("YOUR_API_KEY")
-agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
-
+agent = Agent([employees_df, salaries_df], memory_size=10)
 agent.add_skills(plot_salaries)
 
 # Chat with the agent
 response = agent.chat("Plot the employee salaries against names")
 print(response)
-
 ```

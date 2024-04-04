@@ -294,6 +294,7 @@ class BaseOpenAI(LLM):
     def _client_params(self) -> Dict[str, any]:
         return {
             "api_key": self.api_token,
+            "base_url": self.api_base,
             "timeout": self.request_timeout,
             "max_retries": self.max_retries,
             "default_headers": self.default_headers,
@@ -339,23 +340,7 @@ class BaseOpenAI(LLM):
             str: LLM response.
 
         """
-        messages = []
-        if memory:
-            if memory.agent_info:
-                messages.append(
-                    {
-                        "role": "system",
-                        "content": memory.get_system_prompt(),
-                    }
-                )
-
-            for message in memory.all():
-                if message["is_user"]:
-                    messages.append({"role": "user", "content": message["message"]})
-                else:
-                    messages.append(
-                        {"role": "assistant", "content": message["message"]}
-                    )
+        messages = memory.to_openai_messages() if memory else []
 
         # adding current prompt as latest query message
         messages.append(
@@ -454,7 +439,7 @@ class BaseGoogle(LLM):
             raise ValueError("max_output_tokens must be greater than zero")
 
     @abstractmethod
-    def _generate_text(self, prompt: str, memory: Memory) -> str:
+    def _generate_text(self, prompt: str, memory: Optional[Memory] = None) -> str:
         """
         Generates text for prompt, specific to implementation.
 

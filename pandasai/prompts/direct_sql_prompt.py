@@ -1,4 +1,5 @@
 """ Prompt to explain code generation by the LLM"""
+import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -48,7 +49,7 @@ class DirectSQLPrompt(GeneratePythonCodePrompt):
         self.set_var("prev_conversation", kwargs.pop("prev_conversation", ""))
 
     def on_prompt_generation(self) -> None:
-        default_import = "import pandas as pd"
+        default_import = f"import {pd.__name__} as pd"
 
         self.set_var("default_import", default_import)
         self.set_var("reasoning", SimpleReasoningPrompt())

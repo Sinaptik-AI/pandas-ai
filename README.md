@@ -46,8 +46,9 @@ If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offeri
 ### Ask questions
 
 ```python
+import os
 import pandas as pd
-from pandasai import SmartDataframe
+from pandasai import Agent
 
 # Sample DataFrame
 sales_by_country = pd.DataFrame({
@@ -55,12 +56,12 @@ sales_by_country = pd.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-# Instantiate a LLM
-from pandasai.llm import OpenAI
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-df = SmartDataframe(sales_by_country, config={"llm": llm})
-df.chat('Which are the top 5 countries by sales?')
+agent = Agent(sales_by_country)
+agent.chat('Which are the top 5 countries by sales?')
 ```
 
 ```
@@ -72,7 +73,7 @@ China, United States, Japan, Germany, Australia
 Or you can ask more complex questions:
 
 ```python
-df.chat(
+agent.chat(
     "What is the total sales for the top 3 countries by sales?"
 )
 ```
@@ -86,7 +87,7 @@ The total sales for the top 3 countries by sales is 16500.
 You can also ask PandasAI to generate charts for you:
 
 ```python
-df.chat(
+agent.chat(
     "Plot the histogram of countries showing for each the gdp, using different colors for each bar",
 )
 ```
@@ -98,9 +99,9 @@ df.chat(
 You can also pass in multiple dataframes to PandasAI and ask questions relating them.
 
 ```python
+import os
 import pandas as pd
-from pandasai import SmartDatalake
-from pandasai.llm import OpenAI
+from pandasai import Agent
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -116,10 +117,12 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-llm = OpenAI()
-dl = SmartDatalake([employees_df, salaries_df], config={"llm": llm})
-dl.chat("Who gets paid the most?")
+agent = Agent([employees_df, salaries_df])
+agent.chat("Who gets paid the most?")
 ```
 
 ```

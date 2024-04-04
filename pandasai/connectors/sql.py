@@ -145,7 +145,7 @@ class SQLConnector(BaseConnector):
             raise ValueError(f"Invalid column name: {column_name}")
 
     def _build_query(self, limit=None, order=None):
-        base_query = select("*").select_from(text(self.config.table))
+        base_query = select("*").select_from(text(self.cs_table_name))
         if self.config.where or self._additional_filters:
             # conditions is the list of where + additional filters
             conditions = []
@@ -326,7 +326,7 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get the number of rows
-        query = select(text("COUNT(*)")).select_from(text(self.config.table))
+        query = select(text("COUNT(*)")).select_from(text(self.cs_table_name))
 
         # Return the number of rows
         self._rows_count = self._connection.execute(query).fetchone()[0]
@@ -439,6 +439,14 @@ class SQLConnector(BaseConnector):
 
         return pd.read_sql(sql_query, self._connection)
 
+    @property
+    def cs_table_name(self):
+        return self.config.table
+
+    @property
+    def type(self):
+        return self.config.dialect
+
 
 class SqliteConnector(SQLConnector):
     """
@@ -514,6 +522,10 @@ class SqliteConnector(SQLConnector):
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
 
+    @property
+    def cs_table_name(self):
+        return f'"{self.config.table}"'
+
     def __repr__(self):
         """
         Return the string representation of the SQL connector.
@@ -526,6 +538,21 @@ class SqliteConnector(SQLConnector):
             f"database={self.config.database} "
             f"table={self.config.table}>"
         )
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            print(self.config.database)
+            print(other.config.database)
+            return (
+                self.config.dialect,
+                self.config.driver,
+                self.config.database,
+            ) == (
+                other.config.dialect,
+                other.config.driver,
+                other.config.database,
+            )
+        return False
 
 
 class MySQLConnector(SQLConnector):
@@ -576,7 +603,9 @@ class PostgreSQLConnector(SQLConnector):
         Args:
             config (ConnectorConfig): The configuration for the PostgreSQL connector.
         """
-        config["dialect"] = "postgresql"
+        if "dialect" not in config:
+            config["dialect"] = "postgresql"
+
         config["driver"] = "psycopg2"
 
         if isinstance(config, dict):
@@ -612,3 +641,7 @@ class PostgreSQLConnector(SQLConnector):
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
+
+    @property
+    def cs_table_name(self):
+        return f'"{self.config.table}"'

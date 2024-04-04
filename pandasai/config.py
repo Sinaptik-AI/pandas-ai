@@ -36,6 +36,8 @@ def load_config_from_json(
             if config.get("llm") and not override_config.get("llm"):
                 options = config.get("llm_options") or {}
                 config["llm"] = getattr(llm, config["llm"])(**options)
+            elif not config.get("llm") and not override_config.get("llm"):
+                config["llm"] = llm.BambooLLM()
     except FileNotFoundError:
         # Ignore the error if the file does not exist, will use the default config
         pass

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai"
-version = "2.0"
-description = "PandasAI is a Python library that integrates generative artificial intelligence capabilities into Pandas, making dataframes conversational."
+version = "2.0.28"
+description = "Chat with your database (SQL, CSV, pandas, polars, mongodb, noSQL, etc). PandasAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"
@@ -13,11 +13,10 @@ python-dotenv = "^1.0.0"
 pandas = "1.5.3"
 astor = "^0.8.1"
 openai = "<2"
-ipython = "^8.13.1"
 matplotlib = "^3.7.1"
 pydantic = ">=1,<3"
 sqlalchemy = ">=1.4,<3"
-duckdb = "^0.9.2"
+duckdb = "<1"
 faker = "^19.12.0"
 pillow = "^10.1.0"
 requests = "^2.31.0"
@@ -40,13 +39,16 @@ streamlit = {version = "^1.23.1", optional = true}
 text-generation = { version = ">=0.6.0", optional = true }
 openpyxl = { version = "^3.0.7", optional = true }
 pymysql = { version = "^1.1.0", optional = true }
-psycopg2 = { version = "^2.9.7", optional = true }
+psycopg2-binary = { version = "^2.9.7", optional = true }
 yfinance = { version = "^0.2.28", optional = true }
 sqlalchemy-databricks = { version = "^0.2.0", optional = true }
 snowflake-sqlalchemy = { version = "^1.5.0", optional = true }
 flask = { version = "^3.0.2", optional = true }
-sqlalchemy-bigquery = { version = "^1.8.0", optional = true }
+sqlalchemy-cockroachdb = { version = "^2.0.2", optional = true }
+sqlalchemy-bigquery = {version = "^1.8.0", optional = true, markers = "python_version >= '3.8' and python_version < '3.13'"}
 chromadb = {version = "^0.4.22", optional = true}
+boto3 = { version = ">=1.34.59", optional = true }
+qdrant-client = {version = "^1.8.0", extras = ["fastembed"], optional = true }
 
 [tool.poetry.group.dev]
 optional = true
@@ -65,7 +67,7 @@ sourcery = "^1.11.0"
 
 
 [tool.poetry.extras]
-connectors = [ "pymysql", "psycopg2",  "sqlalchemy-databricks", "sqlalchemy-bigquery", "snowflake-sqlalchemy"]
+connectors = [ "pymysql", "psycopg2-binary", "sqlalchemy-cockroachdb", "sqlalchemy-databricks", "sqlalchemy-bigquery", "snowflake-sqlalchemy"]
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
@@ -82,6 +84,10 @@ text-generation = ["fsspec", "huggingface-hub", "text-generation"]
 yfinance = ["yfinance"]
 modin = ["modin", "ray"]
 chromadb = ["chromadb"]
+bedrock = ["boto3"]
+flask = ["flask"]
+qdrant = ["qdrant-client"]
+
 
 [tool.poetry.group.docs]
 optional = true

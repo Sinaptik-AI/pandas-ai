@@ -44,8 +44,9 @@ pip install pandasai
 Once you have installed PandasAI, you can start using it by importing the `SmartDataframe` class and instantiating it with your data. You can then use the `chat` method to ask questions to your data in natural language.
 
 ```python
+import os
 import pandas as pd
-from pandasai import SmartDataframe
+from pandasai import Agent
 
 # Sample DataFrame
 sales_by_country = pd.DataFrame({
@@ -53,12 +54,12 @@ sales_by_country = pd.DataFrame({
     "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
-# Instantiate a LLM
-from pandasai.llm import OpenAI
-llm = OpenAI(api_token="YOUR_API_TOKEN")
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-df = SmartDataframe(sales_by_country, config={"llm": llm})
-df.chat('Which are the top 5 countries by sales?')
+agent = Agent(sales_by_country)
+agent.chat('Which are the top 5 countries by sales?')
 ## Output
 # China, United States, Japan, Germany, Australia
 ```

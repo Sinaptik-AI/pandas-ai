@@ -189,6 +189,10 @@ class BaseConnector(ABC):
         """
         raise NotImplementedError
 
+    @property
+    def type(self):
+        return "pd.DataFrame"
+
     def equals(self, other):
         return self.__dict__ == other.__dict__
 
@@ -260,6 +264,7 @@ class BaseConnector(ABC):
         index: int = 0,
         is_direct_sql: bool = False,
         serializer: DataframeSerializerType = None,
+        enforce_privacy: bool = False,
     ) -> str:
         """
         Convert dataframe to string
@@ -270,8 +275,9 @@ class BaseConnector(ABC):
             self,
             extras={
                 "index": index,
-                "type": "sql" if is_direct_sql else "pd.DataFrame",
+                "type": "pd.DataFrame",
                 "is_direct_sql": is_direct_sql,
+                "enforce_privacy": enforce_privacy,
             },
             type_=serializer,
         )

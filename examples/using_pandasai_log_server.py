@@ -3,7 +3,6 @@ import os
 import pandas as pd
 
 from pandasai import Agent
-from pandasai.llm.openai import OpenAI
 
 employees_data = {
     "EmployeeID": [1, 2, 3, 4, 5],
@@ -19,16 +18,13 @@ salaries_data = {
 employees_df = pd.DataFrame(employees_data)
 salaries_df = pd.DataFrame(salaries_data)
 
-# Example 1: Using Environment Variables
-os.environ["PANDASAI_API_URL"] = "SERVER_URL"
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-
-llm = OpenAI("YOUR_API_KEY")
 agent = Agent(
     [employees_df, salaries_df],
     config={
-        "llm": llm,
         "enable_cache": True,
     },
     memory_size=10,
@@ -40,11 +36,9 @@ print(response)
 
 
 # Example 2: Using Config
-llm = OpenAI("YOUR_API_KEY")
 agent = Agent(
     [employees_df, salaries_df],
     config={
-        "llm": llm,
         "enable_cache": True,
         "log_server": {
             "server_url": "SERVER_URL",

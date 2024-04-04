@@ -1,8 +1,9 @@
 import json
 from enum import Enum
 
-import pandas as pd
 import yaml
+
+import pandasai.pandas as pd
 
 
 class DataframeSerializerType(Enum):
@@ -96,7 +97,11 @@ class DataframeSerializer:
         df_info = {
             "name": df.name,
             "description": df.description,
-            "type": extras["type"],
+            "type": (
+                df.type
+                if "is_direct_sql" in extras and extras["is_direct_sql"]
+                else extras["type"]
+            ),
         }
         # Add DataFrame details to the result
         data = {
@@ -111,8 +116,10 @@ class DataframeSerializer:
             col_info = {
                 "name": col_name,
                 "type": str(col_dtype),
-                "samples": df_head[col_name].head().tolist(),
             }
+
+            if not extras.get("enforce_privacy") or df.custom_head is not None:
+                col_info["samples"] = df_head[col_name].head().tolist()
 
             # Add column description if available
             if df.field_descriptions and isinstance(df.field_descriptions, dict):
@@ -122,6 +129,9 @@ class DataframeSerializer:
             data["schema"]["fields"].append(col_info)
 
         result = df_info | data
+
+        if "is_direct_sql" in extras and extras["is_direct_sql"]:
+            return result
 
         return {df_number_key: result}
 

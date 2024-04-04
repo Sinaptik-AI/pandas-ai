@@ -208,6 +208,67 @@ df = SmartDataframe("data.csv", config={"llm": langchain_llm})
 
 PandasAI will automatically detect that you are using a LangChain LLM and will convert it to a PandasAI LLM.
 
+## Amazon Bedrock models
+
+In order to use Amazon Bedrock models, you need to have an [AWS AKSK](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) and gain the [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html).
+
+Currently, only Claude 3 Sonnet is supported.
+
+In order to use Bedrock models, you need to install the `bedrock` package.
+
+```bash
+pip install pandasai[bedrock]
+```
+
+Then you can use the Bedrock models as follows
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm import BedrockClaude
+import boto3
+
+bedrock_runtime_client = boto3.client(
+    'bedrock-runtime',
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY
+)
+
+llm = BedrockClaude(bedrock_runtime_client)
+df = SmartDataframe("data.csv", config={"llm": llm})
+```
+
+More ways to create the bedrock_runtime_client can be found [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+
 ### More information
 
 For more information about LangChain models, please refer to the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).
+
+## Local models
+
+PandasAI supports local models, though smaller models typically don't perform as well. To use local models, first host one on a local inference server that adheres to the OpenAI API. This has been tested to work with [Ollama](https://ollama.com/) and [LM Studio](https://lmstudio.ai/).
+
+### Ollama
+
+Ollama's compatibility is experimental (see [docs](https://github.com/ollama/ollama/blob/main/docs/openai.md)).
+
+With an Ollama server, you can instantiate an LLM object by specifying the model name:
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm.local_llm import LocalLLM
+
+ollama_llm = LocalLLM(api_base="http://localhost:11434/v1", model="codellama")
+df = SmartDataframe("data.csv", config={"llm": ollama_llm})
+```
+
+### LM Studio
+
+An LM Studio server only hosts one model, so you can instantiate an LLM object without specifying the model name:
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm.local_llm import LocalLLM
+
+lm_studio_llm = LocalLLM(api_base="http://localhost:1234/v1")
+df = SmartDataframe("data.csv", config={"llm": lm_studio_llm})
+```

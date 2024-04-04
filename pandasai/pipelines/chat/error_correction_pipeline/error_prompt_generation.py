@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Callable
 
 from pandasai.exceptions import ExecuteSQLQueryNotUsed, InvalidLLMOutputType
@@ -74,21 +75,24 @@ class ErrorPromptGeneration(BaseLogicUnit):
         Returns:
             BasePrompt: The prompt
         """
+        traceback_errors = traceback.format_exc()
         return (
             CorrectOutputTypeErrorPrompt(
                 context=self.context,
                 code=code,
-                error=e,
+                error=traceback_errors,
                 output_type=self.context.get("output_type"),
             )
             if isinstance(e, InvalidLLMOutputType)
-            else CorrectExecuteSQLQueryUsageErrorPrompt(
-                context=self.context, code=code, error=e
-            )
-            if isinstance(e, ExecuteSQLQueryNotUsed)
-            else CorrectErrorPrompt(
-                context=self.context,
-                code=code,
-                error=e,
+            else (
+                CorrectExecuteSQLQueryUsageErrorPrompt(
+                    context=self.context, code=code, error=traceback_errors
+                )
+                if isinstance(e, ExecuteSQLQueryNotUsed)
+                else CorrectErrorPrompt(
+                    context=self.context,
+                    code=code,
+                    error=traceback_errors,
+                )
             )
         )

@@ -53,10 +53,15 @@ class BambooVectorStore(VectorStore):
         Returns relevant question answers based on search
         """
         k = k or self._max_samples
-        docs = self._session.get(
-            "/training-data/qa/relevant-qa", params={"query": question, "count": k}
-        )
-        return docs["docs"]
+
+        try:
+            docs = self._session.get(
+                "/training-data/qa/relevant-qa", params={"query": question, "count": k}
+            )
+            return docs["docs"]
+        except Exception:
+            self._logger.log("Querying without using training data.")
+            return []
 
     def get_relevant_docs_documents(
         self, question: str, k: Union[int, None] = 3
@@ -67,8 +72,12 @@ class BambooVectorStore(VectorStore):
             question (_type_): list of documents
         """
         k = k or self._max_samples
-
-        docs = self._session.get(
-            "/training-docs/docs/relevant-docs", params={"query": question, "count": k}
-        )
-        return docs["docs"]
+        try:
+            docs = self._session.get(
+                "/training-docs/docs/relevant-docs",
+                params={"query": question, "count": k},
+            )
+            return docs["docs"]
+        except Exception:
+            self._logger.log("Querying without using training docs.")
+            return []

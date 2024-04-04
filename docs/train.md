@@ -10,6 +10,20 @@ There are two kinds of training:
 <iframe title='Train on PandasAI' style="width: 100%; max-width: 982px; min-height: 570px;" src="https://app.gemoo.com/embed/home?codeId=MlQ5yGpLeN59r"  frameborder="0" allowfullscreen loading="lazy"></iframe>
 <br />
 
+## Prerequisites
+
+Before you start training PandasAI, you need to set your PandasAI API key. You can generate your API key by signing up at [https://pandabi.ai](https://pandabi.ai).
+
+Then you can set your API key as an environment variable:
+
+```python
+import os
+
+os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAIAPI_KEY"
+```
+
+It is important that you set the API key, or it will fail with the following error: `No vector store provided. Please provide a vector store to train the agent`.
+
 ## Instructions training
 
 Instructions training is used to teach PandasAI how you expect it to respond to certain queries. You can provide generic instructions about how you expect the model to approach certain types of queries, and PandasAI will use these instructions to generate responses to similar queries.
@@ -21,10 +35,13 @@ To train PandasAI with instructions, you can use the `train` method on the `Agen
 ```python
 from pandasai import Agent
 
-df = Agent("data.csv")
-df.train(docs="The fiscal year starts in April")
+# Set your PandasAI API key (you can generate one signing up at https://pandabi.ai)
+os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"
 
-response = df.chat("What is the total sales for the fiscal year?")
+agent = Agent("data.csv")
+agent.train(docs="The fiscal year starts in April")
+
+response = agent.chat("What is the total sales for the fiscal year?")
 print(response)
 # The model will use the information provided in the training to generate a response
 ```
@@ -40,7 +57,7 @@ To train PandasAI with Q/A, you can use the `train` method on the `Agent`, `Smar
 ```python
 from pandasai import Agent
 
-df = Agent("data.csv")
+agent = Agent("data.csv")
 
 # Train the model
 query = "What is the total sales for the current fiscal year?"
@@ -53,11 +70,31 @@ df = dfs[0]
 total_sales = df[df['date'] >= pd.to_datetime('today').replace(month=4, day=1)]['sales'].sum()
 result = { "type": "number", "value": total_sales }
 """
-df.train(queries=[query], codes=[response])
+agent.train(queries=[query], codes=[response])
 
-response = df.chat("What is the total sales for the last fiscal year?")
+response = agent.chat("What is the total sales for the last fiscal year?")
 print(response)
 # The model will use the information provided in the training to generate a response
 ```
 
 Also in this case, your training data is persisted, so you only need to train the model once.
+
+## Troubleshooting
+
+In some cases, you might get an error like this: `No vector store provided. Please provide a vector store to train the agent`. It means no API key has been generated to use the `BambooVectorStore`.
+
+Here's how to fix it:
+
+First of all, you'll need to generated an API key (check the prerequisites paragraph above).
+Once you have generated the API key, you have 2 options:
+
+1. Override the env variable (`os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"`)
+2. Instantiate the vector store and pass the API key:
+
+```python
+# Instantiate the vector store with the API keys
+vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
+
+# Instantiate the agent with the custom vector store
+agent = Agent(connector, config={...} vectorstore=vector_store)
+```

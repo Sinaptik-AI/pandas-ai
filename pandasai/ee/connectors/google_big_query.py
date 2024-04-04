@@ -7,6 +7,8 @@ from typing import Union
 
 from sqlalchemy import create_engine
 
+from pandasai.exceptions import InvalidConfigError
+
 from ...connectors.base import BaseConnectorConfig
 from ...connectors.sql import SQLBaseConnectorConfig, SQLConnector
 
@@ -16,7 +18,8 @@ class GoogleBigQueryConnectorConfig(SQLBaseConnectorConfig):
     Connector configuration for big query.
     """
 
-    credentials_path: str
+    credentials_path: str = None
+    credentials_base64: str = None
     database: str
     table: str
     projectID: str
@@ -43,6 +46,11 @@ class GoogleBigQueryConnector(SQLConnector):
             }
             config = self._populate_config_from_env(config, env_vars)
 
+        if "credentials_base64" not in config and "credentials_path" not in config:
+            raise InvalidConfigError(
+                "credentials_path or credentials_base64 is needed to connect"
+            )
+
         super().__init__(config)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
@@ -56,11 +64,15 @@ class GoogleBigQueryConnector(SQLConnector):
             config (GoogleBigQueryConnectorConfig): Configurations to load database
 
         """
-
-        self._engine = create_engine(
-            f"{config.dialect}://{config.projectID}/{config.database}",
-            credentials_path=config.credentials_path,
-        )
+        if config.credentials_path:
+            self._engine = create_engine(
+                f"{config.dialect}://{config.projectID}/{config.database}",
+                credentials_path=config.credentials_path,
+            )
+        else:
+            self._engine = create_engine(
+                f"{config.dialect}://{config.projectID}/{config.database}?credentials_base64={config.credentials_base64}"
+            )
 
         self._connection = self._engine.connect()
 
@@ -75,3 +87,22 @@ class GoogleBigQueryConnector(SQLConnector):
             f"<{self.__class__.__name__} dialect={self.config.dialect} "
             f"projectid= {self.config.projectID} database={self.config.database} >"
         )
+
+    def equals(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self.config.dialect,
+                self.config.driver,
+                self.config.credentials_path,
+                self.config.credentials_base64,
+                self.config.database,
+                self.config.projectID,
+            ) == (
+                other.config.dialect,
+                other.config.driver,
+                other.config.credentials_path,
+                other.config.credentials_base64,
+                other.config.database,
+                other.config.projectID,
+            )
+        return False

@@ -186,6 +186,14 @@ class InvalidLLMOutputType(Exception):
     """
 
 
+class InvalidOutputValueMismatch(Exception):
+    """
+    Raise error if the output value doesn't match with type
+    Args:
+        Exception (Exception): InvalidOutputValueMismatch
+    """
+
+
 class ExecuteSQLQueryNotUsed(Exception):
     """
     Raise error if Execute SQL Query is not used
@@ -213,7 +221,7 @@ class PandasAIApiKeyError(Exception):
         message = (
             "The api_key client option must be set either by passing api_key to the client "
             "or by setting the PANDASAI_API_KEY environment variable. To get the key follow below steps:\n"
-            "1. Go to https://domer.ai and sign up\n"
+            "1. Go to https://www.pandabi.ai and sign up\n"
             "2. From settings go to API keys and copy\n"
             "3. Set environment variable like os.environ['PANDASAI_API_KEY'] = '$2a$10$flb7....'"
         )

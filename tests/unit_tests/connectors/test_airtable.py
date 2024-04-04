@@ -122,3 +122,7 @@ class TestAirTableConnector(unittest.TestCase):
             returned_hash,
             "e4cdc9402a0831fb549d7fdeaaa089b61aeaf61e14b8a044bc027219b2db941e",
         )
+
+    def test_type_name_property(self):
+        # Test fallback_name property
+        assert self.connector.type == "pd.DataFrame"

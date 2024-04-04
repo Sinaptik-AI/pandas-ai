@@ -126,3 +126,8 @@ class TestResultParsing:
         except Exception:
             assert result is None
         assert isinstance(result_parsing, ResultParsing)
+
+    def test_add_number_result_to_memory(self, context):
+        result_parsing = ResultParsing()
+        result_parsing.execute(input={"type": "number", "value": 42}, context=context)
+        assert context.memory.last()["message"] == "42"

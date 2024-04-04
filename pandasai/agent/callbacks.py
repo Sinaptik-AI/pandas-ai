@@ -23,7 +23,7 @@ class Callbacks:
         """
         self.agent.last_code_generated = code
 
-    def on_code_execution(self, code: str):
+    def before_code_execution(self, code: str):
         """
         A method to be called after code execution.
 

@@ -1,10 +1,11 @@
 """Example of using PandasAI with a DataBricks"""
 
+import os
+
 from pandasai import Agent
 
 # A license might be required for using Snowflake with PandasAI
 from pandasai.ee.connectors import DatabricksConnector
-from pandasai.llm import OpenAI
 
 databricks_connector = DatabricksConnector(
     config={
@@ -22,8 +23,11 @@ databricks_connector = DatabricksConnector(
     }
 )
 
-llm = OpenAI("OPEN_API_KEY")
-df = Agent([databricks_connector], config={"llm": llm})
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+os.environ["PANDASAI_API_KEY"] = "your-api-key"
 
-response = df.chat("How many people from the United states?")
+agent = Agent(databricks_connector)
+
+response = agent.chat("How many people from the United states?")
 print(response)

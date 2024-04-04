@@ -21,6 +21,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install poetry
         run: pip install poetry==1.4.2
+      - name: Install future
+        run: pip wheel --use-pep517 "future==0.18.3"
       - name: Install dependencies
         run: poetry install --all-extras --with dev
       - name: Lint with ruff

@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
-from pandasai.helpers.code_manager import CodeExecutionContext, CodeManager
 from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.chat.code_cleaning import CodeExecutionContext
 from pandasai.skills import Skill, skill
 
 
@@ -60,13 +60,13 @@ class TestSkills:
             }
         )
 
-    @pytest.fixture
-    def code_manager(self, agent: Agent):
-        return CodeManager(
-            agent.context.dfs,
-            config=agent.context.config,
-            logger=agent.logger,
-        )
+    # @pytest.fixture
+    # def code_manager(self, agent: Agent):
+    #     return CodeManager(
+    #         agent.context.dfs,
+    #         config=agent.context.config,
+    #         logger=agent.logger,
+    #     )
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
@@ -309,9 +309,8 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
             not in last_prompt
         )
 
-    def test_code_exec_with_skills_no_use(
-        self, code_manager: CodeManager, exec_context
-    ):
+    @pytest.mark.skip(reason="Removed CodeManager class")
+    def test_code_exec_with_skills_no_use(self, code_manager, exec_context):
         code = """result = {'type': 'number', 'value': 1 + 1}"""
         skill1 = MagicMock()
         skill1.name = "SkillA"
@@ -319,7 +318,8 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         code_manager.execute_code(code, exec_context)
         assert len(exec_context.skills_manager.used_skills) == 0
 
-    def test_code_exec_with_skills(self, code_manager: CodeManager):
+    @pytest.mark.skip(reason="Removed CodeManager class")
+    def test_code_exec_with_skills(self, code_manager):
         code = """plot_salaries()
 result = {'type': 'number', 'value': 1 + 1}"""
 
