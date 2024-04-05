@@ -33,13 +33,14 @@ class TestFormatPlot(unittest.TestCase):
                     mock_show.assert_called_once()
 
     def test_display_plot_from_bytes(self):
-        result = {"type": "plot", "value": b"fake_image_data"}
+        result = {"type": "plot", "value": b"data:image/png;base64 fake_image_data"}
         with unittest.mock.patch(
             "PIL.Image.open", return_value=Image.new("RGB", (100, 100))
         ):
             with unittest.mock.patch("PIL.Image.Image.show"):
                 self.assertEqual(
-                    self.response_parser.format_plot(result), b"fake_image_data"
+                    self.response_parser.format_plot(result),
+                    b"data:image/png;base64 fake_image_data",
                 )
 
     def test_return_value_without_display(self):
