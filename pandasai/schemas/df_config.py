@@ -29,7 +29,7 @@ class Config(BaseModel):
     data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
-    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.YML
+    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.CSV
 
     class Config:
         arbitrary_types_allowed = True

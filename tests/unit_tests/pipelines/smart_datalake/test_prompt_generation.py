@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pandas as pd
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 import pytest
 
 from pandasai.connectors import PandasConnector
@@ -107,6 +108,7 @@ class TestPromptGeneration:
         # Test case 1: direct_sql is True
         prompt_generation = PromptGeneration()
         context.config.enforce_privacy = False
+        context.config.dataframe_serializer = DataframeSerializerType.YML
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
@@ -116,6 +118,7 @@ class TestPromptGeneration:
         # Test case 1: direct_sql is True
         prompt_generation = PromptGeneration()
         context.config.enforce_privacy = True
+        context.config.dataframe_serializer = DataframeSerializerType.YML
 
         dataframe = PandasConnector({"original_df": sample_df}, custom_head=sample_df)
         context.dfs = [dataframe]

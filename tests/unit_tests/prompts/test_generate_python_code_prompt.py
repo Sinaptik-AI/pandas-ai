@@ -76,6 +76,7 @@ a,b
 
 
 
+
 Update this initial code:
 ```python
 # TODO: import the required dependencies
@@ -163,6 +164,7 @@ dfs[0]:1x2
 a,b
 1,4
 </dataframe>
+
 
 
 
@@ -261,6 +263,7 @@ a,b
 
 
 
+
 Update this initial code:
 ```python
 # TODO: import the required dependencies
@@ -352,22 +355,11 @@ Generate python code and return full updated code:"""  # noqa E501
             output_type=output_type,
         )
 
-        expected_prompt_content = f"""dfs[0]:
-  name: null
-  description: null
-  type: pd.DataFrame
-  rows: 1
-  columns: 2
-  schema:
-    fields:
-    - name: a
-      type: int64
-      samples:
-      - 1
-    - name: b
-      type: int64
-      samples:
-      - 4
+        expected_prompt_content = f"""<dataframe>
+dfs[0]:1x2
+a,b
+1,4
+</dataframe>
 
 
 
@@ -404,6 +396,7 @@ Generate python code and return full updated code:"""  # noqa E501
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
 
+        print(actual_prompt_content)
         assert actual_prompt_content == expected_prompt_content
 
     @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
