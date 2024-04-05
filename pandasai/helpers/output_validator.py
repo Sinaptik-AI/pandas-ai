@@ -58,14 +58,14 @@ class OutputValidator:
         elif expected_type == "dataframe":
             return isinstance(self, (pd.DataFrame, pd.Series))
         elif expected_type == "plot":
-            if not isinstance(expected_type["value"], (str, dict)):
+            if not isinstance(self, (str, dict)):
                 return False
 
-            if isinstance(expected_type["value"], dict):
+            if isinstance(self, dict):
                 return True
 
             path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
-            return bool(re.match(path_to_plot_pattern, expected_type["value"]))
+            return bool(re.match(path_to_plot_pattern, self))
 
     @staticmethod
     def validate_result(result: dict) -> bool:
