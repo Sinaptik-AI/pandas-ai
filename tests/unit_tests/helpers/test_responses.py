@@ -1,11 +1,11 @@
 import unittest
 
+from PIL import Image
+
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.responses.context import Context
 from pandasai.responses.response_parser import ResponseParser
-from PIL import Image
-
 from pandasai.schemas.df_config import Config
 
 
