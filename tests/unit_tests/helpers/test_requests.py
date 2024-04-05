@@ -37,6 +37,7 @@ class TestSession(unittest.TestCase):
             params=None,
             data=None,
             json=None,
+            files=None,
             timeout=300,
         )
         self.assertEqual(result, {"data": "mock_data"})

@@ -47,14 +47,22 @@ class Session:
         return self.make_request("DELETE", path, **kwargs)
 
     def make_request(
-        self, method, path, headers=None, params=None, data=None, json=None, timeout=300
+        self,
+        method,
+        path,
+        headers=None,
+        params=None,
+        data=None,
+        json=None,
+        files=None,
+        timeout=300,
     ):
         try:
             url = urljoin(self._endpoint_url, self._version_path + path)
             if headers is None:
                 headers = {
                     "Authorization": f"Bearer {self._api_key}",
-                    "Content-Type": "application/json",  # or any other headers you need
+                    "Content-Type": "application/json",
                 }
 
             response = requests.request(
@@ -63,6 +71,7 @@ class Session:
                 headers=headers,
                 params=params,
                 data=data,
+                files=files,
                 json=json,
                 timeout=timeout,
             )

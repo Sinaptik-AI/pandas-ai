@@ -15,6 +15,5 @@ class ResponseDeserializer:
                 output["value"] = pd.DataFrame(
                     output["value"]["rows"], columns=output["value"]["headers"]
                 )
-            # TODO - handle plot here...
 
         return response
