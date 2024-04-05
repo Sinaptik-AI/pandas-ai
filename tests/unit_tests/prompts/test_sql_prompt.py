@@ -4,10 +4,10 @@ import os
 import sys
 
 import pandas as pd
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 import pytest
 
 from pandasai import Agent
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.generate_python_code_with_sql import (
     GeneratePythonCodeWithSQLPrompt,

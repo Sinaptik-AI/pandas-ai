@@ -1,10 +1,10 @@
 from typing import Optional
 
 import pandas as pd
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 import pytest
 
 from pandasai.connectors import PandasConnector
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.pipeline_context import PipelineContext
