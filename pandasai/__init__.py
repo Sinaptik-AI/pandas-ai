@@ -17,7 +17,8 @@ __version__ = importlib.metadata.version(__package__ or __name__)
 
 def clear_cache(filename: str = None):
     """Clear the cache"""
-    cache = Cache(filename or "cache_db")
+    cache = Cache(filename) if filename else Cache()
+
     cache.clear()
 
 
