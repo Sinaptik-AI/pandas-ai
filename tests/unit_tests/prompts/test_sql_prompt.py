@@ -1,4 +1,5 @@
 """Unit tests for the correct error prompt class"""
+
 import os
 import sys
 
@@ -6,6 +7,7 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts.generate_python_code_with_sql import (
     GeneratePythonCodeWithSQLPrompt,
@@ -49,7 +51,10 @@ class TestGeneratePythonCodeWithSQLPrompt:
         os.environ["PANDASAI_API_KEY"] = ""
 
         llm = FakeLLM()
-        agent = Agent(pd.DataFrame(), config={"llm": llm})
+        agent = Agent(
+            pd.DataFrame(),
+            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.YML},
+        )
         prompt = GeneratePythonCodeWithSQLPrompt(
             context=agent.context,
             output_type=output_type,
@@ -63,7 +68,7 @@ class TestGeneratePythonCodeWithSQLPrompt:
         assert (
             prompt_content
             == f'''<tables>
-<table>
+
 dfs[0]:
   name: null
   description: null
@@ -73,7 +78,7 @@ dfs[0]:
   schema:
     fields: []
 
-</table>
+
 </tables>
 
 

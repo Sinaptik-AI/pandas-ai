@@ -1,7 +1,7 @@
 <tables>
-{% for df in context.dfs %}<table>
+{% for df in context.dfs %}
 {% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}
-</table>{% endfor %}
+{% endfor %}
 </tables>
 
 {% if context.skills_manager.has_skills() %}

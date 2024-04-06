@@ -271,6 +271,10 @@ class BaseConnector(ABC):
         Returns:
             str: dataframe string
         """
+        # If field descriptions are added always use YML. Other formats don't support field descriptions yet
+        if self.field_descriptions:
+            serializer = DataframeSerializerType.YML
+
         return DataframeSerializer().serialize(
             self,
             extras={

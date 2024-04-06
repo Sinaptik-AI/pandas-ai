@@ -58,7 +58,7 @@ class DataframeSerializer:
         dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.to_csv()}"
 
         # Close the dataframe tag
-        dataframe_info += "</dataframe>"
+        dataframe_info += "</dataframe>\n"
 
         return dataframe_info
 
@@ -78,7 +78,7 @@ class DataframeSerializer:
             f' description="{df.description}"' if df.description is not None else ""
         )
         table_head_tag = f'<table name="{df.name}"{table_description_tag}>'
-        return f"{table_head_tag}\n{df.head_df.to_csv()}\n</table>"
+        return f"{table_head_tag}\n{df.get_head().to_csv()}\n</table>"
 
     def convert_df_to_json(self, df: pd.DataFrame, extras: dict) -> dict:
         """
@@ -149,5 +149,7 @@ class DataframeSerializer:
 
     def convert_df_to_yml(self, df: pd.DataFrame, extras: dict) -> str:
         json_df = self.convert_df_to_json(df, extras)
-
-        return yaml.dump(json_df, sort_keys=False)
+        yml_str = yaml.dump(json_df, sort_keys=False)
+        if "is_direct_sql" in extras and extras["is_direct_sql"]:
+            return f"<table>\n{yml_str}\n</table>\n"
+        return yml_str
