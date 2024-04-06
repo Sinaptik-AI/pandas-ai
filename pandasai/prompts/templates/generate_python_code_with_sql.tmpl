@@ -7,7 +7,7 @@
 {% if context.skills_manager.has_skills() %}
 {{context.skills_manager.prompt_display()}}
 {% else %}
-You can call the following functions that have been pre-defined for you:
+You are already provided with the following functions that you can call:
 {% endif %}
 <function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe

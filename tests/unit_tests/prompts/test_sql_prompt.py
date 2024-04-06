@@ -82,7 +82,7 @@ dfs[0]:
 </tables>
 
 
-You can call the following functions that have been pre-defined for you:
+You are already provided with the following functions that you can call:
 
 <function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe
