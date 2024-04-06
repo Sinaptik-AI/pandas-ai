@@ -65,7 +65,11 @@ class ResponseParser(IResponseParser):
         Returns:
             Any: Returns depending on the user input
         """
-        if self._context._config.open_charts:
+        if (
+            self._context._config.open_charts
+            and isinstance(result["value"], str)
+            and "data:image/png;base64" not in result["value"]
+        ):
             with Image.open(result["value"]) as img:
                 img.show()
 

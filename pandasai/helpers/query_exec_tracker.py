@@ -8,6 +8,7 @@ from typing import Any, List, TypedDict, Union
 import requests
 
 from pandasai.connectors import BaseConnector
+from pandasai.helpers.encoder import CustomEncoder
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
@@ -255,9 +256,14 @@ class QueryExecTracker:
                 "json_log": self.get_summary(),
             }
 
+            encoder = CustomEncoder()
+            ecoded_json_str = encoder.encode(log_data)
+
             headers = {"Authorization": f"Bearer {api_key}"}
             response = requests.post(
-                f"{server_url}/api/log/add", json=log_data, headers=headers
+                f"{server_url}/api/log/add",
+                json=json.loads(ecoded_json_str),
+                headers=headers,
             )
             if response.status_code != 200:
                 raise Exception(response.text)
