@@ -247,6 +247,9 @@ Code running:
             table_name: re.compile(r"\b" + re.escape(table_name) + r"\b")
             for table_name in table_names
         }
+
+        print(allowed_table_names)
+        print(table_names)
         for table_name in table_names:
             if table_name in allowed_table_names.keys():
                 quoted_table_name = allowed_table_names[table_name]

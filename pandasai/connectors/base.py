@@ -6,8 +6,9 @@ import json
 import os
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import Union
+from typing import List, Union
 
+from pandasai.connectors.relations import AbstractRelation
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
@@ -43,6 +44,7 @@ class BaseConnector(ABC):
         description: str = None,
         custom_head: pd.DataFrame = None,
         field_descriptions: dict = None,
+        connector_relations: List[AbstractRelation] = None,
     ):
         """
         Initialize the connector with the given configuration.
@@ -58,6 +60,7 @@ class BaseConnector(ABC):
         self.description = description
         self.custom_head = custom_head
         self.field_descriptions = field_descriptions
+        self.connector_relations = connector_relations
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object
