@@ -126,6 +126,17 @@ class DataframeSerializer:
                 if col_description := df.field_descriptions.get(col_name, None):
                     col_info["description"] = col_description
 
+            if df.connector_relations:
+                for relation in df.connector_relations:
+                    from pandasai.connectors.relations import ForeignKey, PrimaryKey
+
+                    if (
+                        isinstance(relation, PrimaryKey) and relation.name == col_name
+                    ) or (
+                        isinstance(relation, ForeignKey) and relation.field == col_name
+                    ):
+                        col_info["constraints"] = relation.to_string()
+
             data["schema"]["fields"].append(col_info)
 
         result = df_info | data

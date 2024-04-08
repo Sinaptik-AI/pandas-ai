@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import List, Union
 
-from pandasai.connectors.relations import AbstractRelation
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
@@ -17,6 +16,8 @@ from pandasai.helpers.dataframe_serializer import (
 from pandasai.pydantic import BaseModel
 
 from ..helpers.logger import Logger
+
+from pandasai.connectors.relations import AbstractRelation
 
 
 class BaseConnectorConfig(BaseModel):
@@ -275,7 +276,7 @@ class BaseConnector(ABC):
             str: dataframe string
         """
         # If field descriptions are added always use YML. Other formats don't support field descriptions yet
-        if self.field_descriptions:
+        if self.field_descriptions or self.connector_relations:
             serializer = DataframeSerializerType.YML
 
         return DataframeSerializer().serialize(
