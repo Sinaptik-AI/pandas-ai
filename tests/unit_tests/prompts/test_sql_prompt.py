@@ -63,8 +63,6 @@ class TestGeneratePythonCodeWithSQLPrompt:
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
-        print(prompt_content)
-
         assert (
             prompt_content
             == f'''<tables>
