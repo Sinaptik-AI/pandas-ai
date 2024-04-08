@@ -5,11 +5,11 @@ import sys
 from unittest.mock import patch
 
 import pandas as pd
-from pandasai.connectors.relations import PrimaryKey
 import pytest
 
 from pandasai import Agent
 from pandasai.connectors import PandasConnector
+from pandasai.connectors.relations import PrimaryKey
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import GeneratePythonCodePrompt

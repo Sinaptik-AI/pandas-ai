@@ -9,6 +9,7 @@ from functools import cache
 from typing import List, Union
 
 import pandasai.pandas as pd
+from pandasai.connectors.relations import AbstractRelation
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -16,8 +17,6 @@ from pandasai.helpers.dataframe_serializer import (
 from pandasai.pydantic import BaseModel
 
 from ..helpers.logger import Logger
-
-from pandasai.connectors.relations import AbstractRelation
 
 
 class BaseConnectorConfig(BaseModel):
