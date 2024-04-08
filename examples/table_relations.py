@@ -3,7 +3,6 @@ from pandasai.connectors.relations import ForeignKey, PrimaryKey
 from pandasai.connectors.sql import PostgreSQLConnector
 from pandasai.llm.openai import OpenAI
 
-
 llm = OpenAI("sk-*****")
 
 config_ = {"llm": llm, "direct_sql": True, "enable_cache": False}
