@@ -87,7 +87,10 @@ class OutputValidator:
             if not isinstance(result["value"], (str, dict)):
                 return False
 
-            if isinstance(result["value"], dict):
+            if isinstance(result["value"], dict) or (
+                isinstance(result["value"], str)
+                and "data:image/png;base64" in result["value"]
+            ):
                 return True
 
             path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"

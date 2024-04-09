@@ -1,20 +1,20 @@
 from pandasai.agent.base import Agent
-from pandasai.connectors.relations import ForeignKey, PrimaryKey
+from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
 from pandasai.connectors.sql import PostgreSQLConnector
 from pandasai.llm.openai import OpenAI
 
-llm = OpenAI("sk-*****")
+llm = OpenAI("sk-*************")
 
-config_ = {"llm": llm, "direct_sql": True, "enable_cache": False}
+config_ = {"llm": llm, "direct_sql": True}
 
 payment_connector = PostgreSQLConnector(
     config={
         "host": "localhost",
         "port": 5432,
-        "database": "mydb",
-        "username": "root",
-        "password": "root",
-        "table": "payment",
+        "database": "testdb",
+        "username": "postgres",
+        "password": "*****",
+        "table": "orders",
     },
     connector_relations=[
         PrimaryKey("id"),
@@ -36,7 +36,7 @@ customer_connector = PostgreSQLConnector(
     connector_relations=[PrimaryKey("id")],
 )
 
-agent = Agent([payment_connector], config=config_, memory_size=10)
+agent = Agent([payment_connector, customer_connector], config=config_, memory_size=10)
 
 response = agent.chat("return orders count groupby country")
 

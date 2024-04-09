@@ -261,6 +261,22 @@ Code running:
 
         return sql_query
 
+    def _clean_sql_query(self, sql_query: str) -> str:
+        """
+        Clean sql query trim colon and make case-sensitive
+        Args:
+            sql_query (str): sql query
+
+        Returns:
+            str: updated sql query
+        """
+        sql_query = sql_query.rstrip(";")
+        table_names = extract_table_names(sql_query)
+        allowed_table_names = {df.name: df.cs_table_name for df in self._dfs} | {
+            f'"{df.name}"': df.cs_table_name for df in self._dfs
+        }
+        return self._replace_table_names(sql_query, table_names, allowed_table_names)
+
     def _validate_and_make_table_name_case_sensitive(self, node: ast.Assign):
         """
         Validates whether table exists in specified dataset and convert name to case-sensitive
@@ -279,16 +295,19 @@ Code running:
                 and node.targets[0].id in ["sql_query", "query"]
             ):
                 sql_query = node.value.value
-                table_names = extract_table_names(sql_query)
-                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
-                allowed_table_names |= {
-                    f'"{df.name}"': df.cs_table_name for df in self._dfs
-                }
-
-                sql_query = self._replace_table_names(
-                    sql_query, table_names, allowed_table_names
-                )
+                sql_query = self._clean_sql_query(sql_query)
                 node.value.value = sql_query
+            elif (
+                isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name)
+                and node.value.func.id == "execute_sql_query"
+                and len(node.value.args) == 1
+                and isinstance(node.value.args[0], ast.Constant)
+                and isinstance(node.value.args[0].value, str)
+            ):
+                sql_query = node.value.args[0].value
+                sql_query = self._clean_sql_query(sql_query)
+                node.value.args[0].value = sql_query
 
         elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             # Check if the function call is to 'execute_sql_query' and has a string constant argument
@@ -300,14 +319,7 @@ Code running:
                 and isinstance(node.value.args[0].value, str)
             ):
                 sql_query = node.value.args[0].value
-                table_names = extract_table_names(sql_query)
-                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
-                allowed_table_names |= {
-                    f'"{df.name}"': df.cs_table_name for df in self._dfs
-                }
-                sql_query = self._replace_table_names(
-                    sql_query, table_names, allowed_table_names
-                )
+                sql_query = self._clean_sql_query(sql_query)
                 node.value.args[0].value = sql_query
 
         return node

@@ -128,7 +128,7 @@ class DataframeSerializer:
 
             if df.connector_relations:
                 for relation in df.connector_relations:
-                    from pandasai.connectors.relations import ForeignKey, PrimaryKey
+                    from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
 
                     if (
                         isinstance(relation, PrimaryKey) and relation.name == col_name

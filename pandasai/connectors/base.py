@@ -9,7 +9,8 @@ from functools import cache
 from typing import List, Union
 
 import pandasai.pandas as pd
-from pandasai.connectors.relations import AbstractRelation
+from typing import TYPE_CHECKING
+
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -17,6 +18,9 @@ from pandasai.helpers.dataframe_serializer import (
 from pandasai.pydantic import BaseModel
 
 from ..helpers.logger import Logger
+
+if TYPE_CHECKING:
+    from pandasai.ee.connectors.relations import AbstractRelation
 
 
 class BaseConnectorConfig(BaseModel):
@@ -44,7 +48,7 @@ class BaseConnector(ABC):
         description: str = None,
         custom_head: pd.DataFrame = None,
         field_descriptions: dict = None,
-        connector_relations: List[AbstractRelation] = None,
+        connector_relations: List["AbstractRelation"] = None,
     ):
         """
         Initialize the connector with the given configuration.
