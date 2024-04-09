@@ -6,7 +6,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import Union
+from typing import TYPE_CHECKING, List, Union
 
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
@@ -16,6 +16,9 @@ from pandasai.helpers.dataframe_serializer import (
 from pandasai.pydantic import BaseModel
 
 from ..helpers.logger import Logger
+
+if TYPE_CHECKING:
+    from pandasai.ee.connectors.relations import AbstractRelation
 
 
 class BaseConnectorConfig(BaseModel):
@@ -43,6 +46,7 @@ class BaseConnector(ABC):
         description: str = None,
         custom_head: pd.DataFrame = None,
         field_descriptions: dict = None,
+        connector_relations: List["AbstractRelation"] = None,
     ):
         """
         Initialize the connector with the given configuration.
@@ -58,6 +62,7 @@ class BaseConnector(ABC):
         self.description = description
         self.custom_head = custom_head
         self.field_descriptions = field_descriptions
+        self.connector_relations = connector_relations
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
         """Loads passed Configuration to object
@@ -272,7 +277,7 @@ class BaseConnector(ABC):
             str: dataframe string
         """
         # If field descriptions are added always use YML. Other formats don't support field descriptions yet
-        if self.field_descriptions:
+        if self.field_descriptions or self.connector_relations:
             serializer = DataframeSerializerType.YML
 
         return DataframeSerializer().serialize(
