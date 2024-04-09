@@ -6,11 +6,9 @@ import json
 import os
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import List, Union
+from typing import TYPE_CHECKING, List, Union
 
 import pandasai.pandas as pd
-from typing import TYPE_CHECKING
-
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
