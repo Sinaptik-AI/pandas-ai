@@ -46,3 +46,7 @@ class TestValidateResult(unittest.TestCase):
     def test_invalid_plot_result(self):
         result = {"type": "plot", "value": 42}
         self.assertFalse(self.output_validator.validate_result(result))
+
+    def test_valid_plot_base64_result(self):
+        result = {"type": "plot", "value": '"data:image/png;base64 image_data'}
+        self.assertTrue(self.output_validator.validate_result(result))
