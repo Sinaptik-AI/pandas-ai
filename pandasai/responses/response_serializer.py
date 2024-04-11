@@ -22,6 +22,8 @@ class ResponseSerializer:
             ResponseType: formatted response output
         """
         if result["type"] == "dataframe":
+            if isinstance(result["value"], pd.Series):
+                result["value"] = result["value"].to_frame()
             df_dict = ResponseSerializer.serialize_dataframe(result["value"])
             return {"type": result["type"], "value": df_dict}
 

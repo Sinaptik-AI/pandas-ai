@@ -96,7 +96,7 @@ class CodeExecution(BaseLogicUnit):
 
                 if not OutputValidator.validate_result(result):
                     raise InvalidOutputValueMismatch(
-                        f'Value must match with type {result["type"]}'
+                        f'Value type {type(result["value"])} must match with type {result["type"]}'
                     )
 
                 break
