@@ -1,8 +1,6 @@
-.PHONY: all format format_diff spell_check spell_fix tests integration docs
+.PHONY: all format format_diff spell_check spell_fix tests integration docs help
 
-# Default target executed when no arguments are given to make.
-all: help
-
+all: help  ## default target executed when no arguments are given to make
 
 #############################
 # UNIT AND INTEGRATION TESTS
@@ -11,13 +9,13 @@ all: help
 UNIT_TESTS_DIR ?= tests/unit_tests/
 INTEGRATION_TESTS_DIR ?= tests/integration_tests/
 
-tests:
+tests:  ## run unit tests
 	poetry run pytest $(UNIT_TESTS_DIR)
 
-integration:
+integration:  ## run integration tests
 	poetry run pytest $(INTEGRATION_TESTS_DIR)
 
-coverage:
+coverage:  ## run unit tests and generate coverage report
 	poetry run coverage run --source=pandasai -m pytest $(UNIT_TESTS_DIR)
 	poetry run coverage xml
 
@@ -27,37 +25,34 @@ coverage:
 
 IGNORE_FORMATS ?= "*.csv,*.txt,*.lock,*.log"
 
-format:
+format:  ## run code formatters
 	poetry run ruff format pandasai examples tests
 	poetry run ruff --select I --fix pandasai examples tests
 
-format_diff:
+format_diff:  ## run code formatters in diff mode
 	poetry run ruff format pandasai examples tests --diff
 	poetry run ruff --select I pandasai examples tests
 
-spell_check:
+spell_check:  ## run codespell on the project
 	poetry run codespell --toml pyproject.toml --skip=$(IGNORE_FORMATS)
 
-spell_fix:
+spell_fix:  ## run codespell on the project and fix the errors
 	poetry run codespell --toml pyproject.toml --skip=$(IGNORE_FORMATS) -w
 
 ######################
 # DOCS
 ######################
 
-docs:
+docs:  ## run docs serving
 	mkdocs serve
 
 ######################
 # HELP
 ######################
 
-help:
-	@echo '----'
-	@echo 'format                       - run code formatters'
-	@echo 'spell_check               	- run codespell on the project'
-	@echo 'spell_fix               		- run codespell on the project and fix the errors'
-	@echo 'tests                        - run unit tests'
-	@echo 'integration                  - run integration tests'
-	@echo 'coverage                     - run unit tests and generate coverage report'
-	@echo 'docs                         - run docs serving'
+help:  ## show this help message for each Makefile recipe
+ifeq ($(OS),Windows_NT)
+	@findstr /R /C:"^[a-zA-Z0-9 -]\+:.*##" $(MAKEFILE_LIST) | awk -F ':.*##' '{printf "\033[1;32m%-15s\033[0m %s\n", $$1, $$2}' | sort
+else
+	@awk -F ':.*##' '/^[^ ]+:[^:]+##/ {printf "\033[1;32m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+endif
