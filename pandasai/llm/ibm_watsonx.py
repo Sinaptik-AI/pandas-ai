@@ -9,7 +9,7 @@ Example:
 
 """
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from ibm_watsonx_ai.foundation_models import Model
 
