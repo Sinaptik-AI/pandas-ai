@@ -1,56 +1,68 @@
 """IBM watsonx
 
-This module is to run the IBM watsonx LLM.
+This module is to run the IBM watsonx API.
+
 
 Example:
     Use below example to call IBM watsonx
 
-    # >>> from pandasai.llm.ibm_watsonx import IBMWatsonx
-
+    >>> from pandasai.llm.ibm_watsonx import IBMWatsonx
 """
 import os
 from typing import Optional
 
 from ibm_watsonx_ai.foundation_models import Model
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
 
+from pandasai.pipelines.pipeline_context import PipelineContext
 from .base import LLM
 from ..exceptions import APIKeyNotFoundError
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
 
-from pandasai.pipelines.pipeline_context import PipelineContext
-
 load_dotenv()
 
 
-class IBMWatsonx(LLM):
-    max_new_tokens: Optional[int] = 25
+class IBMwatsonx(LLM):
+    decoding_method: Optional[str] = None
+    length_penalty: Optional[dict] = None
+    repetition_penalty: Optional[int] = None
+    stop_sequences: Optional[list] = None
+    truncate_input_tokens: Optional[int] = None
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    min_new_tokens: Optional[int] = None
+    max_new_tokens: Optional[int] = None
+    random_seed: Optional[int] = None
 
     def __init__(
             self,
             model: Optional[str] = None,
             api_key: Optional[str] = None,
             watsonx_url: Optional[str] = None,
-            watsonx_instance_id: str = None,
-            watsonx_project_id: str = None
+            watsonx_project_id: str = None,
+            **kwargs
     ):
         """
-        __init__ method of IBMWatsonx class
+        __init__ method of IBMwatsonx class
 
         Args:
             api_key (str): watsonx API key
                  To determine apikey go to https://cloud.ibm.com/iam/apikeys
             watsonx_url (str): watsonx endpoint url
+                Depends on which region the service was provisioned.
                 You can find available urls here:
                 https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication
-            watsonx_instance_id
+            project_id (str) : watsonx project id
+                ID of the Watson Studio project
+                You can copy the project_id from Project’s Manage tab (Project -> Manage -> General -> Details).
         """
         self.model = model or "google/flan-ul2"
 
         self.api_key = (api_key or os.getenv("WATSONX_API_KEY"))
+        self.project_id = (watsonx_project_id or os.getenv("WATSONX_PROJECT_ID"))
         self.watsonx_url = watsonx_url or os.getenv("WATSONX_URL")
-        self.watsonx_instance_id = watsonx_instance_id or os.getenv("WATSONX_INSTANCE_ID")
-        self.project_id = watsonx_project_id or os.getenv("WATSONX_PROJECT_ID")
 
         if self.api_key is None:
             raise APIKeyNotFoundError(
@@ -64,25 +76,62 @@ class IBMWatsonx(LLM):
                 "`WATSONX_URL` or pass `watsonx_url` as a named parameter."
                 "Go to https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication for more."
             )
-
+        self._set_params(**kwargs)
         self._configure(api_key=self.api_key, url=self.watsonx_url, project_id=self.project_id)
 
     def _configure(self, api_key: str, url: str, project_id: str):
-
-        self.client = Model(
+        """
+        Configure IBM watsonx.
+        """
+        err_msg = "Install ibm_watsonx_ai for IBM watsonx API"
+        # watsonx = import_dependency("ibm_watsonx_ai", extra=err_msg)
+        self.watsonx = Model(
             model_id=self.model,
-            params={'max_new_tokens': 25},
+            params={
+                "decoding_method": self.decoding_method,
+                "length_penalty": self.length_penalty,
+                "repetition_penalty": self.repetition_penalty,
+                "stop_sequences": self.stop_sequences,
+                "temperature": self.temperature,
+                "top_p": self.top_p,
+                "top_k": self.top_k,
+                "min_new_tokens": self.min_new_tokens,
+                "max_new_tokens": self.max_new_tokens,
+                "truncate_input_tokens": self.truncate_input_tokens,
+                "random_seed": self.random_seed,
+            },
             credentials={"apikey": api_key, "url": url},
             project_id=project_id
         )
 
+    def _set_params(self, **kwargs):
+        """
+        Dynamically set Parameters for the object.
+
+        Args:
+            **kwargs:
+                Possible keyword arguments: "temperature", "top_p", "top_k",
+                "max_output_tokens".
+
+        Returns:
+            None.
+
+        """
+        valid_params = GenTextParamsMetaNames().get_example_values().keys()
+        for key, value in kwargs.items():
+            if key in valid_params:
+                setattr(self, key, value)
+            else:
+                raise KeyError(f'Parameter {key} is invalid. Accepted parameters: {[*valid_params]}')
+
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+
         prompt = instruction.to_string()
         memory = context.memory if context else None
 
-        result = self.client.generate_text(prompt=prompt)
+        self.last_prompt = prompt
 
-        return result
+        return self.watsonx.generate_text(prompt=prompt)
 
     @property
     def type(self) -> str:
