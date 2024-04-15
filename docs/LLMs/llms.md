@@ -263,8 +263,12 @@ found [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/crede
 
 ## IBM watsonx models
 
-In order to use [IBM watsonx.ai](https://www.ibm.com/watsonx/get-started) models, you need to have an IBM Cloud api key,
-watsonx Project ID, and service URL.
+In order to use [IBM watsonx.ai](https://www.ibm.com/watsonx/get-started) models, you need to have
+
+1. IBM Cloud api key
+2. watsonx.ai project in IBM Cloud 
+3. The service URL associated with the project's region
+
 
 The api key can be created in [IBM Cloud](https://cloud.ibm.com/iam/apikeys).
 The project ID can determined after a watsonx.ai service
@@ -276,7 +280,7 @@ found [here](https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authen
 In order to use watsonx.ai models, you need to install the `ibm-watsonx-ai` package.
 
 ```bash
-pip install ibm-watsonx-ai
+pip install pandasai[ibm-watsonx]
 ```
 
 Then you can use the watsonx.ai models as follows

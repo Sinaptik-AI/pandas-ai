@@ -6,7 +6,7 @@ This module is to run the IBM watsonx API.
 Example:
     Use below example to call IBM watsonx
 
-    >>> from pandasai.llm.ibm_watsonx import IBMWatsonx
+    >>> from pandasai.llm.ibm_watsonx import IBMwatsonx
 """
 import os
 from typing import Optional
@@ -15,10 +15,11 @@ from ibm_watsonx_ai.foundation_models import Model
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
 
 from pandasai.pipelines.pipeline_context import PipelineContext
-from .base import LLM
+
 from ..exceptions import APIKeyNotFoundError
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
+from .base import LLM
 
 load_dotenv()
 
@@ -37,12 +38,12 @@ class IBMwatsonx(LLM):
     random_seed: Optional[int] = None
 
     def __init__(
-            self,
-            model: Optional[str] = None,
-            api_key: Optional[str] = None,
-            watsonx_url: Optional[str] = None,
-            watsonx_project_id: str = None,
-            **kwargs
+        self,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        watsonx_url: Optional[str] = None,
+        watsonx_project_id: str = None,
+        **kwargs,
     ):
         """
         __init__ method of IBMwatsonx class
@@ -58,10 +59,10 @@ class IBMwatsonx(LLM):
                 ID of the Watson Studio project
                 You can copy the project_id from Project’s Manage tab (Project -> Manage -> General -> Details).
         """
-        self.model = model or "google/flan-ul2"
+        self.model = model or "ibm/granite-13b-chat-v2"
 
-        self.api_key = (api_key or os.getenv("WATSONX_API_KEY"))
-        self.project_id = (watsonx_project_id or os.getenv("WATSONX_PROJECT_ID"))
+        self.api_key = api_key or os.getenv("WATSONX_API_KEY")
+        self.project_id = watsonx_project_id or os.getenv("WATSONX_PROJECT_ID")
         self.watsonx_url = watsonx_url or os.getenv("WATSONX_URL")
 
         if self.api_key is None:
@@ -71,20 +72,27 @@ class IBMwatsonx(LLM):
                 "You can create one at https://cloud.ibm.com/iam/apikeys."
             )
         if self.watsonx_url is None:
-            raise APIKeyNotFoundError(
+            raise ValueError(
                 "IBM watsonx url is required. Please add an environment variable "
                 "`WATSONX_URL` or pass `watsonx_url` as a named parameter."
+                "The project IDcan be found in the created IBM Cloud resource from the "
+                "Manage tab (Project -> Manage -> General -> Details)."
+            )
+        if self.project_id is None:
+            raise ValueError(
+                "Project ID is required. Please add an environment variable "
+                "`WATSONX_PROJECT_IDL` or pass `project_id` as a named parameter."
                 "Go to https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication for more."
             )
         self._set_params(**kwargs)
-        self._configure(api_key=self.api_key, url=self.watsonx_url, project_id=self.project_id)
+        self._configure(
+            api_key=self.api_key, url=self.watsonx_url, project_id=self.project_id
+        )
 
     def _configure(self, api_key: str, url: str, project_id: str):
         """
         Configure IBM watsonx.
         """
-        err_msg = "Install ibm_watsonx_ai for IBM watsonx API"
-        # watsonx = import_dependency("ibm_watsonx_ai", extra=err_msg)
         self.watsonx = Model(
             model_id=self.model,
             params={
@@ -101,7 +109,7 @@ class IBMwatsonx(LLM):
                 "random_seed": self.random_seed,
             },
             credentials={"apikey": api_key, "url": url},
-            project_id=project_id
+            project_id=project_id,
         )
 
     def _set_params(self, **kwargs):
@@ -122,12 +130,13 @@ class IBMwatsonx(LLM):
             if key in valid_params:
                 setattr(self, key, value)
             else:
-                raise KeyError(f'Parameter {key} is invalid. Accepted parameters: {[*valid_params]}')
+                raise KeyError(
+                    f"Parameter {key} is invalid. Accepted parameters: {[*valid_params]}"
+                )
 
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
-
         prompt = instruction.to_string()
-        memory = context.memory if context else None
+        # memory = context.memory if context else None
 
         self.last_prompt = prompt
 
