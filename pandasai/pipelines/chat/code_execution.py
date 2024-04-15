@@ -156,7 +156,8 @@ class CodeExecution(BaseLogicUnit):
         dfs = self._required_dfs(code)
         environment: dict = get_environment(self._additional_dependencies)
         environment["dfs"] = self._get_originals(dfs)
-        environment["df"] = environment["dfs"][0]
+        if len(environment["dfs"]) == 1:
+            environment["df"] = environment["dfs"][0]
 
         if self._config.direct_sql:
             environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
