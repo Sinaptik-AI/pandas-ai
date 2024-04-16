@@ -66,7 +66,11 @@ class GenerateChatPipeline:
                     on_execution=on_code_generation,
                 ),
                 CachePopulation(skip_if=self.is_cached),
-                CodeCleaning(),
+                CodeCleaning(
+                    skip_if=self.no_code,
+                    on_failure=self.on_code_cleaning_failure,
+                    on_retry=self.on_code_retry,
+                ),
             ],
         )
 
@@ -123,9 +127,28 @@ class GenerateChatPipeline:
             }
         )
 
+    def on_code_cleaning_failure(self, code, errors):
+        # Add information about the code failure in the query tracker for debug
+        self.query_exec_tracker.add_step(
+            {
+                "type": "CodeCleaning",
+                "success": False,
+                "message": "Failed to clean code",
+                "execution_time": None,
+                "data": {
+                    "content_type": "code",
+                    "value": code,
+                    "exception": errors,
+                },
+            }
+        )
+
     def on_code_retry(self, code: str, exception: Exception):
         correction_input = ErrorCorrectionPipelineInput(code, exception)
         return self.code_exec_error_pipeline.run(correction_input)
+
+    def no_code(self, context: PipelineContext):
+        return context.get("last_code_generated") is None
 
     def is_cached(self, context: PipelineContext):
         return context.get("found_in_cache")

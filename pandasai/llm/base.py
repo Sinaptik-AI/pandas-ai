@@ -13,6 +13,7 @@ Example:
         Custom Class Starts here!!
     ```
 """
+
 from __future__ import annotations
 
 import ast
@@ -115,11 +116,14 @@ class LLM:
 
         """
         code = response
+
+        if separator not in response:
+            raise NoCodeFoundError("No code found in the response")
+
         if len(code.split(separator)) > 1:
             code = code.split(separator)[1]
+
         code = self._polish_code(code)
-        if not self._is_python_code(code):
-            raise NoCodeFoundError("No code found in the response")
 
         return code
 
