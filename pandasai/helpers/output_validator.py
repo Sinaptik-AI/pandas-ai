@@ -84,6 +84,9 @@ class OutputValidator:
         elif result["type"] == "dataframe":
             return isinstance(result["value"], (pd.DataFrame, pd.Series))
         elif result["type"] == "plot":
+            if "plotly" in repr(type(result["value"])):
+                return True
+
             if not isinstance(result["value"], (str, dict)):
                 return False
 
