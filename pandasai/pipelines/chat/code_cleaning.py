@@ -2,6 +2,7 @@ import ast
 import copy
 import re
 import uuid
+import traceback
 from typing import Any, List, Union
 
 import astor
@@ -71,12 +72,13 @@ class CodeCleaning(BaseLogicUnit):
     _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
-
     _current_code_executed: str = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, on_failure=None, on_retry=None, **kwargs):
         super().__init__(**kwargs)
         self._function_call_visitor = FunctionCallVisitor()
+        self.on_failure = on_failure
+        self.on_retry = on_retry
 
     def execute(self, input: Any, **kwargs) -> LogicUnitOutput:
         context: PipelineContext = kwargs.get("context")
@@ -87,8 +89,15 @@ class CodeCleaning(BaseLogicUnit):
         code_context = CodeExecutionContext(
             context.get("last_prompt_id"), context.skills_manager
         )
-
-        code_to_run = self.get_code_to_run(input, code_context)
+        try:
+            code_to_run = self.get_code_to_run(input, code_context)
+        except Exception as e:
+            traceback_errors = traceback.format_exc()
+            if self.on_failure:
+                self.on_failure(code_to_run, traceback_errors)
+            if self.on_retry:
+                return self.on_retry(code_to_run, e)
+            raise
 
         context.add("additional_dependencies", self._additional_dependencies)
         context.add("current_code_executed", self._current_code_executed)

@@ -102,7 +102,7 @@ class TestCodeGenerator:
         context._cache = Mock()
         context._cache.get = Mock(return_value=None)
 
-        mock_call.return_value = "test_output"
+        mock_call.return_value = "```python test_output```"
 
         result = code_generator.execute(
             input="test_input", context=context, logger=logger
