@@ -37,6 +37,7 @@ You can replace `extra-dependency-name` with any of the following:
 - `statsmodels`: this extra dependency is required if you want to support statsmodels.
 - `scikit-learn`: this extra dependency is required if you want to support scikit-learn.
 - `streamlit`: this extra dependency is required if you want to support streamlit.
+- `ibm-watsonx-ai`: this extra dependency is required if you want to use IBM watsonx.ai as a language model
 
 ## SmartDataframe
 

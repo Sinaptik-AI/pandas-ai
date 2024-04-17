@@ -1,6 +1,6 @@
 """IBM watsonx
 
-This module is to run the IBM watsonx API.
+This module is for the IBM watsonx.ai large language models.
 
 
 Example:
@@ -52,7 +52,7 @@ class IBMwatsonx(LLM):
             api_key (str): watsonx API key
                  To determine apikey go to https://cloud.ibm.com/iam/apikeys
             watsonx_url (str): watsonx endpoint url
-                Depends on which region the service was provisioned.
+                Depends on which region the Watson Studio service was provisioned.
                 You can find available urls here:
                 https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication
             project_id (str) : watsonx project id
@@ -72,17 +72,15 @@ class IBMwatsonx(LLM):
                 "You can create one at https://cloud.ibm.com/iam/apikeys."
             )
         if self.watsonx_url is None:
-            raise ValueError(
-                "IBM watsonx url is required. Please add an environment variable "
+            raise APIKeyNotFoundError(
+                "IBM watsonx region url is required. Please add an environment variable "
                 "`WATSONX_URL` or pass `watsonx_url` as a named parameter."
-                "The project IDcan be found in the created IBM Cloud resource from the "
-                "Manage tab (Project -> Manage -> General -> Details)."
             )
         if self.project_id is None:
-            raise ValueError(
+            raise APIKeyNotFoundError(
                 "Project ID is required. Please add an environment variable "
-                "`WATSONX_PROJECT_IDL` or pass `project_id` as a named parameter."
-                "Go to https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication for more."
+                "`WATSONX_PROJECT_ID` or pass `project_id` as a named parameter."
+                "The project ID can be found in the created Watson Studio resource in IBM Cloud."
             )
         self._set_params(**kwargs)
         self._configure(
@@ -136,7 +134,6 @@ class IBMwatsonx(LLM):
 
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         prompt = instruction.to_string()
-        # memory = context.memory if context else None
 
         self.last_prompt = prompt
 
@@ -144,4 +141,4 @@ class IBMwatsonx(LLM):
 
     @property
     def type(self) -> str:
-        return "ibm-watsonx"
+        return "ibm-watsonx-ai"

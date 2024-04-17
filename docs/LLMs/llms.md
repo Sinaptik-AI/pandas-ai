@@ -261,26 +261,33 @@ df = SmartDataframe("data.csv", config={"llm": llm})
 More ways to create the bedrock_runtime_client can be
 found [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
 
-## IBM watsonx models
+### More information
+
+For more information about LangChain models, please refer to
+the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).
+
+## IBM watsonx.ai models
 
 In order to use [IBM watsonx.ai](https://www.ibm.com/watsonx/get-started) models, you need to have
 
 1. IBM Cloud api key
-2. watsonx.ai project in IBM Cloud 
+2. Watson Studio project in IBM Cloud
 3. The service URL associated with the project's region
 
-
 The api key can be created in [IBM Cloud](https://cloud.ibm.com/iam/apikeys).
-The project ID can determined after a watsonx.ai service
+The project ID can determined after a Watson Studio service
 is [provisioned in IBM Cloud](https://cloud.ibm.com/docs/account?topic=account-manage_resource&interface=ui). The ID can
 then be found in the
-project’s Manage tab (`Project -> Manage -> General -> Details`). The service url depends on the region of the provisioned service instance and can be
+project’s Manage tab (`Project -> Manage -> General -> Details`). The service url depends on the region of the
+provisioned service instance and can be
 found [here](https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authentication).
 
 In order to use watsonx.ai models, you need to install the `ibm-watsonx-ai` package.
 
+_At this time, watsonx.ai does __not__ support the PandasAI agent_.
+
 ```bash
-pip install pandasai[ibm-watsonx]
+pip install pandasai[ibm-watsonx-ai]
 ```
 
 Then you can use the watsonx.ai models as follows
@@ -298,11 +305,10 @@ llm = IBMwatsonx(
 
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
-
 ### More information
 
-For more information about LangChain models, please refer to
-the [LangChain documentation](https://python.langchain.com/en/latest/reference/modules/llms.html).
+For more information on the [watsonx.ai SDK](https://ibm.github.io/watsonx-ai-python-sdk/index.html) you can read 
+more [here](https://ibm.github.io/watsonx-ai-python-sdk/fm_model.html).
 
 ## Local models
 
