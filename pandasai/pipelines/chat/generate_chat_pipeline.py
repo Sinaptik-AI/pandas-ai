@@ -95,6 +95,7 @@ class GenerateChatPipeline:
             context=context,
             logger=logger,
             query_exec_tracker=self.query_exec_tracker,
+            on_code_generation=on_code_generation,
             on_prompt_generation=on_prompt_generation,
         )
 

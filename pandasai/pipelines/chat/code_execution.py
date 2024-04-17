@@ -82,8 +82,7 @@ class CodeExecution(BaseLogicUnit):
         result = None
         while retry_count <= self.context.config.max_retries:
             try:
-                result = self.execute_code(input, code_context)
-
+                result = self.execute_code(code_to_run, code_context)
                 if self.context.get("output_type") != "" and (
                     output_helper := self.context.get("output_type")
                 ):
