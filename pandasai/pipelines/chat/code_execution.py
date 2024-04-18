@@ -261,8 +261,7 @@ class CodeExecution(BaseLogicUnit):
 
         try:
             filters = self._extract_comparisons(parsed_tree)
-        except Exception as e:
-            raise e
+        except Exception:
             self.logger.log(
                 "Unable to extract filters for passed code", level=logging.ERROR
             )
