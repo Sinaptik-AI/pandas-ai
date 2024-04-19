@@ -29,7 +29,10 @@ class BedrockClaude(LLM):
         stop_sequences: (Optional) Custom text sequences that cause the model to stop generating. Anthropic Claude models normally stop when they have naturally completed their turn, in this case the value of the stop_reason response field is end_turn. If you want the model to stop generating when it encounters custom strings of text, you can use the stop_sequences parameter. If the model encounters one of the custom text strings, the value of the stop_reason response field is stop_sequence and the value of stop_sequence contains the matched stop sequence.
     """
 
-    _supported__models = ["anthropic.claude-3-sonnet-20240229-v1:0"]
+    _supported__models = [
+        "anthropic.claude-3-sonnet-20240229-v1:0",
+        "anthropic.claude-3-haiku-20240307-v1:0",
+    ]
     _valid_params = [
         "max_tokens",
         "model",
@@ -85,12 +88,19 @@ class BedrockClaude(LLM):
 
             for message in memory.all():
                 if message["is_user"]:
-                    messages.append(
-                        {
-                            "role": "user",
-                            "content": [{"type": "text", "text": message["message"]}],
-                        }
-                    )
+                    if messages and messages[-1]["role"] == "user":
+                        messages[-1]["content"].append(
+                            {"type": "text", "text": message["message"]}
+                        )
+                    else:
+                        messages.append(
+                            {
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": message["message"]}
+                                ],
+                            }
+                        )
                 else:
                     messages.append(
                         {
