@@ -32,6 +32,10 @@ For example, you might want the LLM to be aware that your company's fiscal year 
 
 To train PandasAI with instructions, you can use the `train` method on the `Agent`, `SmartDataframe` or `SmartDatalake`, as it follows:
 
+The training uses by default the `BambooVectorStore` to store the training data, and it's accessible with the API key.
+
+As an alternative, if you want to use a local vector store (enterprise only for production use cases), you can use the `ChromaDB` or `Qdrant` vector stores (see examples below).
+
 ```python
 from pandasai import Agent
 
@@ -78,6 +82,42 @@ print(response)
 ```
 
 Also in this case, your training data is persisted, so you only need to train the model once.
+
+## Training with local Vector stores
+
+If you want to train the model with a local vector store, you can use the local `ChromaDB` or `Qdrant` vector stores. Here's how to do it:
+
+```python
+from pandasai import Agent
+# An enterprise license might be required for using the vector stores locally
+from pandasai.ee.vectorstores import ChromaDB
+from pandasai.ee.vectorstores import Qdrant
+
+# Instantiate the vector store
+vector_store = ChromaDB()
+# or with Qdrant
+# vector_store = Qdrant()
+
+# Instantiate the agent with the custom vector store
+agent = Agent("data.csv", vectorstore=vector_store)
+
+# Train the model
+query = "What is the total sales for the current fiscal year?"
+response = """
+import pandas as pd
+
+df = dfs[0]
+
+# Calculate the total sales for the current fiscal year
+total_sales = df[df['date'] >= pd.to_datetime('today').replace(month=4, day=1)]['sales'].sum()
+result = { "type": "number", "value": total_sales }
+"""
+agent.train(queries=[query], codes=[response])
+
+response = agent.chat("What is the total sales for the last fiscal year?")
+print(response)
+# The model will use the information provided in the training to generate a response
+```
 
 ## Troubleshooting
 
