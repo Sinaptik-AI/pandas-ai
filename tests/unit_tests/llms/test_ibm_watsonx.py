@@ -6,7 +6,7 @@ from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.llm import IBMwatsonx
 
 
-class TestIBMWatsonx:
+class TestIBMwatsonx:
     """Unit tests for the IBMwatsonx class."""
 
     def test_without_key(self):

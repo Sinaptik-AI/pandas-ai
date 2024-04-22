@@ -2,24 +2,23 @@
 
 This module is for the IBM watsonx.ai large language models.
 
-
-Example:
-    Use below example to call IBM watsonx
-
-    >>> from pandasai.llm.ibm_watsonx import IBMwatsonx
 """
+from __future__ import annotations
+
 import os
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from ibm_watsonx_ai.foundation_models import Model
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
-
-from pandasai.pipelines.pipeline_context import PipelineContext
 
 from ..exceptions import APIKeyNotFoundError
 from ..helpers import load_dotenv
 from ..prompts.base import BasePrompt
 from .base import LLM
+
+if TYPE_CHECKING:
+    from pandasai.pipelines.pipeline_context import PipelineContext
+
 
 load_dotenv()
 
@@ -134,6 +133,10 @@ class IBMwatsonx(LLM):
 
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         prompt = instruction.to_string()
+
+        memory = context.memory if context else None
+
+        prompt = self.prepend_system_prompt(prompt, memory)
 
         self.last_prompt = prompt
 
