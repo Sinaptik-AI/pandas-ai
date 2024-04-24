@@ -8,11 +8,9 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
-from ibm_watsonx_ai.foundation_models import Model
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
-
 from ..exceptions import APIKeyNotFoundError
 from ..helpers import load_dotenv
+from ..helpers.optional import import_dependency
 from ..prompts.base import BasePrompt
 from .base import LLM
 
@@ -90,6 +88,8 @@ class IBMwatsonx(LLM):
         """
         Configure IBM watsonx.
         """
+        from ibm_watsonx_ai.foundation_models import Model
+
         self.watsonx = Model(
             model_id=self.model,
             params={
@@ -122,6 +122,11 @@ class IBMwatsonx(LLM):
             None.
 
         """
+        err_msg = "Install ibm-watsonx-ai for Google Vertexai"
+        import_dependency("ibm-watson-ai", extra=err_msg)
+
+        from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
+
         valid_params = GenTextParamsMetaNames().get_example_values().keys()
         for key, value in kwargs.items():
             if key in valid_params:

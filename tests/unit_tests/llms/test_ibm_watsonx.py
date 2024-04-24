@@ -1,11 +1,13 @@
 """ Unit tests for the IBMwatsonx class. """
+import sys
+
 import pytest
-from ibm_watsonx_ai.wml_client_error import WMLClientError
 
 from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.llm import IBMwatsonx
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.10 or higher")
 class TestIBMwatsonx:
     """Unit tests for the IBMwatsonx class."""
 
@@ -22,6 +24,8 @@ class TestIBMwatsonx:
             IBMwatsonx(api_key="test", url="http://test.com")
 
     def test_watsonx_invalid_model(self):
+        from ibm_watsonx_ai.wml_client_error import WMLClientError
+
         with pytest.raises(WMLClientError):
             IBMwatsonx(
                 api_key="test",
