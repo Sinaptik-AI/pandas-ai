@@ -6,7 +6,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import pandasai.pandas as pd
 from pandasai.helpers.dataframe_serializer import (
@@ -29,6 +29,7 @@ class BaseConnectorConfig(BaseModel):
     database: str
     table: str
     where: list[list[str]] = None
+    connect_args: Optional[dict] = {}
 
 
 class BaseConnector(ABC):
