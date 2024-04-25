@@ -122,8 +122,8 @@ class IBMwatsonx(LLM):
             None.
 
         """
-        err_msg = "Install ibm-watsonx-ai for Google Vertexai"
-        import_dependency("ibm-watson-ai", extra=err_msg)
+        err_msg = "Install ibm-watsonx-ai for IBMwatsonx"
+        import_dependency("ibm_watsonx_ai", extra=err_msg)
 
         from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
 
