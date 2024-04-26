@@ -237,3 +237,42 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         connector_2 = MySQLConnector(config)
 
         assert connector_2.type == "mysql"
+
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def test_connector_constructor_with_ssl_settings(self, create_engine_mock):
+        config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            connect_args={"sslmode": "require", "sslrootcert": None},
+            where=[["column_name", "=", "value"]],
+        ).dict()
+        SQLConnector(config)
+        create_engine_mock.assert_called_with(
+            "mysql+pymysql://your_username:your_password@your_host:443/your_database",
+            connect_args={"sslmode": "require", "sslrootcert": None},
+        )
+
+    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    def test_connector_constructor_with_no_ssl_settings(self, create_engine_mock):
+        config = SQLConnectorConfig(
+            dialect="mysql",
+            driver="pymysql",
+            username="your_username",
+            password="your_password",
+            host="your_host",
+            port=443,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+        SQLConnector(config)
+        create_engine_mock.assert_called_with(
+            "mysql+pymysql://your_username:your_password@your_host:443/your_database",
+            connect_args={},
+        )

@@ -89,6 +89,7 @@ class CodeCleaning(BaseLogicUnit):
         code_context = CodeExecutionContext(
             context.get("last_prompt_id"), context.skills_manager
         )
+        code_to_run = input
         try:
             code_to_run = self.get_code_to_run(input, code_context)
         except Exception as e:

@@ -109,12 +109,14 @@ class SQLConnector(BaseConnector):
         if config.driver:
             self._engine = create_engine(
                 f"{config.dialect}+{config.driver}://{config.username}:{config.password}"
-                f"@{config.host}:{str(config.port)}/{config.database}"
+                f"@{config.host}:{str(config.port)}/{config.database}",
+                connect_args=config.connect_args,
             )
         else:
             self._engine = create_engine(
                 f"{config.dialect}://{config.username}:{config.password}@{config.host}"
-                f":{str(config.port)}/{config.database}"
+                f":{str(config.port)}/{config.database}",
+                connect_args=config.connect_args,
             )
 
         self._connection = self._engine.connect()
