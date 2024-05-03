@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from pandas.util.version import Version
 
 import pandasai.pandas as pd
+import numpy as np
 from pandasai.constants import WHITELISTED_BUILTINS
 
 if TYPE_CHECKING:
@@ -56,6 +57,7 @@ def get_environment(additional_deps: List[dict]) -> dict:
     return {
         "pd": pd,
         "plt": plt,
+        "np": np,
         **{
             lib["alias"]: (
                 getattr(import_dependency(lib["module"]), lib["name"])
