@@ -11,10 +11,10 @@ import warnings
 from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
+import numpy as np
 from pandas.util.version import Version
 
 import pandasai.pandas as pd
-import numpy as np
 from pandasai.constants import WHITELISTED_BUILTINS
 
 if TYPE_CHECKING:
