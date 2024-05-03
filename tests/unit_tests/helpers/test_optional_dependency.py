@@ -90,3 +90,4 @@ def test_env_for_necessary_deps():
     env = get_environment([])
     assert "pd" in env
     assert "plt" in env
+    assert "np" in env
