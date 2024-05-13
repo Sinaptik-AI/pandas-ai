@@ -9,6 +9,8 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-turbo-preview": 0.01,
     "gpt-4-0125-preview": 0.01,
     "gpt-4-1106-preview": 0.01,
+    "gpt-4o": 0.005,
+    "gpt-4o-2024-05-13": 0.005,
     "gpt-4-32k": 0.06,
     "gpt-4-32k-0613": 0.06,
     # GPT-4 output

@@ -47,6 +47,8 @@ class OpenAI(BaseOpenAI):
         "gpt-4-32k",
         "gpt-4-32k-0613",
         "gpt-4-turbo-preview",
+        "gpt-4o",
+        "gpt-4o-2024-05-13",
     ]
     _supported_completion_models = ["gpt-3.5-turbo-instruct"]
 
