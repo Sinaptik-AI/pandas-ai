@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
 
-from pandasai.agent.base import Agent
+from pandasai.agent import Agent
 from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.optional import get_environment
