@@ -84,7 +84,8 @@ def standardize_model_name(
     if "ft:" in model_name:
         model_name = model_name.split(":")[1] + "-finetuned"
     if is_completion and (
-        model_name.startswith("gpt-4")
+        #model_name.startswith("gpt-4") #Original
+        ((model_name.startswith("gpt-4")) and (not model_name.startswith("gpt-4o")))  #My amendment to remove '-completion' from GPT-4o
         or model_name.startswith("gpt-3.5")
         or model_name.startswith("gpt-35")
         or "finetuned" in model_name
