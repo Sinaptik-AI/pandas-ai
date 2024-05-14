@@ -1,16 +1,15 @@
 import json
 from pathlib import Path
-from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 
-from ...prompts.base import BasePrompt
+from pandasai.prompts.base import BasePrompt
 
 
-class GenerateVisualizationSchemaPrompt(BasePrompt):
+class GenerateDFSchemaPrompt(BasePrompt):
     """Prompt to generate Python code with SQL from a dataframe."""
 
-    template_path = "generate_visualization_schema.tmpl"
+    template_path = "generate_df_schema.tmpl"
 
     def __init__(self, **kwargs):
         """Initialize the prompt."""
@@ -29,10 +28,14 @@ class GenerateVisualizationSchemaPrompt(BasePrompt):
 
         self._resolved_prompt = None
 
-    def validate(self, output) -> bool:
+    def validate(self, output: str) -> bool:
         try:
-            output = output.replace("# SAMPLE SCHEMA", "")
-            json_data = json.loads(output)
-            return isinstance(json_data, List)
+            json_data = json.loads(output.replace("# SAMPLE SCHEMA", ""))
+            if isinstance(json_data, list):
+                for record in json_data:
+                    if not all(key in record for key in ("name", "table")):
+                        return False
+                return True
         except json.JSONDecodeError:
-            return False
+            pass
+        return False

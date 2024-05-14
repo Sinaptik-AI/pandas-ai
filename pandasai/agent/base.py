@@ -5,6 +5,10 @@ from typing import List, Optional, Union
 
 import pandasai.pandas as pd
 from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
+from pandasai.pipelines.chat.code_execution_pipeline_input import (
+    CodeExecutionPipelineInput,
+)
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import load_config_from_json
@@ -61,19 +65,21 @@ class BaseAgent:
 
         self.conversation_id = uuid.uuid4()
 
-        dfs = self.get_dfs(dfs)
+        self.dfs = self.get_dfs(dfs)
 
         # Instantiate the context
-        config = self.get_config(config)
+        self.config = self.get_config(config)
         self.context = PipelineContext(
-            dfs=dfs,
-            config=config,
+            dfs=self.dfs,
+            config=self.config,
             memory=Memory(memory_size, agent_info=description),
             vectorstore=vectorstore,
         )
 
         # Instantiate the logger
-        self.logger = Logger(save_logs=config.save_logs, verbose=config.verbose)
+        self.logger = Logger(
+            save_logs=self.config.save_logs, verbose=self.config.verbose
+        )
 
         # Instantiate the vectorstore
         self._vectorstore = vectorstore
@@ -93,15 +99,18 @@ class BaseAgent:
 
         self.configure()
 
-    def configure(self):
-        config = self.context.config
+        self.pipeline = None
 
+    def configure(self):
         # Add project root path if save_charts_path is default
-        if config.save_charts and config.save_charts_path == DEFAULT_CHART_DIRECTORY:
-            Folder.create(config.save_charts_path)
+        if (
+            self.config.save_charts
+            and self.config.save_charts_path == DEFAULT_CHART_DIRECTORY
+        ):
+            Folder.create(self.config.save_charts_path)
 
         # Add project root path if cache_path is default
-        if config.enable_cache:
+        if self.config.enable_cache:
             Folder.create(DEFAULT_CACHE_DIRECTORY)
 
     def get_config(self, config: Union[Config, dict]):
@@ -219,6 +228,98 @@ class BaseAgent:
                 ):
                     raise
                 retry_count += 1
+
+    def chat(self, query: str, output_type: Optional[str] = None):
+        """
+        Simulate a chat interaction with the assistant on Dataframe.
+        """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists"
+            )
+
+        try:
+            self.logger.log(f"Question: {query}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
+            )
+
+            self.assign_prompt_id()
+
+            pipeline_input = ChatPipelineInput(
+                query, output_type, self.conversation_id, self.last_prompt_id
+            )
+
+            return self.pipeline.run(pipeline_input)
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+    def generate_code(self, query: str, output_type: Optional[str] = None):
+        """
+        Simulate code generation with the assistant on Dataframe.
+        """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists"
+            )
+        try:
+            self.logger.log(f"Question: {query}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
+            )
+
+            self.assign_prompt_id()
+
+            pipeline_input = ChatPipelineInput(
+                query, output_type, self.conversation_id, self.last_prompt_id
+            )
+
+            return self.pipeline.run_generate_code(pipeline_input)
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
+
+    def execute_code(
+        self, code: Optional[str] = None, output_type: Optional[str] = None
+    ):
+        """
+        Execute code Generated with the assistant on Dataframe.
+        """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists to execute try Agent class"
+            )
+        try:
+            if code is None:
+                code = self.last_code_generated
+            self.logger.log(f"Code: {code}")
+            self.logger.log(
+                f"Running PandasAI with {self.context.config.llm.type} LLM..."
+            )
+
+            self.assign_prompt_id()
+
+            pipeline_input = CodeExecutionPipelineInput(
+                code, output_type, self.conversation_id, self.last_prompt_id
+            )
+
+            return self.pipeline.run_execute_code(pipeline_input)
+        except Exception as exception:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error:\n"
+                f"\n{exception}\n"
+            )
 
     def train(
         self,
