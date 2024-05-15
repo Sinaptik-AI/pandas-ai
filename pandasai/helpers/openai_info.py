@@ -19,6 +19,8 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-turbo-preview-completion": 0.03,
     "gpt-4-0125-preview-completion": 0.03,
     "gpt-4-1106-preview-completion": 0.03,
+    "gpt-4o-completion": 0.015,
+    "gpt-4o-2024-05-13-completion": 0.015,
     "gpt-4-32k-completion": 0.12,
     "gpt-4-32k-0613-completion": 0.12,
     # GPT-3.5 input
