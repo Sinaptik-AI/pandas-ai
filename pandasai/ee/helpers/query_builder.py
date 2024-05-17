@@ -246,7 +246,10 @@ class QueryBuilder:
         required_keys = ["member", "operator", "values"]
 
         # Check if any required key is missing or if "values" is empty
-        if any(key not in filter for key in required_keys) or not filter.get("values"):
+        if any(key not in filter for key in required_keys) or (
+            not filter.get("values")
+            and filter.get("operator", None) not in ["set", "notSet"]
+        ):
             raise ValueError(f"Invalid filter: {filter}")
 
         table_name = filter["member"].split(".")[0]
@@ -280,43 +283,61 @@ class QueryBuilder:
 
         multi_value_operators = {"equals": "IN", "notEquals": "NOT IN"}
 
+        return self._build_query_condition(
+            operator,
+            table_column,
+            values,
+            single_value_operators,
+            multi_value_operators,
+        )
+
+    def _build_query_condition(
+        self,
+        operator,
+        table_column,
+        values,
+        single_value_operators,
+        multi_value_operators,
+    ):
         if operator in single_value_operators:
-            if operator == "equals":
+            if operator in ["equals", "notEquals"]:
                 if len(values) == 1:
-                    return f"{table_column} = '{values[0]}'"
+                    operator_str = "=" if operator == "equals" else "!="
+                    return f"{table_column} {operator_str} '{values[0]}'"
                 else:
-                    return f"{table_column} IN ('{values[0]}')"
-            elif operator == "notEquals":
-                if len(values) == 1:
-                    return f"{table_column} != '{values[0]}'"
-                else:
-                    return f"{table_column} NOT IN ('{values[0]}')"
-            elif operator in ["contains", "notContains"]:
-                return (
-                    f"{table_column} {single_value_operators[operator]} '%{values[0]}%'"
-                )
-            elif operator == "startsWith":
-                return (
-                    f"{table_column} {single_value_operators[operator]} '{values[0]}%'"
-                )
-            elif operator == "endsWith":
-                return (
-                    f"{table_column} {single_value_operators[operator]} '%{values[0]}'"
-                )
+                    operator_str = "IN" if operator == "equals" else "NOT IN"
+                    formatted_values = "', '".join(values)
+                    return f"{table_column} {operator_str} ('{formatted_values}')"
+
+            elif operator in ["contains", "notContains", "startsWith", "endsWith"]:
+                pattern = {
+                    "contains": f"%{values[0]}%",
+                    "notContains": f"%{values[0]}%",
+                    "startsWith": f"{values[0]}%",
+                    "endsWith": f"%{values[0]}",
+                }[operator]
+                return f"{table_column} {single_value_operators[operator]} '{pattern}'"
+
             else:
-                return f"""{table_column} {single_value_operators[operator]} {f"'{values[0]}'" if isinstance(values[0], str) else values[0] }"""
+                value = f"'{values[0]}'" if isinstance(values[0], str) else values[0]
+                return f"{table_column} {single_value_operators[operator]} {value}"
+
         elif operator in multi_value_operators:
             formatted_values = "', '".join(values)
             return f"{table_column} {multi_value_operators[operator]} ('{formatted_values}')"
+
         elif operator == "set":
             return f"{table_column} IS NOT NULL"
+
         elif operator == "notSet":
             return f"{table_column} IS NULL"
-        elif operator == "inDateRange" or operator == "notInDateRange":
+
+        elif operator in ["inDateRange", "notInDateRange"]:
             if len(values) != 2:
                 raise ValueError(f"Invalid number of values for '{operator}' operator.")
             range_operator = "BETWEEN" if operator == "inDateRange" else "NOT BETWEEN"
             return f"{table_column} {range_operator} '{values[0]}' AND '{values[1]}'"
+
         else:
             raise ValueError(f"Unsupported operator: {operator}")
 
