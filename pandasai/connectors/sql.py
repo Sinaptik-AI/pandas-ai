@@ -201,7 +201,11 @@ class SQLConnector(BaseConnector):
             )
 
         # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=n, order="RAND()")
+        order_by = {"oracle": "dbms_random.value", "default": "RAND()"}.get(
+            self.config.dialect.lower() if self.config.dialect else "default", "RAND()"
+        )
+
+        query = self._build_query(limit=n, order=order_by)
 
         # Return the head of the data source
         return pd.read_sql(query, self._connection)
