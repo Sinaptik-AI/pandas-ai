@@ -39,3 +39,14 @@ class GenerateDFSchemaPrompt(BasePrompt):
         except json.JSONDecodeError:
             pass
         return False
+
+    def to_json(self):
+        context = self.props["context"]
+        memory = context.memory
+        conversations = memory.to_json()
+        system_prompt = memory.get_system_prompt()
+        return {
+            "conversation": conversations,
+            "system_prompt": system_prompt,
+            "prompt": self.to_string(),
+        }

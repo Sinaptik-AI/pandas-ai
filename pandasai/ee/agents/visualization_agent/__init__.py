@@ -81,6 +81,7 @@ class VisualizationAgent(BaseAgent):
         value = self._schema_cache.get(key)
         if value is not None:
             self._schema = value
+            self.logger.log(f"using schema: {self._schema}")
             return
 
         prompt = GenerateDFSchemaPrompt(context=self.context)
@@ -93,6 +94,7 @@ class VisualizationAgent(BaseAgent):
         self._schema = result.replace("# SAMPLE SCHEMA", "")
         # save schema in the cache
         self._schema_cache.set(key, self._schema)
+        self.logger.log(f"using schema: {self._schema}")
 
     def _validate_config(self):
         if not isinstance(self.config.llm, BambooLLM):

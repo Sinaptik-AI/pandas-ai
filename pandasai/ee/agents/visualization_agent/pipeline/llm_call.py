@@ -44,7 +44,7 @@ class LLMCall(BaseLogicUnit):
             )
             try:
                 # Validate is valid Json
-                json.loads(response)
+                response = json.loads(response)
 
                 return LogicUnitOutput(
                     response,
