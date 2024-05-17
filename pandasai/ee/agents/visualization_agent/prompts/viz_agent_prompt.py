@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader
+
 from pandasai.prompts.base import BasePrompt
 
 
