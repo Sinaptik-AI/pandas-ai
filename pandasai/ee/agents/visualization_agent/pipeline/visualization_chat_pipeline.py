@@ -8,17 +8,16 @@ from pandasai.ee.agents.visualization_agent.pipeline.llm_call import LLMCall
 from pandasai.ee.agents.visualization_agent.pipeline.viz_prompt_generation import (
     VizPromptGeneration,
 )
-from pandasai.pipelines.chat.code_cleaning import CodeCleaning
-from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 
 # from .validate_pipeline_input import ValidatePipelineInput
-
 from pandasai.helpers.logger import Logger
+from pandasai.pipelines.chat.cache_lookup import CacheLookup
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning
+from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.pipelines.pipeline import Pipeline
 
 # from pandasai.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.chat.cache_lookup import CacheLookup
 
 # from pandasai.pipelines.chat.cache_population import CachePopulation
 # from pandasai.pipelines.chat.code_cleaning import CodeCleaning

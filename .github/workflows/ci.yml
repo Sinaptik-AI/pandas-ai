@@ -19,15 +19,18 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install poetry
-        run: pip install poetry==1.4.2
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo 'export PATH="$HOME/.local/bin:$PATH"' >> $GITHUB_ENV
+      - name: Clear Poetry Cache
+        run: poetry cache clear pypi --all
       - name: Install future
         run: pip wheel --use-pep517 "future==0.18.3"
       - name: Install dependencies
-        run: poetry install --all-extras --with dev
+        run: poetry install --all-extras --with dev --verbose
       - name: Lint with ruff
-        run: |
-          make format_diff
+        run: make format_diff
       - name: Spellcheck
         run: make spell_check
       - name: Run tests

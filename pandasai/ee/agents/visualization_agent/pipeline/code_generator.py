@@ -1,10 +1,11 @@
 import json
-from pandasai.ee.helpers.query_builder import QueryBuilder
-from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-from pandasai.helpers.logger import Logger
-from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from typing import Any, Callable
+
+from pandasai.ee.helpers.query_builder import QueryBuilder
+from pandasai.helpers.logger import Logger
+from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class CodeGenerator(BaseLogicUnit):

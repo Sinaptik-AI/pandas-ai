@@ -3,8 +3,8 @@ from typing import Any
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
 from pandasai.exceptions import InvalidConfigError
 from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 
 

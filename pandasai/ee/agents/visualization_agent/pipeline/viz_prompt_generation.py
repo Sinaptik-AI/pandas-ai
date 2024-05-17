@@ -3,9 +3,9 @@ from typing import Any
 from pandasai.ee.agents.visualization_agent.prompts.viz_agent_prompt import (
     VizAgentPrompt,
 )
-from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 
 

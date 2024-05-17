@@ -2,6 +2,7 @@ import json
 from typing import List, Optional, Type, Union
 
 import pandas as pd
+
 from pandasai.agent.base import BaseAgent
 from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
