@@ -5,6 +5,9 @@ from pandasai.ee.agents.visualization_agent.pipeline.error_correction_pipeline.e
     ErrorCorrectionPipeline,
 )
 from pandasai.ee.agents.visualization_agent.pipeline.llm_call import LLMCall
+from pandasai.ee.agents.visualization_agent.pipeline.validate_pipeline_input import (
+    ValidatePipelineInput,
+)
 from pandasai.ee.agents.visualization_agent.pipeline.viz_prompt_generation import (
     VizPromptGeneration,
 )
@@ -58,7 +61,7 @@ class VisualizationChatPipeline(GenerateChatPipeline):
             logger=logger,
             query_exec_tracker=self.query_exec_tracker,
             steps=[
-                # ValidatePipelineInput(), temp for testing purpose
+                ValidatePipelineInput(),
                 CacheLookup(),
                 VizPromptGeneration(
                     skip_if=self.is_cached,

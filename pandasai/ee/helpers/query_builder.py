@@ -196,7 +196,7 @@ class QueryBuilder:
         return f" HAVING {' AND '.join(filter_statements)}" if filter_statements else ""
 
     def _build_order_clause(self, query):
-        if "order" not in query:
+        if "order" not in query or len(query["order"]) == 0:
             return ""
 
         order = query["order"][0]

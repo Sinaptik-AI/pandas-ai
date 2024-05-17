@@ -41,7 +41,7 @@ class VisualizationAgent(BaseAgent):
     ):
         super().__init__(dfs, config, memory_size, vectorstore, description)
 
-        # self._validate_config()
+        self._validate_config()
 
         self._schema_cache = Cache("schema")
         self._schema = None
@@ -49,6 +49,9 @@ class VisualizationAgent(BaseAgent):
         self._create_schema()
 
         self.init_duckdb_instance()
+
+        # visualization agent works only with direct sql true
+        self.config.direct_sql = True
 
         self.context = PipelineContext(
             dfs=self.dfs,
