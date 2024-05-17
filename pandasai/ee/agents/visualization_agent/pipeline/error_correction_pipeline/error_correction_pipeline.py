@@ -7,6 +7,7 @@ from pandasai.ee.agents.visualization_agent.pipeline.viz_prompt_generation impor
 )
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
+from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
@@ -40,6 +41,7 @@ class ErrorCorrectionPipeline:
                 ),
                 LLMCall(),
                 CodeGenerator(on_execution=on_code_generation),
+                CodeCleaning(),
             ],
         )
 

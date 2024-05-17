@@ -145,13 +145,15 @@ class QueryBuilder:
                 )
                 if not table_entry:
                     raise ValueError(f"Table '{table_name}' not found in schema.")
-                if join := next(
-                    (
-                        j
-                        for j in table_entry["joins"]
-                        if j["name"] in {main_table, table_name}
-                    ),
-                    None,
+                if "joins" in table_entry and (
+                    join := next(
+                        (
+                            j
+                            for j in table_entry["joins"]
+                            if j["name"] in {main_table, table_name}
+                        ),
+                        None,
+                    )
                 ):
                     join_condition = self.resolve_template_literals(join["sql"])
                     sql += f" {join['join_type'].upper()} JOIN `{table_entry['table']}` ON {join_condition}"

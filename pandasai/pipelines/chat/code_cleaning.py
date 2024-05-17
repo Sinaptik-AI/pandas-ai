@@ -7,6 +7,7 @@ from typing import Any, List, Union
 
 import astor
 
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
@@ -241,7 +242,9 @@ Code running:
         """
 
         if self._config.direct_sql:
-            if all((isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs):
+            if all(
+                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
+            ) or all((isinstance(df, PandasConnector) and df.sql_enabed) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(
@@ -257,9 +260,6 @@ Code running:
             table_name: re.compile(r"\b" + re.escape(table_name) + r"\b")
             for table_name in table_names
         }
-
-        print(allowed_table_names)
-        print(table_names)
         for table_name in table_names:
             if table_name in allowed_table_names.keys():
                 quoted_table_name = allowed_table_names[table_name]
