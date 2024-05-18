@@ -19,10 +19,18 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
+      - name: Install Poetry (Unix)
+        if: matrix.os != 'windows-latest'
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo 'export PATH="$HOME/.local/bin:$PATH"' >> $GITHUB_ENV
+      - name: Install Poetry (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+          echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" >> $env:GITHUB_PATH
+      - name: Verify Poetry Installation
+        run: poetry --version
       - name: Clear Poetry Cache
         run: poetry cache clear pypi --all
       - name: Install future
