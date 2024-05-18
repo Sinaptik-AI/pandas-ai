@@ -6,16 +6,16 @@ import hashlib
 from functools import cache, cached_property
 from typing import Union
 
+import duckdb
 from pydantic import BaseModel
 
-from pandasai.exceptions import PandasConnectorTableNotFound
 import pandasai.pandas as pd
+from pandasai.exceptions import PandasConnectorTableNotFound
 
 from ..helpers.data_sampler import DataSampler
 from ..helpers.file_importer import FileImporter
 from ..helpers.logger import Logger
 from .base import BaseConnector
-import duckdb
 
 
 class PandasConnectorConfig(BaseModel):
