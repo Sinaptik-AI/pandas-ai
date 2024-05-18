@@ -8,7 +8,13 @@ from .airtable import AirtableConnector
 from .base import BaseConnector
 from .pandas import PandasConnector
 from .polars import PolarsConnector
-from .sql import MySQLConnector, PostgreSQLConnector, SQLConnector, SqliteConnector
+from .sql import (
+    MySQLConnector,
+    OracleConnector,
+    PostgreSQLConnector,
+    SQLConnector,
+    SqliteConnector,
+)
 from .yahoo_finance import YahooFinanceConnector
 
 __all__ = [
@@ -21,4 +27,5 @@ __all__ = [
     "SqliteConnector",
     "PandasConnector",
     "PolarsConnector",
+    "OracleConnector",
 ]
