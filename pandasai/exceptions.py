@@ -238,3 +238,11 @@ class PandasAIApiCallError(Exception):
     Args:
         Exception (Exception): PandasAIApiCallError
     """
+
+
+class PandasConnectorTableNotFound(Exception):
+    """
+    Raise error if exception in API request fails
+    Args:
+        Exception (Exception): PandasConnectorTableNotFound
+    """

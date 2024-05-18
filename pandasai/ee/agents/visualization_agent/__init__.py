@@ -1,9 +1,11 @@
+import json
 from typing import List, Optional, Type, Union
 
 import pandas as pd
 
 from pandasai.agent.base import BaseAgent
 from pandasai.connectors.base import BaseConnector
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
 from pandasai.ee.agents.visualization_agent.pipeline.visualization_chat_pipeline import (
     VisualizationChatPipeline,
@@ -39,12 +41,17 @@ class VisualizationAgent(BaseAgent):
     ):
         super().__init__(dfs, config, memory_size, vectorstore, description)
 
-        # self._validate_config()
+        self._validate_config()
 
         self._schema_cache = Cache("schema")
         self._schema = None
 
-        self.create_schema()
+        self._create_schema()
+
+        self.init_duckdb_instance()
+
+        # visualization agent works only with direct sql true
+        self.config.direct_sql = True
 
         self.context = PipelineContext(
             dfs=self.dfs,
@@ -74,7 +81,13 @@ class VisualizationAgent(BaseAgent):
             )
         )
 
-    def create_schema(self):
+    def init_duckdb_instance(self):
+        schema_json = json.loads(self._schema)
+        for index, tables in enumerate(schema_json):
+            if isinstance(self.dfs[index], PandasConnector):
+                self.dfs[index].enable_sql_query(tables["table"])
+
+    def _create_schema(self):
         """
         Generate schema on the initialization of Agent class
         """

@@ -1,6 +1,7 @@
 """ Base class to implement a new Prompt
 In order to better handle the instructions, this prompt module is written.
 """
+
 import os
 import re
 from pathlib import Path
@@ -60,4 +61,15 @@ class BasePrompt:
         """
         Return Json Prompt
         """
-        raise NotImplementedError("Implementation required")
+        if "context" not in self.props:
+            return {"prompt": self.to_string()}
+
+        context = self.props["context"]
+        memory = context.memory
+        conversations = memory.to_json()
+        system_prompt = memory.get_system_prompt()
+        return {
+            "conversation": conversations,
+            "system_prompt": system_prompt,
+            "prompt": self.to_string(),
+        }
