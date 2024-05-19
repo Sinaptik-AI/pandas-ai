@@ -1,3 +1,8 @@
+---
+title: "Large Language Models"
+description: "PandasAI supports several large language models (LLMs) that are used to generate code from natural language queries."
+---
+
 # Large language models (LLMs)
 
 PandasAI supports several large language models (LLMs). LLMs are used to generate code from natural language queries.
@@ -284,7 +289,7 @@ found [here](https://ibm.github.io/watsonx-ai-python-sdk/setup_cloud.html#authen
 
 In order to use watsonx.ai models, you need to install the `ibm-watsonx-ai` package.
 
-_At this time, watsonx.ai does __not__ support the PandasAI agent_.
+_At this time, watsonx.ai does **not** support the PandasAI agent_.
 
 ```bash
 pip install pandasai[ibm-watsonx-ai]
@@ -305,9 +310,10 @@ llm = IBMwatsonx(
 
 df = SmartDataframe("data.csv", config={"llm": llm})
 ```
+
 ### More information
 
-For more information on the [watsonx.ai SDK](https://ibm.github.io/watsonx-ai-python-sdk/index.html) you can read 
+For more information on the [watsonx.ai SDK](https://ibm.github.io/watsonx-ai-python-sdk/index.html) you can read
 more [here](https://ibm.github.io/watsonx-ai-python-sdk/fm_model.html).
 
 ## Local models

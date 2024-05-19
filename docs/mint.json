@@ -1,0 +1,19 @@
+{
+  "name": "PandasAI",
+  "logo": {
+    "light": "/logo/logo.png",
+    "dark": "/logo/logo.png",
+    "href": "https://pandas-ai.com"
+  },
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#1d4ed8",
+    "light": "#55D799",
+    "dark": "#117866"
+  },
+  "footerSocials": {
+    "x": "https://x.com/ai_pandas",
+    "github": "https://github.com/sinaptik-ai/pandas-ai",
+    "linkedin": "https://linkedin.com/company/pandasai"
+  }
+}
