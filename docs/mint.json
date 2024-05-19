@@ -11,6 +11,37 @@
     "light": "#55D799",
     "dark": "#117866"
   },
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["index", "getting-started"]
+    },
+    {
+      "group": "Essentials",
+      "pages": ["connectors", "llms", "pipelines"]
+    },
+    {
+      "group": "Advanced usage",
+      "pages": [
+        "cache",
+        "custom-head",
+        "fields-description",
+        "train",
+        "custom-response",
+        "custom-whitelisted-dependencies",
+        "skills",
+        "determinism"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": ["examples"]
+    },
+    {
+      "group": "About",
+      "pages": ["contributing", "license"]
+    }
+  ],
   "footerSocials": {
     "x": "https://x.com/ai_pandas",
     "github": "https://github.com/sinaptik-ai/pandas-ai",
