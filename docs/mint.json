@@ -46,5 +46,36 @@
     "x": "https://x.com/ai_pandas",
     "github": "https://github.com/sinaptik-ai/pandas-ai",
     "linkedin": "https://linkedin.com/company/pandasai"
-  }
+  },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-2K7QMF59EN"
+    }
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true,
+    "thumbsRating": true
+  },
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://github.com/sinaptik-ai/pandas-ai"
+  },
+  "anchors": [
+    {
+      "name": "Join our Discord",
+      "icon": "discord",
+      "url": "https://discord.gg/kF7FqH2FwS"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/sinaptik-ai/pandas-ai"
+    },
+    {
+      "name": "Website",
+      "icon": "link",
+      "url": "https://pandas-ai.com"
+    }
+  ]
 }
