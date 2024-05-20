@@ -123,6 +123,7 @@ class Logger:
     def verbose(self, verbose: bool):
         """Set the verbose flag"""
         self._verbose = verbose
+        self._logger.handlers = []
         if verbose:
             self._logger.addHandler(logging.StreamHandler(sys.stdout))
         else:
