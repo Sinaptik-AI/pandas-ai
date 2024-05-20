@@ -48,17 +48,17 @@ class Logger:
         self._verbose = verbose
         self._last_time = time.time()
 
-        if save_logs:
-            try:
-                filaname = find_closest("pandasai.log")
-            except ValueError:
-                filaname = "pandasai.log"
-            handlers = [logging.FileHandler(filaname)]
-        else:
-            handlers = []
+        handlers = []
 
         if verbose:
             handlers.append(logging.StreamHandler(sys.stdout))
+
+        if save_logs:
+            try:
+                filename = find_closest("pandasai.log")
+            except ValueError:
+                filename = "pandasai.log"
+            handlers.append(logging.FileHandler(filename))
 
         logging.basicConfig(
             level=logging.INFO,
@@ -70,24 +70,24 @@ class Logger:
 
     def log(self, message: str, level: int = logging.INFO):
         """Log a message"""
+        if self._verbose or level > logging.INFO:
+            if level == logging.INFO:
+                self._logger.info(message)
+            elif level == logging.WARNING:
+                self._logger.warning(message)
+            elif level == logging.ERROR:
+                self._logger.error(message)
+            elif level == logging.CRITICAL:
+                self._logger.critical(message)
 
-        if level == logging.INFO:
-            self._logger.info(message)
-        elif level == logging.WARNING:
-            self._logger.warning(message)
-        elif level == logging.ERROR:
-            self._logger.error(message)
-        elif level == logging.CRITICAL:
-            self._logger.critical(message)
-
-        self._logs.append(
-            {
-                "msg": message,
-                "level": logging.getLevelName(level),
-                "time": self._calculate_time_diff(),
-                "source": self._invoked_from(),
-            }
-        )
+            self._logs.append(
+                {
+                    "msg": message,
+                    "level": logging.getLevelName(level),
+                    "time": self._calculate_time_diff(),
+                    "source": self._invoked_from(),
+                }
+            )
 
     def _invoked_from(self, level: int = 5) -> str:
         """Return the name of the class that invoked the logger"""
@@ -123,7 +123,6 @@ class Logger:
     def verbose(self, verbose: bool):
         """Set the verbose flag"""
         self._verbose = verbose
-        self._logger.handlers = []
         if verbose:
             self._logger.addHandler(logging.StreamHandler(sys.stdout))
         else:
@@ -135,15 +134,21 @@ class Logger:
     @property
     def save_logs(self) -> bool:
         """Return the save_logs flag"""
-        return len(self._logger.handlers) > 0
+        for handler in self._logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                return True
+        return False
 
     @save_logs.setter
     def save_logs(self, save_logs: bool):
         """Set the save_logs flag"""
-        if save_logs and not self.save_logs:
-            filaname = find_closest("pandasai.log")
-            self._logger.addHandler(logging.FileHandler(filaname))
-        elif not save_logs and self.save_logs:
+        if save_logs:
+            try:
+                filename = find_closest("pandasai.log")
+            except ValueError:
+                filename = "pandasai.log"
+            self._logger.addHandler(logging.FileHandler(filename))
+        else:
             # remove the FileHandler if it exists
             for handler in self._logger.handlers:
                 if isinstance(handler, logging.FileHandler):
