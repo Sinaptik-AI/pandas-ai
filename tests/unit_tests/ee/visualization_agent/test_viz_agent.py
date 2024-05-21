@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from pandasai.agent import Agent
+from pandasai.agent.base import BaseAgent
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -119,10 +120,19 @@ class TestVizAgent:
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
         return VisualizationAgent(sample_df, config, vectorstore=MagicMock())
 
+    def test_base_agent_contruct(self, sample_df):
+        llm = MockBambooLLM()
+        BaseAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+
     def test_constructor(self, sample_df):
         llm = MockBambooLLM()
         agent = VisualizationAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
         assert agent._schema == VIZ_QUERY_SCHEMA_STR
+
+    def test_last_log_id(self, sample_df):
+        llm = MockBambooLLM()
+        agent = VisualizationAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+        assert agent.last_query_log_id is None
 
     @patch("pandasai.helpers.cache.Cache.get")
     def test_cache_of_schema(self, mock_cache_get, sample_df):

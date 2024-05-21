@@ -47,6 +47,7 @@ class QueryExecTracker:
     ) -> None:
         self._success = False
         self._start_time = None
+        self._last_log_id = None
         self._server_config = server_config
         self._query_info = {}
 
