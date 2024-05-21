@@ -69,7 +69,7 @@ class LLM:
     def _polish_code(self, code: str) -> str:
         """
         Polish the code by removing the leading "python" or "py",  \
-        removing the imports and removing trailing spaces and new lines.
+        removing surrounding '`' characters  and removing trailing spaces and new lines.
 
         Args:
             code (str): A string of Python code.
@@ -117,13 +117,14 @@ class LLM:
         """
         code = response
 
-        if separator not in response:
-            raise NoCodeFoundError("No code found in the response")
-
-        if len(code.split(separator)) > 1:
+        # If separator is in the response then we want the code in between only
+        if separator in response and len(code.split(separator)) > 1:
             code = code.split(separator)[1]
-
         code = self._polish_code(code)
+
+        # Even if the separator is not in the response, the output might still be valid python code
+        if not self._is_python_code(code):
+            raise NoCodeFoundError("No code found in the response")
 
         return code
 
