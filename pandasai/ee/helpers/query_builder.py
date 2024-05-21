@@ -34,6 +34,7 @@ class QueryBuilder:
         filters = query.get("filters", [])
 
         columns = self._generate_columns(dimensions, time_dimensions, measures)
+
         referenced_tables = self._get_referenced_tables(
             dimensions, time_dimensions, measures, filters
         )
@@ -54,8 +55,10 @@ class QueryBuilder:
         return sql
 
     def _generate_columns(self, dimensions, time_dimensions, measures):
-        all_dimensions = set(dimensions + [td["dimension"] for td in time_dimensions])
-        columns = set()
+        all_dimensions = list(
+            dict.fromkeys(dimensions + [td["dimension"] for td in time_dimensions])
+        )
+        columns = []
 
         for dim in all_dimensions:
             table = self.find_table(dim.split(".")[0])["table"]
@@ -63,9 +66,9 @@ class QueryBuilder:
             sql_expr = dimension_info.get("sql")
             name = dimension_info["name"]
             if sql_expr:
-                columns.add(f"`{table}`.`{sql_expr}` AS {name}")
+                columns.append(f"`{table}`.`{sql_expr}` AS {name}")
             else:
-                columns.add(f"{name}")
+                columns.append(f"{name}")
 
         for measure in measures:
             table = self.find_table(measure.split(".")[0])["table"]
@@ -75,14 +78,14 @@ class QueryBuilder:
                     f"Unsupported aggregation type '{measure_info['type']}' for measure '{measure_info['name']}'. Supported types are: {', '.join(self.supported_aggregations)}"
                 )
             sql_expr = measure_info.get("sql") or measure_info["name"]
-            columns.add(
+            columns.append(
                 f"{measure_info['type'].upper()}(`{table}`.`{sql_expr}`) AS {measure_info['name']}"
             )
 
         for time_dimension in time_dimensions:
-            columns.add(self._generate_time_dimension_column(time_dimension))
+            columns.append(self._generate_time_dimension_column(time_dimension))
 
-        return columns
+        return list(dict.fromkeys(columns))  # preserve order and return unique columns
 
     def _generate_time_dimension_column(self, time_dimension):
         dimension = time_dimension["dimension"]

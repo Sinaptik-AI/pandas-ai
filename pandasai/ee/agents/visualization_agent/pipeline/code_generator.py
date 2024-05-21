@@ -71,44 +71,51 @@ result = {{"type": "plot","value": "charts.png"}}
         x_label = query["options"].get("xLabel", None)
         y_label = query["options"].get("yLabel", None)
         title = query["options"].get("title", None)
-        legend_display = query["options"]["legend"].get("display", None)
-        legend_position = query["options"]["legend"].get("position", None)
-        legend_position = (
-            legend_position
-            in [
-                "best",
-                "upper right",
-                "upper left",
-                "lower left",
-                "lower right",
-                "right",
-                "center left",
-                "center right",
-                "lower center",
-                "upper center",
-                "center",
-            ]
-            or "best"
-        )
+        legend_display = {"display": True}
+        legend_position = "best"
+        if "legend" in query["options"]:
+            legend_display = query["options"]["legend"].get("display", None)
+            legend_position = query["options"]["legend"].get("position", None)
+            legend_position = (
+                legend_position
+                in [
+                    "best",
+                    "upper right",
+                    "upper left",
+                    "lower left",
+                    "lower right",
+                    "right",
+                    "center left",
+                    "center right",
+                    "lower center",
+                    "upper center",
+                    "center",
+                ]
+                or "best"
+            )
 
         code = ""
 
-        if chart_type == "bar":
-            code += self._generate_bar_code(query)
-        elif chart_type == "line":
-            code += self._generate_line_code(query)
-        elif chart_type == "scatter":
-            code += self._generate_scatter_code(query)
-        elif chart_type == "hist":
-            code += self._generate_hist_code(query)
-        elif chart_type == "box":
-            code += self._generate_box_code(query)
+        code_generators = {
+            "bar": self._generate_bar_code,
+            "line": self._generate_line_code,
+            "pie": self._generate_pie_code,
+            "scatter": self._generate_scatter_code,
+            "hist": self._generate_hist_code,
+            "histogram": self._generate_hist_code,
+            "box": self._generate_box_code,
+            "boxplot": self._generate_box_code,
+        }
 
-        code += (
-            f"plt.xlabel('{x_label}')\n"
-            f"plt.ylabel('{y_label}')\n"
-            f"plt.title('{title}')\n"
-        )
+        code_generator = code_generators.get(chart_type, lambda query: "")
+        code += code_generator(query)
+
+        if x_label:
+            code += f"plt.xlabel('{x_label}')\n"
+        if y_label:
+            code += f"plt.ylabel('{y_label}')\n"
+        if title:
+            code += f"plt.title('{title}')\n"
 
         if legend_display:
             code += f"plt.legend(loc='{legend_position}')\n"
@@ -132,6 +139,11 @@ result = {{"type": "plot","value": "charts.png"}}
 
         return plots
 
+    def _generate_pie_code(self, query):
+        dimension = query["dimensions"][0].split(".")[1]
+        measure = query["measures"][0].split(".")[1]
+        return f"""plt.pie(data["{measure}"], labels=data["{dimension}"], autopct='%1.1f%%')\n"""
+
     def _generate_line_code(self, query):
         x_key = query["dimensions"][0].split(".")[1]
         plots = ""
@@ -143,7 +155,7 @@ result = {{"type": "plot","value": "charts.png"}}
 
     def _generate_scatter_code(self, query):
         x_key = query["dimensions"][0].split(".")[1]
-        y_key = query["measures"][0].split(".")[1]
+        y_key = query["dimensions"][1].split(".")[1]
         return f"plt.scatter(data['{x_key}'], data['{y_key}'])\n"
 
     def _generate_hist_code(self, query):
