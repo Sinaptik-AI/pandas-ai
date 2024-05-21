@@ -327,3 +327,33 @@ plt.savefig("charts.png")
 result = {"type": "plot","value": "charts.png"}
 """
         )
+
+    def test_generate_matplolib_number_type(
+        self, context: PipelineContext, logger: Logger
+    ):
+        code_gen = CodeGenerator()
+        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        json_str = {
+            "type": "number",
+            "measures": ["Orders.order_count"],
+            "timeDimensions": [],
+            "options": {"title": "Total Orders Count"},
+            "filters": [],
+        }
+
+        logic_unit = code_gen.execute(json_str, context=context, logger=logger)
+        assert isinstance(logic_unit, LogicUnitOutput)
+        assert (
+            logic_unit.output
+            == """
+
+import pandas as pd
+
+sql_query="SELECT COUNT(`orders`.`order_count`) AS order_count FROM `orders`"
+data = execute_sql_query(sql_query)
+
+
+result = {"type": "number","value": data["order_count"].iloc[0]}
+
+"""
+        )

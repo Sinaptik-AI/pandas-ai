@@ -39,20 +39,18 @@ class CodeGenerator(BaseLogicUnit):
 
         sql_query = query_builder.generate_sql(input)
 
-        matplotlib_code = self.generate_matplotlib_code(input)
+        response_type = self._get_type(input)
+
+        gen_code = self._generate_code(response_type, input)
 
         code = f"""
-import matplotlib.pyplot as plt
+{"import matplotlib.pyplot as plt" if response_type == "plot" else ""}
 import pandas as pd
 
 sql_query="{sql_query}"
 data = execute_sql_query(sql_query)
 
-{matplotlib_code}
-
-plt.savefig("charts.png")
-
-result = {{"type": "plot","value": "charts.png"}}
+{gen_code}
 """
 
         logger.log(f"""Code Generated: {code}""")
@@ -66,7 +64,29 @@ result = {{"type": "plot","value": "charts.png"}}
             {"content_type": "string", "value": code},
         )
 
-    def generate_matplotlib_code(self, query):
+    def _get_type(self, input: dict) -> bool:
+        return "number" if input["type"] == "number" else "plot"
+
+    def _generate_code(self, type, query):
+        if type == "number":
+            return self._generate_code_for_number(query)
+        else:
+            return self.generate_matplotlib_code(query)
+
+    def _generate_code_for_number(self, query: dict) -> str:
+        value = None
+        if len(query["measures"]) > 0:
+            value = query["measures"][0].split(".")[1]
+        else:
+            value = query["dimensions"][0].split(".")[1]
+
+        code = f'data["{value}"].iloc[0]'
+
+        return f"""
+result = {{"type": "number","value": {code}}}
+"""
+
+    def generate_matplotlib_code(self, query: dict) -> str:
         chart_type = query["type"]
         x_label = query["options"].get("xLabel", None)
         y_label = query["options"].get("yLabel", None)
@@ -119,6 +139,12 @@ result = {{"type": "plot","value": "charts.png"}}
 
         if legend_display:
             code += f"plt.legend(loc='{legend_position}')\n"
+
+        code += """
+
+plt.savefig("charts.png")
+
+result = {"type": "plot","value": "charts.png"}"""
 
         return code
 
