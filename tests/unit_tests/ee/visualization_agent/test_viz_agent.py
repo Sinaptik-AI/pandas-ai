@@ -14,7 +14,6 @@ from pandasai.ee.agents.visualization_agent import VisualizationAgent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-
 from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
 
 

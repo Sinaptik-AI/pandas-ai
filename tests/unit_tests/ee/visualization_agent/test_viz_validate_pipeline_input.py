@@ -9,13 +9,13 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
+from pandasai.ee.agents.visualization_agent.pipeline.validate_pipeline_input import (
+    ValidatePipelineInput,
+)
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.logger import Logger
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-from pandasai.ee.agents.visualization_agent.pipeline.validate_pipeline_input import (
-    ValidatePipelineInput,
-)
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 
