@@ -7,10 +7,10 @@ from pandasai.agent.base import BaseAgent
 from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
-from pandasai.ee.agents.visualization_agent.pipeline.visualization_chat_pipeline import (
-    VisualizationChatPipeline,
+from pandasai.ee.agents.semantic_agent.pipeline.semantic_chat_pipeline import (
+    SemanticChatPipeline,
 )
-from pandasai.ee.agents.visualization_agent.prompts.generate_df_schema import (
+from pandasai.ee.agents.semantic_agent.prompts.generate_df_schema import (
     GenerateDFSchemaPrompt,
 )
 from pandasai.exceptions import InvalidConfigError
@@ -23,9 +23,9 @@ from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
 
 
-class VisualizationAgent(BaseAgent):
+class SemanticAgent(BaseAgent):
     """
-    Answer visualization queries
+    Answer Semantic queries
     """
 
     def __init__(
@@ -71,7 +71,7 @@ class VisualizationAgent(BaseAgent):
                 on_result=self._callbacks.on_result,
             )
             if pipeline
-            else VisualizationChatPipeline(
+            else SemanticChatPipeline(
                 self.context,
                 self.logger,
                 on_prompt_generation=self._callbacks.on_prompt_generation,

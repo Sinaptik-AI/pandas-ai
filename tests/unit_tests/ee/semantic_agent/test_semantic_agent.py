@@ -11,7 +11,7 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.ee.agents.visualization_agent import VisualizationAgent
+from pandasai.ee.agents.semantic_agent import SemanticAgent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
@@ -24,7 +24,7 @@ class MockBambooLLM(BambooLLM):
         self.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
 
 
-class TestVizAgent:
+class TestSemanticAgent:
     "Unit tests for Agent class"
 
     @pytest.fixture
@@ -118,7 +118,7 @@ class TestVizAgent:
 
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
-        return VisualizationAgent(sample_df, config, vectorstore=MagicMock())
+        return SemanticAgent(sample_df, config, vectorstore=MagicMock())
 
     def test_base_agent_contruct(self, sample_df):
         llm = MockBambooLLM()
@@ -126,12 +126,12 @@ class TestVizAgent:
 
     def test_constructor(self, sample_df):
         llm = MockBambooLLM()
-        agent = VisualizationAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
         assert agent._schema == VIZ_QUERY_SCHEMA_STR
 
     def test_last_log_id(self, sample_df):
         llm = MockBambooLLM()
-        agent = VisualizationAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
         assert agent.last_query_log_id is None
 
     @patch("pandasai.helpers.cache.Cache.get")
@@ -140,7 +140,7 @@ class TestVizAgent:
         llm = MockBambooLLM()
         llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
 
-        agent = VisualizationAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
         assert not llm.call.called
         assert agent._schema == VIZ_QUERY_SCHEMA_STR

@@ -1,7 +1,7 @@
 from typing import Any
 
-from pandasai.ee.agents.visualization_agent.prompts.viz_agent_prompt import (
-    VizAgentPrompt,
+from pandasai.ee.agents.semantic_agent.prompts.semantic_agent_prompt import (
+    SemanticAgentPrompt,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
@@ -9,7 +9,7 @@ from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 
 
-class VizPromptGeneration(BaseLogicUnit):
+class SemanticPromptGeneration(BaseLogicUnit):
     """
     Code Prompt Generation Stage
     """
@@ -32,7 +32,7 @@ class VizPromptGeneration(BaseLogicUnit):
         self.context: PipelineContext = kwargs.get("context")
         self.logger: Logger = kwargs.get("logger")
 
-        prompt = VizAgentPrompt(context=self.context)
+        prompt = SemanticAgentPrompt(context=self.context)
         self.logger.log(f"Using prompt: {prompt}")
 
         return LogicUnitOutput(

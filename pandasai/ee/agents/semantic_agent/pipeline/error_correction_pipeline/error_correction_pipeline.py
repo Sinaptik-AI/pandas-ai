@@ -1,9 +1,9 @@
 from typing import Optional
 
-from pandasai.ee.agents.visualization_agent.pipeline.code_generator import CodeGenerator
-from pandasai.ee.agents.visualization_agent.pipeline.llm_call import LLMCall
-from pandasai.ee.agents.visualization_agent.pipeline.viz_prompt_generation import (
-    VizPromptGeneration,
+from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
+from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
+from pandasai.ee.agents.semantic_agent.pipeline.Semantic_prompt_generation import (
+    SemanticPromptGeneration,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
@@ -36,7 +36,7 @@ class ErrorCorrectionPipeline:
             logger=logger,
             query_exec_tracker=query_exec_tracker,
             steps=[
-                VizPromptGeneration(
+                SemanticPromptGeneration(
                     on_execution=on_prompt_generation,
                 ),
                 LLMCall(),

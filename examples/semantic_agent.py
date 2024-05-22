@@ -1,7 +1,7 @@
 import os
 
 from pandasai.connectors.sql import PostgreSQLConnector
-from pandasai.ee.agents.visualization_agent import VisualizationAgent
+from pandasai.ee.agents.semantic_agent import SemanticAgent
 
 config_ = {"enable_cache": False, "direct_sql": True}
 
@@ -21,7 +21,7 @@ payment_connector = PostgreSQLConnector(
 os.environ["PANDASAI_API_KEY"] = "$2a$10$HonhhCCzvE***********************"
 
 
-agent = VisualizationAgent([payment_connector], config=config_, memory_size=10)
+agent = SemanticAgent([payment_connector], config=config_, memory_size=10)
 
 # Chat with the agent
 response = agent.chat("return orders count groupby country")

@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 import pytest
 
-from pandasai.ee.agents.visualization_agent.pipeline.code_generator import CodeGenerator
+from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
@@ -12,7 +12,7 @@ from pandasai.schemas.df_config import Config
 from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
 
 
-class TestVizCodeGenerator:
+class TestSemanticCodeGenerator:
     @pytest.fixture
     def llm(self, output: Optional[str] = None):
         return FakeLLM(output=output)

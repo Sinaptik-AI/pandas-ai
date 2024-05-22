@@ -5,10 +5,10 @@ from jinja2 import Environment, FileSystemLoader
 from pandasai.prompts.base import BasePrompt
 
 
-class VizAgentPrompt(BasePrompt):
+class SemanticAgentPrompt(BasePrompt):
     """Prompt to generate Python code from a dataframe."""
 
-    template_path = "viz_agent_prompt.tmpl"
+    template_path = "semantic_agent_prompt.tmpl"
 
     def __init__(self, **kwargs):
         """Initialize the prompt."""
