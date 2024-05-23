@@ -5,11 +5,11 @@ from pandasai.ee.agents.semantic_agent.pipeline.error_correction_pipeline.error_
     ErrorCorrectionPipeline,
 )
 from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
-from pandasai.ee.agents.semantic_agent.pipeline.validate_pipeline_input import (
-    ValidatePipelineInput,
-)
 from pandasai.ee.agents.semantic_agent.pipeline.Semantic_prompt_generation import (
     SemanticPromptGeneration,
+)
+from pandasai.ee.agents.semantic_agent.pipeline.validate_pipeline_input import (
+    ValidatePipelineInput,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.chat.cache_lookup import CacheLookup

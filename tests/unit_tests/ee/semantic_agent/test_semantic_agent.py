@@ -15,7 +15,7 @@ from pandasai.ee.agents.semantic_agent import SemanticAgent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR, VIZ_QUERY_SCHEMA
+from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA, VIZ_QUERY_SCHEMA_STR
 
 
 class MockBambooLLM(BambooLLM):
