@@ -82,8 +82,7 @@ class SemanticAgent(BaseAgent):
         )
 
     def init_duckdb_instance(self):
-        schema_json = json.loads(self._schema)
-        for index, tables in enumerate(schema_json):
+        for index, tables in enumerate(self._schema):
             if isinstance(self.dfs[index], PandasConnector):
                 self.dfs[index].enable_sql_query(tables["table"])
 
@@ -92,11 +91,12 @@ class SemanticAgent(BaseAgent):
         Generate schema on the initialization of Agent class
         """
         key = self._get_schema_cache_key()
-        value = self._schema_cache.get(key)
-        if value is not None:
-            self._schema = value
-            self.logger.log(f"using schema: {self._schema}")
-            return
+        if self.config.enable_cache:
+            value = self._schema_cache.get(key)
+            if value is not None:
+                self._schema = json.loads(value)
+                self.logger.log(f"using schema: {self._schema}")
+                return
 
         prompt = GenerateDFSchemaPrompt(context=self.context)
 
@@ -106,8 +106,15 @@ class SemanticAgent(BaseAgent):
             """
         )
         self._schema = result.replace("# SAMPLE SCHEMA", "")
+        schema_data = json.loads(result.replace("# SAMPLE SCHEMA", ""))
+        if isinstance(schema_data, dict):
+            schema_data = [schema_data]
+
+        self._schema = schema_data
         # save schema in the cache
-        self._schema_cache.set(key, self._schema)
+        if self.config.enable_cache:
+            self._schema_cache.set(key, json.dumps(self._schema))
+
         self.logger.log(f"using schema: {self._schema}")
 
     def _validate_config(self):

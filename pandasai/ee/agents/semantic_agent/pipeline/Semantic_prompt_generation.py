@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from pandasai.ee.agents.semantic_agent.prompts.semantic_agent_prompt import (
@@ -32,7 +33,9 @@ class SemanticPromptGeneration(BaseLogicUnit):
         self.context: PipelineContext = kwargs.get("context")
         self.logger: Logger = kwargs.get("logger")
 
-        prompt = SemanticAgentPrompt(context=self.context)
+        prompt = SemanticAgentPrompt(
+            context=self.context, schema=json.dumps(self.context.get("df_schema"))
+        )
         self.logger.log(f"Using prompt: {prompt}")
 
         return LogicUnitOutput(

@@ -31,6 +31,8 @@ class GenerateDFSchemaPrompt(BasePrompt):
     def validate(self, output: str) -> bool:
         try:
             json_data = json.loads(output.replace("# SAMPLE SCHEMA", ""))
+            if isinstance(json_data, dict):
+                json_data = [json_data]
             if isinstance(json_data, list):
                 for record in json_data:
                     if not all(key in record for key in ("name", "table")):

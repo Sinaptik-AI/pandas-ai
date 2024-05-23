@@ -15,7 +15,7 @@ from pandasai.ee.agents.semantic_agent import SemanticAgent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
+from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR, VIZ_QUERY_SCHEMA
 
 
 class MockBambooLLM(BambooLLM):
@@ -126,12 +126,18 @@ class TestSemanticAgent:
 
     def test_constructor(self, sample_df):
         llm = MockBambooLLM()
-        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
-        assert agent._schema == VIZ_QUERY_SCHEMA_STR
+        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+        agent = SemanticAgent(
+            sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
+        )
+        assert agent._schema == VIZ_QUERY_SCHEMA
 
     def test_last_log_id(self, sample_df):
         llm = MockBambooLLM()
-        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+        agent = SemanticAgent(
+            sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
+        )
         assert agent.last_query_log_id is None
 
     @patch("pandasai.helpers.cache.Cache.get")
@@ -143,4 +149,4 @@ class TestSemanticAgent:
         agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
         assert not llm.call.called
-        assert agent._schema == VIZ_QUERY_SCHEMA_STR
+        assert agent._schema == VIZ_QUERY_SCHEMA

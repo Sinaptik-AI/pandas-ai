@@ -9,7 +9,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
-from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
+from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA
 
 
 class TestSemanticCodeGenerator:
@@ -84,7 +84,7 @@ class TestSemanticCodeGenerator:
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "bar",
             "dimensions": ["Orders.ship_country"],
@@ -127,7 +127,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "pie",
             "dimensions": ["Orders.ship_country"],
@@ -165,7 +165,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "line",
             "dimensions": ["Orders.order_date"],
@@ -209,7 +209,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "scatter",
             "dimensions": ["Orders.order_date", "Orders.ship_via"],
@@ -246,7 +246,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "histogram",
             "dimensions": [],
@@ -289,7 +289,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "boxplot",
             "dimensions": ["Orders.ship_country"],
@@ -332,7 +332,7 @@ result = {"type": "plot","value": "charts.png"}
         self, context: PipelineContext, logger: Logger
     ):
         code_gen = CodeGenerator()
-        context.add("df_schema", VIZ_QUERY_SCHEMA_STR)
+        context.add("df_schema", VIZ_QUERY_SCHEMA)
         json_str = {
             "type": "number",
             "measures": ["Orders.order_count"],

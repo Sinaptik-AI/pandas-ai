@@ -1,4 +1,3 @@
-import json
 from typing import Any, Callable
 
 from pandasai.ee.helpers.query_builder import QueryBuilder
@@ -34,7 +33,7 @@ class CodeGenerator(BaseLogicUnit):
         """
         pipeline_context: PipelineContext = kwargs.get("context")
         logger: Logger = kwargs.get("logger")
-        schema = json.loads(pipeline_context.get("df_schema"))
+        schema = pipeline_context.get("df_schema")
         query_builder = QueryBuilder(schema)
 
         sql_query = query_builder.generate_sql(input)
@@ -69,9 +68,18 @@ data = execute_sql_query(sql_query)
 
     def _generate_code(self, type, query):
         if type == "number":
-            return self._generate_code_for_number(query)
+            code = self._generate_code_for_number(query)
+
+            # Format code final output
+            return f"""
+result = {{"type": "number","value": {code}}}
+"""
         else:
-            return self.generate_matplotlib_code(query)
+            code = self.generate_matplotlib_code(query)
+            code += """
+
+result = {"type": "plot","value": "charts.png"}"""
+            return code
 
     def _generate_code_for_number(self, query: dict) -> str:
         value = None
@@ -80,11 +88,7 @@ data = execute_sql_query(sql_query)
         else:
             value = query["dimensions"][0].split(".")[1]
 
-        code = f'data["{value}"].iloc[0]'
-
-        return f"""
-result = {{"type": "number","value": {code}}}
-"""
+        return f'data["{value}"].iloc[0]'
 
     def generate_matplotlib_code(self, query: dict) -> str:
         chart_type = query["type"]
@@ -142,9 +146,7 @@ result = {{"type": "number","value": {code}}}
 
         code += """
 
-plt.savefig("charts.png")
-
-result = {"type": "plot","value": "charts.png"}"""
+plt.savefig("charts.png")"""
 
         return code
 
