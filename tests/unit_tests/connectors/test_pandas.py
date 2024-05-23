@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from pandasai.connectors import PandasConnector
 
@@ -62,3 +63,13 @@ class TestPandasConnector:
         ]
         connector = PandasConnector({"original_df": input_data}, name="test_name")
         assert connector.cs_table_name == "test_name"
+
+    def test_enable_sql_query(self):
+        input_data = [
+            {"column1": 1, "column2": 4},
+            {"column1": 2, "column2": 5},
+            {"column1": 3, "column2": 6},
+        ]
+        connector = PandasConnector({"original_df": input_data})
+        with pytest.raises(Exception):
+            connector.enable_sql_query()

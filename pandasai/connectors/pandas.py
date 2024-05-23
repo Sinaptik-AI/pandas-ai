@@ -161,7 +161,7 @@ class PandasConnector(BaseConnector):
         return self._original_df.equals(other._original_df)
 
     def enable_sql_query(self, table_name=None):
-        if table_name and self.name:
+        if not table_name and not self.name:
             raise PandasConnectorTableNotFound("Table name not found!")
 
         table = table_name or self.name
