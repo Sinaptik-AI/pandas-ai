@@ -55,7 +55,7 @@ class ValidatePipelineInput(BaseLogicUnit):
         self.context: PipelineContext = kwargs.get("context")
         if not isinstance(self.context.config.llm, BambooLLM):
             raise InvalidConfigError(
-                f"""Visualization Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
+                f"""Semantic Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
             )
 
         self._validate_direct_sql(self.context.dfs)

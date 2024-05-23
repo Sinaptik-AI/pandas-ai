@@ -50,7 +50,7 @@ class SemanticAgent(BaseAgent):
 
         self.init_duckdb_instance()
 
-        # visualization agent works only with direct sql true
+        # semantic agent works only with direct sql true
         self.config.direct_sql = True
 
         self.context = PipelineContext(
@@ -120,7 +120,7 @@ class SemanticAgent(BaseAgent):
     def _validate_config(self):
         if not isinstance(self.config.llm, BambooLLM):
             raise InvalidConfigError(
-                f"""Visualization Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
+                f"""Semantic Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
             )
 
     def _get_schema_cache_key(self):
