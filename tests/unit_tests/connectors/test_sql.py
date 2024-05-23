@@ -315,3 +315,26 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         connector_2 = OracleConnector(config)
 
         assert connector_2.type == "oracle"
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    @patch("pandasai.connectors.sql.pd.read_sql")
+    def test_equals_connector_execute_direct_sql(
+        self, mock_read_sql, mock_init_connection
+    ):
+        # Define your ConnectorConfig instance here
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 443,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(config)
+
+        connector_2.execute_direct_sql_query("SELECT * from `orders`")
+
+        mock_read_sql.assert_called_once()

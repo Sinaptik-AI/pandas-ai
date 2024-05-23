@@ -1,17 +1,14 @@
 import json
 import os
 import uuid
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Union
 
 import pandasai.pandas as pd
 from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.pipelines.chat.chat_pipeline_input import (
-    ChatPipelineInput,
-)
+from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
     CodeExecutionPipelineInput,
 )
-from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import load_config_from_json
@@ -37,9 +34,9 @@ from ..skills import Skill
 from .callbacks import Callbacks
 
 
-class Agent:
+class BaseAgent:
     """
-    Agent class to improve the conversational experience in PandasAI
+    Base Agent class to improve the conversational experience in PandasAI
     """
 
     def __init__(
@@ -49,7 +46,6 @@ class Agent:
         ],
         config: Optional[Union[Config, dict]] = None,
         memory_size: Optional[int] = 10,
-        pipeline: Optional[Type[GenerateChatPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
     ):
@@ -69,19 +65,21 @@ class Agent:
 
         self.conversation_id = uuid.uuid4()
 
-        dfs = self.get_dfs(dfs)
+        self.dfs = self.get_dfs(dfs)
 
         # Instantiate the context
-        config = self.get_config(config)
+        self.config = self.get_config(config)
         self.context = PipelineContext(
-            dfs=dfs,
-            config=config,
+            dfs=self.dfs,
+            config=self.config,
             memory=Memory(memory_size, agent_info=description),
             vectorstore=vectorstore,
         )
 
         # Instantiate the logger
-        self.logger = Logger(save_logs=config.save_logs, verbose=config.verbose)
+        self.logger = Logger(
+            save_logs=self.config.save_logs, verbose=self.config.verbose
+        )
 
         # Instantiate the vectorstore
         self._vectorstore = vectorstore
@@ -97,39 +95,22 @@ class Agent:
             self._vectorstore = BambooVectorStore(logger=self.logger)
             self.context.vectorstore = self._vectorstore
 
-        callbacks = Callbacks(self)
-
-        self.pipeline = (
-            pipeline(
-                self.context,
-                self.logger,
-                on_prompt_generation=callbacks.on_prompt_generation,
-                on_code_generation=callbacks.on_code_generation,
-                before_code_execution=callbacks.before_code_execution,
-                on_result=callbacks.on_result,
-            )
-            if pipeline
-            else GenerateChatPipeline(
-                self.context,
-                self.logger,
-                on_prompt_generation=callbacks.on_prompt_generation,
-                on_code_generation=callbacks.on_code_generation,
-                before_code_execution=callbacks.before_code_execution,
-                on_result=callbacks.on_result,
-            )
-        )
+        self._callbacks = Callbacks(self)
 
         self.configure()
 
-    def configure(self):
-        config = self.context.config
+        self.pipeline = None
 
+    def configure(self):
         # Add project root path if save_charts_path is default
-        if config.save_charts and config.save_charts_path == DEFAULT_CHART_DIRECTORY:
-            Folder.create(config.save_charts_path)
+        if (
+            self.config.save_charts
+            and self.config.save_charts_path == DEFAULT_CHART_DIRECTORY
+        ):
+            Folder.create(self.config.save_charts_path)
 
         # Add project root path if cache_path is default
-        if config.enable_cache:
+        if self.config.enable_cache:
             Folder.create(DEFAULT_CACHE_DIRECTORY)
 
     def get_config(self, config: Union[Config, dict]):
@@ -252,6 +233,12 @@ class Agent:
         """
         Simulate a chat interaction with the assistant on Dataframe.
         """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists"
+            )
+
         try:
             self.logger.log(f"Question: {query}")
             self.logger.log(
@@ -276,6 +263,11 @@ class Agent:
         """
         Simulate code generation with the assistant on Dataframe.
         """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists"
+            )
         try:
             self.logger.log(f"Question: {query}")
             self.logger.log(
@@ -302,6 +294,11 @@ class Agent:
         """
         Execute code Generated with the assistant on Dataframe.
         """
+        if not self.pipeline:
+            return (
+                "Unfortunately, I was not able to get your answers, "
+                "because of the following error: No pipeline exists to execute try Agent class"
+            )
         try:
             if code is None:
                 code = self.last_code_generated
@@ -477,8 +474,8 @@ class Agent:
 
     @property
     def last_error(self):
-        return self.pipeline.last_error
+        raise NotImplementedError
 
     @property
     def last_query_log_id(self):
-        return self.pipeline.get_last_track_log_id()
+        raise NotImplementedError

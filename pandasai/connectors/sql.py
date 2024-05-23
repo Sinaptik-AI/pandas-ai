@@ -650,6 +650,10 @@ class PostgreSQLConnector(SQLConnector):
     def cs_table_name(self):
         return f'"{self.config.table}"'
 
+    def execute_direct_sql_query(self, sql_query):
+        sql_query = sql_query.replace("`", '"')
+        return super().execute_direct_sql_query(sql_query)
+
 
 class OracleConnector(SQLConnector):
     """
