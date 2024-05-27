@@ -1,3 +1,5 @@
+import sys
+import pytest
 import uuid
 from typing import Callable, Iterable, List, Optional, Union
 
@@ -7,6 +9,7 @@ from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.10 or higher")
 class Pinecone(VectorStore):
     """
     Implementation of Pinecone vector store
