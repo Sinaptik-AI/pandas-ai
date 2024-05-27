@@ -90,6 +90,7 @@ chromadb = ["chromadb"]
 bedrock = ["boto3"]
 flask = ["flask"]
 qdrant = ["qdrant-client"]
+pinecone = ["pinecone-client"]
 ibm-watsonx-ai = ["ibm-watsonx-ai"]
 
 [tool.poetry.group.docs]
