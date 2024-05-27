@@ -1,9 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+import pinecone
+
 from pandasai.ee.vectorstores.pinecone import Pinecone
 from pandasai.helpers.logger import Logger
-import pinecone
 
 
 class TestPinecone(unittest.TestCase):
