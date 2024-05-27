@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import ANY, MagicMock, patch
 
-from pandasai.ee.vectorstores.pinecone import Pinecone
+with patch.dict("sys.modules", {"pinecone": MagicMock()}):
+    from pandasai.ee.vectorstores.pinecone import Pinecone
+
 from pandasai.helpers.logger import Logger
 
 
