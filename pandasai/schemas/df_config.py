@@ -29,13 +29,13 @@ class Config(BaseModel):
     data_viz_library: Optional[str] = ""
     log_server: LogServerConfig = None
     direct_sql: bool = False
-    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.YML
+    dataframe_serializer: DataframeSerializerType = DataframeSerializerType.CSV
 
     class Config:
         arbitrary_types_allowed = True
 
-    @validator("llm")
-    def validate_llm(cls, llm):
-        if llm is None or not isinstance(llm, LLM or LangchainLLM):
-            cls.llm = BambooLLM()
+    @validator("llm", always=True)
+    def validate_llm(cls, llm) -> LLM:
+        if not isinstance(llm, (LLM, LangchainLLM)):  # also covers llm is None
+            return BambooLLM()
         return llm

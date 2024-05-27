@@ -68,10 +68,7 @@ class Session:
             )
 
             data = response.json()
-
-            if response.status_code == 401:
-                raise PandasAIApiCallError(data["error"])
-            elif response.status_code != 200:
+            if response.status_code not in [200, 201]:
                 raise PandasAIApiCallError(data["message"])
 
             return data

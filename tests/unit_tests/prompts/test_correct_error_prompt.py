@@ -1,4 +1,5 @@
 """Unit tests for the correct error prompt class"""
+
 import sys
 
 import pandas as pd
@@ -34,6 +35,7 @@ class TestCorrectErrorPrompt:
 dfs[0]:0x0
 
 </dataframe>
+
 
 The user asked the following question:
 

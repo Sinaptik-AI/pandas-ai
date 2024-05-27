@@ -1,11 +1,13 @@
 import ast
 import copy
 import re
+import traceback
 import uuid
 from typing import Any, List, Union
 
 import astor
 
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.skills_manager import SkillsManager
@@ -71,12 +73,13 @@ class CodeCleaning(BaseLogicUnit):
     _config: Union[Config, dict]
     _logger: Logger = None
     _additional_dependencies: List[dict] = []
-
     _current_code_executed: str = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, on_failure=None, on_retry=None, **kwargs):
         super().__init__(**kwargs)
         self._function_call_visitor = FunctionCallVisitor()
+        self.on_failure = on_failure
+        self.on_retry = on_retry
 
     def execute(self, input: Any, **kwargs) -> LogicUnitOutput:
         context: PipelineContext = kwargs.get("context")
@@ -87,8 +90,16 @@ class CodeCleaning(BaseLogicUnit):
         code_context = CodeExecutionContext(
             context.get("last_prompt_id"), context.skills_manager
         )
-
-        code_to_run = self.get_code_to_run(input, code_context)
+        code_to_run = input
+        try:
+            code_to_run = self.get_code_to_run(input, code_context)
+        except Exception as e:
+            traceback_errors = traceback.format_exc()
+            if self.on_failure:
+                self.on_failure(code_to_run, traceback_errors)
+            if self.on_retry:
+                return self.on_retry(code_to_run, e)
+            raise
 
         context.add("additional_dependencies", self._additional_dependencies)
         context.add("current_code_executed", self._current_code_executed)
@@ -231,7 +242,9 @@ Code running:
         """
 
         if self._config.direct_sql:
-            if all((isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs):
+            if all(
+                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
+            ) or all((isinstance(df, PandasConnector) and df.sql_enabed) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(
@@ -258,6 +271,22 @@ Code running:
 
         return sql_query
 
+    def _clean_sql_query(self, sql_query: str) -> str:
+        """
+        Clean sql query trim colon and make case-sensitive
+        Args:
+            sql_query (str): sql query
+
+        Returns:
+            str: updated sql query
+        """
+        sql_query = sql_query.rstrip(";")
+        table_names = extract_table_names(sql_query)
+        allowed_table_names = {df.name: df.cs_table_name for df in self._dfs} | {
+            f'"{df.name}"': df.cs_table_name for df in self._dfs
+        }
+        return self._replace_table_names(sql_query, table_names, allowed_table_names)
+
     def _validate_and_make_table_name_case_sensitive(self, node: ast.Assign):
         """
         Validates whether table exists in specified dataset and convert name to case-sensitive
@@ -276,16 +305,19 @@ Code running:
                 and node.targets[0].id in ["sql_query", "query"]
             ):
                 sql_query = node.value.value
-                table_names = extract_table_names(sql_query)
-                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
-                allowed_table_names |= {
-                    f'"{df.name}"': df.cs_table_name for df in self._dfs
-                }
-
-                sql_query = self._replace_table_names(
-                    sql_query, table_names, allowed_table_names
-                )
+                sql_query = self._clean_sql_query(sql_query)
                 node.value.value = sql_query
+            elif (
+                isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name)
+                and node.value.func.id == "execute_sql_query"
+                and len(node.value.args) == 1
+                and isinstance(node.value.args[0], ast.Constant)
+                and isinstance(node.value.args[0].value, str)
+            ):
+                sql_query = node.value.args[0].value
+                sql_query = self._clean_sql_query(sql_query)
+                node.value.args[0].value = sql_query
 
         elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             # Check if the function call is to 'execute_sql_query' and has a string constant argument
@@ -297,14 +329,7 @@ Code running:
                 and isinstance(node.value.args[0].value, str)
             ):
                 sql_query = node.value.args[0].value
-                table_names = extract_table_names(sql_query)
-                allowed_table_names = {df.name: df.cs_table_name for df in self._dfs}
-                allowed_table_names |= {
-                    f'"{df.name}"': df.cs_table_name for df in self._dfs
-                }
-                sql_query = self._replace_table_names(
-                    sql_query, table_names, allowed_table_names
-                )
+                sql_query = self._clean_sql_query(sql_query)
                 node.value.args[0].value = sql_query
 
         return node

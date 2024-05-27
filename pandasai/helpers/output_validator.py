@@ -58,8 +58,11 @@ class OutputValidator:
         elif expected_type == "dataframe":
             return isinstance(self, (pd.DataFrame, pd.Series))
         elif expected_type == "plot":
-            if not isinstance(self, str):
+            if not isinstance(self, (str, dict)):
                 return False
+
+            if isinstance(self, dict):
+                return True
 
             path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
             return bool(re.match(path_to_plot_pattern, self))
@@ -81,8 +84,17 @@ class OutputValidator:
         elif result["type"] == "dataframe":
             return isinstance(result["value"], (pd.DataFrame, pd.Series))
         elif result["type"] == "plot":
-            if not isinstance(result["value"], str):
+            if "plotly" in repr(type(result["value"])):
+                return True
+
+            if not isinstance(result["value"], (str, dict)):
                 return False
+
+            if isinstance(result["value"], dict) or (
+                isinstance(result["value"], str)
+                and "data:image/png;base64" in result["value"]
+            ):
+                return True
 
             path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
             return bool(re.match(path_to_plot_pattern, result["value"]))

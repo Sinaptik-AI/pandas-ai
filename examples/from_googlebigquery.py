@@ -4,7 +4,7 @@ import os
 
 from pandasai import SmartDataframe
 
-# A license might be required for using Snowflake with PandasAI
+# A license might be required for using BigQuery with PandasAI
 from pandasai.ee.connectors import GoogleBigQueryConnector
 
 # ENV's

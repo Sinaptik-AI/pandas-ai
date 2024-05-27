@@ -1,5 +1,6 @@
 from typing import Any, List
 
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.connectors.sql import SQLConnector
 from pandasai.exceptions import InvalidConfigError
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
@@ -27,11 +28,13 @@ class ValidatePipelineInput(BaseLogicUnit):
         """
 
         if self.context.config.direct_sql:
-            if all((isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs):
+            if all(
+                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
+            ) or all((isinstance(df, PandasConnector) and df.sql_enabed) for df in dfs):
                 return True
             else:
                 raise InvalidConfigError(
-                    "Direct requires all SQLConnector and they belong to same datasource "
+                    "Direct requires all Connector and they belong to same datasource "
                     "and have same credentials"
                 )
         return False

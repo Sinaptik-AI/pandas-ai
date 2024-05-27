@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from pandasai.connectors import PandasConnector
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -107,6 +108,7 @@ class TestPromptGeneration:
         # Test case 1: direct_sql is True
         prompt_generation = PromptGeneration()
         context.config.enforce_privacy = False
+        context.config.dataframe_serializer = DataframeSerializerType.YML
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
@@ -116,6 +118,7 @@ class TestPromptGeneration:
         # Test case 1: direct_sql is True
         prompt_generation = PromptGeneration()
         context.config.enforce_privacy = True
+        context.config.dataframe_serializer = DataframeSerializerType.YML
 
         dataframe = PandasConnector({"original_df": sample_df}, custom_head=sample_df)
         context.dfs = [dataframe]

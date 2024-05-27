@@ -22,10 +22,16 @@ class ResponseSerializer:
             ResponseType: formatted response output
         """
         if result["type"] == "dataframe":
+            if isinstance(result["value"], pd.Series):
+                result["value"] = result["value"].to_frame()
             df_dict = ResponseSerializer.serialize_dataframe(result["value"])
             return {"type": result["type"], "value": df_dict}
 
-        elif result["type"] == "plot":
+        elif result["type"] == "plot" and isinstance(result["value"], str):
+            # check if already in base64 str return
+            if "data:image/png;base64" in result["value"]:
+                return result
+
             with open(result["value"], "rb") as image_file:
                 image_data = image_file.read()
             # Encode the image data to Base64

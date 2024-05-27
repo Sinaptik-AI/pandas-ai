@@ -798,7 +798,6 @@ df = pd.DataFrame(data)
         node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
 
         assert isinstance(node, ast.Assign)
-        print(node.value.value)
         assert (
             node.value.value
             == 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM Users GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'
@@ -830,3 +829,72 @@ df = pd.DataFrame(data)
             node.value.value
             == 'SELECT EXTRACT(MONTH FROM "created_at"::TIMESTAMP) AS month, COUNT(*) AS user_count FROM "Users" GROUP BY EXTRACT(MONTH FROM "created_at"::TIMESTAMP)'
         )
+
+    def test_check_query_with_semicolon(self, code_cleaning: CodeCleaning):
+        mock_node = ast.parse(
+            """sql_query = 'SELECT COUNT(*) AS user_count FROM Users;'"""
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.name = table_name
+
+            @property
+            def cs_table_name(self):
+                return f'"{self.name}"'
+
+        code_cleaning._dfs = [MockObject("Users")]
+
+        node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        assert node.value.value == 'SELECT COUNT(*) AS user_count FROM "Users"'
+
+    def test_check_query_with_semicolon_execute_sql_func(
+        self, code_cleaning: CodeCleaning
+    ):
+        mock_node = ast.parse(
+            """df=execute_sql_query('SELECT COUNT(*) AS user_count FROM Users;')"""
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.name = table_name
+
+            @property
+            def cs_table_name(self):
+                return f'"{self.name}"'
+
+        code_cleaning._dfs = [MockObject("Users")]
+
+        node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert isinstance(node, ast.Assign)
+        assert node.value.args[0].value == 'SELECT COUNT(*) AS user_count FROM "Users"'
+
+    def test_check_query_with_semicolon_execute_sql_func_no_assign(
+        self, code_cleaning: CodeCleaning
+    ):
+        mock_node = ast.parse(
+            """execute_sql_query('SELECT COUNT(*) AS user_count FROM Users;')"""
+        ).body[0]
+
+        class MockObject:
+            table_name = "allowed_table"
+
+            def __init__(self, table_name):
+                self.name = table_name
+
+            @property
+            def cs_table_name(self):
+                return f'"{self.name}"'
+
+        code_cleaning._dfs = [MockObject("Users")]
+
+        node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
+
+        assert node.value.args[0].value == 'SELECT COUNT(*) AS user_count FROM "Users"'

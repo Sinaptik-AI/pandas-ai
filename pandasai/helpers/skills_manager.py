@@ -78,7 +78,7 @@ class SkillsManager:
         if len(self.skills) == 0:
             return None
 
-        return f"You can call the following functions that have been pre-defined for you:\n{self}"
+        return f"You are already provided with the following functions that you can call:\n{self}"
 
     def to_object(self) -> str:
         return [skill.stringify() for skill in self.skills]

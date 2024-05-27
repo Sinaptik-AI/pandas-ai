@@ -159,7 +159,7 @@ class TestSkills:
         # Test prompt_display method when skills exist
         prompt = skills_manager.prompt_display()
         assert (
-            "You can call the following functions that have been pre-defined for you:"
+            "You are already provided with the following functions that you can call:"
             in prompt
         )
 
@@ -305,7 +305,7 @@ def plot_salaries(merged_df: pandas.core.frame.DataFrame):
         assert "<function>" not in last_prompt
         assert "</function>" not in last_prompt
         assert (
-            "You can call the following functions that have been pre-defined for you:"
+            "You are already provided with the following functions that you can call:"
             not in last_prompt
         )
 

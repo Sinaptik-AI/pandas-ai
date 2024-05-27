@@ -2,7 +2,7 @@
 
 import pytest
 
-from pandasai.exceptions import APIKeyNotFoundError
+from pandasai.exceptions import APIKeyNotFoundError, NoCodeFoundError
 from pandasai.helpers.memory import Memory
 from pandasai.llm import LLM
 
@@ -24,8 +24,12 @@ class TestBaseLLM:
         assert LLM()._polish_code(code) == "print('Hello World')"
         code = "`print('Hello World')`"
         assert LLM()._polish_code(code) == "print('Hello World')"
+        code = "``print('Hello World')``"
+        assert LLM()._polish_code(code) == "`print('Hello World')`"
         code = "print('Hello World')"
         assert LLM()._polish_code(code) == "print('Hello World')"
+        code = "import pandas as pd\nprint('Hello World')"
+        assert LLM()._polish_code(code) == "import pandas as pd\nprint('Hello World')"
 
     def test_is_python_code(self):
         code = "python print('Hello World')"
@@ -57,14 +61,47 @@ print('Hello World')
 """
         assert LLM()._extract_code(code) == "print('Hello World')"
 
+        code = """num_rows = dfs[0].shape[0]"""
+        assert LLM()._extract_code(code) == "num_rows = dfs[0].shape[0]"
+
         code = """Sure, here is your code:
 
 ```py
 print('Hello World')
 ```
 """
-
         assert LLM()._extract_code(code) == "print('Hello World')"
+
+        code = """Sure, here is your code:
+
+``py
+print('Hello World')
+``
+"""
+        with pytest.raises(NoCodeFoundError) as exc:
+            LLM()._extract_code(code)
+        assert "No code found" in str(exc.value)
+
+        code = """Sure, here is your code:
+`py
+print('Hello World')
+`
+"""
+        with pytest.raises(NoCodeFoundError) as exc:
+            LLM()._extract_code(code)
+        assert "No code found" in str(exc.value)
+
+        code = """Sure, here is your code:
+print('Hello World')
+"""
+        with pytest.raises(NoCodeFoundError) as exc:
+            LLM()._extract_code(code)
+        assert "No code found" in str(exc.value)
+
+        code = """'''"""
+        with pytest.raises(NoCodeFoundError) as exc:
+            LLM()._extract_code(code)
+        assert "No code found" in str(exc.value)
 
     def test_get_system_prompt_empty_memory(self):
         assert LLM().get_system_prompt(Memory()) == "\n"

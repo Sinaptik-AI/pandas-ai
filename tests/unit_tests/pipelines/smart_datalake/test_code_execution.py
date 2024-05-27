@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
 
-from pandasai.agent.base import Agent
+from pandasai.agent import Agent
 from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.optional import get_environment
@@ -253,14 +253,16 @@ class TestCodeExecution:
         os.environ["PANDASAI_API_URL"] = ""
         os.environ["PANDASAI_API_KEY"] = ""
 
-        mock_execute_code.side_effect = NoCodeFoundError("No code found in the answer.")
+        mock_execute_code.side_effect = NoCodeFoundError(
+            "No code found in the response"
+        )
         result = agent.chat("How many countries are in the dataframe?")
         assert result == (
             "Unfortunately, I was not able to answer your question, "
             "because of the following error:\n"
-            "\nNo code found in the answer.\n"
+            "\nNo code found in the response\n"
         )
-        assert agent.last_error == "No code found in the answer."
+        assert agent.last_error == "No code found in the response"
 
     def test_get_environment(self):
         additional_dependencies = [

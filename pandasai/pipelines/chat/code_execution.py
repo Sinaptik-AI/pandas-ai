@@ -82,8 +82,7 @@ class CodeExecution(BaseLogicUnit):
         result = None
         while retry_count <= self.context.config.max_retries:
             try:
-                result = self.execute_code(input, code_context)
-
+                result = self.execute_code(code_to_run, code_context)
                 if self.context.get("output_type") != "" and (
                     output_helper := self.context.get("output_type")
                 ):
@@ -96,7 +95,7 @@ class CodeExecution(BaseLogicUnit):
 
                 if not OutputValidator.validate_result(result):
                     raise InvalidOutputValueMismatch(
-                        f'Value must match with type {result["type"]}'
+                        f'Value type {type(result["value"])} must match with type {result["type"]}'
                     )
 
                 break
@@ -156,6 +155,8 @@ class CodeExecution(BaseLogicUnit):
         dfs = self._required_dfs(code)
         environment: dict = get_environment(self._additional_dependencies)
         environment["dfs"] = self._get_originals(dfs)
+        if len(environment["dfs"]) == 1:
+            environment["df"] = environment["dfs"][0]
 
         if self._config.direct_sql:
             environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
@@ -260,8 +261,7 @@ class CodeExecution(BaseLogicUnit):
 
         try:
             filters = self._extract_comparisons(parsed_tree)
-        except Exception as e:
-            raise e
+        except Exception:
             self.logger.log(
                 "Unable to extract filters for passed code", level=logging.ERROR
             )

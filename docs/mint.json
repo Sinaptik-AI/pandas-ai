@@ -1,0 +1,81 @@
+{
+  "name": "PandasAI",
+  "logo": {
+    "light": "/logo/logo.png",
+    "dark": "/logo/logo.png",
+    "href": "https://pandas-ai.com"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#1d4ed8",
+    "light": "#55D799",
+    "dark": "#117866"
+  },
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["index", "getting-started"]
+    },
+    {
+      "group": "Essentials",
+      "pages": ["connectors", "llms", "pipelines"]
+    },
+    {
+      "group": "Advanced usage",
+      "pages": [
+        "cache",
+        "custom-head",
+        "fields-description",
+        "train",
+        "custom-response",
+        "custom-whitelisted-dependencies",
+        "skills",
+        "determinism"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": ["examples"]
+    },
+    {
+      "group": "About",
+      "pages": ["contributing", "license"]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/ai_pandas",
+    "github": "https://github.com/sinaptik-ai/pandas-ai",
+    "linkedin": "https://linkedin.com/company/pandasai"
+  },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-2K7QMF59EN"
+    }
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true,
+    "thumbsRating": true
+  },
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://github.com/sinaptik-ai/pandas-ai"
+  },
+  "anchors": [
+    {
+      "name": "Join our Discord",
+      "icon": "discord",
+      "url": "https://discord.gg/kF7FqH2FwS"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/sinaptik-ai/pandas-ai"
+    },
+    {
+      "name": "Website",
+      "icon": "link",
+      "url": "https://pandas-ai.com"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ This module contains the implementation of Custom Exceptions.
 
 """
 
+from pandasai.constants import PANDASBI_SETUP_MESSAGE
+
 
 class InvalidRequestError(Exception):
     """
@@ -202,6 +204,14 @@ class ExecuteSQLQueryNotUsed(Exception):
     """
 
 
+class PipelineConcatenationError(Exception):
+    """
+    Raise error if vector store is not found
+    Args:
+        Exception (Exception): Concatenating wrong pipelines
+    """
+
+
 class MissingVectorStoreError(Exception):
     """
     Raise error if vector store is not found
@@ -218,13 +228,7 @@ class PandasAIApiKeyError(Exception):
     """
 
     def __init__(self):
-        message = (
-            "The api_key client option must be set either by passing api_key to the client "
-            "or by setting the PANDASAI_API_KEY environment variable. To get the key follow below steps:\n"
-            "1. Go to https://www.pandabi.ai and sign up\n"
-            "2. From settings go to API keys and copy\n"
-            "3. Set environment variable like os.environ['PANDASAI_API_KEY'] = '$2a$10$flb7....'"
-        )
+        message = PANDASBI_SETUP_MESSAGE
         super().__init__(message)
 
 
@@ -241,4 +245,12 @@ class PandasAIDatasetUploadFailed(Exception):
     Raise error if exception in uploading dataframe
     Args:
         Exception (Exception): PandasAIDatasetUploadFailed
+    """
+
+
+class PandasConnectorTableNotFound(Exception):
+    """
+    Raise error if exception in API request fails
+    Args:
+        Exception (Exception): PandasConnectorTableNotFound
     """
