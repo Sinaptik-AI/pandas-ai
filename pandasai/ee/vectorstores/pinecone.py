@@ -1,9 +1,9 @@
 import sys
-import pytest
 import uuid
 from typing import Callable, Iterable, List, Optional, Union
 
 import pinecone
+import pytest
 
 from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
