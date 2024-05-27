@@ -12,7 +12,6 @@ class TestPinecone(unittest.TestCase):
     def setUp(self, MockPinecone):
         mock_pinecone_instance = MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-        mock_pinecone_instance.create_index.return_value = MagicMock()
         api_key = "test_api_key"
         self.vector_store = Pinecone(api_key=api_key)
         self.vector_store._format_qa = MagicMock(
@@ -28,7 +27,6 @@ class TestPinecone(unittest.TestCase):
     def test_constructor_default_parameters(self, MockPinecone):
         mock_pinecone_instance = MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-        mock_pinecone_instance.create_index.return_value = MagicMock()
 
         api_key = "test_api_key"
 
@@ -45,7 +43,6 @@ class TestPinecone(unittest.TestCase):
     def test_constructor_with_custom_logger(self, MockPinecone):
         mock_pinecone_instance = MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-        mock_pinecone_instance.create_index.return_value = MagicMock()
 
         api_key = "test_api_key"
         custom_logger = Logger()
@@ -72,7 +69,6 @@ class TestPinecone(unittest.TestCase):
         mock_pinecone_instance.list_indexes.return_value.names.return_value = [
             "other_index"
         ]
-        mock_pinecone_instance.create_index.return_value = MagicMock()
 
         api_key = "test_api_key"
         index_name = "pandasai"
@@ -91,7 +87,6 @@ class TestPinecone(unittest.TestCase):
     def test_constructor_with_optional_parameters(self, MockPinecone):
         mock_pinecone_instance = MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-        mock_pinecone_instance.create_index.return_value = MagicMock()
 
         api_key = "test_api_key"
         embedding_function = MagicMock()
