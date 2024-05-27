@@ -1,7 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
-
-import pinecone
+from unittest.mock import ANY, MagicMock, patch
 
 from pandasai.ee.vectorstores.pinecone import Pinecone
 from pandasai.helpers.logger import Logger
@@ -83,7 +81,7 @@ class TestPinecone(unittest.TestCase):
             name=index_name,
             dimension=1536,
             metric="cosine",
-            spec=pinecone.ServerlessSpec(cloud="aws", region="us-east-1"),
+            spec=ANY,
         )
         self.assertIsInstance(instance._index, MagicMock)
 

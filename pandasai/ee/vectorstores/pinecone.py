@@ -117,6 +117,9 @@ class Pinecone(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
+        if not isinstance(docs, list):
+            raise ValueError("Docs must be list of strings!")
+
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
 

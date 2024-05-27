@@ -22,6 +22,7 @@ class GeneratePythonCodePrompt(BasePrompt):
             "datasets": datasets,
             "conversation": conversations,
             "system_prompt": system_prompt,
+            "prompt": self.to_string(),
             "config": {
                 "direct_sql": context.config.direct_sql,
                 "viz_lib": viz_lib,
