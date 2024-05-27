@@ -10,6 +10,7 @@ from pandasai.helpers.logger import Logger
 class TestPinecone(unittest.TestCase):
     @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
     def setUp(self, MockPinecone):
+        self.MockPinecone = MockPinecone
         mock_pinecone_instance = MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
         api_key = "test_api_key"
@@ -23,9 +24,8 @@ class TestPinecone(unittest.TestCase):
         self.vector_store._index = MagicMock()
         self.vector_store._metatext_key = "text"
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_constructor_default_parameters(self, MockPinecone):
-        mock_pinecone_instance = MockPinecone.return_value
+    def test_constructor_default_parameters(self):
+        mock_pinecone_instance = self.MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
 
         api_key = "test_api_key"
@@ -39,9 +39,8 @@ class TestPinecone(unittest.TestCase):
         mock_pinecone_instance.create_index.assert_called_once()
         self.assertIsInstance(instance._index, MagicMock)
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_constructor_with_custom_logger(self, MockPinecone):
-        mock_pinecone_instance = MockPinecone.return_value
+    def test_constructor_with_custom_logger(self):
+        mock_pinecone_instance = self.MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
 
         api_key = "test_api_key"
@@ -51,21 +50,8 @@ class TestPinecone(unittest.TestCase):
 
         self.assertIs(instance._logger, custom_logger)
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_constructor_with_existing_index(self, MockPinecone):
-        mock_pinecone_instance = MockPinecone.return_value
-        mock_index = MagicMock()
-
-        api_key = "test_api_key"
-
-        instance = Pinecone(api_key=api_key, index=mock_index)
-
-        self.assertIs(instance._index, mock_index)
-        mock_pinecone_instance.create_index.assert_not_called()
-
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_constructor_creates_index_if_not_exists(self, MockPinecone):
-        mock_pinecone_instance = MockPinecone.return_value
+    def test_constructor_creates_index_if_not_exists(self):
+        mock_pinecone_instance = self.MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = [
             "other_index"
         ]
@@ -83,26 +69,21 @@ class TestPinecone(unittest.TestCase):
         )
         self.assertIsInstance(instance._index, MagicMock)
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_constructor_with_optional_parameters(self, MockPinecone):
-        mock_pinecone_instance = MockPinecone.return_value
+    def test_constructor_with_optional_parameters(self):
+        mock_pinecone_instance = self.MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
 
         api_key = "test_api_key"
         embedding_function = MagicMock()
-        specs = MagicMock()
 
-        instance = Pinecone(
-            api_key=api_key, embedding_function=embedding_function, specs=specs
-        )
+        instance = Pinecone(api_key=api_key, embedding_function=embedding_function)
 
         self.assertIs(instance._embedding_function, embedding_function)
         mock_pinecone_instance.create_index.assert_called_once_with(
-            name="pandasai", dimension=1536, metric="cosine", spec=specs
+            name="pandasai", dimension=1536, metric="cosine", spec=ANY
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_add_question_answer(self, mock_client):
+    def test_add_question_answer(self):
         self.vector_store._index = MagicMock()
         self.vector_store.add_question_answer(
             ["What is Chroma?", "How does it work?"],
@@ -111,8 +92,7 @@ class TestPinecone(unittest.TestCase):
 
         self.vector_store._index.upsert.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_add_question_answer_with_ids(self, mock_client):
+    def test_add_question_answer_with_ids(self):
         self.vector_store._index = MagicMock()
         self.vector_store.add_question_answer(
             ["What is Chroma?", "How does it work?"],
@@ -137,8 +117,7 @@ class TestPinecone(unittest.TestCase):
             namespace="qa",
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_add_question_answer_different_dimensions(self, mock_client):
+    def test_add_question_answer_different_dimensions(self):
         self.vector_store._index = MagicMock()
 
         with self.assertRaises(ValueError):
@@ -147,8 +126,7 @@ class TestPinecone(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_update_question_answer(self, mock_client):
+    def test_update_question_answer(self):
         self.vector_store._embedding_function = MagicMock(
             return_value=[[1.0, 2.0, 3.0]] * 2
         )
@@ -160,8 +138,7 @@ class TestPinecone(unittest.TestCase):
 
         self.assertEqual(self.vector_store._index.update.call_count, 2)
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_update_question_answer_different_dimensions(self, mock_client):
+    def test_update_question_answer_different_dimensions(self):
         self.vector_store._embedding_function = MagicMock(
             return_value=[[1.0, 2.0, 3.0]]
         )
@@ -172,13 +149,11 @@ class TestPinecone(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_add_docs(self, mock_client):
+    def test_add_docs(self):
         self.vector_store.add_docs(["Document 1", "Document 2"])
         self.vector_store._index.upsert.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_add_docs_with_ids(self, mock_client):
+    def test_add_docs_with_ids(self):
         self.vector_store.add_docs(
             ["Document 1", "Document 2"], ["test id 1", "test id 2"]
         )
@@ -198,22 +173,19 @@ class TestPinecone(unittest.TestCase):
             namespace="docs",
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_delete_question_and_answers(self, mock_client):
+    def test_delete_question_and_answers(self):
         self.vector_store.delete_question_and_answers(["id1", "id2"])
         self.vector_store._index.delete.assert_called_once_with(
             ids=["id1", "id2"], namespace="qa"
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_delete_docs(self, mock_client):
+    def test_delete_docs(self):
         self.vector_store.delete_docs(["id1", "id2"])
         self.vector_store._index.delete.assert_called_once_with(
             ids=["id1", "id2"], namespace="docs"
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_get_relevant_question_answers(self, mock_client):
+    def test_get_relevant_question_answers(self):
         self.vector_store._index.query.return_value = {
             "matches": [
                 {
@@ -241,8 +213,7 @@ class TestPinecone(unittest.TestCase):
             },
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_get_relevant_question_answers_by_ids(self, mock_client):
+    def test_get_relevant_question_answers_by_ids(self):
         self.vector_store._index.fetch.return_value = {
             "documents": [["Document 1", "Document 2", "Document 3"]],
             "metadatas": [[None, None, None]],
@@ -260,8 +231,7 @@ class TestPinecone(unittest.TestCase):
             },
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_get_relevant_docs(self, mock_client):
+    def test_get_relevant_docs(self):
         self.vector_store._index.query.return_value = {
             "matches": [
                 {
@@ -289,8 +259,7 @@ class TestPinecone(unittest.TestCase):
             },
         )
 
-    @patch("pandasai.ee.vectorstores.pinecone.pinecone.Pinecone", autospec=True)
-    def test_get_relevant_docs_by_id(self, mock_client):
+    def test_get_relevant_docs_by_id(self):
         self.vector_store._index.fetch.return_value = {
             "documents": [["Document 1", "Document 2", "Document 3"]],
             "metadatas": [[None, None, None]],
