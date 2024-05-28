@@ -27,7 +27,7 @@ function SignInDefault() {
   };
 
   return (
-    <div className="flex items-center justify-center mx-auto h-screen">
+    <div className="flex items-center justify-center mx-auto h-screen dark:bg-black w-full">
       <Button onClick={handleSignIn}>Sign In</Button>
     </div>
   );

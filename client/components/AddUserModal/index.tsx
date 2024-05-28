@@ -6,6 +6,7 @@ import { Loader } from "components/loader/Loader";
 import { toast } from "react-toastify";
 import { useGetMembersList, useGetOrganizations } from "hooks/useOrganizations";
 import { Tooltip } from "react-tooltip";
+import { Input } from "../ui/input";
 
 interface ISpaceUser {
   space_id: string;
@@ -133,10 +134,7 @@ const AddUserModal = ({ setIsModelOpen, spaceUsers, spaceId }: IProps) => {
             ))}
           </div>
           <div className="mt-3">
-            <input
-              className={`text-sm w-full text-dark dark:text-white dark:bg-[#333333] font-montserrat font-normal 
-              rounded-[25px] pl-4 focus:outline-none py-2 placeholder-darkMain dark:placeholder-white/30 shadow-md
-               border border-gray-100 dark:border-none`}
+            <Input
               type="text"
               name="first_name"
               onClick={() => {

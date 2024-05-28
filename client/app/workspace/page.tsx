@@ -5,7 +5,7 @@ import { useGetAllSpaces } from "hooks/useSpaces";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { ROUTE_ADMIN } from "utils/constants";
-import WorkSpaceHeader from "../../components/WorkSpace/header";
+import WorkSpaceHeader from "components/WorkSpace/header";
 import {
   FETCH_CONVERSATION,
   useConversationsContext,

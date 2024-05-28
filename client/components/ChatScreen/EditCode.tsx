@@ -6,6 +6,7 @@ import "ace-builds/src-noconflict/theme-dracula";
 import "ace-builds/src-noconflict/mode-python";
 import { IoMdClose } from "react-icons/io";
 import { Loader } from "components/loader/Loader";
+import { Button } from "../ui/button";
 
 interface IProps {
   closeEditor: () => void;
@@ -42,13 +43,14 @@ const EditCodeComponent = ({
           editorProps={{ $blockScrolling: true }}
         />
       </div>
-      <button
-        className="px-4 py-2 rounded-[12px] bg-black text-white text-[10px]  flex justify-end align-center mt-4 mb-2"
+      <Button
+        type="button"
         onClick={handleCodeUpdate}
         disabled={isLoading}
+        className="mt-4 mb-2"
       >
-        {isLoading ? <Loader heigth="h-3" width="w-5" /> : `Submit`}
-      </button>
+        {isLoading ? <Loader heigth="h-6" width="w-10" /> : `Submit`}
+      </Button>
 
       <div
         className=" absolute right-2 top-2 cursor-pointer"

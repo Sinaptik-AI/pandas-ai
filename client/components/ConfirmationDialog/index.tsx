@@ -25,7 +25,7 @@ const ConfirmationDialog = ({
       isLoading={isLoading}
       modalWidth="w-[350px]"
     >
-      <h4 className="my-4 md:text-xl text-md text-center">{text}</h4>
+      <h4 className="my-4 sm:text-sm md:text-lg text-center">{text}</h4>
     </AppModal>
   );
 };

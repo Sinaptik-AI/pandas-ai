@@ -1,7 +1,8 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import FormButton from "components/Buttons/FormButton";
 import { AiOutlineClose } from "react-icons/ai";
+import { Button } from "../ui/button";
+import { Loader } from "../loader/Loader";
 
 interface IProps {
   closeModal?: () => void;
@@ -46,29 +47,33 @@ export const AppModal = ({
               />
             </span>
 
-            <div className="mb-5 w-full">{children}</div>
+            <div className="mb-7 w-full">{children}</div>
             {isFooter && (
               <div className="flex items-center justify-center gap-2">
-                <FormButton
-                  text={actionButtonText}
+                <Button
                   type="button"
                   onClick={handleSubmit}
-                  isLoading={isLoading}
                   disabled={isLoading}
-                />
-                <button
+                >
+                  {isLoading ? (
+                    <Loader heigth="h-6" width="w-10" />
+                  ) : (
+                    actionButtonText
+                  )}
+                </Button>
+                <Button
                   type="button"
                   disabled={isLoading}
                   onClick={closeModal}
-                  className={`px-6 py-1 border rounded-[10px] border-[#D30000] flex flex-wrap items-center justify-center cursor-pointer bg-[#D30000] font-bold text-white font-montserrat`}
+                  variant="destructive"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </div>
         </div>,
-        document.body,
+        document.body
       )}
     </>
   );

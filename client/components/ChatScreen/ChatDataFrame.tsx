@@ -4,7 +4,6 @@ import { ChatResponseItem } from "@/types/chat-types";
 import React, { useState, useRef, useEffect } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { toast } from "react-toastify";
-import AddPartialDialog from "./AddPartialDialog";
 
 interface IProps {
   chatResponse: ChatResponseItem;
@@ -89,7 +88,6 @@ const StyledRecord = ({ record }: { record: string }) => {
 };
 
 const ChatDataFrame = ({ chatResponse, index, chatId }: IProps) => {
-  const [openDialog, setOpenDialog] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState(null);
   const [contentHeight, setContentHeight] = useState("300px");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -182,12 +180,6 @@ const ChatDataFrame = ({ chatResponse, index, chatId }: IProps) => {
             >
               {isDownloading ? "Downloading..." : "Download the full table"}
             </button>
-            {/* <button
-              className="cursor-pointer bg-[#191919] h-[24px] text-xs text-white font-bold rounded-full px-3 py-1"
-              onClick={() => setOpenDialog(true)}
-            >
-              Add Partials
-            </button> */}
           </div>
         )}
       </div>
@@ -205,13 +197,6 @@ const ChatDataFrame = ({ chatResponse, index, chatId }: IProps) => {
           </button>
         )}
       </div>
-      {openDialog && (
-        <AddPartialDialog
-          chatId={chatId}
-          closeDialog={() => setOpenDialog(false)}
-          index={expandedCardId}
-        />
-      )}
     </div>
   );
 };
