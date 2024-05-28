@@ -423,7 +423,8 @@ Generate python code and return full updated code:"""  # noqa E501
         prompt = GeneratePythonCodePrompt(
             context=agent.context, viz_lib="", output_type=None
         )
-        print(prompt.to_json())
+        if sys.platform.startswith("win"):
+            prompt["prompt"] = prompt["prompt"].replace("\r\n", "\n")
 
         assert prompt.to_json() == {
             "datasets": [
