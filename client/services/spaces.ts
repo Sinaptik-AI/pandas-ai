@@ -3,7 +3,7 @@ import { BASE_API_URL } from "utils/constants";
 
 const spaceApiUrl = `${BASE_API_URL}/api/spaces`;
 
-type userSpase = {
+type userSpace = {
   new_member_email: string;
 };
 
@@ -18,7 +18,7 @@ export const GetSpaceUser = async (id: string) => {
   const data = await useGetApi(apiUrl);
   return data;
 };
-export const AddNewUserSpace = async (id: string, dataToAdd: userSpase) => {
+export const AddNewUserSpace = async (id: string, dataToAdd: userSpace) => {
   const addUrl = `${spaceApiUrl}/${id}/user`;
   try {
     const result = await usePostApi(addUrl, dataToAdd);
