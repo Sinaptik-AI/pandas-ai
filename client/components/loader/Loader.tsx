@@ -1,15 +1,15 @@
 import React from "react";
 
 interface IProps {
-  heigth?: string;
+  height?: string;
   width?: string;
 }
 
-export const Loader = ({ heigth = "h-96", width = "w-14" }: IProps) => {
+export const Loader = ({ height = "h-96", width = "w-14" }: IProps) => {
   return (
     <div className="flex justify-center align-center">
       <svg
-        className={`${heigth} ${width} animate-spin text-white`}
+        className={`${height} ${width} animate-spin text-white`}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

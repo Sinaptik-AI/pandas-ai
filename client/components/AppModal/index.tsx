@@ -56,7 +56,7 @@ export const AppModal = ({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader heigth="h-6" width="w-10" />
+                    <Loader height="h-6" width="w-10" />
                   ) : (
                     actionButtonText
                   )}

@@ -49,7 +49,7 @@ const EditCodeComponent = ({
         disabled={isLoading}
         className="mt-4 mb-2"
       >
-        {isLoading ? <Loader heigth="h-6" width="w-10" /> : `Submit`}
+        {isLoading ? <Loader height="h-6" width="w-10" /> : `Submit`}
       </Button>
 
       <div
