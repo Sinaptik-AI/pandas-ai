@@ -52,7 +52,7 @@ class PandasConnector(BaseConnector):
         super().__init__(config, **kwargs)
 
         self._load_df(self.config.original_df)
-        self.sql_enabed = False
+        self.sql_enabled = False
 
     def _load_df(self, df: Union[pd.DataFrame, pd.Series, str, list, dict]):
         """
@@ -167,11 +167,11 @@ class PandasConnector(BaseConnector):
         table = table_name or self.name
         duckdb_relation = duckdb.from_df(self.pandas_df)
         duckdb_relation.create(table)
-        self.sql_enabed = True
+        self.sql_enabled = True
         self.name = table
 
     def execute_direct_sql_query(self, sql_query):
-        if not self.sql_enabed:
+        if not self.sql_enabled:
             self.enable_sql_query()
         sql_query = sql_query.replace("`", '"')
         return duckdb.query(sql_query).df()

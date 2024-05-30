@@ -34,6 +34,7 @@ class SemanticAgent(BaseAgent):
             pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
         ],
         config: Optional[Union[Config, dict]] = None,
+        schema: Optional[List[dict]] = None,
         memory_size: Optional[int] = 10,
         pipeline: Optional[Type[GenerateChatPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
@@ -44,7 +45,7 @@ class SemanticAgent(BaseAgent):
         self._validate_config()
 
         self._schema_cache = Cache("schema")
-        self._schema = None
+        self._schema = schema or None
 
         self._create_schema()
 
@@ -90,6 +91,10 @@ class SemanticAgent(BaseAgent):
         """
         Generate schema on the initialization of Agent class
         """
+        if self._schema:
+            self.logger.log(f"using user provided schema: {self._schema}")
+            return
+
         key = self._get_schema_cache_key()
         if self.config.enable_cache:
             value = self._schema_cache.get(key)
