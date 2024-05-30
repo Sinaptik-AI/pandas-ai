@@ -14,7 +14,7 @@
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["index", "getting-started"]
+      "pages": ["intro", "getting-started"]
     },
     {
       "group": "Essentials",
