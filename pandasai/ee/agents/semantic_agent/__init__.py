@@ -18,7 +18,9 @@ from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
+from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
 
@@ -81,6 +83,18 @@ class SemanticAgent(BaseAgent):
                 on_result=self._callbacks.on_result,
             )
         )
+
+    def query(self, query):
+        query_pipeline = Pipeline(
+            context=self.context,
+            logger=self.logger,
+            steps=[
+                CodeGenerator(),
+            ],
+        )
+        code = query_pipeline.run(query)
+
+        self.execute_code(code)
 
     def init_duckdb_instance(self):
         for index, tables in enumerate(self._schema):

@@ -101,6 +101,9 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
+        if "_steps" not in self.__dict__:
+            self._steps = []
+
         self._steps.append(step)
 
     def set_final_response(self, response: Any):
