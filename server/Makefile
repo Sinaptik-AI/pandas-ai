@@ -1,9 +1,9 @@
 # Build configuration
 # -------------------
 
-APP_NAME := `sed -n 's/^ *name.*=.*"\([^"]*\)".*/\1/p' pyproject.toml`
-APP_VERSION := `sed -n 's/^ *version.*=.*"\([^"]*\)".*/\1/p' pyproject.toml`
-GIT_REVISION = `git rev-parse HEAD`
+APP_NAME := $(shell sed -n 's/^ *name.*=.*"\([^"]*\)".*/\1/p' pyproject.toml)
+APP_VERSION := $(shell sed -n 's/^ *version.*=.*"\([^"]*\)".*/\1/p' pyproject.toml)
+GIT_REVISION = $(shell git rev-parse HEAD)
 
 # Introspection targets
 # ---------------------
@@ -36,47 +36,36 @@ targets:
 
 .PHONY: install
 install: ## Install dependencies
-	poetry install
+	poetry install --no-root
 
 .PHONY: run
 run: start
 
 .PHONY: start
 start: ## Starts the server
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	poetry run python main.py
 
 .PHONY: migrate
 migrate: ## Run the migrations
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	poetry run alembic upgrade head
 
 .PHONY: rollback
 rollback: ## Rollback migrations one level
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	poetry run alembic downgrade -1
 
 .PHONY: reset-database
 reset-database: ## Rollback all migrations
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	poetry run alembic downgrade base
 
 .PHONY: generate-migration 
 generate-migration: ## Generate a new migration
-	$(eval include .env) 
-	$(eval export $(sh sed 's/=.*//' .env)) 
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	@read -p "Enter migration message: " message; \
 	poetry run alembic revision --autogenerate -m "$$message"
-
 
 # Check, lint and format targets
 # ------------------------------
@@ -92,7 +81,7 @@ check-format: ## Dry-run code formatter
 .PHONY: lint
 lint: ## Run linter
 	poetry run pylint ./api ./app ./core
- 
+
 .PHONY: format
 format: ## Run code formatter
 	poetry run black ./
@@ -104,7 +93,5 @@ check-lockfile: ## Compares lock file with pyproject.toml
 
 .PHONY: test
 test: ## Run the test suite
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
+	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
 	poetry run pytest -vv -s --cache-clear ./

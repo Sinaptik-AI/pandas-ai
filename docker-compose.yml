@@ -1,4 +1,34 @@
 services:
+  postgresql:
+    image: postgres:14.2-alpine
+    environment:
+      POSTGRES_USER: pandasai
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: pandasai-db
+    ports:
+      - "5430:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - pandasbi-network
+
+  server:
+    container_name: pandasbi-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    restart: always
+    volumes:
+      - ./server:/app
+    env_file:
+      - ./server/.env
+    depends_on:
+      - postgresql
+    networks:
+      - pandasbi-network
+
   client:
     container_name: pandasbi-frontend
     build:
@@ -6,7 +36,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    restart: always   
+    restart: always
     volumes:
       - ./client:/app
       - /app/node_modules
@@ -15,3 +45,9 @@ services:
     environment:
       - NODE_ENV=development
     command: npm run dev
+    networks:
+      - pandasbi-network
+
+networks:
+  pandasbi-network:
+    driver: bridge
