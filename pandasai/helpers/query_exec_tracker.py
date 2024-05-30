@@ -47,6 +47,7 @@ class QueryExecTracker:
     ) -> None:
         self._success = False
         self._start_time = None
+        self._last_log_id = None
         self._server_config = server_config
         self._query_info = {}
 
@@ -100,6 +101,9 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
+        if "_steps" not in self.__dict__:
+            self._steps = []
+
         self._steps.append(step)
 
     def set_final_response(self, response: Any):

@@ -1,13 +1,14 @@
 from typing import Any, List
 
+from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.connectors.sql import SQLConnector
+from pandasai.constants import PANDASBI_SETUP_MESSAGE
 from pandasai.exceptions import InvalidConfigError
+from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
-
-from ...connectors import BaseConnector
-from ..base_logic_unit import BaseLogicUnit
-from ..pipeline_context import PipelineContext
+from pandasai.pipelines.pipeline_context import PipelineContext
 
 
 class ValidatePipelineInput(BaseLogicUnit):
@@ -36,7 +37,7 @@ class ValidatePipelineInput(BaseLogicUnit):
                 return True
             else:
                 raise InvalidConfigError(
-                    "Direct requires all Connector and they belong to same datasource "
+                    "Direct requires all SQLConnector and they belong to same datasource "
                     "and have same credentials"
                 )
         return False
@@ -54,5 +55,11 @@ class ValidatePipelineInput(BaseLogicUnit):
         :return: The result of the execution.
         """
         self.context: PipelineContext = kwargs.get("context")
+        if not isinstance(self.context.config.llm, BambooLLM):
+            raise InvalidConfigError(
+                f"""Semantic Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
+            )
+
         self._validate_direct_sql(self.context.dfs)
+
         return LogicUnitOutput(input, True, "Input Validation Successful")

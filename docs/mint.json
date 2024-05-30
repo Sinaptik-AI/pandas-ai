@@ -21,6 +21,10 @@
       "pages": ["connectors", "llms", "pipelines"]
     },
     {
+      "group": "Advanced agents",
+      "pages": ["semantic-agent"]
+    },
+    {
       "group": "Advanced usage",
       "pages": [
         "cache",

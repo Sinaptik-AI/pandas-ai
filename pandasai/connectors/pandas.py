@@ -6,9 +6,11 @@ import hashlib
 from functools import cache, cached_property
 from typing import Union
 
+import duckdb
 from pydantic import BaseModel
 
 import pandasai.pandas as pd
+from pandasai.exceptions import PandasConnectorTableNotFound
 
 from ..helpers.data_sampler import DataSampler
 from ..helpers.file_importer import FileImporter
@@ -50,6 +52,7 @@ class PandasConnector(BaseConnector):
         super().__init__(config, **kwargs)
 
         self._load_df(self.config.original_df)
+        self.sql_enabled = False
 
     def _load_df(self, df: Union[pd.DataFrame, pd.Series, str, list, dict]):
         """
@@ -156,3 +159,23 @@ class PandasConnector(BaseConnector):
         equal to the other data source.
         """
         return self._original_df.equals(other._original_df)
+
+    def enable_sql_query(self, table_name=None):
+        if not table_name and not self.name:
+            raise PandasConnectorTableNotFound("Table name not found!")
+
+        table = table_name or self.name
+        duckdb_relation = duckdb.from_df(self.pandas_df)
+        duckdb_relation.create(table)
+        self.sql_enabled = True
+        self.name = table
+
+    def execute_direct_sql_query(self, sql_query):
+        if not self.sql_enabled:
+            self.enable_sql_query()
+        sql_query = sql_query.replace("`", '"')
+        return duckdb.query(sql_query).df()
+
+    @property
+    def cs_table_name(self):
+        return self.name
