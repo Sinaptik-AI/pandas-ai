@@ -1,20 +1,15 @@
 import { ChatMessageData } from '@/types/chat-types';
-import { FeedMessage } from '@/components/FeedsScreen.tsx/types';
 import { create } from 'zustand'
 
 type StoreType = {
     darkMode: boolean;
     toggleDarkMode: (e) => void;
-    setSelectedFeedItem?: (feedItem: FeedMessage) => void;
-    selectedFeedItem?: FeedMessage
     setSelectedChatItem?: (feedItem: ChatMessageData) => void;
-    setSelectedChartItem?: (chartItem: FeedMessage) => void,
     selectedChatItem?: ChatMessageData,
     isExplainViewOpen?: boolean;
     isChartEditOpen?: boolean;
     setIsExplainViewOpen?: (e: boolean) => void,
     setIsChartEditOpen?: (e: boolean) => void,
-    selectedChartItem?: FeedMessage;
     isSideBarOpen?: boolean;
     setIsSidebarOpen?: (e: boolean) => void;
     isNewChatClicked?: boolean;
@@ -40,9 +35,6 @@ export const useAppStore = create<StoreType>((set) => ({
     toggleDarkMode: (mode) => {
         set(() => ({ darkMode: mode }))
     },
-    setSelectedFeedItem: (feedItem: FeedMessage) => {
-        set(() => ({ selectedFeedItem: feedItem }));
-    },
     setSelectedChatItem: (chatItem: ChatMessageData) => {
         set(() => ({ selectedChatItem: chatItem }));
     },
@@ -51,9 +43,6 @@ export const useAppStore = create<StoreType>((set) => ({
     },
     setIsChartEditOpen: (option: boolean) => {
         set(() => ({ isChartEditOpen: option }));
-    },
-    setSelectedChartItem: (chartItem: FeedMessage) => {
-        set(() => ({ selectedChartItem: chartItem }));
     },
     setIsSidebarOpen: (option: boolean) => {
         set(() => ({ isSideBarOpen: option }));

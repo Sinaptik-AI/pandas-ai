@@ -200,7 +200,7 @@ const ChatPage = () => {
         space: {
           id: spaceId,
         },
-        mesages: [newMessage],
+        messages: [newMessage],
       });
     } else {
       newConversations.unshift({
@@ -214,7 +214,7 @@ const ChatPage = () => {
             space: {
               id: spaceId,
             },
-            mesages: [newMessage],
+            messages: [newMessage],
           },
         ],
       });

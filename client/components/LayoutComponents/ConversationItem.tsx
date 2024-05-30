@@ -196,7 +196,7 @@ const ConversationItem = ({ collapsed }: IProps) => {
                     }}
                     data-tooltip-id={`${conversation.id}`}
                   >
-                    {conversation?.mesages?.[0]?.query}
+                    {conversation?.messages?.[0]?.query}
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
@@ -220,7 +220,7 @@ const ConversationItem = ({ collapsed }: IProps) => {
                     className="z-50"
                     opacity={1}
                   >
-                    {conversation?.mesages?.[0]?.query}
+                    {conversation?.messages?.[0]?.query}
                   </Tooltip>
                 </div>
               ))}
