@@ -1,4 +1,5 @@
 import pandas as pd
+
 from pandasai.ee.agents.semantic_agent import SemanticAgent
 
 config_ = {"enable_cache": False, "direct_sql": True}

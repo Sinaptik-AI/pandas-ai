@@ -7,6 +7,7 @@ from pandasai.agent.base import BaseAgent
 from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
+from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
 from pandasai.ee.agents.semantic_agent.pipeline.semantic_chat_pipeline import (
     SemanticChatPipeline,
 )
@@ -20,7 +21,6 @@ from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
 
