@@ -1,4 +1,4 @@
-from app.models.user import Connector, ConnectorType, Dataset
+from app.models import Connector, ConnectorType, Dataset
 from core.repository import BaseRepository
 
 

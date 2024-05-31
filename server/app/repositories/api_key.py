@@ -1,4 +1,4 @@
-from app.models.user import APIKeys
+from app.models import APIKeys
 from core.repository import BaseRepository
 
 

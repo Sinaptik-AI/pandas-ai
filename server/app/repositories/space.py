@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from app.models.user import Connector, Dataset, DatasetSpace, Space, UserSpace
+from app.models import Connector, Dataset, DatasetSpace, Space, UserSpace
 from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository

@@ -1,4 +1,4 @@
-from app.models.user import Organization
+from app.models import Organization
 from core.repository import BaseRepository
 
 

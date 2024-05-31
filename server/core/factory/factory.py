@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from app.controllers import AuthController, UserController
 from app.models import User
-from app.models.user import Organization, OrganizationMembership, Space
+from app.models import Organization, OrganizationMembership, Space
 from app.repositories import UserRepository
 from app.repositories.api_key import APIKeyRepository
 from app.repositories.organization import OrganizationRepository

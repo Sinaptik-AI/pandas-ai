@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from api import router
 from app.controllers.space import SpaceController
 from app.controllers.user import UserController
-from app.models.user import Dataset, Space, User
+from app.models import Dataset, Space, User
 from app.repositories.dataset import DatasetRepository
 from app.repositories.space import SpaceRepository
 from app.repositories.user import UserRepository

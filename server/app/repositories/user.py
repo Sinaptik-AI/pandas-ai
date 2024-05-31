@@ -4,7 +4,7 @@ from sqlalchemy import Select
 from sqlalchemy.orm import joinedload
 
 from app.models import User
-from app.models.user import (
+from app.models import (
     APIKeys,
     Organization,
     OrganizationMembership,
