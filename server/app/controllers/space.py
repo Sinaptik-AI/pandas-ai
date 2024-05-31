@@ -1,7 +1,6 @@
 from typing import List
 
-from app.models import User
-from app.models import ConnectorType, Space
+from app.models import ConnectorType, Space, User
 from app.repositories.dataset import DatasetRepository
 from app.repositories.space import SpaceRepository
 from core.controller import BaseController

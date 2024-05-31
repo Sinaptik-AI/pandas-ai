@@ -86,3 +86,12 @@ class SpaceRepository(BaseRepository[Space]):
     async def add_dataset_to_space(self, space_id: str, dataset_id: str):
         dataset_space = DatasetSpace(space_id=space_id, dataset_id=dataset_id)
         self.session.add(dataset_space)
+
+    async def get_space_datasets(self, space_id: str):
+        result = await self.session.execute(
+            select(Dataset)
+            .join(DatasetSpace)
+            .options(joinedload(Dataset.dataset_spaces))
+            .filter(DatasetSpace.space_id == space_id)
+        )
+        return result.unique().scalars().all()

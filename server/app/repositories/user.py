@@ -3,12 +3,12 @@ import uuid
 from sqlalchemy import Select
 from sqlalchemy.orm import joinedload
 
-from app.models import User
 from app.models import (
     APIKeys,
     Organization,
     OrganizationMembership,
     OrganizationRole,
+    User,
 )
 from core.config import config
 from core.repository import BaseRepository
