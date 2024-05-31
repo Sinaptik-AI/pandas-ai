@@ -10,7 +10,6 @@ from app.repositories.api_key import APIKeyRepository
 from app.repositories.organization import OrganizationRepository
 from app.repositories.space import SpaceRepository
 from core.database import get_session
-from core.repository.base import BaseRepository
 
 
 class Factory:

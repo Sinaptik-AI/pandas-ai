@@ -6,7 +6,6 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import router
 from app.controllers.space import SpaceController
@@ -16,13 +15,12 @@ from app.repositories.dataset import DatasetRepository
 from app.repositories.space import SpaceRepository
 from app.repositories.user import UserRepository
 from core.config import config
-from core.database.session import get_session, session
+from core.database.session import session
 from core.exceptions import CustomException
 from core.fastapi.dependencies import Logging
 from core.fastapi.middlewares import (
     AuthBackend,
     AuthenticationMiddleware,
-    ResponseLoggerMiddleware,
     SQLAlchemyMiddleware,
 )
 from core.utils.dataframe import convert_dataframe_to_dict

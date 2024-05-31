@@ -4,9 +4,8 @@ from app.controllers import AuthController
 from app.controllers.user import UserController
 from app.schemas.extras.token import Token
 from app.schemas.requests.users import LoginUserRequest
-from app.schemas.responses.users import Me, UserResponse
+from app.schemas.responses.users import Me
 from core.factory import Factory
-from core.fastapi.dependencies import AuthenticationRequired
 
 user_router = APIRouter()
 
