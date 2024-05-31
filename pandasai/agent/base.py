@@ -23,9 +23,6 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
-from ..prompts.check_if_relevant_to_conversation import (
-    CheckIfRelevantToConversationPrompt,
-)
 from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from ..prompts.explain_prompt import ExplainPrompt
 from ..prompts.rephase_query_prompt import RephraseQueryPrompt
@@ -376,30 +373,6 @@ class BaseAgent:
 
         if self.logger:
             self.logger.log(f"Prompt ID: {self.last_prompt_id}")
-
-    def check_if_related_to_conversation(self, query: str) -> bool:
-        """
-        Check if the query is related to the previous conversation
-        """
-        if self.context.memory.count() == 0:
-            return
-
-        prompt = CheckIfRelevantToConversationPrompt(
-            context=self.context,
-            query=query,
-        )
-
-        result = self.call_llm_with_prompt(prompt)
-
-        is_related = "true" in result
-        self.logger.log(
-            f"""Check if the new message is related to the conversation: {is_related}"""
-        )
-
-        if not is_related:
-            self.clear_memory()
-
-        return is_related
 
     def clarification_questions(self, query: str) -> List[str]:
         """
