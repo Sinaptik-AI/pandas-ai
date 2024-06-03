@@ -22,7 +22,7 @@ class MembershipBase(BaseModel):
         orm_mode = True
 
 
-class Me(BaseModel):
+class UserInfo(BaseModel):
     email: str = Field(..., example="john.doe@example.com")
     first_name: str = Field(..., example="john.doe")
     id: UUID4 = Field(..., example="a3b8f042-1e16-4f0a-a8f0-421e16df0a2f")

@@ -1,7 +1,7 @@
 from app.models import User
 from app.repositories import UserRepository
-from app.repositories.space import SpaceRepository
-from app.schemas.responses.users import Me, OrganizationBase, SpaceBase
+from app.repositories.workspace import WorkspaceRepository
+from app.schemas.responses.users import UserInfo, OrganizationBase, SpaceBase
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
 from core.exceptions.base import NotFoundException
@@ -9,7 +9,7 @@ from core.exceptions.base import NotFoundException
 
 class UserController(BaseController[User]):
     def __init__(
-        self, user_repository: UserRepository, space_repository: SpaceRepository
+        self, user_repository: UserRepository, space_repository: WorkspaceRepository
     ):
         super().__init__(model=User, repository=user_repository)
         self.user_repository = user_repository
@@ -24,10 +24,12 @@ class UserController(BaseController[User]):
     async def get_by_email(self, email: str) -> User:
         return await self.user_repository.get_by_email(email)
 
-    async def me(self):
+    async def me(self) -> UserInfo:
         users = await self.get_all(limit=1)
         if not users:
-            raise NotFoundException("No User found restart server and try again!")
+            raise NotFoundException(
+                "No user found. Please restart the server and try again"
+            )
 
         user = users[0]
 
@@ -45,7 +47,7 @@ class UserController(BaseController[User]):
 
         space_base = SpaceBase(id=space.id, name=space.name, slug=space.slug)
 
-        return Me(
+        return UserInfo(
             email=user.email,
             first_name=user.first_name,
             id=user.id,

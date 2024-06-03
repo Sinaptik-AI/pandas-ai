@@ -8,11 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from api import router
-from app.controllers.space import SpaceController
+from app.controllers.workspace import WorkspaceController
 from app.controllers.user import UserController
-from app.models import Dataset, Space, User
+from app.models import Dataset, Workspace, User
 from app.repositories.dataset import DatasetRepository
-from app.repositories.space import SpaceRepository
+from app.repositories.workspace import WorkspaceRepository
 from app.repositories.user import UserRepository
 from core.config import config
 from core.database.session import session
@@ -74,7 +74,7 @@ def make_middleware() -> List[Middleware]:
 
 async def init_user():
     user_repository = UserRepository(User, db_session=session)
-    space_repository = SpaceRepository(Space, db_session=session)
+    space_repository = WorkspaceRepository(Workspace, db_session=session)
     controller = UserController(user_repository, space_repository)
     await controller.create_default_user()
     users = await controller.get_all(limit=1, join_={"memberships"})
@@ -111,13 +111,13 @@ async def init_database():
     user = await init_user()
     directory_path = os.path.join(os.path.dirname(__file__), "..", "data")
     datasets = read_csv_files_from_directory(directory_path)
-    space_repository = SpaceRepository(Space, db_session=session)
+    space_repository = WorkspaceRepository(Workspace, db_session=session)
 
     space = await space_repository.create_default_space_in_org(
         organization_id=user.memberships[0].organization_id, user_id=user.id
     )
     dataset_repository = DatasetRepository(Dataset, db_session=session)
-    space_controller = SpaceController(
+    space_controller = WorkspaceController(
         space_repository=space_repository, dataset_repository=dataset_repository
     )
 

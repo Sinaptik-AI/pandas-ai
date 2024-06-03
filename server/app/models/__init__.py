@@ -48,7 +48,7 @@ class User(Base):
     memberships = relationship(
         "OrganizationMembership", back_populates="user", lazy="selectin"
     )
-    spaces = relationship("Space", back_populates="user")
+    spaces = relationship("Workspace", back_populates="user")
     user_spaces = relationship("UserSpace", back_populates="user")
 
 
@@ -65,7 +65,7 @@ class Organization(Base):
     members = relationship(
         "OrganizationMembership", back_populates="organization", lazy="selectin"
     )
-    spaces = relationship("Space", back_populates="organization")
+    workspaces = relationship("Workspace", back_populates="organization")
 
 
 class APIKeys(Base):
@@ -123,8 +123,8 @@ class Connector(Base):
     __table_args__ = (UniqueConstraint("id", name="uq_connector_id"),)
 
 
-class Space(Base):
-    __tablename__ = "space"
+class Workspace(Base):
+    __tablename__ = "workspace"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String)
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
@@ -132,30 +132,32 @@ class Space(Base):
     slug = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.now)
 
-    organization = relationship("Organization", back_populates="spaces")
+    organization = relationship("Organization", back_populates="workspaces")
     user = relationship("User", back_populates="spaces")
-    dataset_spaces = relationship("DatasetSpace", back_populates="space")
-    user_spaces = relationship("UserSpace", back_populates="space")
+    dataset_spaces = relationship("DatasetSpace", back_populates="workspace")
+    user_spaces = relationship("UserSpace", back_populates="workspace")
 
 
 class UserSpace(Base):
     __tablename__ = "user_space"
-    space_id = Column(UUID(as_uuid=True), ForeignKey("space.id"), primary_key=True)
+    workspace_id = Column(
+        UUID(as_uuid=True), ForeignKey("workspace.id"), primary_key=True
+    )
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), primary_key=True)
 
-    space = relationship("Space", back_populates="user_spaces", lazy="joined")
+    workspace = relationship("Workspace", back_populates="user_spaces", lazy="joined")
     user = relationship("User", back_populates="user_spaces", lazy="joined")
 
 
 class UserConversation(Base):
     __tablename__ = "user_conversation"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    space_id = Column(UUID(as_uuid=True), ForeignKey("space.id"))
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspace.id"))
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
     created_at = Column(DateTime, default=datetime.datetime.now)
     valid = Column(Boolean, default=True)
 
-    space = relationship("Space")
+    workspace = relationship("Workspace")
     user = relationship("User")
 
 
@@ -178,7 +180,7 @@ class DatasetSpace(Base):
     __tablename__ = "dataset_space"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     dataset_id = Column(UUID(as_uuid=True), ForeignKey("dataset.id"))
-    space_id = Column(UUID(as_uuid=True), ForeignKey("space.id"))
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspace.id"))
 
     dataset = relationship("Dataset", back_populates="dataset_spaces")
-    space = relationship("Space", back_populates="dataset_spaces")
+    workspace = relationship("Workspace", back_populates="dataset_spaces")

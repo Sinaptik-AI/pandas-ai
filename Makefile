@@ -23,7 +23,7 @@ coverage:  ## run unit tests and generate coverage report
 # SPELLCHECK AND FORMATTING
 ###########################
 
-IGNORE_FORMATS ?= "*.csv,*.txt,*.lock,*.log,server/app/models/user.py"
+IGNORE_FORMATS ?= "*.csv,*.txt,*.lock,*.log"
 
 format:  ## run code formatters
 	poetry run ruff format pandasai examples tests

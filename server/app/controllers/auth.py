@@ -20,13 +20,13 @@ class AuthController(BaseController[User]):
         user = await self.user_repository.get_by_email(email)
 
         if user:
-            raise BadRequestException("User already exists with this email")
+            raise BadRequestException("A user with this email already exists")
 
         # Check if user exists with username
         user = await self.user_repository.get_by_username(username)
 
         if user:
-            raise BadRequestException("User already exists with this username")
+            raise BadRequestException("A user with this username already exists")
 
         password = PasswordHandler.hash(password)
 

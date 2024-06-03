@@ -22,10 +22,11 @@ typing-extensions="^4.0.0"
 asyncpg = "^0.29.0"
 greenlet = "^3.0.3"
 python-jose = "^3.3.0"
-passlib = "^1.7.4"
 pylint = "^3.2.2"
 pandasai = "^2.1"
 pyyaml = "^6.0.1"
+passlib = "^1.7.4"
+bcrypt = "3.1.7"
 
 [tool.poetry.dev-dependencies]
 behave = "^1.2.6"

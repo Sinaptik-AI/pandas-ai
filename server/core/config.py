@@ -21,6 +21,7 @@ class Config(BaseConfig):
     POSTGRES_URL: PostgresDsn = (
         "postgresql+asyncpg://user:password@127.0.0.1:5432/db-name"
     )
+    OPENAI_API_KEY: str = None
     RELEASE_VERSION: str = "0.1.0"
     SHOW_SQL_ALCHEMY_QUERIES: int = 0
     SECRET_KEY: str = "super-secret-key"

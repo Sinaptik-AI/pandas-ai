@@ -1,35 +1,57 @@
 import os
 import shutil
-import uuid
 from typing import List
 
 import pandas as pd
 from pandasai import Agent
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.path import find_project_root
+from pandasai.llm.openai import OpenAI
 
 from app.models import Dataset, User
 from app.repositories import UserRepository
-from app.repositories.space import SpaceRepository
+from app.repositories.conversation import ConversationRepository
+from app.repositories.workspace import WorkspaceRepository
 from app.schemas.requests.chat import ChatRequest
+from app.schemas.responses.users import UserInfo
 from core.constants import CHAT_FALLBACK_MESSAGE
 from core.controller import BaseController
+from core.database.transactional import Propagation, Transactional
 from core.utils.dataframe import load_df
 from core.utils.response_parser import JsonResponseParser
+from core.config import config as env_config
 
 
 class ChatController(BaseController[User]):
     def __init__(
-        self, user_repository: UserRepository, space_repository: SpaceRepository
+        self,
+        user_repository: UserRepository,
+        space_repository: WorkspaceRepository,
+        conversation_repository: ConversationRepository,
     ):
         super().__init__(model=User, repository=user_repository)
         self.user_repository = user_repository
         self.space_repository = space_repository
+        self.conversation_repository = conversation_repository
 
-    async def chat(self, chat_request: ChatRequest) -> List[dict]:
-        datasets: List[Dataset] = await self.space_repository.get_space_datasets(
-            chat_request.space_id
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def start_new_conversation(self, user: UserInfo, chat_request: ChatRequest):
+        return await self.conversation_repository.create(
+            {
+                "workspace_id": chat_request.workspace_id,
+                "user_id": user.id,
+            }
         )
+
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def chat(self, user: UserInfo, chat_request: ChatRequest) -> List[dict]:
+        datasets: List[Dataset] = await self.space_repository.get_space_datasets(
+            chat_request.workspace_id
+        )
+        conversation_id = chat_request.conversation_id
+        if not chat_request.conversation_id:
+            user_conversation = await self.start_new_conversation(user, chat_request)
+            conversation_id = user_conversation.id
 
         connectors = []
         for dataset in datasets:
@@ -44,7 +66,7 @@ class ChatController(BaseController[User]):
             )
             connectors.append(connector)
 
-        path_plot_directory = find_project_root() + "/exports/" + str(uuid.uuid4())
+        path_plot_directory = find_project_root() + "/exports/" + str(conversation_id)
 
         config = {
             "enable_cache": False,
@@ -52,6 +74,10 @@ class ChatController(BaseController[User]):
             "save_charts": True,
             "save_charts_path": path_plot_directory,
         }
+
+        if env_config.OPENAI_API_KEY:
+            llm = OpenAI(env_config.OPENAI_API_KEY)
+            config["llm"] = llm
 
         agent = Agent(connectors, config=config)
 
@@ -71,4 +97,12 @@ class ChatController(BaseController[User]):
                 }
             ]
 
-        return [response]
+        response = [response]
+        await self.conversation_repository.add_conversation_message(
+            conversation_id=conversation_id,
+            query=chat_request.query,
+            response=response,
+            code_generated=agent.last_code_executed,
+        )
+
+        return response

@@ -3,25 +3,25 @@ from typing import List
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from app.models import Connector, Dataset, DatasetSpace, Space, UserSpace
+from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace
 from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository
 
 
-class SpaceRepository(BaseRepository[Space]):
+class WorkspaceRepository(BaseRepository[Workspace]):
     """
     Space repository provides all the database operations for the Space model.
     """
 
     async def create_default_space_in_org(
         self, organization_id: str, user_id: str
-    ) -> Space:
+    ) -> Workspace:
         space = await self.get_all(limit=1)
         if space:
             return space[0]
 
-        space = Space(
+        space = Workspace(
             name=config.DEFAULT_SPACE,
             user_id=user_id,
             organization_id=organization_id,
@@ -30,15 +30,15 @@ class SpaceRepository(BaseRepository[Space]):
         self.session.add(space)
         await self.session.flush()
 
-        user_space = UserSpace(user_id=user_id, space_id=space.id)
+        user_space = UserSpace(user_id=user_id, workspace_id=space.id)
 
         self.session.add(user_space)
 
         return space
 
-    async def delete_space_datasets(self, space_id: str) -> None:
-        # Select the DatasetSpace entries for the given space_id
-        query = select(DatasetSpace).where(DatasetSpace.space_id == space_id)
+    async def delete_space_datasets(self, workspace_id: str) -> None:
+        # Select the DatasetSpace entries for the given workspace_id
+        query = select(DatasetSpace).where(DatasetSpace.workspace_id == workspace_id)
         result = await self.session.execute(query)
         dataset_spaces = result.scalars().all()
 
@@ -62,7 +62,7 @@ class SpaceRepository(BaseRepository[Space]):
 
         # Delete the DatasetSpace entries
         delete_dataset_space_query = delete(DatasetSpace).where(
-            DatasetSpace.space_id == space_id
+            DatasetSpace.workspace_id == workspace_id
         )
         await self.session.execute(delete_dataset_space_query)
 
@@ -83,15 +83,15 @@ class SpaceRepository(BaseRepository[Space]):
         for dataset in datasets:
             dataset_repository.create({**dataset})
 
-    async def add_dataset_to_space(self, space_id: str, dataset_id: str):
-        dataset_space = DatasetSpace(space_id=space_id, dataset_id=dataset_id)
+    async def add_dataset_to_space(self, workspace_id: str, dataset_id: str):
+        dataset_space = DatasetSpace(workspace_id=workspace_id, dataset_id=dataset_id)
         self.session.add(dataset_space)
 
-    async def get_space_datasets(self, space_id: str):
+    async def get_space_datasets(self, workspace_id: str) -> List[Dataset]:
         result = await self.session.execute(
             select(Dataset)
             .join(DatasetSpace)
             .options(joinedload(Dataset.dataset_spaces))
-            .filter(DatasetSpace.space_id == space_id)
+            .filter(DatasetSpace.workspace_id == workspace_id)
         )
         return result.unique().scalars().all()

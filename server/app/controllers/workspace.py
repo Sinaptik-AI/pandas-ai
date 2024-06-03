@@ -1,27 +1,31 @@
 from typing import List
 
-from app.models import ConnectorType, Space, User
+from app.models import ConnectorType, Workspace, User
 from app.repositories.dataset import DatasetRepository
-from app.repositories.space import SpaceRepository
+from app.repositories.workspace import WorkspaceRepository
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
 
 
-class SpaceController(BaseController[Space]):
+class WorkspaceController(BaseController[Workspace]):
     def __init__(
-        self, space_repository: SpaceRepository, dataset_repository: DatasetRepository
+        self,
+        space_repository: WorkspaceRepository,
+        dataset_repository: DatasetRepository,
     ):
         super().__init__(model=User, repository=space_repository)
         self.space_repository = space_repository
         self.dataset_repository = dataset_repository
 
     @Transactional(propagation=Propagation.REQUIRED_NEW)
-    async def reset_space_datasets(self, space_id: str) -> bool:
-        await self.space_repository.delete_space_datasets(space_id)
+    async def reset_space_datasets(self, workspace_id: str) -> bool:
+        await self.space_repository.delete_space_datasets(workspace_id)
         return True
 
     @Transactional(propagation=Propagation.REQUIRED_NEW)
-    async def add_csv_datasets(self, datasets: List[dict], user: User, space_id: str):
+    async def add_csv_datasets(
+        self, datasets: List[dict], user: User, workspace_id: str
+    ):
         for dataset in datasets:
             dataset = await self.dataset_repository.create_dataset(
                 user_id=user.id,
@@ -35,5 +39,5 @@ class SpaceController(BaseController[Space]):
                 head=dataset["head"],
             )
             await self.space_repository.add_dataset_to_space(
-                dataset_id=dataset.id, space_id=space_id
+                dataset_id=dataset.id, workspace_id=workspace_id
             )

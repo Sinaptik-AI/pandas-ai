@@ -1,15 +1,16 @@
 """initial_migration
 
-Revision ID: a554ce02a4aa
+Revision ID: 51e3880da98b
 Revises: 
-Create Date: 2024-05-30 15:26:29.272430
+Create Date: 2024-06-03 14:21:18.361386
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision = "a554ce02a4aa"
+revision = "51e3880da98b"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -94,7 +95,7 @@ def upgrade():
         unique=False,
     )
     op.create_table(
-        "space",
+        "workspace",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("name", sa.String(), nullable=True),
         sa.Column("user_id", sa.UUID(), nullable=True),
@@ -111,7 +112,7 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_space_id"), "space", ["id"], unique=False)
+    op.create_index(op.f("ix_workspace_id"), "workspace", ["id"], unique=False)
     op.create_table(
         "dataset",
         sa.Column("id", sa.UUID(), nullable=False),
@@ -143,17 +144,17 @@ def upgrade():
     op.create_table(
         "user_conversation",
         sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("space_id", sa.UUID(), nullable=True),
+        sa.Column("workspace_id", sa.UUID(), nullable=True),
         sa.Column("user_id", sa.UUID(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("valid", sa.Boolean(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["space_id"],
-            ["space.id"],
-        ),
-        sa.ForeignKeyConstraint(
             ["user_id"],
             ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["workspace_id"],
+            ["workspace.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -162,17 +163,17 @@ def upgrade():
     )
     op.create_table(
         "user_space",
-        sa.Column("space_id", sa.UUID(), nullable=False),
+        sa.Column("workspace_id", sa.UUID(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["space_id"],
-            ["space.id"],
-        ),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["user.id"],
         ),
-        sa.PrimaryKeyConstraint("space_id", "user_id"),
+        sa.ForeignKeyConstraint(
+            ["workspace_id"],
+            ["workspace.id"],
+        ),
+        sa.PrimaryKeyConstraint("workspace_id", "user_id"),
     )
     op.create_table(
         "conversation_message",
@@ -198,14 +199,14 @@ def upgrade():
         "dataset_space",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("dataset_id", sa.UUID(), nullable=True),
-        sa.Column("space_id", sa.UUID(), nullable=True),
+        sa.Column("workspace_id", sa.UUID(), nullable=True),
         sa.ForeignKeyConstraint(
             ["dataset_id"],
             ["dataset.id"],
         ),
         sa.ForeignKeyConstraint(
-            ["space_id"],
-            ["space.id"],
+            ["workspace_id"],
+            ["workspace.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -224,8 +225,8 @@ def downgrade():
     op.drop_table("user_conversation")
     op.drop_index(op.f("ix_dataset_id"), table_name="dataset")
     op.drop_table("dataset")
-    op.drop_index(op.f("ix_space_id"), table_name="space")
-    op.drop_table("space")
+    op.drop_index(op.f("ix_workspace_id"), table_name="workspace")
+    op.drop_table("workspace")
     op.drop_index(
         op.f("ix_organization_membership_id"), table_name="organization_membership"
     )
