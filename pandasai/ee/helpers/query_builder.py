@@ -203,7 +203,9 @@ class QueryBuilder:
             return ""
 
         order = query["order"][0]
-        name = self.find_measure(order["id"])["name"]
+        name = (self.find_measure(order["id"]) or self.find_dimension(order["id"]))[
+            "name"
+        ]
         return f" ORDER BY {name} {order['direction']}"
 
     def _build_limit_clause(self, query):
