@@ -1,5 +1,5 @@
 "use client";
-import { ChatApi, ConversationHistory } from "services/chatInterface";
+import { ChatApi, ConversationHistory } from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
@@ -165,7 +165,7 @@ const ChatDetails = () => {
       setChat(chat);
       const fetchChatData = async () => {
         await ChatApi({
-          space_id: space_id,
+          workspace_id: space_id,
           conversation_id: conversation_id,
           query: query,
         })

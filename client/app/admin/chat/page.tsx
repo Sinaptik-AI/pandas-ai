@@ -3,7 +3,7 @@ import {
   ChatApi,
   ConversationHistory,
   FetchFollowUpQuestions,
-} from "services/chatInterface";
+} from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { ChatMessageData } from "../../../types/chat-types";
 import { useSearchParams } from "next/navigation";
@@ -92,7 +92,7 @@ const ChatPage = () => {
 
   const fetchChatData = async (userQuery: string) => {
     await ChatApi({
-      space_id: spaceId,
+      workspace_id: spaceId,
       conversation_id: conversationId,
       query: userQuery,
     })

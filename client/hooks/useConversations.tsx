@@ -3,7 +3,7 @@ import {
   ConversationChatBySpaceApi,
   ExplainConversationMessage,
   GetChatLabel,
-} from "@/services/chatInterface";
+} from "@/services/chat";
 
 export const useGetConversations = (spaceId, page, rowsPerPage) => {
   const { data, isLoading, error, isError, refetch, isFetching } = useQuery({

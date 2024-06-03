@@ -1,4 +1,4 @@
-import { useDeleteWithBody, useGetApi, usePostApi } from "hooks/apiHook";
+import { DeleteRequestWithBody, GetRequest, PostRequest } from "@/utils/apiUtils";
 import { BASE_API_URL } from "utils/constants";
 
 const spaceApiUrl = `${BASE_API_URL}/api/spaces`;
@@ -9,19 +9,19 @@ type userSpace = {
 
 export const GetAllSpacesList = async () => {
   const apiUrl = `${spaceApiUrl}/list`;
-  const data = await useGetApi(apiUrl);
+  const data = await GetRequest(apiUrl);
   return data;
 };
 
 export const GetSpaceUser = async (id: string) => {
   const apiUrl = `${spaceApiUrl}/${id}/user`;
-  const data = await useGetApi(apiUrl);
+  const data = await GetRequest(apiUrl);
   return data;
 };
 export const AddNewUserSpace = async (id: string, dataToAdd: userSpace) => {
   const addUrl = `${spaceApiUrl}/${id}/user`;
   try {
-    const result = await usePostApi(addUrl, dataToAdd);
+    const result = await PostRequest(addUrl, dataToAdd);
     return result;
   } catch (error) {
     console.error("Add request failed", error);
@@ -31,7 +31,7 @@ export const AddNewUserSpace = async (id: string, dataToAdd: userSpace) => {
 export const DeleteSpaceUser = async (id: string, user_id) => {
   const apiUrl = `${spaceApiUrl}/${id}/user`;
   try {
-    const data = await useDeleteWithBody(apiUrl, user_id);
+    const data = await DeleteRequestWithBody(apiUrl, user_id);
     return data;
   } catch (error) {
     console.error("Delete request failed", error);
