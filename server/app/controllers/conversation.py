@@ -2,7 +2,7 @@ from app.models import User, UserConversation
 from app.repositories import UserRepository
 from app.repositories.conversation import ConversationRepository
 
-from app.schemas.responses.conversation import ConversationList
+from app.schemas.responses.conversation import ConversationList, ConversationMessageList
 from core.controller import BaseController
 
 
@@ -25,3 +25,16 @@ class ConversationController(BaseController[UserConversation]):
 
         count = await self.conversation_repository.get_count(user_id, workspace_id)
         return ConversationList(count=count, conversations=conversations)
+
+    async def get_conversation_messages(
+        self, conversation_id: str, skip: int = 0, limit: int = 100
+    ):
+        conversation_messages = (
+            await self.conversation_repository.get_conversation_messages(
+                conversation_id, skip, limit, "desc"
+            )
+        )
+
+        count = await self.conversation_repository.get_messages_count(conversation_id)
+
+        return ConversationMessageList(count=count, messages=conversation_messages)
