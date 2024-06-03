@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List, Optional
 from pydantic import UUID4, BaseModel
 from datetime import datetime
 
@@ -10,6 +10,14 @@ class ConversationMessageBase(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ConversationMessageDTO(ConversationMessageBase):
+    response: Optional[Any] = None
+    code_generated: Optional[str] = None
+    label: Optional[str] = None
+    log_id: Optional[UUID4] = None
+    settings: Optional[Any] = None
 
 
 class UserConversationBase(BaseModel):
@@ -27,3 +35,8 @@ class UserConversationBase(BaseModel):
 class ConversationList(BaseModel):
     count: int
     conversations: List[UserConversationBase]
+
+
+class ConversationMessageList(BaseModel):
+    count: int
+    messages: List[ConversationMessageDTO]
