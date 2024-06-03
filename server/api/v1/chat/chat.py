@@ -19,12 +19,3 @@ async def chat(
 ) -> APIResponse[ChatResponse]:
     response = await chat_controller.chat(user, chat_request)
     return APIResponse(data=response, message="Chat response returned successfully!")
-
-
-@chat_router.get("/conversations")
-async def conversations(
-    chat_request: ChatRequest,
-    chat_controller: ChatController = Depends(Factory().get_chat_controller),
-) -> APIResponse[ChatResponse]:
-    response = await chat_controller.chat(chat_request)
-    return APIResponse(data=response, message="Chat response returned successfully!")

@@ -4,6 +4,7 @@ from fastapi import Depends
 
 from app.controllers import AuthController, UserController
 from app.controllers.chat import ChatController
+from app.controllers.conversation import ConversationController
 from app.controllers.workspace import WorkspaceController
 from app.controllers.datasets import DatasetController
 from app.models import (
@@ -65,5 +66,11 @@ class Factory:
     
     def get_datasets_controller(self, db_session=Depends(get_session)):
         return DatasetController(
-            dataset_repository=self.dataset_repository(db_session=db_session),
+            dataset_repository=self.dataset_repository(db_session=db_session)
+            )
+
+    def get_conversation_controller(self, db_session=Depends(get_session)):
+        return ConversationController(
+            user_repository=self.user_repository(db_session=db_session),
+            conversation_repository=self.conversation_repository(db_session=db_session),
         )

@@ -159,6 +159,11 @@ class UserConversation(Base):
 
     workspace = relationship("Workspace")
     user = relationship("User")
+    messages = relationship(
+        "ConversationMessage",
+        back_populates="user_conversation",
+        cascade="all, delete-orphan",
+    )
 
 
 class ConversationMessage(Base):
@@ -173,7 +178,7 @@ class ConversationMessage(Base):
     log_id = Column(UUID(as_uuid=True), nullable=True)
     settings = Column(JSON, nullable=True)
 
-    user_conversation = relationship("UserConversation")
+    user_conversation = relationship("UserConversation", back_populates="messages")
 
 
 class DatasetSpace(Base):

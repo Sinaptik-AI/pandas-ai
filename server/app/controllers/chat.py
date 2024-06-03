@@ -15,6 +15,7 @@ from app.repositories.workspace import WorkspaceRepository
 from app.schemas.requests.chat import ChatRequest
 from app.schemas.responses.chat import ChatResponse
 from app.schemas.responses.users import UserInfo
+from app.utils.memory import prepare_conv_memory
 from core.constants import CHAT_FALLBACK_MESSAGE
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
@@ -52,6 +53,7 @@ class ChatController(BaseController[User]):
         )
         conversation_id = chat_request.conversation_id
         conversation_messages = []
+        memory = None
 
         if not chat_request.conversation_id:
             user_conversation = await self.start_new_conversation(user, chat_request)
@@ -63,9 +65,7 @@ class ChatController(BaseController[User]):
                     conversation_id
                 )
             )
-
-        for message in conversation_messages:
-            print("prepare_memory")
+            memory = prepare_conv_memory(conversation_messages)
 
         connectors = []
         for dataset in datasets:
@@ -94,6 +94,8 @@ class ChatController(BaseController[User]):
             config["llm"] = llm
 
         agent = Agent(connectors, config=config)
+        if memory:
+            agent.context.memory = memory
 
         response = agent.chat(chat_request.query)
 
