@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 from app.models import ConversationMessage, UserConversation
 from core.repository import BaseRepository
+from sqlalchemy.sql.expression import select
 
 
 class ConversationRepository(BaseRepository[UserConversation]):
@@ -27,3 +28,10 @@ class ConversationRepository(BaseRepository[UserConversation]):
         self.session.add(conversation_message)
 
         return conversation_message
+
+    async def get_conversation_messages(self, conversation_id: str):
+        query = select(ConversationMessage).where(
+            ConversationMessage.conversation_id == conversation_id
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
