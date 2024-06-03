@@ -7,11 +7,7 @@ import ChatPlot from "./ChatPlot";
 import ChatReaction from "./ChatReaction";
 import GetChatLabel from "./ChatLabel";
 import EditCodeComponent from "./EditCode";
-import {
-  ChatMessageRetry,
-  ChatReactionApi,
-  EditCode,
-} from "services/chatInterface";
+import { ChatMessageRetry, ChatReactionApi, EditCode } from "services/chat";
 import { toast } from "react-toastify";
 import { ChatReactionLoader } from "components/Skeletons";
 import ExplainView from "./ExplainView";

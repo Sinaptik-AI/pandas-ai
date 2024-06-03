@@ -1,12 +1,11 @@
 import { DeleteRequest, GetRequest, PatchRequest, PostRequest } from "@/utils/apiUtils";
-import { BASE_API_URL } from "utils/constants";
 
-const chatApiUrl = `${BASE_API_URL}/api/chat`;
+const chatApiUrl = `/v1/chat`;
 
 
 export const ChatApi = async (chatdata) => {
   try {
-    const response = await PostRequest(chatApiUrl, chatdata);
+    const response = await PostRequest(`${chatApiUrl}/`, chatdata);
     return response;
   } catch (error) {
     console.error("Get request failed", error);

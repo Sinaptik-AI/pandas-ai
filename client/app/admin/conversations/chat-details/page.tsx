@@ -1,5 +1,5 @@
 "use client";
-import { ChatApi, ConversationHistory } from "services/chatInterface";
+import { ChatApi, ConversationHistory } from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";

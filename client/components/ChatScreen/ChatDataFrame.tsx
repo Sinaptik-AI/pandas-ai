@@ -1,5 +1,5 @@
 "use client";
-import { FetchDataframe } from "services/chatInterface";
+import { FetchDataframe } from "services/chat";
 import { ChatResponseItem } from "@/types/chat-types";
 import React, { useState, useRef, useEffect } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
