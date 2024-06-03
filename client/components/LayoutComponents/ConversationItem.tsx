@@ -2,7 +2,7 @@
 import {
   ArchiveConversationApi,
   ConversationChatBySpaceApi,
-} from "services/chatInterface";
+} from "services/chat";
 import {
   FETCH_CONVERSATION,
   useConversationsContext,
