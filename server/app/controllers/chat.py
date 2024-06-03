@@ -13,11 +13,14 @@ from app.repositories import UserRepository
 from app.repositories.conversation import ConversationRepository
 from app.repositories.workspace import WorkspaceRepository
 from app.schemas.requests.chat import ChatRequest
+from app.schemas.responses.chat import ChatResponse
 from app.schemas.responses.users import UserInfo
+from app.utils.memory import prepare_conv_memory
 from core.constants import CHAT_FALLBACK_MESSAGE
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
 from core.utils.dataframe import load_df
+from core.utils.json_encoder import jsonable_encoder
 from core.utils.response_parser import JsonResponseParser
 from core.config import config as env_config
 
@@ -44,14 +47,25 @@ class ChatController(BaseController[User]):
         )
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def chat(self, user: UserInfo, chat_request: ChatRequest) -> List[dict]:
+    async def chat(self, user: UserInfo, chat_request: ChatRequest) -> ChatResponse:
         datasets: List[Dataset] = await self.space_repository.get_space_datasets(
             chat_request.workspace_id
         )
         conversation_id = chat_request.conversation_id
+        conversation_messages = []
+        memory = None
+
         if not chat_request.conversation_id:
             user_conversation = await self.start_new_conversation(user, chat_request)
             conversation_id = user_conversation.id
+
+        else:
+            conversation_messages = (
+                await self.conversation_repository.get_conversation_messages(
+                    conversation_id
+                )
+            )
+            memory = prepare_conv_memory(conversation_messages)
 
         connectors = []
         for dataset in datasets:
@@ -80,6 +94,8 @@ class ChatController(BaseController[User]):
             config["llm"] = llm
 
         agent = Agent(connectors, config=config)
+        if memory:
+            agent.context.memory = memory
 
         response = agent.chat(chat_request.query)
 
@@ -97,7 +113,7 @@ class ChatController(BaseController[User]):
                 }
             ]
 
-        response = [response]
+        response = jsonable_encoder([response])
         await self.conversation_repository.add_conversation_message(
             conversation_id=conversation_id,
             query=chat_request.query,
@@ -105,4 +121,4 @@ class ChatController(BaseController[User]):
             code_generated=agent.last_code_executed,
         )
 
-        return response
+        return ChatResponse(response=response, conversation_id=str(conversation_id))

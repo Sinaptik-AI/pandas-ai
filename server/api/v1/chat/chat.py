@@ -7,7 +7,6 @@ from app.schemas.responses.chat import ChatResponse
 from app.schemas.responses.users import UserInfo
 from core.factory import Factory
 from core.fastapi.dependencies.current_user import get_current_user
-from core.utils.json_encoder import jsonable_encoder
 
 chat_router = APIRouter()
 
@@ -19,17 +18,4 @@ async def chat(
     user: UserInfo = Depends(get_current_user),
 ) -> APIResponse[ChatResponse]:
     response = await chat_controller.chat(user, chat_request)
-    return APIResponse(
-        data=jsonable_encoder(response), message="Chat response returned successfully!"
-    )
-
-
-@chat_router.get("/conversations")
-async def conversations(
-    chat_request: ChatRequest,
-    chat_controller: ChatController = Depends(Factory().get_chat_controller),
-) -> APIResponse[ChatResponse]:
-    response = await chat_controller.chat(chat_request)
-    return APIResponse(
-        data=jsonable_encoder(response), message="Chat response returned successfully!"
-    )
+    return APIResponse(data=response, message="Chat response returned successfully!")

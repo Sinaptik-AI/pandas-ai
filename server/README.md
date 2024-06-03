@@ -20,13 +20,7 @@
 > make migrate
 ```
 
-### Create new database migration
-
-```shell
-> make generate-migration
-```
-
-### Create new database migration
+### Create new database migration after schema changes
 
 ```shell
 > make generate-migration
