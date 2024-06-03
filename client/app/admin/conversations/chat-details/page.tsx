@@ -165,7 +165,7 @@ const ChatDetails = () => {
       setChat(chat);
       const fetchChatData = async () => {
         await ChatApi({
-          space_id: space_id,
+          workspace_id: space_id,
           conversation_id: conversation_id,
           query: query,
         })

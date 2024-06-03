@@ -92,7 +92,7 @@ const ChatPage = () => {
 
   const fetchChatData = async (userQuery: string) => {
     await ChatApi({
-      space_id: spaceId,
+      workspace_id: spaceId,
       conversation_id: conversationId,
       query: userQuery,
     })

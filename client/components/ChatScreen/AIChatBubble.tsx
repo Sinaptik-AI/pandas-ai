@@ -5,7 +5,6 @@ import { ChatMessageData } from "@/types/chat-types";
 import ChatDataFrame from "./ChatDataFrame";
 import ChatPlot from "./ChatPlot";
 import ChatReaction from "./ChatReaction";
-import GetChatLabel from "./ChatLabel";
 import EditCodeComponent from "./EditCode";
 import { ChatMessageRetry, ChatReactionApi, EditCode } from "services/chat";
 import { toast } from "react-toastify";
@@ -240,11 +239,9 @@ const AIChatBubble = ({ chat, chatData, setChatData, lastIndex }: IProps) => {
                             {response?.message}
                           </div>
                         ) : response.type === "number" ? (
-                          <GetChatLabel
-                            chatId={chat?.id}
-                            message={response?.message}
-                            key={chat?.id}
-                          />
+                          <h1 className="font-bold text-4xl py-4 px-3">
+                            {response?.value as string}
+                          </h1>
                         ) : (
                           ""
                         )}
