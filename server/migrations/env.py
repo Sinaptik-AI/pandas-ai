@@ -6,6 +6,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
+from dotenv import load_dotenv
+
+load_dotenv()
 
 parent_dir = os.path.abspath(os.path.join(os.getcwd(), ".."))
 sys.path.append(parent_dir)
@@ -15,6 +18,8 @@ sys.path.append(parent_dir)
 config = context.config
 fileConfig(config.config_file_name)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+print(parent_dir)
 
 
 # Interpret the config file for Python logging.

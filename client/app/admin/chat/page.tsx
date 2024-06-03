@@ -3,7 +3,7 @@ import {
   ChatApi,
   ConversationHistory,
   FetchFollowUpQuestions,
-} from "services/chatInterface";
+} from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { ChatMessageData } from "../../../types/chat-types";
 import { useSearchParams } from "next/navigation";
