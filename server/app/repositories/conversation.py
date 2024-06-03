@@ -49,7 +49,7 @@ class ConversationRepository(BaseRepository[UserConversation]):
             .where(
                 and_(
                     UserConversation.user_id == user_id,
-                    UserConversation.valid is True,
+                    UserConversation.valid == True,
                     UserConversation.workspace_id == workspace_id,
                 )
             )
@@ -81,7 +81,7 @@ class ConversationRepository(BaseRepository[UserConversation]):
             and_(
                 UserConversation.user_id == user_id,
                 UserConversation.workspace_id == workspace_id,
-                UserConversation.valid is True,
+                UserConversation.valid == True,
             )
         )
 
