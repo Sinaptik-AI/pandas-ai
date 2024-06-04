@@ -52,7 +52,7 @@ class JsonResponseParser(IResponseParser):
                 },
             }
 
-        result["message"] = f"Output of type {result['type']}"
+        result["message"] = result["value"]
 
         return result
 

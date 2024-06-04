@@ -37,10 +37,10 @@ export default function Admin({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Right Sidebar */}
-            <div className="hidden xl:flex">
+            {/* <div className="hidden xl:flex">
               <VerticalLineSeperator />
               <RightBar />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
