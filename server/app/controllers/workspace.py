@@ -41,3 +41,12 @@ class WorkspaceController(BaseController[Workspace]):
             await self.space_repository.add_dataset_to_space(
                 dataset_id=dataset.id, workspace_id=workspace_id
             )
+
+    async def get_users_by_workspace_id(self, workspace_id: str) -> List[User]:
+        """
+        Fetch users based on workspace access.
+
+        :param workspace_id: ID of the workspace.
+        :return: List of users with access to the specified workspace.
+        """
+        return await self.space_repository.get_users_by_workspace_id(workspace_id)
