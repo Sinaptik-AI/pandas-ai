@@ -42,3 +42,6 @@ exports/
 # coverage
 .coverage
 coverage.xml
+
+# pgdata
+pgdata/

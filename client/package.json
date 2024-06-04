@@ -32,6 +32,7 @@
     "react-modern-drawer": "^1.3.1",
     "react-toastify": "^10.0.5",
     "react-tooltip": "^5.26.4",
+    "rollbar": "^2.26.4",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^4.5.2"
