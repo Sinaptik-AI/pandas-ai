@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { MdOutlineArchive } from "react-icons/md";
 import { toast } from "react-toastify";
-import { Tooltip } from "react-tooltip";
 import { useAppStore } from "store";
 import { isToday, isYesterday, startOfWeek, isWithinInterval } from "date-fns";
 import { ConversationsHistoryLoader } from "components/Skeletons";
@@ -187,7 +186,6 @@ const ConversationItem = ({ collapsed }: IProps) => {
                       );
                       closeSidebar();
                     }}
-                    data-tooltip-id={`${conversation.id}`}
                   >
                     {conversation?.messages?.[0]?.query}
                     <div
@@ -207,14 +205,6 @@ const ConversationItem = ({ collapsed }: IProps) => {
                       />
                     </div>
                   </div>
-                  <Tooltip
-                    id={`${conversation.id}`}
-                    place="top-end"
-                    className="z-50"
-                    opacity={1}
-                  >
-                    {conversation?.messages?.[0]?.query}
-                  </Tooltip>
                 </div>
               ))}
             </div>
