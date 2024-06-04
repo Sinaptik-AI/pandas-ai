@@ -10,10 +10,10 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     networks:
-      - pandasbi-network
+      - pandabi-network
 
   server:
-    container_name: pandasbi-backend
+    container_name: pandabi-backend
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -27,11 +27,11 @@ services:
     depends_on:
       - postgresql
     networks:
-      - pandasbi-network
+      - pandabi-network
     command: ["/wait-for-it.sh", "postgresql", "--", "/startup.sh"]
 
   client:
-    container_name: pandasbi-frontend
+    container_name: pandabi-frontend
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -47,8 +47,8 @@ services:
       - NODE_ENV=development
     command: npm run dev
     networks:
-      - pandasbi-network
+      - pandabi-network
 
 networks:
-  pandasbi-network:
+  pandabi-network:
     driver: bridge
