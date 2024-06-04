@@ -30,7 +30,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
 
   const rollbarConfig = {
     accessToken: NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN,
-    environment: process.env.NODE_ENV,
+    environment: process.env.NODE_ENV || "development",
   };
 
   useEffect(() => {
