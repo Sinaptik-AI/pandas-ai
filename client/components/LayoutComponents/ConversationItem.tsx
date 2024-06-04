@@ -176,37 +176,39 @@ const ConversationItem = ({ collapsed }: IProps) => {
               <div className="dark:text-white font-bold text-base py-2">
                 {date}
               </div>
-              {conversations?.map((conversation) => (
-                <div key={conversation.id} className="">
-                  <div
-                    className="py-1 dark:text-white text-base font-light truncate cursor-pointer group relative dark:hover:bg-[#11111180] hover:bg-[#EDEDED] rounded-lg"
-                    onClick={() => {
-                      router.push(
-                        `/admin/conversations/${conversation?.id}/messages`
-                      );
-                      closeSidebar();
-                    }}
-                  >
-                    {conversation?.messages?.[0]?.query}
+              {conversations
+                ?.filter((conv) => conv.messages.length > 0)
+                .map((conversation) => (
+                  <div key={conversation.id} className="">
                     <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsModelOpen(true);
-                        setCurrentConversation({
-                          conversationDate: date,
-                          conversationId: conversation.id,
-                        });
+                      className="py-1 dark:text-white text-base font-light truncate cursor-pointer group relative dark:hover:bg-[#11111180] hover:bg-[#EDEDED] rounded-lg"
+                      onClick={() => {
+                        router.push(
+                          `/admin/conversations/${conversation?.id}/messages`
+                        );
+                        closeSidebar();
                       }}
-                      className="absolute flex justify-end pr-1 dark:bg-[#111111f2] bg-[#ededede6] w-10 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
-                      <MdOutlineArchive
-                        color={darkMode ? "#fff" : "#000"}
-                        size={20}
-                      />
+                      {conversation?.messages?.[0]?.query}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsModelOpen(true);
+                          setCurrentConversation({
+                            conversationDate: date,
+                            conversationId: conversation.id,
+                          });
+                        }}
+                        className="absolute flex justify-end pr-1 dark:bg-[#111111f2] bg-[#ededede6] w-10 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      >
+                        <MdOutlineArchive
+                          color={darkMode ? "#fff" : "#000"}
+                          size={20}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           ))}
           {isLoading && <ConversationsHistoryLoader amount={1} />}
