@@ -8,6 +8,28 @@ import { useAppStore } from "store";
 import { ROUTE_CHAT_SCREEN } from "utils/constants";
 import ConversationItem from "./ConversationItem";
 
+// import { useRouter } from "next/navigation";
+// import StartChatIcon from "components/Icons/StartChatIcon";
+// import { ROUTE_CHAT_SCREEN } from "utils/constants";
+
+const StartChatButton = () => {
+  const setIsNewChatClicked = useAppStore((state) => state.setIsNewChatClicked);
+  const router = useRouter();
+
+  return (
+    <div
+      className="flex center-items py-2 px-4 bg-blue-700 rounded-md cursor-pointer text-[15px]"
+      onClick={() => {
+        router.push(ROUTE_CHAT_SCREEN);
+        setIsNewChatClicked(true);
+      }}
+    >
+      <StartChatIcon />
+      <div className="text-white ml-2">New chat</div>
+    </div>
+  );
+};
+
 interface IProps {
   isMobileView?: boolean;
 }
@@ -80,15 +102,18 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
               isSidebarOpen
                 ? "w-full overflow-y-auto"
                 : "overflow-y-hidden hover:overflow-y-auto overflow-x-hidden"
-            } p-5 h-full flex flex-col custom-scroll`}
+            } p-5 h-full flex flex-col custom-scroll mb-4`}
           >
-            <h2
-              className={`font-semibold text-2xl ${
-                collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-              } dark:text-white mb-4 transition-all duration-1000`}
-            >
-              Chats
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2
+                className={`font-semibold text-2xl ${
+                  collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+                } dark:text-white transition-all duration-1000`}
+              >
+                Chats
+              </h2>
+              <StartChatButton />
+            </div>
             <ConversationItem collapsed={collapsed} />
           </div>
         </div>

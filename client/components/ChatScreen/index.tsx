@@ -60,7 +60,7 @@ const ChatScreen = ({
                     ) : (
                       <>
                         {chatData?.length === 0 && (
-                          <h3 className="flex items-center justify-center w-full h-full m-auto dark:text-white text-2xl font-montserrat">
+                          <h3 className="flex items-center justify-center w-full h-full m-auto dark:text-white text-xl font-montserrat">
                             How can I help you today?
                           </h3>
                         )}
