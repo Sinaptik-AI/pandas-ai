@@ -1,76 +1,59 @@
 "use client";
-import { useGetSpaceUsers } from "hooks/useSpaces";
-import React, { useState } from "react";
+import { isWindowAvailable } from "utils/navigation";
+import React from "react";
+import LeftBar from "components/LayoutComponents/LeftBar";
+import VerticalLineSeperator from "components/VerticalLineSeperator";
+import RightBar from "components/LayoutComponents/RightBar";
+import Navbar from "components/Navbar";
 import { useAppStore } from "store";
-import AddWorkSpace from "components/Icons/AddWorkSpace";
-import { RightSidebarLoader } from "components/Skeletons";
-import AddUserModal from "components/AddUserModal";
-import { AppModal } from "components/AppModal";
+import Drawer from "react-modern-drawer";
+import useWindowWidth from "hooks/useWindowWidth";
+import "react-modern-drawer/dist/index.css";
 
-const RightBar = () => {
-  const darkMode = useAppStore((state) => state.darkMode);
-  const spaceId = localStorage.getItem("spaceId");
-  const isAdmin = localStorage.getItem("is_admin");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const { data: usersResponse, isLoading: isGetSpaceUserLoading } =
-    useGetSpaceUsers(spaceId);
+export default function Admin({ children }: { children: React.ReactNode }) {
+  if (isWindowAvailable()) document.documentElement.dir = "ltr";
+  const isRightSidebarOpen = useAppStore((state) => state.isRightSidebarOpen);
+  const setIsRightSidebarOpen = useAppStore(
+    (state) => state.setIsRightSidebarOpen
+  );
+  const width = useWindowWidth();
+  const isMobile = width <= 1200;
 
   return (
     <>
-      <div
-        className={`w-[350px] h-full flex flex-col font-montserrat dark:bg-black bg-white`}
-      >
-        <div className="mt-5 w-full flex-1 overflow-y-auto custom-scroll flex justify-center dark:text-white font-montserrat">
-          <div className="flex-1 px-5">
-            {isGetSpaceUserLoading ? (
-              <div className="w-full flex-1 mt-12">
-                <RightSidebarLoader />
-              </div>
-            ) : (
-              <div>
-                <h2 className={`font-semibold text-2xl dark:text-white mt-12`}>
-                  Team
-                </h2>
-                <div className="pt-1">
-                  {usersResponse?.data?.data?.map((user) => (
-                    <p className="pt-[2px] font-light" key={user.user_id}>
-                      {user?.Users?.first_name}
-                    </p>
-                  ))}
-                  {isAdmin && (
-                    <div
-                      onClick={() => setIsModalOpen(true)}
-                      className="max-w-[50px] p-2 dark:border-[#262626] border rounded-[10px] flex items-center justify-center mt-2 cursor-pointer dark:bg-[#262626]"
-                    >
-                      <AddWorkSpace
-                        color={darkMode ? "white" : "black"}
-                        size={12}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+      <div className="flex flex-col h-screen">
+        <Navbar />
+        <div>
+          <div className="flex h-[calc(100vh-75px)] dark:bg-black bg-white overflow-y-hidden">
+            {/* Previous Conversations Sidebar */}
+            <div className="flex">
+              <LeftBar />
+              <VerticalLineSeperator />
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-grow md:w-[calc(100%-370px)] xl:w-[calc(100%-690px)]">
+              {children}
+            </div>
+
+            {/* Right Sidebar */}
+            {/* <div className="hidden xl:flex">
+              <VerticalLineSeperator />
+              <RightBar />
+            </div> */}
           </div>
         </div>
       </div>
-
-      {isModalOpen && (
-        <AppModal
-          closeModal={() => setIsModalOpen(false)}
-          modalWidth="w-[350px]"
-          isFooter={false}
+      {isMobile && (
+        <Drawer
+          open={isRightSidebarOpen}
+          onClose={() => setIsRightSidebarOpen(false)}
+          direction="right"
+          size={350}
         >
-          <AddUserModal
-            setIsModelOpen={() => setIsModalOpen(false)}
-            spaceUsers={usersResponse?.data?.data}
-            spaceId={spaceId}
-          />
-        </AppModal>
+          <RightBar />
+        </Drawer>
       )}
     </>
   );
-};
-
-export default RightBar;
+}
