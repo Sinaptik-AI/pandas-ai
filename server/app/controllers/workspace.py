@@ -41,3 +41,7 @@ class WorkspaceController(BaseController[Workspace]):
             await self.space_repository.add_dataset_to_space(
                 dataset_id=dataset.id, workspace_id=workspace_id
             )
+
+    @Transactional(propagation=Propagation.REQUIRED_NEW)
+    async def get_workspace_users(self, workspace_id: str) -> List[User]:
+        return await self.space_repository.get_users_by_workspace_id(workspace_id)

@@ -9,6 +9,7 @@ from app.models import (
     OrganizationMembership,
     OrganizationRole,
     User,
+    UserSpace,
 )
 from core.config import config
 from core.repository import BaseRepository
@@ -77,6 +78,21 @@ class UserRepository(BaseRepository[User]):
         user.organization_id = organization.id
 
         return user
+
+    async def get_users_by_workspace_id(self, workspace_id: str) -> list[User]:
+        """
+        Fetch users based on workspace access.
+
+        :param workspace_id: ID of the workspace.
+        :return: List of users with access to the specified workspace.
+        """
+        query = (
+            select(User)
+            .join(UserSpace, UserSpace.user_id == User.id)
+            .where(UserSpace.workspace_id == workspace_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
 
     def _join_memberships(self, query: Select) -> Select:
         """
