@@ -2,17 +2,18 @@
 import { ChatApi, ConversationHistory } from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { ChatMessageData } from "@/types/chat-types";
 import { toast } from "react-toastify";
 import ChatScreen from "components/ChatScreen";
 import { reorderArray } from "utils/reorderConversations";
+import { ConversationMessages } from "@/services/conversations";
 
 const ChatDetails = () => {
   const [sendQuery, setSendQuery] = useState(false);
   const [chat, setChat] = useState<ChatMessageData[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [scrollLoad, setScrollLoad] = useState(false);
   const [rawApiData, setRawApiData] = useState([]);
   const [hasMore, setHasMore] = useState(false);
@@ -23,9 +24,9 @@ const ChatDetails = () => {
 
   const router = useRouter();
 
-  const params = useSearchParams();
-  const conversation_id = params.get("conversationId");
-  const space_id = params.get("space_id");
+  const params: { id: string } = useParams();
+  const conversation_id = params.id;
+  const space_id = localStorage.getItem("spaceId");
 
   const rawApiDataLengthRef = useRef(rawApiData.length);
   const scrollDivRef = useRef(null);
@@ -45,33 +46,33 @@ const ChatDetails = () => {
     }
 
     setIsLoading(true);
-    await ConversationHistory(conversation_id, newCurrentPage)
+    await ConversationMessages(conversation_id, newCurrentPage)
       .then((response) => {
         const totalCount = response.data?.data?.count;
         setTotalPages(Math.ceil(totalCount / 8));
 
-        const responseData = response?.data?.data?.data;
+        const responseData = response?.data?.data?.messages;
 
         if (responseData != undefined) {
           setRawApiData([...newRawApiData, ...responseData]);
         }
-        const conversation_history_query = response?.data?.data?.data?.map(
+        const conversation_history_query = response?.data?.data?.messages?.map(
           (data) => {
             return {
               query: data?.query,
-              createdAt: data?.createdAt,
+              createdAt: data?.created_at,
               id: `${data.id}1`,
-              conversation_id: data?.conversation_id,
+              conversation_id: params.id,
             };
           }
         );
-        const conversation_history_resp = response?.data?.data?.data?.map(
+        const conversation_history_resp = response?.data?.data?.messages?.map(
           (data) => {
             return {
               response: data?.response,
-              createdAt: data?.createdAt,
+              createdAt: data?.created_at,
               id: data.id,
-              code: data?.code,
+              code: data?.code_generated,
               conversation_id: data?.conversation_id,
               thumbs_up: data?.user_rating,
               plotSettings: data?.settings,
@@ -150,7 +151,7 @@ const ChatDetails = () => {
   }, [currentPage]);
 
   useEffect(() => {
-    fetchConversationHistory([], [], 1);
+    fetchConversationHistory([], [], 0);
   }, [conversation_id, space_id]);
 
   useEffect(() => {

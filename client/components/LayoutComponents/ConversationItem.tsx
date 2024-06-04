@@ -1,8 +1,5 @@
 "use client";
-import {
-  ArchiveConversationApi,
-  ConversationChatBySpaceApi,
-} from "services/chat";
+import { ArchiveConversationApi } from "services/chat";
 import {
   FETCH_CONVERSATION,
   useConversationsContext,
@@ -16,6 +13,7 @@ import { useAppStore } from "store";
 import { isToday, isYesterday, startOfWeek, isWithinInterval } from "date-fns";
 import { ConversationsHistoryLoader } from "components/Skeletons";
 import ConfirmationDialog from "components/ConfirmationDialog";
+import { GetConversations } from "@/services/conversations";
 
 interface IProps {
   collapsed: boolean;
@@ -23,7 +21,7 @@ interface IProps {
 
 const ConversationItem = ({ collapsed }: IProps) => {
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const itemsPerPage = 25;
   const [totalPages, setTotalPages] = useState(0);
   const spaceId = localStorage.getItem("spaceId");
@@ -43,14 +41,10 @@ const ConversationItem = ({ collapsed }: IProps) => {
   const getAllConversations = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await ConversationChatBySpaceApi(
-        spaceId,
-        page,
-        itemsPerPage
-      );
+      const response = await GetConversations(page, itemsPerPage);
       setTotalPages(Math.ceil(response?.data?.data?.count / itemsPerPage));
       setIsLoading(false);
-      return response?.data?.data?.data;
+      return response?.data?.data?.conversations;
     } catch (error) {
       toast.error("Something went wrong fetching conversations history!");
       console.log(JSON.stringify(error));
@@ -73,7 +67,6 @@ const ConversationItem = ({ collapsed }: IProps) => {
 
   useEffect(() => {
     const updatedConversations = [...state.conversations];
-
     newConversations?.forEach((conversation) => {
       const date = new Date(conversation.created_at);
       const formattedDate = formatDate(date);
@@ -190,7 +183,7 @@ const ConversationItem = ({ collapsed }: IProps) => {
                     className="py-1 dark:text-white text-base font-light truncate cursor-pointer group relative dark:hover:bg-[#11111180] hover:bg-[#EDEDED] rounded-lg"
                     onClick={() => {
                       router.push(
-                        `/admin/conversations/chat-details?conversationId=${conversation?.id}&space_id=${conversation?.space?.id}`
+                        `/admin/conversations/${conversation?.id}/messages`
                       );
                       closeSidebar();
                     }}

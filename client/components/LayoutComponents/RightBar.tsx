@@ -13,8 +13,8 @@ const RightBar = () => {
   const isAdmin = localStorage.getItem("is_admin");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: usersResponse, isLoading: isGetSpaceUserLoading } =
-    useGetSpaceUsers(spaceId);
+  // const { data: usersResponse, isLoading: isGetSpaceUserLoading } =
+  //   useGetSpaceUsers(spaceId);
 
   return (
     <>
@@ -23,7 +23,7 @@ const RightBar = () => {
       >
         <div className="mt-5 w-full flex-1 overflow-y-auto custom-scroll flex justify-center dark:text-white font-montserrat">
           <div className="flex-1 px-5">
-            {isGetSpaceUserLoading ? (
+            {/* {isGetSpaceUserLoading ? (
               <div className="w-full flex-1 mt-12">
                 <RightSidebarLoader />
               </div>
@@ -51,12 +51,12 @@ const RightBar = () => {
                   )}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
 
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <AppModal
           closeModal={() => setIsModalOpen(false)}
           modalWidth="w-[350px]"
@@ -68,7 +68,7 @@ const RightBar = () => {
             spaceId={spaceId}
           />
         </AppModal>
-      )}
+      )} */}
     </>
   );
 };
