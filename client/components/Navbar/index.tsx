@@ -23,7 +23,7 @@ const Navbar = () => {
         <a href="#" onClick={() => setIsSidebarOpen(!isSideBarOpen)}>
           <BsList size={20} className="text-white ml-5 md:hidden" />
         </a>
-        <Link href="/workspace">
+        <Link href="/admin">
           <LogoDark width={70} height={70} />
         </Link>
 
@@ -37,19 +37,6 @@ const Navbar = () => {
           <StartChatIcon />
           <div className="text-white ml-2">New chat</div>
         </div>
-      </div>
-      {/* Conditionally show if > lg */}
-      <div className="hidden md:flex md:w-[calc(100%-490px)] items-center text-white">
-        <Link href="/workspace">
-          <span
-            className={`inline-flex items-center font-[700] text-xl mr-3 py-5 px-3 border-b-2 ${
-              pathname === "/workspace" ? "" : "border-black"
-            }`}
-          >
-            <BsGridFill size={20} className="mr-2" />
-            Workspaces
-          </span>
-        </Link>
       </div>
       <div className="flex w-[120px] justify-end">
         <SettingsMenu />

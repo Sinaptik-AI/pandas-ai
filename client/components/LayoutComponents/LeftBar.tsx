@@ -99,7 +99,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
           <div
             className="w-[80px] m-2 cursor-pointer"
             onClick={() => {
-              router.push("/workspace");
+              router.push("/admin");
               closeSidebar();
             }}
           >
