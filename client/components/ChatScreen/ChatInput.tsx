@@ -28,14 +28,6 @@ const ChatInput = ({
 }: IProps) => {
   const router = useRouter();
 
-  const storeRecord = (inputValue: string) => {
-    const existingRecords = JSON.parse(localStorage.getItem("queries")) || [];
-    if (!existingRecords.includes(inputValue)) {
-      const updatedRecords = [...existingRecords, inputValue];
-      localStorage.setItem("queries", JSON.stringify(updatedRecords));
-    }
-  };
-
   return (
     <form
       className={`w-full ${extra}`}
@@ -46,7 +38,6 @@ const ChatInput = ({
           router.push(ROUTE_CHAT_SCREEN);
           localStorage.setItem("searchQuery", queryRef.current.value);
         }
-        storeRecord(queryRef.current.value);
       }}
     >
       <div className="relative">
