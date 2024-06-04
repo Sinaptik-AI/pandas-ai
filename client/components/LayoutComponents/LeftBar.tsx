@@ -49,7 +49,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
     <>
       {!isMobileView ? (
         <div
-          className={`bg-white dark:bg-black h-full flex flex-col font-montserrat border-r-[#333333] relative transition-all overflow-hidden md:overflow-visible ${
+          className={`bg-white dark:bg-[#111111] h-full flex flex-col font-montserrat border-r-[#333333] relative transition-all overflow-hidden md:overflow-visible ${
             collapsed ? "md:w-[20px]" : "md:w-[370px]"
           } ${isSidebarOpen ? "w-[370px]" : "w-0"}`}
         >
