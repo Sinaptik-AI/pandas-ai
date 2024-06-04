@@ -28,6 +28,7 @@ services:
       - postgresql
     networks:
       - pandasbi-network
+    command: ["/wait-for-it.sh", "postgresql", "--", "/startup.sh"]
 
   client:
     container_name: pandasbi-frontend
