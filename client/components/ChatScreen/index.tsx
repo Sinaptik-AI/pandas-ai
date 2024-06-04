@@ -13,7 +13,6 @@ import StartChatIcon from "components/Icons/StartChatIcon";
 const ChatScreen = ({
   scrollLoad,
   chatData,
-  setChatData,
   isTyping,
   queryRef,
   sendQuery,
@@ -70,8 +69,6 @@ const ChatScreen = ({
                               <UserChatBubble query={chat?.query} />
                             ) : (
                               <AIChatBubble
-                                chatData={chatData}
-                                setChatData={setChatData}
                                 key={chat.id}
                                 chat={chat}
                                 lastIndex={chatData?.length - 1 === chatIndex}
