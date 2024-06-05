@@ -45,13 +45,15 @@ class LLMCall(BaseLogicUnit):
             )
             try:
                 # Validate is valid Json
-                response = json.loads(response)
+                response_json = json.loads(response)
+
+                pipeline_context.add("llm_call", response)
 
                 return LogicUnitOutput(
-                    response,
+                    response_json,
                     True,
                     "Code Generated Successfully",
-                    {"content_type": "string", "value": response},
+                    {"content_type": "string", "value": response_json},
                 )
             except Exception:
                 if retry_count == pipeline_context.config.max_retries:

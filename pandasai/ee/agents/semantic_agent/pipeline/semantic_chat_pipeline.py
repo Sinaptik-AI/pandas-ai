@@ -8,13 +8,18 @@ from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.ee.agents.semantic_agent.pipeline.Semantic_prompt_generation import (
     SemanticPromptGeneration,
 )
+from pandasai.ee.agents.semantic_agent.pipeline.semantic_result_parsing import (
+    SemanticResultParser,
+)
 from pandasai.ee.agents.semantic_agent.pipeline.validate_pipeline_input import (
     ValidatePipelineInput,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.chat.cache_lookup import CacheLookup
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
+from pandasai.pipelines.chat.code_execution import CodeExecution
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
+from pandasai.pipelines.chat.result_validation import ResultValidation
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 
@@ -61,6 +66,23 @@ class SemanticChatPipeline(GenerateChatPipeline):
                     skip_if=self.no_code,
                     on_failure=self.on_code_cleaning_failure,
                     on_retry=self.on_code_retry,
+                ),
+            ],
+        )
+
+        self.code_execution_pipeline = Pipeline(
+            context=context,
+            logger=logger,
+            query_exec_tracker=self.query_exec_tracker,
+            steps=[
+                CodeExecution(
+                    before_execution=before_code_execution,
+                    on_failure=self.on_code_execution_failure,
+                    on_retry=self.on_code_retry,
+                ),
+                ResultValidation(),
+                SemanticResultParser(
+                    before_execution=on_result,
                 ),
             ],
         )

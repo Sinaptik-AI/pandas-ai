@@ -246,3 +246,11 @@ class PandasConnectorTableNotFound(Exception):
     Args:
         Exception (Exception): PandasConnectorTableNotFound
     """
+
+
+class InvalidTrainJson(Exception):
+    """
+    Raise error if train json is not correct
+    Args:
+        Exception (Exception): Invalid train json
+    """

@@ -341,9 +341,7 @@ class BaseAgent:
                 "No vector store provided. Please provide a vector store to train the agent."
             )
 
-        if (queries is not None and codes is None) or (
-            queries is None and codes is not None
-        ):
+        if (queries and not codes) or (not queries and codes):
             raise ValueError(
                 "If either queries or codes are provided, both must be provided."
             )

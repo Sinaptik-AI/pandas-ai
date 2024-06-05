@@ -14,7 +14,7 @@ from pandasai.ee.agents.semantic_agent.pipeline.semantic_chat_pipeline import (
 from pandasai.ee.agents.semantic_agent.prompts.generate_df_schema import (
     GenerateDFSchemaPrompt,
 )
-from pandasai.exceptions import InvalidConfigError
+from pandasai.exceptions import InvalidConfigError, InvalidTrainJson
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.llm.bamboo_llm import BambooLLM
@@ -83,6 +83,32 @@ class SemanticAgent(BaseAgent):
                 on_result=self._callbacks.on_result,
             )
         )
+
+    def validate_and_convert_json(self, jsons):
+        json_strs = []
+
+        try:
+            for json_data in jsons:
+                if isinstance(json_data, str):
+                    json.loads(json_data)
+                    json_strs.append(json_data)
+                elif isinstance(json_data, dict):
+                    json_strs.append(json.dumps(json_data))
+
+        except Exception as e:
+            raise InvalidTrainJson("Error validating JSON string") from e
+
+        return json_strs
+
+    def train(
+        self,
+        queries: Optional[List[str]] = None,
+        jsons: Optional[List[Union[dict, str]]] = None,
+        docs: Optional[List[str]] = None,
+    ) -> None:
+        json_strs = self.validate_and_convert_json(jsons) if jsons else None
+
+        super().train(queries=queries, codes=json_strs, docs=docs)
 
     def query(self, query):
         query_pipeline = Pipeline(
