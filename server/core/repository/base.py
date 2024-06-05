@@ -73,6 +73,15 @@ class BaseRepository(Generic[ModelType]):
             return await self._one(query)
 
         return await self._all(query)
+    
+    async def get_by_id(self, id: Any) -> ModelType | None:
+        """
+        generic method to get by id.
+        
+        """
+        query = select(self.model_class).filter_by(id=id)
+        result = await self.session.execute(query)
+        return result.scalars().first()
 
     async def delete(self, model: ModelType) -> None:
         """

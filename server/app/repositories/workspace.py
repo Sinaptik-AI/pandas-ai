@@ -3,10 +3,11 @@ from typing import List
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace
+from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace, User
 from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository
+from app.schemas.responses.users import WorkspaceUserResponse
 
 
 class WorkspaceRepository(BaseRepository[Workspace]):
@@ -95,3 +96,14 @@ class WorkspaceRepository(BaseRepository[Workspace]):
             .filter(DatasetSpace.workspace_id == workspace_id)
         )
         return result.unique().scalars().all()
+
+    async def get_users_by_workspace_id(self, workspace_id: str) -> List[WorkspaceUserResponse]:
+        result = await self.session.execute(
+            select(
+                User.id,
+                User.first_name,
+                User.last_name,
+                User.email
+            ).join(UserSpace).filter(UserSpace.workspace_id == workspace_id)
+        )
+        return result.all()

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from typing import List
 
 from app.controllers.datasets import DatasetController
 from core.factory import Factory
