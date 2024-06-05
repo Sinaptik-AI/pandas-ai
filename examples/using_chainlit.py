@@ -51,7 +51,7 @@ async def on_message(message: cl.Message):
 
 
     # load the response into chainlit
-    msg.content=llm_response
+    msg.content=str(llm_response)
     
     # send the response
     await msg.update()
