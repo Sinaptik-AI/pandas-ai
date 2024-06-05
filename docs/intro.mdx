@@ -3,7 +3,7 @@ title: "PandasAI"
 description: "PandasAI is a Python library that makes it easy to ask questions to your data in natural language."
 ---
 
-# ![PandasAI](https://github.com/Sinaptik-AI/pandas-ai/blob/main/images/logo.png?raw=true)
+# ![PandasAI](https://github.com/Sinaptik-AI/pandas-ai/blob/main/assets/logo.png?raw=true)
 
 Beyond querying, PandasAI offers functionalities to visualize data through graphs, cleanse datasets by addressing missing values, and enhance data quality through feature generation, making it a comprehensive tool for data scientists and analysts.
 
@@ -24,6 +24,60 @@ PandasAI uses a generative AI model to understand and interpret natural language
 PandasAI is designed for data scientists, analysts, and engineers who want to interact with their data in a more natural way. It is particularly useful for those who are not familiar with SQL or Python or who want to save time and effort when working with data. It is also useful for those who are familiar with SQL and Python, as it allows them to ask questions to their data without having to write any complex code.
 
 ## How to get started with PandasAI?
+
+### ☁️ Using the platform
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/watch?v=kh61wEy9GYM"
+  title="PandasAI UI"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+If you want to learn more about the platform, you can check out the [platform documentation](platform.mdx).
+
+#### 📦 Installation
+
+PandasAI platform is uses a dockerized client-server architecture. You will need to have Docker installed in your machine.
+
+```bash
+git clone https://github.com/sinaptik-ai/pandas-ai/
+cd pandas-ai
+docker-compose build
+```
+
+#### 🚀 Running the platform
+
+Once you have built the platform, you can run it with:
+
+```bash
+docker-compose up
+```
+
+This will start the client and server, and you can access the client at `http://localhost:3000`.
+
+### 📚 Using the library
+
+#### 📦 Installation
+
+You can install the PandasAI library using pip or poetry.
+
+If you want to learn more about the library, you can check out the [library documentation](library.mdx).
+
+With pip:
+
+```bash
+pip install pandasai
+```
+
+With poetry:
+
+```bash
+poetry add pandasai
+```
 
 To get started with PandasAI, you first need to install it. You can do this by running the following command:
 
@@ -58,7 +112,7 @@ agent.chat('Which are the top 5 countries by sales?')
 # China, United States, Japan, Germany, Australia
 ```
 
-## Demo
+### Demo
 
 Try out PandasAI yourself in your browser:
 

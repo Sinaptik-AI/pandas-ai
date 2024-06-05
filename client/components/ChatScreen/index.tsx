@@ -13,7 +13,6 @@ import StartChatIcon from "components/Icons/StartChatIcon";
 const ChatScreen = ({
   scrollLoad,
   chatData,
-  setChatData,
   isTyping,
   queryRef,
   sendQuery,
@@ -60,9 +59,9 @@ const ChatScreen = ({
                     ) : (
                       <>
                         {chatData?.length === 0 && (
-                          <div className="flex items-center justify-center w-full h-full m-auto dark:text-white text-lg font-montserrat">
+                          <h3 className="flex items-center justify-center w-full h-full m-auto dark:text-white text-xl font-montserrat">
                             How can I help you today?
-                          </div>
+                          </h3>
                         )}
                         {chatData?.map((chat, chatIndex) => (
                           <div key={chat.id}>
@@ -70,8 +69,6 @@ const ChatScreen = ({
                               <UserChatBubble query={chat?.query} />
                             ) : (
                               <AIChatBubble
-                                chatData={chatData}
-                                setChatData={setChatData}
                                 key={chat.id}
                                 chat={chat}
                                 lastIndex={chatData?.length - 1 === chatIndex}

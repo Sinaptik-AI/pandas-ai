@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from sqlalchemy import and_, desc, func
+from sqlalchemy import and_, asc, desc, func
 from app.models import ConversationMessage, UserConversation
 from core.repository import BaseRepository
 from sqlalchemy.sql.expression import select
@@ -32,11 +32,21 @@ class ConversationRepository(BaseRepository[UserConversation]):
 
         return conversation_message
 
-    async def get_conversation_messages(self, conversation_id: str):
+    async def get_conversation_messages(
+        self, conversation_id: str, skip: int = 0, limit: int = 100, order: str = "asc"
+    ):
+        order_by_clause = (
+            desc(ConversationMessage.created_at)
+            if order == "desc"
+            else asc(ConversationMessage.created_at)
+        )
+
         query = (
             select(ConversationMessage)
             .where(ConversationMessage.conversation_id == conversation_id)
-            .order_by(ConversationMessage.created_at)
+            .order_by(order_by_clause)
+            .offset(skip)
+            .limit(limit)
         )
         result = await self.session.execute(query)
         return result.scalars().all()
@@ -68,7 +78,6 @@ class ConversationRepository(BaseRepository[UserConversation]):
         result = await self.session.execute(query)
         conversations = result.scalars().all()
 
-        # Post-process to sort messages and take only the first one
         for conversation in conversations:
             if conversation.messages:
                 conversation.messages.sort(key=lambda msg: msg.created_at)
@@ -76,7 +85,7 @@ class ConversationRepository(BaseRepository[UserConversation]):
 
         return conversations
 
-    async def get_count(self, user_id: str, workspace_id: str):
+    async def get_count(self, user_id: str, workspace_id: str) -> int:
         query = select(func.count(UserConversation.id)).where(
             and_(
                 UserConversation.user_id == user_id,
@@ -86,6 +95,12 @@ class ConversationRepository(BaseRepository[UserConversation]):
         )
 
         result = await self.session.execute(query)
-        count = result.scalar_one()
+        return result.scalar_one()
 
-        return count
+    async def get_messages_count(self, conversation_id: str) -> int:
+        query = select(func.count(ConversationMessage.id)).where(
+            ConversationMessage.conversation_id == conversation_id
+        )
+
+        result = await self.session.execute(query)
+        return result.scalar_one()

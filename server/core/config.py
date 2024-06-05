@@ -27,9 +27,9 @@ class Config(BaseConfig):
     SECRET_KEY: str = "super-secret-key"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24
-    EMAIL = "test@pandasbi.ai"
+    EMAIL = "test@pandabi.ai"
     PASSWORD = "12345"
-    DEFAULT_ORGANIZATION = "PandasBI"
+    DEFAULT_ORGANIZATION = "PandaBI"
     DEFAULT_SPACE = "pandasai"
 
 

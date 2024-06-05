@@ -28,14 +28,6 @@ const ChatInput = ({
 }: IProps) => {
   const router = useRouter();
 
-  const storeRecord = (inputValue: string) => {
-    const existingRecords = JSON.parse(localStorage.getItem("queries")) || [];
-    if (!existingRecords.includes(inputValue)) {
-      const updatedRecords = [...existingRecords, inputValue];
-      localStorage.setItem("queries", JSON.stringify(updatedRecords));
-    }
-  };
-
   return (
     <form
       className={`w-full ${extra}`}
@@ -46,17 +38,16 @@ const ChatInput = ({
           router.push(ROUTE_CHAT_SCREEN);
           localStorage.setItem("searchQuery", queryRef.current.value);
         }
-        storeRecord(queryRef.current.value);
       }}
     >
       <div className="relative">
         <input
           type="text"
           ref={queryRef}
-          className={`text-sm w-full text-dark dark:text-white dark:bg-[#333333] font-montserrat font-normal pl-4 pr-[40px] 
-          focus:outline-none py-2 placeholder-darkMain dark:placeholder-white/30 shadow-md border border-gray-100 dark:border-none
+          className={`w-full text-dark dark:text-white dark:bg-[#333333] font-montserrat font-normal pl-5 pr-[40px] 
+          focus:outline-none py-3 text-md placeholder-darkMain dark:placeholder-white/40 shadow-md border border-gray-100 dark:border-none
           ${isAutoCompleteOpen ? "rounded-t-[18px]" : "rounded-[25px]"}`}
-          placeholder="Type your message here"
+          placeholder="Enter your message"
           autoComplete="off"
           disabled={sendQuery}
           onKeyDown={handleKeyDown}

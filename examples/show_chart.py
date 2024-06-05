@@ -18,4 +18,4 @@ response = agent.chat(
     "Plot the histogram of countries showing for each the gpd,"
     " using different colors for each bar",
 )
-# Output: check out images/histogram-chart.png
+# Output: check out assets/histogram-chart.png

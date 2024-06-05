@@ -1,8 +1,5 @@
 "use client";
-import {
-  ArchiveConversationApi,
-  ConversationChatBySpaceApi,
-} from "services/chat";
+import { ArchiveConversationApi } from "services/chat";
 import {
   FETCH_CONVERSATION,
   useConversationsContext,
@@ -11,11 +8,11 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { MdOutlineArchive } from "react-icons/md";
 import { toast } from "react-toastify";
-import { Tooltip } from "react-tooltip";
 import { useAppStore } from "store";
 import { isToday, isYesterday, startOfWeek, isWithinInterval } from "date-fns";
 import { ConversationsHistoryLoader } from "components/Skeletons";
 import ConfirmationDialog from "components/ConfirmationDialog";
+import { GetConversations } from "@/services/conversations";
 
 interface IProps {
   collapsed: boolean;
@@ -23,7 +20,7 @@ interface IProps {
 
 const ConversationItem = ({ collapsed }: IProps) => {
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const itemsPerPage = 25;
   const [totalPages, setTotalPages] = useState(0);
   const spaceId = localStorage.getItem("spaceId");
@@ -43,14 +40,10 @@ const ConversationItem = ({ collapsed }: IProps) => {
   const getAllConversations = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await ConversationChatBySpaceApi(
-        spaceId,
-        page,
-        itemsPerPage
-      );
+      const response = await GetConversations(page, itemsPerPage);
       setTotalPages(Math.ceil(response?.data?.data?.count / itemsPerPage));
       setIsLoading(false);
-      return response?.data?.data?.data;
+      return response?.data?.data?.conversations;
     } catch (error) {
       toast.error("Something went wrong fetching conversations history!");
       console.log(JSON.stringify(error));
@@ -73,7 +66,6 @@ const ConversationItem = ({ collapsed }: IProps) => {
 
   useEffect(() => {
     const updatedConversations = [...state.conversations];
-
     newConversations?.forEach((conversation) => {
       const date = new Date(conversation.created_at);
       const formattedDate = formatDate(date);
@@ -184,46 +176,39 @@ const ConversationItem = ({ collapsed }: IProps) => {
               <div className="dark:text-white font-bold text-base py-2">
                 {date}
               </div>
-              {conversations?.map((conversation) => (
-                <div key={conversation.id} className="">
-                  <div
-                    className="py-1 dark:text-white text-base font-light truncate cursor-pointer group relative dark:hover:bg-[#11111180] hover:bg-[#EDEDED] rounded-lg"
-                    onClick={() => {
-                      router.push(
-                        `/admin/conversations/chat-details?conversationId=${conversation?.id}&space_id=${conversation?.space?.id}`
-                      );
-                      closeSidebar();
-                    }}
-                    data-tooltip-id={`${conversation.id}`}
-                  >
-                    {conversation?.messages?.[0]?.query}
+              {conversations
+                ?.filter((conv) => conv.messages.length > 0)
+                .map((conversation) => (
+                  <div key={conversation.id} className="">
                     <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsModelOpen(true);
-                        setCurrentConversation({
-                          conversationDate: date,
-                          conversationId: conversation.id,
-                        });
+                      className="py-1 dark:text-white text-base font-light truncate cursor-pointer group relative dark:hover:bg-[#11111180] hover:bg-[#EDEDED] rounded-lg"
+                      onClick={() => {
+                        router.push(
+                          `/admin/conversations/${conversation?.id}/messages`
+                        );
+                        closeSidebar();
                       }}
-                      className="absolute flex justify-end pr-1 dark:bg-[#111111f2] bg-[#ededede6] w-10 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
-                      <MdOutlineArchive
-                        color={darkMode ? "#fff" : "#000"}
-                        size={20}
-                      />
+                      {conversation?.messages?.[0]?.query}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsModelOpen(true);
+                          setCurrentConversation({
+                            conversationDate: date,
+                            conversationId: conversation.id,
+                          });
+                        }}
+                        className="absolute flex justify-end pr-1 dark:bg-[#111111f2] bg-[#ededede6] w-10 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      >
+                        <MdOutlineArchive
+                          color={darkMode ? "#fff" : "#000"}
+                          size={20}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <Tooltip
-                    id={`${conversation.id}`}
-                    place="top-end"
-                    className="z-50"
-                    opacity={1}
-                  >
-                    {conversation?.messages?.[0]?.query}
-                  </Tooltip>
-                </div>
-              ))}
+                ))}
             </div>
           ))}
           {isLoading && <ConversationsHistoryLoader amount={1} />}
