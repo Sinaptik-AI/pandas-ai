@@ -14,28 +14,37 @@
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["index", "getting-started"]
+      "pages": ["intro"]
     },
     {
-      "group": "Essentials",
-      "pages": ["connectors", "llms", "pipelines"]
+      "group": "Platform",
+      "pages": ["platform"]
     },
     {
-      "group": "Advanced usage",
+      "group": "Library",
       "pages": [
-        "cache",
-        "custom-head",
-        "fields-description",
-        "train",
-        "custom-response",
-        "custom-whitelisted-dependencies",
-        "skills",
-        "determinism"
+        "library",
+        "connectors",
+        "llms",
+        "pipelines",
+        "advanced-usage",
+        "examples"
+      ],
+      "subPages": [
+        {
+          "name": "Advanced usage",
+          "pages": [
+            "cache",
+            "custom-head",
+            "fields-description",
+            "train",
+            "custom-response",
+            "custom-whitelisted-dependencies",
+            "skills",
+            "determinism"
+          ]
+        }
       ]
-    },
-    {
-      "group": "Examples",
-      "pages": ["examples"]
     },
     {
       "group": "About",
