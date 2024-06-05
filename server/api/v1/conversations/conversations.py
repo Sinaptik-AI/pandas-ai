@@ -45,3 +45,19 @@ async def conversation_messages(
     return APIResponse(
         data=response, message="User conversation messages returned successfully!"
     )
+
+@conversation_router.delete("/{conv_id}")
+async def delete_conversation(
+    conv_id: UUID = Path(..., description="ID of the conversation"),
+    conversation_controller: ConversationController = Depends(
+        Factory().get_conversation_controller
+    ),
+    user: UserInfo = Depends(get_current_user),
+
+):
+    response = await conversation_controller.archive_conversation(
+        conv_id, user.id
+    )
+    return APIResponse(
+        data=response, message="Conversation archived successfully"
+    )
