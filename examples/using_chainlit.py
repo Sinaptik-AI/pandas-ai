@@ -9,17 +9,29 @@ chainlit run examples/using_chainlit.py
 
 import os
 
+import chainlit as cl
 import pandas as pd
 
 from pandasai import SmartDataframe
 
-import chainlit as cl
-
 # Sample DataFrame
-sales_by_country = pd.DataFrame({
-    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
-})
+sales_by_country = pd.DataFrame(
+    {
+        "country": [
+            "United States",
+            "United Kingdom",
+            "France",
+            "Germany",
+            "Italy",
+            "Spain",
+            "Canada",
+            "Australia",
+            "Japan",
+            "China",
+        ],
+        "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000],
+    }
+)
 
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
@@ -29,19 +41,17 @@ os.environ["PANDASAI_API_KEY"] = "your-api-key"
 # Create a PandasAI SmartDataframe from pandas DataFrame
 df = SmartDataframe(sales_by_country)
 
+
 # This function is called for each chat/reponse cycle
 @cl.on_message
 async def on_message(message: cl.Message):
-
     # send empty content response to display a loader animation
     msg = cl.Message(content="")
     await msg.send()
 
-
-    # Example: 
+    # Example:
     # User Question: Which are the top 5 countries by sales?
     # LLM Response: China, United States, Japan, Germany, Australia
-
 
     # what did the user type for a question?
     user_question = message.content
@@ -49,11 +59,8 @@ async def on_message(message: cl.Message):
     # feed the llm the question and get the response
     llm_response = df.chat(user_question)
 
-
     # load the response into chainlit
-    msg.content=str(llm_response)
-    
+    msg.content = str(llm_response)
+
     # send the response
     await msg.update()
-
-    
