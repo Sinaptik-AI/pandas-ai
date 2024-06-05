@@ -1,3 +1,4 @@
+from fastapi import status, HTTPException
 from app.models import User, UserConversation
 from app.repositories import UserRepository
 from app.repositories.conversation import ConversationRepository
@@ -38,3 +39,18 @@ class ConversationController(BaseController[UserConversation]):
         count = await self.conversation_repository.get_messages_count(conversation_id)
 
         return ConversationMessageList(count=count, messages=conversation_messages)
+    
+    async def archive_conversation(
+        self, conversation_id: str, user_id: str
+    ):
+        user_conversation = (
+            await self.conversation_repository.get_by_id(conversation_id)
+        )
+        if not user_conversation:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            message=f"conversation with id: {conversation_id} was not found")
+        if user_conversation.user_id != user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            message="Unauthorized to update conversation for this user")
+        user_conversation.valid = False
+        await self.conversation_repository.session.commit()
