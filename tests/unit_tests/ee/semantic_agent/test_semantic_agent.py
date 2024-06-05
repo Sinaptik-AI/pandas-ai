@@ -12,6 +12,7 @@ from pandasai.connectors.sql import (
     SQLConnectorConfig,
 )
 from pandasai.ee.agents.semantic_agent import SemanticAgent
+from pandasai.exceptions import InvalidTrainJson
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
@@ -121,7 +122,9 @@ class TestSemanticAgent:
         return PostgreSQLConnector(self.config)
 
     @pytest.fixture
-    def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
+    def agent(self, sample_df: pd.DataFrame) -> Agent:
+        llm = MockBambooLLM()
+        config = {"llm": llm}
         return SemanticAgent(sample_df, config, vectorstore=MagicMock())
 
     def test_base_agent_contruct(self, sample_df):
@@ -189,3 +192,40 @@ class TestSemanticAgent:
 
         assert not llm.call.called
         assert agent._schema == VIZ_QUERY_SCHEMA
+
+    def test_train_method_with_qa(self, agent):
+        queries = ["query1"]
+        jsons = ['{"name": "test"}']
+        agent.train(queries=queries, jsons=jsons)
+
+        agent._vectorstore.add_docs.assert_not_called()
+        agent._vectorstore.add_question_answer.assert_called_once_with(queries, jsons)
+
+    def test_train_method_with_docs(self, agent):
+        docs = ["doc1"]
+        agent.train(docs=docs)
+
+        agent._vectorstore.add_question_answer.assert_not_called()
+        agent._vectorstore.add_docs.assert_called_once()
+        agent._vectorstore.add_docs.assert_called_once_with(docs)
+
+    def test_train_method_with_docs_and_qa(self, agent):
+        docs = ["doc1"]
+        queries = ["query1"]
+        jsons = ['{"name": "test"}']
+        agent.train(queries, jsons, docs=docs)
+
+        agent._vectorstore.add_question_answer.assert_called_once()
+        agent._vectorstore.add_question_answer.assert_called_once_with(queries, jsons)
+        agent._vectorstore.add_docs.assert_called_once()
+        agent._vectorstore.add_docs.assert_called_once_with(docs)
+
+    def test_train_method_with_queries_but_no_code(self, agent):
+        queries = ["query1", "query2"]
+        with pytest.raises(ValueError):
+            agent.train(queries)
+
+    def test_train_method_with_code_but_no_queries(self, agent):
+        jsons = ["code1", "code2"]
+        with pytest.raises(InvalidTrainJson):
+            agent.train(jsons=jsons)
