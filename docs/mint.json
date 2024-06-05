@@ -13,7 +13,7 @@
   },
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Introduction",
       "pages": ["intro"]
     },
     {
@@ -29,21 +29,19 @@
         "pipelines",
         "advanced-usage",
         "examples"
-      ],
-      "subPages": [
-        {
-          "name": "Advanced usage",
-          "pages": [
-            "cache",
-            "custom-head",
-            "fields-description",
-            "train",
-            "custom-response",
-            "custom-whitelisted-dependencies",
-            "skills",
-            "determinism"
-          ]
-        }
+      ]
+    },
+    {
+      "group": "Advanced usage",
+      "pages": [
+        "cache",
+        "custom-head",
+        "fields-description",
+        "train",
+        "custom-response",
+        "custom-whitelisted-dependencies",
+        "skills",
+        "determinism"
       ]
     },
     {
