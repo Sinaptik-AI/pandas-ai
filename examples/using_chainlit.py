@@ -42,7 +42,7 @@ os.environ["PANDASAI_API_KEY"] = "your-api-key"
 df = SmartDataframe(sales_by_country)
 
 
-# This function is called for each chat/reponse cycle
+# This function is called for each chat/response cycle
 @cl.on_message
 async def on_message(message: cl.Message):
     # send empty content response to display a loader animation
