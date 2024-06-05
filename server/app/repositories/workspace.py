@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace
+from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace, User
 from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository
@@ -95,3 +95,21 @@ class WorkspaceRepository(BaseRepository[Workspace]):
             .filter(DatasetSpace.workspace_id == workspace_id)
         )
         return result.unique().scalars().all()
+
+    async def get_users_by_workspace_id(self, workspace_id: str):
+        users = await self.session.execute(
+            select(UserSpace)
+            .options(joinedload(UserSpace.user))
+            .filter(UserSpace.workspace_id == workspace_id)
+        )
+        user_spaces = users.scalars().all()
+        result = []
+        for user_space in user_spaces:
+            user = user_space.user
+            user_info = {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+            }
+            result.append(user_info)
+        return result
