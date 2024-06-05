@@ -7,6 +7,7 @@ from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace, U
 from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository
+from app.schemas.responses.users import WorkspaceUserResponse
 
 
 class WorkspaceRepository(BaseRepository[Workspace]):
@@ -96,20 +97,13 @@ class WorkspaceRepository(BaseRepository[Workspace]):
         )
         return result.unique().scalars().all()
 
-    async def get_users_by_workspace_id(self, workspace_id: str):
-        users = await self.session.execute(
-            select(UserSpace)
-            .options(joinedload(UserSpace.user))
-            .filter(UserSpace.workspace_id == workspace_id)
+    async def get_users_by_workspace_id(self, workspace_id: str) -> List[WorkspaceUserResponse]:
+        result = await self.session.execute(
+            select(
+                User.id,
+                User.first_name,
+                User.last_name,
+                User.email
+            ).join(UserSpace).filter(UserSpace.workspace_id == workspace_id)
         )
-        user_spaces = users.scalars().all()
-        result = []
-        for user_space in user_spaces:
-            user = user_space.user
-            user_info = {
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-            }
-            result.append(user_info)
-        return result
+        return result.all()

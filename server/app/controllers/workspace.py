@@ -5,6 +5,7 @@ from app.repositories.dataset import DatasetRepository
 from app.repositories.workspace import WorkspaceRepository
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
+from app.schemas.responses.users import WorkspaceUsersResponse
 
 class WorkspaceController(BaseController[Workspace]):
     def __init__(
@@ -47,8 +48,7 @@ class WorkspaceController(BaseController[Workspace]):
         workspace = await self.space_repository.get_by_id(id=workspace_id)
         if not workspace:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Workspace with id: {id} was not found")
+                            detail=f"Workspace with id: {workspace_id} was not found")
         
         users = await self.space_repository.get_users_by_workspace_id(workspace_id)
-
-        return users
+        return WorkspaceUsersResponse(users=users)
