@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import UUID4, BaseModel, Field
 
@@ -31,3 +31,16 @@ class UserInfo(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class WorkspaceUserResponse(BaseModel):
+    id: UUID4
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+class WorkspaceUsersResponse(BaseModel):
+    users: List[WorkspaceUserResponse]
