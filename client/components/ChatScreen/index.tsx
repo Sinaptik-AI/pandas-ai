@@ -8,7 +8,6 @@ import ChatInput from "./ChatInput";
 import UserChatBubble from "./UserChatBubble";
 import AIChatBubble from "./AIChatBubble";
 import { ChatPlaceholderLoader } from "components/Skeletons";
-import StartChatIcon from "components/Icons/StartChatIcon";
 
 const ChatScreen = ({
   scrollLoad,
@@ -18,9 +17,6 @@ const ChatScreen = ({
   sendQuery,
   setSendQuery,
   hasMore,
-  setFollowUpQuestionDiv,
-  followUpQuestionDiv,
-  followUpQuestions,
   loading,
   scrollDivRef,
 }: ChatScreenProps) => {
@@ -32,7 +28,7 @@ const ChatScreen = ({
     <div className="flex antialiased text-gray-800 w-full">
       <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl h-full dark:!bg-[#000] w-[calc(100vw-22px)] md:w-full">
         <div
-          className="flex flex-col h-full overflow-x-scroll mb-4 custom-scroll"
+          className="flex flex-col h-full overflow-x-scroll mb-4 custom-scroll chat-div"
           id="chat-div"
           ref={scrollDivRef}
         >
@@ -105,24 +101,6 @@ const ChatScreen = ({
           </div>
         </div>
         <div className="mx-auto w-full max-w-[900px]">
-          {followUpQuestionDiv && (
-            <div className="flex flex-col flex-wrap items-start px-2 md:px-6 gap-2 pb-2">
-              {followUpQuestions?.map((item) => (
-                <div
-                  key={item.id}
-                  className="py-2 px-4 flex items-center bg-blue-700 rounded-md cursor-pointer text-[15px]"
-                  onClick={() => {
-                    setSendQuery(true);
-                    setFollowUpQuestionDiv(false);
-                    queryRef.current.value = item.question;
-                  }}
-                >
-                  <StartChatIcon />
-                  <div className="text-white ml-2">{item.question}</div>
-                </div>
-              ))}
-            </div>
-          )}
           <ChatInput
             onNewMessage={handleNewMessage}
             queryRef={queryRef}

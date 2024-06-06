@@ -15,10 +15,17 @@ export const GetConversations = async (skip: number, limit: number) => {
 
 export const ConversationMessages = async (
     conversationId: string,
-    skip: number,
+    skip?: number,
+    limit?: number,
 ) => {
+    let url = ''
+    if (skip && limit) {
+        url = `${apiUrl}/${conversationId}/messages?skip=${skip}&limit=${limit}`
+    } else {
+        url = `${apiUrl}/${conversationId}/messages`
+    }
     try {
-        const response = await GetRequest(`${apiUrl}/${conversationId}/messages?skip=${skip}&limit=8`);
+        const response = await GetRequest(url);
         return response;
     } catch (error) {
         console.error('Get request failed', error);

@@ -10,15 +10,17 @@ import { reorderArray } from "utils/reorderConversations";
 import { ConversationMessages } from "@/services/conversations";
 
 const ChatDetails = () => {
+  const rowsPerPage = 8;
   const [sendQuery, setSendQuery] = useState(false);
   const [chat, setChat] = useState<ChatMessageData[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [scrollLoad, setScrollLoad] = useState(false);
   const [rawApiData, setRawApiData] = useState([]);
   const [hasMore, setHasMore] = useState(false);
   const [mounted, setMounted] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [skip, setSkip] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const firstRender = useRef(false);
 
@@ -39,17 +41,22 @@ const ChatDetails = () => {
   const fetchConversationHistory = async (
     NewChat,
     newRawApiData,
-    newCurrentPage
+    skip: number
   ) => {
     if (NewChat?.length < 1) {
       setScrollLoad(true);
     }
 
     setIsLoading(true);
-    await ConversationMessages(conversation_id, newCurrentPage)
+    await ConversationMessages(conversation_id, skip, rowsPerPage)
       .then((response) => {
         const totalCount = response.data?.data?.count;
-        setTotalPages(Math.ceil(totalCount / 8));
+        if (mounted) {
+          setTotalPages(Math.ceil(totalCount / rowsPerPage));
+          process.nextTick(() => {
+            scrollToBottom();
+          });
+        }
 
         const responseData = response?.data?.data?.messages;
 
@@ -62,7 +69,7 @@ const ChatDetails = () => {
               query: data?.query,
               createdAt: data?.created_at,
               id: `${data.id}1`,
-              conversation_id: params.id,
+              conversation_id: conversation_id,
             };
           }
         );
@@ -73,7 +80,7 @@ const ChatDetails = () => {
               createdAt: data?.created_at,
               id: data.id,
               code: data?.code_generated,
-              conversation_id: data?.conversation_id,
+              conversation_id: conversation_id,
               thumbs_up: data?.user_rating,
               plotSettings: data?.settings,
             };
@@ -110,13 +117,14 @@ const ChatDetails = () => {
       if (currentPage < totalPages) {
         setHasMore(true);
         setCurrentPage((prevPage) => prevPage + 1);
+        setSkip(currentPage * rowsPerPage);
       }
     }
   };
 
   useEffect(() => {
     if (firstRender?.current) {
-      if (Number(rawApiDataLengthRef.current) <= 8) {
+      if (Number(rawApiDataLengthRef.current) <= rowsPerPage) {
         const scrollDiv = document.getElementById("chat-div");
         // scrollDiv.scrollTop = 90;
         if (scrollDiv) {
@@ -142,8 +150,19 @@ const ChatDetails = () => {
   useEffect(() => {
     const fetchDataOnScroll = async () => {
       if (!mounted) {
-        await fetchConversationHistory(chat, rawApiData, currentPage);
-        scrollToBottom();
+        const scrollDiv = document.getElementById("chat-div");
+
+        // Store previous scroll height and current scroll position
+        const previousScrollHeight = scrollDiv.scrollHeight;
+        const previousScrollTop = scrollDiv.scrollTop;
+
+        fetchConversationHistory(chat, rawApiData, skip).then(() => {
+          process.nextTick(() => {
+            scrollDiv.classList.remove("chat-div");
+            scrollDiv.scrollTop =
+              scrollDiv.scrollHeight - previousScrollHeight + previousScrollTop;
+          });
+        });
       }
     };
 
@@ -164,6 +183,9 @@ const ChatDetails = () => {
       });
       setIsTyping(true);
       setChat(chat);
+      process.nextTick(() => {
+        scrollToBottom();
+      });
       const fetchChatData = async () => {
         await ChatApi({
           workspace_id: space_id,
@@ -207,6 +229,9 @@ const ChatDetails = () => {
           .finally(() => {
             setSendQuery(false);
             setIsTyping(false);
+            process.nextTick(() => {
+              scrollToBottom();
+            });
           });
       };
       fetchChatData();
@@ -218,9 +243,8 @@ const ChatDetails = () => {
     return router.push(`/admin/chat`);
   }
   const scrollToBottom = () => {
-    const scrollDiv = document.getElementById("chat-div");
-    if (scrollDiv) {
-      scrollDiv.scrollTop += 1;
+    if (scrollDivRef.current) {
+      scrollDivRef.current.scrollTop = scrollDivRef.current.scrollHeight;
     }
   };
 

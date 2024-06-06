@@ -743,7 +743,7 @@ body::-webkit-scrollbar-thumb {
   right: 14px;
   position: absolute;
 }
-#chat-div {
+.chat-div {
   animation: scrollAnimation 1s forwards;
 }
 
