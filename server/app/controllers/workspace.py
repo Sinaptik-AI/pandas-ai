@@ -6,6 +6,7 @@ from app.repositories.workspace import WorkspaceRepository
 from core.controller import BaseController
 from core.database.transactional import Propagation, Transactional
 from app.schemas.responses.users import WorkspaceUsersResponse
+from app.schemas.responses.datasets import WorkspaceDatasetsResponseModel
 
 class WorkspaceController(BaseController[Workspace]):
     def __init__(
@@ -42,13 +43,30 @@ class WorkspaceController(BaseController[Workspace]):
                 dataset_id=dataset.id, workspace_id=workspace_id
             )
 
+
+    async def get_workspace_by_id(self, workspace_id: str):
+        workspace = await self.space_repository.get_by_id(id=workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workspace with id: {workspace_id} was not found"
+            )
+        return workspace
+
     async def get_workspace_users(
             self, workspace_id: str,
     ):
-        workspace = await self.space_repository.get_by_id(id=workspace_id)
-        if not workspace:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            message=f"Workspace with id: {workspace_id} was not found")
-        
+        await self.get_workspace_by_id(workspace_id)
         users = await self.space_repository.get_users_by_workspace_id(workspace_id)
         return WorkspaceUsersResponse(users=users)
+    
+    
+    async def get_workspace_datasets(self, workspace_id) -> WorkspaceDatasetsResponseModel:
+        await self.get_workspace_by_id(workspace_id)        
+        datasets = await self.dataset_repository.get_all_by_workspace_id(workspace_id)
+        if not datasets:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No dataset found. Please restart the server and try again"
+            )
+        return WorkspaceDatasetsResponseModel(datasets=datasets)

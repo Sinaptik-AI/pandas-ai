@@ -66,8 +66,9 @@ class Factory:
     
     def get_datasets_controller(self, db_session=Depends(get_session)):
         return DatasetController(
-            dataset_repository=self.dataset_repository(db_session=db_session)
-            )
+            dataset_repository=self.dataset_repository(db_session=db_session),
+            space_repository=self.space_repository(db_session=db_session)
+        )
 
     def get_conversation_controller(self, db_session=Depends(get_session)):
         return ConversationController(
