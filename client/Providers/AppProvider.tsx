@@ -13,6 +13,7 @@ import mixpanel from "mixpanel-browser";
 import { Provider as RollbarProvider, ErrorBoundary } from "@rollbar/react";
 import QueryProvider from "./QueryProvider";
 import Intercom from "@/components/Intercom/Intercom";
+import { ToastContainer } from "react-toastify";
 import "styles/globals.css";
 import "styles/App.css";
 import "styles/multi-range-slider.css";
@@ -49,6 +50,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         <ErrorBoundary>
           <ContextProvider>
             <NoSSR>
+              <ToastContainer autoClose={3000} className="w-64 text-white" />
               <QueryProvider>{children}</QueryProvider>
             </NoSSR>
           </ContextProvider>
