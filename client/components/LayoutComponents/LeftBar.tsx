@@ -7,10 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "store";
 import { ROUTE_CHAT_SCREEN } from "utils/constants";
 import ConversationItem from "./ConversationItem";
-
-// import { useRouter } from "next/navigation";
-// import StartChatIcon from "components/Icons/StartChatIcon";
-// import { ROUTE_CHAT_SCREEN } from "utils/constants";
+import Link from "next/link";
 
 const StartChatButton = () => {
   const setIsNewChatClicked = useAppStore((state) => state.setIsNewChatClicked);
@@ -104,17 +101,38 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
                 : "overflow-y-hidden hover:overflow-y-auto overflow-x-hidden"
             } p-5 h-full flex flex-col custom-scroll mb-4`}
           >
-            <div className="flex justify-between items-center">
-              <h2
-                className={`font-semibold text-2xl ${
-                  collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-                } dark:text-white transition-all duration-1000`}
-              >
-                Chats
-              </h2>
-              <StartChatButton />
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-center">
+                  <h2
+                    className={`font-semibold text-2xl ${
+                      collapsed
+                        ? "opacity-0 pointer-events-none"
+                        : "opacity-100"
+                    } dark:text-white transition-all duration-1000`}
+                  >
+                    Chats
+                  </h2>
+                  <StartChatButton />
+                </div>
+                <ConversationItem collapsed={collapsed} />
+              </div>
+              <div className="flex flex-col items-start">
+                <Link
+                  href="https://pandasai.featurebase.app/"
+                  target="_blank"
+                  className="hover:underline py-1 text-[18px]"
+                >
+                  🚀 Public Roadmap
+                </Link>
+                <Link
+                  href="https//pandas-ai.com/contact-us"
+                  className="hover:underline py-1 text-[18px]"
+                >
+                  💬 Need help? Talk to us
+                </Link>
+              </div>
             </div>
-            <ConversationItem collapsed={collapsed} />
           </div>
         </div>
       ) : (
