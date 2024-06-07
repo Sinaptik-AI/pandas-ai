@@ -36,7 +36,7 @@ targets:
 
 .PHONY: install
 install: ## Install dependencies
-	poetry install --no-root
+	poetry install
 
 .PHONY: run
 run: start
@@ -94,4 +94,4 @@ check-lockfile: ## Compares lock file with pyproject.toml
 .PHONY: test
 test: ## Run the test suite
 	@eval "$(shell sed 's/=.*//' .env | xargs echo export)"
-	poetry run pytest -vv -s --cache-clear ./
+	poetry run pytest -vv -rs --cache-clear ./
