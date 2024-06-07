@@ -53,9 +53,6 @@ const ChatDetails = () => {
         const totalCount = response.data?.data?.count;
         if (mounted) {
           setTotalPages(Math.ceil(totalCount / rowsPerPage));
-          process.nextTick(() => {
-            scrollToBottom();
-          });
         }
 
         const responseData = response?.data?.data?.messages;
@@ -108,6 +105,9 @@ const ChatDetails = () => {
         setHasMore(false);
         setScrollLoad(false);
         setIsLoading(false);
+        process.nextTick(() => {
+          scrollToBottom();
+        });
       });
   };
 
