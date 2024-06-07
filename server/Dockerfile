@@ -40,5 +40,7 @@ EXPOSE 8000
 COPY startup.sh /startup.sh
 RUN chmod +x /startup.sh
 
+# RUN dos2unix startup.sh
+
 # Run the entrypoint script
 CMD ["/startup.sh"]
