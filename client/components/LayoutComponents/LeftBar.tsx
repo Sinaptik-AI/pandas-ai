@@ -117,7 +117,11 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
                 </div>
                 <ConversationItem collapsed={collapsed} />
               </div>
-              <div className="flex flex-col items-start">
+              <div
+                className={`flex flex-col items-start ${
+                  collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+                } transition-all duration-1000`}
+              >
                 <Link
                   href="https://pandasai.featurebase.app/"
                   target="_blank"
@@ -126,7 +130,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
                   🚀 Public Roadmap
                 </Link>
                 <Link
-                  href="https//pandas-ai.com/contact-us"
+                  href="https://pandas-ai.com/contact-us"
                   className="hover:underline py-1 text-[18px]"
                 >
                   💬 Need help? Talk to us
