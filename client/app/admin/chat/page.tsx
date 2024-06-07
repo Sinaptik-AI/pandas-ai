@@ -1,9 +1,5 @@
 "use client";
-import {
-  ChatApi,
-  ConversationHistory,
-  FetchFollowUpQuestions,
-} from "services/chat";
+import { ChatApi } from "services/chat";
 import React, { useState, useEffect, useRef } from "react";
 import { ChatMessageData } from "../../../types/chat-types";
 import { useSearchParams } from "next/navigation";
@@ -17,6 +13,7 @@ import mixpanel from "mixpanel-browser";
 import { reorderArray } from "utils/reorderConversations";
 import { appendQueryParamtoURL } from "utils/appendQueryParamtoURL";
 import { useAppStore } from "store";
+import { ConversationMessages } from "@/services/conversations";
 
 const ChatPage = () => {
   const params = useSearchParams();
@@ -38,11 +35,9 @@ const ChatPage = () => {
   const [isGetConversationsLoading, setIsGetConversationsLoading] =
     useState(false);
 
-  const [followUpQuestionDiv, setFollowUpQuestionDiv] = useState(false);
   const queryRef = useRef(null);
   const spaceId = localStorage.getItem("spaceId");
   const firstRequest = React.useRef(false);
-  const [followUpQuestions, setFollowUpQuestions] = useState([]);
   const searchQuery = localStorage.getItem("searchQuery");
   const { state, dispatch } = useConversationsContext();
 
@@ -65,7 +60,6 @@ const ChatPage = () => {
         query: query,
       });
       setIsTyping(true);
-      setFollowUpQuestionDiv(false);
       setChat(chat);
       process.nextTick(() => {
         scrollToBottom();
@@ -83,7 +77,6 @@ const ChatPage = () => {
         query: searchQuery,
       });
       setIsTyping(true);
-      setFollowUpQuestionDiv(false);
       setChat(chat);
       fetchChatData(searchQuery);
       localStorage.removeItem("searchQuery");
@@ -130,9 +123,6 @@ const ChatPage = () => {
         }
         setConversationId(conId);
         setChat([...chat]);
-        if (conId && code) {
-          getFollowUpQuestions(conId);
-        }
       })
       .catch((error) => {
         console.log(JSON.stringify(error));
@@ -151,31 +141,6 @@ const ChatPage = () => {
       });
   };
 
-  const getFollowUpQuestions = async (conversationId: string) => {
-    try {
-      const response = await FetchFollowUpQuestions(conversationId);
-      const followUpQuestions = response?.data?.data?.["followup-questions"];
-      if (
-        !followUpQuestions ||
-        !Array.isArray(followUpQuestions) ||
-        followUpQuestions.length === 0
-      ) {
-        setFollowUpQuestionDiv(false);
-        setFollowUpQuestions([]);
-        return;
-      }
-      const followUpQuestionsWithIds = followUpQuestions.map(
-        (question, index) => ({
-          id: `id${conversationId}_${index}`,
-          question: question,
-        })
-      );
-      setFollowUpQuestionDiv(true);
-      setFollowUpQuestions(followUpQuestionsWithIds);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   const AddNewMessageToConversations = (
     conId: string,
     messageId: string,
@@ -227,44 +192,40 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (conversation_id) {
-      fetchConversationHistory([], [], 1);
+      fetchConversationHistory([], []);
     }
   }, []);
 
-  const fetchConversationHistory = async (
-    NewChat,
-    newRawApiData,
-    newCurrentPage
-  ) => {
+  const fetchConversationHistory = async (NewChat, newRawApiData) => {
     if (NewChat?.length < 1) {
       setScrollLoad(true);
     }
 
     setIsGetConversationsLoading(true);
-    await ConversationHistory(conversation_id, newCurrentPage)
+    await ConversationMessages(conversation_id)
       .then((response) => {
-        const responseData = response?.data?.data?.data;
+        const responseData = response?.data?.data?.messages;
         if (responseData != undefined) {
           setRawApiData([...newRawApiData, ...responseData]);
         }
-        const conversation_history_query = response?.data?.data?.data?.map(
+        const conversation_history_query = response?.data?.data?.messages?.map(
           (data) => {
             return {
               query: data?.query,
-              createdAt: data?.createdAt,
+              createdAt: data?.created_at,
               id: `${data.id}1`,
-              conversation_id: data?.conversation_id,
+              conversation_id: conversationId,
             };
           }
         );
-        const conversation_history_resp = response?.data?.data?.data?.map(
+        const conversation_history_resp = response?.data?.data?.messages?.map(
           (data) => {
             return {
               response: data?.response,
-              createdAt: data?.createdAt,
+              createdAt: data?.created_at,
               id: data.id,
-              code: data?.code,
-              conversation_id: data?.conversation_id,
+              code: data?.code_generated,
+              conversation_id: conversationId,
               thumbs_up: data?.user_rating,
               plotSettings: data?.settings,
             };
@@ -305,8 +266,6 @@ const ChatPage = () => {
       setHasMore(false);
       setMounted(true);
       firstRequest.current = false;
-      setFollowUpQuestions([]);
-      setFollowUpQuestionDiv(false);
       setIsNewChatClicked(false);
       firstRender.current = false;
     }
@@ -328,9 +287,6 @@ const ChatPage = () => {
         queryRef={queryRef}
         setSendQuery={setSendQuery}
         scrollLoad={scrollLoad}
-        setFollowUpQuestionDiv={setFollowUpQuestionDiv}
-        followUpQuestionDiv={followUpQuestionDiv}
-        followUpQuestions={followUpQuestions}
         loading={isGetConversationsLoading && mounted}
         hasMore={hasMore}
         scrollDivRef={scrollDivRef}

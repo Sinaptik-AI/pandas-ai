@@ -38,7 +38,7 @@ class ConversationController(BaseController[UserConversation]):
 
         count = await self.conversation_repository.get_messages_count(conversation_id)
 
-        return ConversationMessageList(count=count, messages=conversation_messages)
+        return ConversationMessageList(count=count, messages=list(reversed(conversation_messages)))
     
     async def archive_conversation(
         self, conversation_id: str, user_id: str

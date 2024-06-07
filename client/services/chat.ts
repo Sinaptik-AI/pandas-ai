@@ -24,30 +24,6 @@ export const FetchDataframe = async (id: number | string) => {
   }
 };
 
-export const ConversationHistory = async (
-  conversationId: string,
-  page: number
-) => {
-  const apiUrl = `${chatApiUrl}/conversations/${conversationId}?page_number=${page}&rows_per_page=${8}`;
-  try {
-    const response = await GetRequest(apiUrl);
-    return response;
-  } catch (error) {
-    console.error('Get request failed', error);
-    throw error;
-  }
-};
-
-export const FetchFollowUpQuestions = async (conversationId: string) => {
-  const apiUrl = `${chatApiUrl}/conversations/${conversationId}/followup-questions`;
-  try {
-    const response = await GetRequest(apiUrl);
-    return response;
-  } catch (error) {
-    console.error("Get request failed", error);
-    throw error;
-  }
-};
 export const GetChatLabel = async (chatId: string) => {
   const apiUrl = `${chatApiUrl}/conversation-message/${chatId}/result-label`;
   try {
