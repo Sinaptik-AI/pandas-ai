@@ -20,15 +20,13 @@ services:
     ports:
       - "8000:8000"
     restart: always
-    volumes:
-      - ./server:/app
     env_file:
       - ./server/.env
     depends_on:
       - postgresql
     networks:
       - pandabi-network
-    command: ["/wait-for-it.sh", "postgresql", "--", "/startup.sh"]
+    command: "/bin/bash startup.sh"
 
   client:
     container_name: pandabi-frontend
