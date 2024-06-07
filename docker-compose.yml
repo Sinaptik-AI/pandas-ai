@@ -40,12 +40,13 @@ services:
     restart: always
     volumes:
       - ./client:/app
+      - /app/build
       - /app/node_modules
     env_file:
       - ./client/.env
     environment:
       - NODE_ENV=development
-    command: npm run dev
+    command: npm run start
     networks:
       - pandabi-network
 
