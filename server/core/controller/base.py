@@ -31,7 +31,7 @@ class BaseController(Generic[ModelType]):
         )
         if not db_obj:
             raise NotFoundException(
-                f"{self.model_class.__tablename__.title()} with id: {id} does not exist"
+                f"{self.model_class.__tablename__.title()} with id: {id_} does not exist"
             )
 
         return db_obj
@@ -92,7 +92,7 @@ class BaseController(Generic[ModelType]):
         return delete
 
     @staticmethod
-    async def extract_attributes_from_schema(
+    def extract_attributes_from_schema(
         schema: BaseModel, excludes: set = None
     ) -> dict[str, Any]:
         """
@@ -103,4 +103,4 @@ class BaseController(Generic[ModelType]):
         :return: The attributes.
         """
 
-        return await schema.dict(exclude=excludes, exclude_unset=True)
+        return schema.dict(exclude=excludes, exclude_unset=True)
