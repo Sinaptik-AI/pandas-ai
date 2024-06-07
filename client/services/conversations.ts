@@ -1,4 +1,4 @@
-import { GetRequest } from "@/utils/apiUtils";
+import { DeleteRequest, GetRequest } from "@/utils/apiUtils";
 
 const apiUrl = `/v1/conversations`;
 
@@ -19,6 +19,16 @@ export const ConversationMessages = async (
 ) => {
     try {
         const response = await GetRequest(`${apiUrl}/${conversationId}/messages?skip=${skip}&limit=8`);
+        return response;
+    } catch (error) {
+        console.error('Get request failed', error);
+        throw error;
+    }
+};
+
+export const ArchiveConversationApi = async (conversationId) => {
+    try {
+        const response = await DeleteRequest(`${apiUrl}/${conversationId}`);
         return response;
     } catch (error) {
         console.error('Get request failed', error);

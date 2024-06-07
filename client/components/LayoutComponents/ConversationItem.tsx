@@ -1,5 +1,4 @@
 "use client";
-import { ArchiveConversationApi } from "services/chat";
 import {
   FETCH_CONVERSATION,
   useConversationsContext,
@@ -12,7 +11,10 @@ import { useAppStore } from "store";
 import { isToday, isYesterday, startOfWeek, isWithinInterval } from "date-fns";
 import { ConversationsHistoryLoader } from "components/Skeletons";
 import ConfirmationDialog from "components/ConfirmationDialog";
-import { GetConversations } from "@/services/conversations";
+import {
+  ArchiveConversationApi,
+  GetConversations,
+} from "@/services/conversations";
 
 interface IProps {
   collapsed: boolean;

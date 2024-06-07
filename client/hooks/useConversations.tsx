@@ -1,17 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  ConversationChatBySpaceApi,
-  ExplainConversationMessage,
-  GetChatLabel,
-} from "@/services/chat";
-
-export const useGetConversations = (spaceId, page, rowsPerPage) => {
-  const { data, isLoading, error, isError, refetch, isFetching } = useQuery({
-    queryKey: ["ConversationChatApi"],
-    queryFn: () => ConversationChatBySpaceApi(spaceId, page, rowsPerPage),
-  });
-  return { data, isLoading, error, isError, refetch, isFetching };
-};
+import { ExplainConversationMessage, GetChatLabel } from "@/services/chat";
 
 export const useGetChatLabel = (chatId: string) => {
   const { data, isLoading, error, isError } = useQuery({
