@@ -114,11 +114,16 @@ class ChatController(BaseController[User]):
             ]
 
         response = jsonable_encoder([response])
-        await self.conversation_repository.add_conversation_message(
+        conversation_message = await self.conversation_repository.add_conversation_message(
             conversation_id=conversation_id,
             query=chat_request.query,
             response=response,
             code_generated=agent.last_code_executed,
         )
 
-        return ChatResponse(response=response, conversation_id=str(conversation_id))
+        return ChatResponse(
+            response=response,
+            conversation_id=str(conversation_id),
+            message_id = str(conversation_message.id),
+            query = str(conversation_message.query)
+        )
