@@ -12,3 +12,5 @@ class ChatResponseBase(BaseModel):
 class ChatResponse(BaseModel):
     response: List[ChatResponseBase]
     conversation_id: str
+    message_id: str
+    query: str

@@ -103,7 +103,7 @@ const ChatPage = () => {
             thumbs_up: null,
             code,
             reaction_id: null,
-            space_id: response?.data?.data?.space_id,
+            space_id: spaceId,
             conversation_id: conId,
           });
           if (!firstRequest.current && !conversation_id) {

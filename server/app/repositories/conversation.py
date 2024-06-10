@@ -5,13 +5,14 @@ from app.models import ConversationMessage, UserConversation
 from core.repository import BaseRepository
 from sqlalchemy.sql.expression import select
 from sqlalchemy.orm import selectinload
+from core.database.transactional import Propagation, Transactional
 
 
 class ConversationRepository(BaseRepository[UserConversation]):
     """
     UserConversation repository provides all the database operations for the UserConversation model.
     """
-
+    @Transactional(propagation=Propagation.REQUIRED)
     async def add_conversation_message(
         self,
         conversation_id: str,
