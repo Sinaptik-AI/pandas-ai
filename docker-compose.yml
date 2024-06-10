@@ -36,10 +36,6 @@ services:
     ports:
       - "3000:3000"
     restart: always
-    volumes:
-      - ./client:/app
-      - /app/build
-      - /app/node_modules
     env_file:
       - ./client/.env
     environment:
