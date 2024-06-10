@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pandas.util.version import Version
 
+from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.llm.base import LLM, BaseOpenAI
+from pandasai.llm.local_llm import LocalLLM
 import pandasai.pandas as pd
 from pandasai.constants import WHITELISTED_BUILTINS
 
@@ -152,3 +155,12 @@ def import_dependency(
                 raise ImportError(msg)
 
     return module
+
+
+def is_openai_format_llm(llm: LLM) -> bool:
+    """
+    Validate if llm query is OpenAI like format
+    Returns:
+        bool: True is llm query input is like OpenAI
+    """
+    return isinstance(llm, (BaseOpenAI, LocalLLM, BambooLLM))

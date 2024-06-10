@@ -1,5 +1,8 @@
 """ Memory class to store the conversations """
-from typing import Union
+
+from typing import List, Union
+
+from pandasai.helpers.train import parse_qa_doc
 
 
 class Memory:
@@ -8,11 +11,13 @@ class Memory:
     _messages: list
     _memory_size: int
     _agent_info: str
+    _qa_context: list
 
     def __init__(self, memory_size: int = 1, agent_info: Union[str, None] = None):
         self._messages = []
         self._memory_size = memory_size
         self._agent_info = agent_info
+        self._qa_context = []
 
     def add(self, message: str, is_user: bool):
         self._messages.append({"message": message, "is_user": is_user})
@@ -79,7 +84,7 @@ class Memory:
                 messages.append({"role": "assistant", "message": message["message"]})
         return messages
 
-    def to_openai_messages(self):
+    def to_openai_messages(self) -> List[dict]:
         """
         Returns the conversation messages in the format expected by the OpenAI API
         """
@@ -91,12 +96,20 @@ class Memory:
                     "content": self.get_system_prompt(),
                 }
             )
-        for message in self.all():
+        for message in self._qa_context + self.all():
             if message["is_user"]:
                 messages.append({"role": "user", "content": message["message"]})
             else:
                 messages.append({"role": "assistant", "content": message["message"]})
+
         return messages
+
+    def add_qa_to_memory_for_query(self, qa_docs: List[str]) -> None:
+        self._qa_context = []
+        for qa_doc in qa_docs:
+            question, answer = parse_qa_doc(qa_doc)
+            self._qa_context.append({"message": question, "is_user": True})
+            self._qa_context.append({"message": answer, "is_user": False})
 
     def clear(self):
         self._messages = []

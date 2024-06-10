@@ -1,5 +1,7 @@
 from typing import Any, Union
 
+# from pandasai.helpers.openai import is_openai_format_llm
+from pandasai.helpers.optional import is_openai_format_llm
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
 from ...helpers.logger import Logger
@@ -49,7 +51,16 @@ class PromptGeneration(BaseLogicUnit):
         if context.config.data_viz_library:
             viz_lib = context.config.data_viz_library
 
+        use_train_qa = not is_openai_format_llm(context.config.llm)
         output_type = context.get("output_type")
+
+        if not use_train_qa:
+            # Add context of qa to agent memory
+            context.memory.add_qa_to_memory_for_query(
+                context.vectorstore.get_relevant_qa_documents(
+                    context.memory.get_last_message()
+                )
+            )
 
         return (
             GeneratePythonCodeWithSQLPrompt(
@@ -57,6 +68,7 @@ class PromptGeneration(BaseLogicUnit):
                 last_code_generated=context.get("last_code_generated"),
                 viz_lib=viz_lib,
                 output_type=output_type,
+                use_train_qa=use_train_qa,
             )
             if context.config.direct_sql
             else GeneratePythonCodePrompt(
@@ -64,5 +76,6 @@ class PromptGeneration(BaseLogicUnit):
                 last_code_generated=context.get("last_code_generated"),
                 viz_lib=viz_lib,
                 output_type=output_type,
+                use_train_qa=use_train_qa,
             )
         )
