@@ -22,6 +22,7 @@
     "react/no-unescaped-entities": ["error", { "forbid": [">", "}"] }],
     "@typescript-eslint/no-explicit-any": "off",
     "no-useless-catch": "off",
-    "react-hooks/exhaustive-deps": 0
+    "react-hooks/exhaustive-deps": 0,
+    "react/prop-types": "off"
   }
 }
