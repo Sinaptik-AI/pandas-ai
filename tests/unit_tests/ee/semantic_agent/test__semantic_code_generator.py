@@ -9,7 +9,7 @@ from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
-from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA
+from tests.unit_tests.ee.helpers.schema import STARS_SCHEMA, VIZ_QUERY_SCHEMA
 
 
 class TestSemanticCodeGenerator:
@@ -355,5 +355,54 @@ data = execute_sql_query(sql_query)
 
 result = {"type": "number","value": data["order_count"].iloc[0]}
 
+"""
+        )
+
+    def test_generate_timedimension_query(
+        self, context: PipelineContext, logger: Logger
+    ):
+        code_gen = CodeGenerator()
+        context.add("df_schema", STARS_SCHEMA)
+        json_str = {
+            "type": "line",
+            "measures": ["Users.user_count"],
+            "timeDimensions": [
+                {
+                    "dimension": "Users.starred_at",
+                    "dateRange": ["2022-01-01", "2023-03-31"],
+                    "granularity": "month",
+                }
+            ],
+            "options": {
+                "xLabel": "Month",
+                "yLabel": "Number of Stars",
+                "title": "Stars Count per Month",
+                "legend": {"display": True, "position": "bottom"},
+            },
+            "filters": [],
+        }
+
+        logic_unit = code_gen.execute(json_str, context=context, logger=logger)
+        print(logic_unit.output)
+        assert isinstance(logic_unit, LogicUnitOutput)
+        assert (
+            logic_unit.output
+            == """
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sql_query="SELECT `users`.`starredAt` AS starred_at, COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` BETWEEN '2022-01-01' AND '2023-03-31' GROUP BY starred_at_by_month"
+data = execute_sql_query(sql_query)
+
+plt.plot(data["starred_at"], data["user_count"])
+plt.xlabel('Month')
+plt.ylabel('Number of Stars')
+plt.title('Stars Count per Month')
+plt.legend(loc='best')
+
+
+plt.savefig("charts.png")
+
+result = {"type": "plot","value": "charts.png"}
 """
         )

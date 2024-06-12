@@ -38,6 +38,8 @@ class CodeGenerator(BaseLogicUnit):
 
         sql_query = query_builder.generate_sql(input)
 
+        print(sql_query)
+
         response_type = self._get_type(input)
 
         gen_code = self._generate_code(response_type, input)
@@ -173,7 +175,12 @@ plt.savefig("charts.png")"""
         return f"""plt.pie(data["{measure}"], labels=data["{dimension}"], autopct='%1.1f%%')\n"""
 
     def _generate_line_code(self, query):
-        x_key = query["dimensions"][0].split(".")[1]
+        if "dimensions" in query and len(query["dimensions"]) > 0:
+            x_key = query["dimensions"][0].split(".")[1]
+        else:
+            dimension = query["timeDimensions"][0]["dimension"]
+            x_key = dimension.split(".")[1]
+
         plots = ""
         for measure in query["measures"]:
             field_name = measure.split(".")[1]

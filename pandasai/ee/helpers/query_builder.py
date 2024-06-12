@@ -101,12 +101,12 @@ class QueryBuilder:
         sql_expr = f"`{table}`.`{dimension_info['sql']}`"
 
         granularity_sql = {
-            "year": f"EXTRACT(YEAR FROM {sql_expr})",
-            "month": f"TO_CHAR({sql_expr}, 'YYYY-MM')",
-            "day": f"TO_CHAR({sql_expr}, 'YYYY-MM-DD')",
-            "hour": f"EXTRACT(HOUR FROM {sql_expr})",
-            "minute": f"EXTRACT(MINUTE FROM {sql_expr})",
-            "second": f"EXTRACT(SECOND FROM {sql_expr})",
+            "year": f"YEAR({sql_expr})",
+            "month": f"DATE_FORMAT({sql_expr}, '%Y-%m')",
+            "day": f"DATE_FORMAT({sql_expr}, '%Y-%m-%d')",
+            "hour": f"HOUR({sql_expr})",
+            "minute": f"MINUTE({sql_expr})",
+            "second": f"SECOND({sql_expr})",
         }
 
         if granularity not in granularity_sql:
