@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from pandasai.agent.base import Agent
+from pandasai.agent import Agent
 from pandasai.llm import OpenAI
 
 from . import PATH_DATA

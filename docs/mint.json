@@ -13,8 +13,8 @@
   },
   "navigation": [
     {
-      "group": "Introduction",
-      "pages": ["intro"]
+      "group": "Get Started",
+      "pages": ["intro", "getting-started"]
     },
     {
       "group": "Platform",
@@ -30,6 +30,10 @@
         "advanced-usage",
         "examples"
       ]
+    },
+    {
+      "group": "Advanced agents",
+      "pages": ["semantic-agent"]
     },
     {
       "group": "Advanced usage",

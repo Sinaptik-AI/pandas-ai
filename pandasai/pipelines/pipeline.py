@@ -3,7 +3,7 @@ import time
 from typing import Any, List, Optional, Union
 
 from pandasai.config import load_config_from_json
-from pandasai.exceptions import UnSupportedLogicUnit
+from pandasai.exceptions import PipelineConcatenationError, UnSupportedLogicUnit
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
@@ -148,6 +148,11 @@ class Pipeline(AbstractPipeline):
         Returns:
             Any: Depends on the type can return anything
         """
+
+        if not isinstance(pipeline, Pipeline):
+            raise PipelineConcatenationError(
+                "Pipeline can be concatenated with Pipeline class only!"
+            )
 
         combined_pipeline = Pipeline(
             context=self._context,

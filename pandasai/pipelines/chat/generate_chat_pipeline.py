@@ -304,9 +304,12 @@ class GenerateChatPipeline:
             }
         )
         try:
-            output = (self.code_generation_pipeline | self.code_execution_pipeline).run(
-                input
-            )
+            if self.code_execution_pipeline:
+                output = (
+                    self.code_generation_pipeline | self.code_execution_pipeline
+                ).run(input)
+            else:
+                output = self.code_generation_pipeline.run(input)
 
             self.query_exec_tracker.success = True
 

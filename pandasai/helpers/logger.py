@@ -50,10 +50,10 @@ class Logger:
 
         if save_logs:
             try:
-                filaname = find_closest("pandasai.log")
+                filename = find_closest("pandasai.log")
             except ValueError:
-                filaname = "pandasai.log"
-            handlers = [logging.FileHandler(filaname)]
+                filename = "pandasai.log"
+            handlers = [logging.FileHandler(filename)]
         else:
             handlers = []
 
@@ -141,8 +141,8 @@ class Logger:
     def save_logs(self, save_logs: bool):
         """Set the save_logs flag"""
         if save_logs and not self.save_logs:
-            filaname = find_closest("pandasai.log")
-            self._logger.addHandler(logging.FileHandler(filaname))
+            filename = find_closest("pandasai.log")
+            self._logger.addHandler(logging.FileHandler(filename))
         elif not save_logs and self.save_logs:
             # remove the FileHandler if it exists
             for handler in self._logger.handlers:
