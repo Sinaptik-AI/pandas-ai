@@ -35,11 +35,17 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
   const isSidebarOpen = useAppStore((state) => state.isSideBarOpen);
   const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
+  const isCollapsed = localStorage.getItem("collapsed");
+  const [collapsed, setCollapsed] = useState(isCollapsed ? true : false);
   const darkMode = useAppStore((state) => state.darkMode);
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+  };
+
+  const changeCollapsed = () => {
+    setCollapsed(!collapsed);
+    localStorage.setItem("collapsed", `${!collapsed}`);
   };
 
   return (
@@ -52,7 +58,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
         >
           <div
             className={`absolute right-[-16px] top-[45vh] w-8 h-8 rounded-full bg-white dark:bg-[#111111] border border-[#333333] cursor-pointer z-50 hidden md:flex`}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={changeCollapsed}
           >
             <div className="w-5 h-5 mt-1">
               {collapsed ? (
@@ -109,7 +115,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
                       collapsed
                         ? "opacity-0 pointer-events-none"
                         : "opacity-100"
-                    } dark:text-white transition-all duration-1000`}
+                    } dark:text-white transition-all`}
                   >
                     Chats
                   </h2>
@@ -120,7 +126,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
               <div
                 className={`flex flex-col items-start ${
                   collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-                } transition-all duration-1000`}
+                } transition-all`}
               >
                 <Link
                   href="https://pandasai.featurebase.app/"

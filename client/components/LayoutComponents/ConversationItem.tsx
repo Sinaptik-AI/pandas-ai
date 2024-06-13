@@ -170,7 +170,7 @@ const ConversationItem = ({ collapsed }: IProps) => {
         <div
           className={`flex-1 custom-scroll ${
             collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-          } transition-all duration-1000`}
+          } transition-all`}
           onScroll={handleScroll}
         >
           {state?.conversations?.map(({ date, conversations }) => (
