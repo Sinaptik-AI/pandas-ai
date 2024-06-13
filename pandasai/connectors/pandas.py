@@ -16,6 +16,7 @@ from ..helpers.data_sampler import DataSampler
 from ..helpers.file_importer import FileImporter
 from ..helpers.logger import Logger
 from .base import BaseConnector
+import sqlglot
 
 
 class PandasConnectorConfig(BaseModel):
@@ -165,6 +166,7 @@ class PandasConnector(BaseConnector):
             raise PandasConnectorTableNotFound("Table name not found!")
 
         table = table_name or self.name
+
         duckdb_relation = duckdb.from_df(self.pandas_df)
         duckdb_relation.create(table)
         self.sql_enabled = True
@@ -173,7 +175,8 @@ class PandasConnector(BaseConnector):
     def execute_direct_sql_query(self, sql_query):
         if not self.sql_enabled:
             self.enable_sql_query()
-        sql_query = sql_query.replace("`", '"')
+
+        sql_query = sqlglot.transpile(sql_query, read="mysql", write="duckdb")[0]
         return duckdb.query(sql_query).df()
 
     @property

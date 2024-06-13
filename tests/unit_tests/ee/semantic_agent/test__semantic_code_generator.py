@@ -111,9 +111,9 @@ sql_query="SELECT `orders`.`ship_country` AS ship_country, COUNT(`orders`.`order
 data = execute_sql_query(sql_query)
 
 plt.bar(data["ship_country"], data["order_count"], label="order_count")
-plt.xlabel('Country')
-plt.ylabel('Number of Orders')
-plt.title('Orders Count by Country')
+plt.xlabel('''Country''')
+plt.ylabel('''Number of Orders''')
+plt.title('''Orders Count by Country''')
 plt.legend(loc='best')
 
 
@@ -151,7 +151,7 @@ sql_query="SELECT `orders`.`ship_country` AS ship_country, COUNT(`orders`.`order
 data = execute_sql_query(sql_query)
 
 plt.pie(data["order_count"], labels=data["ship_country"], autopct='%1.1f%%')
-plt.title('Orders Count by Country')
+plt.title('''Orders Count by Country''')
 plt.legend(loc='best')
 
 
@@ -193,9 +193,9 @@ sql_query="SELECT `orders`.`order_date` AS order_date, COUNT(`orders`.`order_cou
 data = execute_sql_query(sql_query)
 
 plt.plot(data["order_date"], data["order_count"])
-plt.xlabel('Order Date')
-plt.ylabel('Number of Orders')
-plt.title('Orders Over Time')
+plt.xlabel('''Order Date''')
+plt.ylabel('''Number of Orders''')
+plt.title('''Orders Over Time''')
 plt.legend(loc='best')
 
 
@@ -232,7 +232,7 @@ sql_query="SELECT `orders`.`order_date` AS order_date, `orders`.`ship_via` AS sh
 data = execute_sql_query(sql_query)
 
 plt.scatter(data['order_date'], data['ship_via'])
-plt.title('Total Freight by Order Date')
+plt.title('''Total Freight by Order Date''')
 plt.legend(loc='best')
 
 
@@ -274,9 +274,9 @@ sql_query="SELECT SUM(`orders`.`freight`) AS total_freight FROM `orders`"
 data = execute_sql_query(sql_query)
 
 plt.hist(data['total_freight'])
-plt.xlabel('Total Freight')
-plt.ylabel('Frequency')
-plt.title('Distribution of Total Freight')
+plt.xlabel('''Total Freight''')
+plt.ylabel('''Frequency''')
+plt.title('''Distribution of Total Freight''')
 
 
 plt.savefig("charts.png")
@@ -307,19 +307,20 @@ result = {"type": "plot","value": "charts.png"}
 
         logic_unit = code_gen.execute(json_str, context=context, logger=logger)
         assert isinstance(logic_unit, LogicUnitOutput)
+        print(logic_unit.output)
         assert (
             logic_unit.output
             == """
-import matplotlib.pyplot as plt
+
 import pandas as pd
 
 sql_query="SELECT `orders`.`ship_country` AS ship_country, SUM(`orders`.`freight`) AS total_freight FROM `orders` GROUP BY ship_country"
 data = execute_sql_query(sql_query)
 
 plt.boxplot(data['total_freight'])
-plt.xlabel('Shipping Country')
-plt.ylabel('Total Freight')
-plt.title('Distribution of Total Freight by Shipping Country')
+plt.xlabel('''Shipping Country''')
+plt.ylabel('''Total Freight''')
+plt.title('''Distribution of Total Freight by Shipping Country''')
 
 
 plt.savefig("charts.png")
@@ -343,6 +344,7 @@ result = {"type": "plot","value": "charts.png"}
 
         logic_unit = code_gen.execute(json_str, context=context, logger=logger)
         assert isinstance(logic_unit, LogicUnitOutput)
+        print(logic_unit.output)
         assert (
             logic_unit.output
             == """
@@ -353,7 +355,9 @@ sql_query="SELECT COUNT(`orders`.`order_count`) AS order_count FROM `orders`"
 data = execute_sql_query(sql_query)
 
 
-result = {"type": "number","value": data["order_count"].iloc[0]}
+total_value = data["order_count"].sum()
+
+result = {"type": "number","value": total_value}
 
 """
         )
@@ -391,14 +395,113 @@ result = {"type": "number","value": data["order_count"].iloc[0]}
 import matplotlib.pyplot as plt
 import pandas as pd
 
-sql_query="SELECT `users`.`starredAt` AS starred_at, COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` BETWEEN '2022-01-01' AND '2023-03-31' GROUP BY starred_at_by_month"
+sql_query="SELECT COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` BETWEEN '2022-01-01' AND '2023-03-31' GROUP BY starred_at_by_month"
 data = execute_sql_query(sql_query)
 
-plt.plot(data["starred_at"], data["user_count"])
-plt.xlabel('Month')
-plt.ylabel('Number of Stars')
-plt.title('Stars Count per Month')
+plt.plot(data["starred_at_by_month"], data["user_count"])
+plt.xlabel('''Month''')
+plt.ylabel('''Number of Stars''')
+plt.title('''Stars Count per Month''')
 plt.legend(loc='best')
+
+
+plt.savefig("charts.png")
+
+result = {"type": "plot","value": "charts.png"}
+"""
+        )
+
+    def test_generate_timedimension_for_year(
+        self, context: PipelineContext, logger: Logger
+    ):
+        code_gen = CodeGenerator()
+        context.add("df_schema", STARS_SCHEMA)
+        json_str = {
+            "type": "line",
+            "measures": ["Users.user_count"],
+            "timeDimensions": [
+                {
+                    "dimension": "Users.starred_at",
+                    "dateRange": ["this year"],
+                    "granularity": "month",
+                }
+            ],
+            "options": {
+                "xLabel": "Time Period",
+                "yLabel": "Stars Count",
+                "title": "Stars Count Per Month This Year",
+                "legend": {"display": True, "position": "bottom"},
+            },
+            "filters": [],
+            "order": [{"id": "Users.starred_at", "direction": "asc"}],
+        }
+
+        logic_unit = code_gen.execute(json_str, context=context, logger=logger)
+        print(logic_unit.output)
+        assert isinstance(logic_unit, LogicUnitOutput)
+        assert (
+            logic_unit.output
+            == """
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sql_query="SELECT COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` >= DATE_TRUNC('year', CURRENT_DATE) AND `users`.`starredAt` < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year' GROUP BY starred_at_by_month ORDER BY starred_at_by_month asc"
+data = execute_sql_query(sql_query)
+
+plt.plot(data["starred_at_by_month"], data["user_count"])
+plt.xlabel('''Time Period''')
+plt.ylabel('''Stars Count''')
+plt.title('''Stars Count Per Month This Year''')
+plt.legend(loc='best')
+
+
+plt.savefig("charts.png")
+
+result = {"type": "plot","value": "charts.png"}
+"""
+        )
+
+    def test_generate_timedimension_histogram_for_year(
+        self, context: PipelineContext, logger: Logger
+    ):
+        code_gen = CodeGenerator()
+        context.add("df_schema", STARS_SCHEMA)
+        json_str = {
+            "type": "histogram",
+            "dimensions": ["Users.starred_at"],
+            "measures": ["Users.user_count"],
+            "timeDimensions": [
+                {
+                    "dimension": "Users.starred_at",
+                    "dateRange": ["2023-01-01", "2023-12-31"],
+                    "granularity": "month",
+                }
+            ],
+            "options": {
+                "xLabel": "Starred Month",
+                "yLabel": "Number of Users",
+                "title": "Distribution of Stars per Month in 2023",
+                "legend": {"display": False},
+            },
+            "filters": [],
+            "order": [{"id": "Users.starred_at", "direction": "asc"}],
+        }
+
+        logic_unit = code_gen.execute(json_str, context=context, logger=logger)
+        assert isinstance(logic_unit, LogicUnitOutput)
+        assert (
+            logic_unit.output
+            == """
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sql_query="SELECT `users`.`starredAt` AS starred_at, COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` BETWEEN '2023-01-01' AND '2023-12-31' GROUP BY starred_at, starred_at_by_month ORDER BY starred_at_by_month asc"
+data = execute_sql_query(sql_query)
+
+plt.hist(data['user_count'])
+plt.xlabel('''Starred Month''')
+plt.ylabel('''Number of Users''')
+plt.title('''Distribution of Stars per Month in 2023''')
 
 
 plt.savefig("charts.png")

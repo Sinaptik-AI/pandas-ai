@@ -254,3 +254,11 @@ class InvalidTrainJson(Exception):
     Args:
         Exception (Exception): Invalid train json
     """
+
+
+class InvalidSchemaJson(Exception):
+    """
+    Raise error if schema json is not correct
+    Args:
+        Exception (Exception): Invalid json schema
+    """
