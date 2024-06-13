@@ -11,6 +11,7 @@
   "dependencies": {
     "@next/third-parties": "^14.2.3",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tooltip": "^1.0.7",
     "@rollbar/react": "^0.12.0-beta",
     "@table-library/react-table-library": "^4.1.7",
     "@tanstack/react-query": "^5.39.0",
@@ -20,6 +21,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "gridjs": "^6.2.0",
     "mixpanel-browser": "^2.50.0",
     "multiselect-react-dropdown": "^2.0.25",
     "next": "14.2.3",
@@ -31,7 +33,6 @@
     "react-loading-skeleton": "^3.4.0",
     "react-modern-drawer": "^1.3.1",
     "react-toastify": "^10.0.5",
-    "react-tooltip": "^5.26.4",
     "rollbar": "^2.26.4",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

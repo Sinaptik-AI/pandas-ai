@@ -58,7 +58,6 @@ const AIChatBubble = ({ chat, lastIndex }: IProps) => {
                           <ChatDataFrame
                             chatResponse={response}
                             chatId={chat.id}
-                            index={indx}
                             key={chat?.id}
                           />
                         </>

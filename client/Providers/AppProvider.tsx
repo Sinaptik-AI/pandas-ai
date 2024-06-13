@@ -18,7 +18,6 @@ import "styles/globals.css";
 import "styles/App.css";
 import "styles/multi-range-slider.css";
 import "react-toastify/dist/ReactToastify.css";
-import "react-tooltip/dist/react-tooltip.css";
 
 const _NoSSR = ({ children }) => <React.Fragment>{children}</React.Fragment>;
 const NoSSR = dynamic(() => Promise.resolve(_NoSSR), {
