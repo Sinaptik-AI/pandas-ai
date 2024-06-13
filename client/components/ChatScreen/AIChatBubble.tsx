@@ -35,7 +35,7 @@ const AIChatBubble = ({ chat, lastIndex }: IProps) => {
           />
         </div>
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex w-full flex-col">
           <span className="dark:text-white font-bold text-lg">PandaBI</span>
           <div
             className={`break-all text-sm md:text-[15px] font-medium w-auto overflow-visible dark:text-white

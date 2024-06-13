@@ -36,7 +36,10 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
   const isSidebarOpen = useAppStore((state) => state.isSideBarOpen);
   const router = useRouter();
   const isCollapsed = localStorage.getItem("collapsed");
-  const [collapsed, setCollapsed] = useState(isCollapsed ? true : false);
+
+  const [collapsed, setCollapsed] = useState(
+    isCollapsed === "true" ? true : false
+  );
   const darkMode = useAppStore((state) => state.darkMode);
 
   const closeSidebar = () => {

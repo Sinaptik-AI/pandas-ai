@@ -6,8 +6,8 @@ import DownloadIcon from "../Icons/DownloadIcon";
 import SearchIcon from "../Icons/SearchIcon";
 import { useAppStore } from "@/store";
 import AppTooltip from "../AppTooltip";
-import "gridjs/dist/theme/mermaid.css";
 import { convertToCSV } from "@/utils/convertToCSV";
+import "gridjs/dist/theme/mermaid.css";
 
 interface IProps {
   chatResponse: ChatResponseItem;
@@ -28,6 +28,12 @@ const ChatDataFrame = ({ chatResponse, chatId }: IProps) => {
       limit: 10,
       summary: false,
     },
+    style: {
+      table: {
+        "white-space": "nowrap",
+      },
+    },
+    height: "600px",
     resizable: true,
   });
 
@@ -36,7 +42,6 @@ const ChatDataFrame = ({ chatResponse, chatId }: IProps) => {
   });
 
   const handleSearch = () => {
-    // const gridHead = document.querySelector(".gridjs-head") as HTMLElement;
     const gridJsHead = contentRef.current.querySelector(".gridjs-head");
 
     if (gridJsHead) {
