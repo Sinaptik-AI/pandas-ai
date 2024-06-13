@@ -7,6 +7,7 @@ from functools import cache, cached_property
 from typing import Union
 
 import duckdb
+import sqlglot
 from pydantic import BaseModel
 
 import pandasai.pandas as pd
@@ -165,6 +166,7 @@ class PandasConnector(BaseConnector):
             raise PandasConnectorTableNotFound("Table name not found!")
 
         table = table_name or self.name
+
         duckdb_relation = duckdb.from_df(self.pandas_df)
         duckdb_relation.create(table)
         self.sql_enabled = True
@@ -173,7 +175,8 @@ class PandasConnector(BaseConnector):
     def execute_direct_sql_query(self, sql_query):
         if not self.sql_enabled:
             self.enable_sql_query()
-        sql_query = sql_query.replace("`", '"')
+
+        sql_query = sqlglot.transpile(sql_query, read="mysql", write="duckdb")[0]
         return duckdb.query(sql_query).df()
 
     @property

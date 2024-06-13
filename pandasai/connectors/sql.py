@@ -9,6 +9,7 @@ import time
 from functools import cache, cached_property
 from typing import Optional, Union
 
+import sqlglot
 from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
 
@@ -651,7 +652,7 @@ class PostgreSQLConnector(SQLConnector):
         return f'"{self.config.table}"'
 
     def execute_direct_sql_query(self, sql_query):
-        sql_query = sql_query.replace("`", '"')
+        sql_query = sqlglot.transpile(sql_query, read="mysql", write="postgres")[0]
         return super().execute_direct_sql_query(sql_query)
 
 

@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Callable
 
 from pandasai.ee.helpers.query_builder import QueryBuilder
@@ -13,17 +14,21 @@ class CodeGenerator(BaseLogicUnit):
     """
 
     def __init__(
-        self, on_code_generation: Callable[[str, Exception], None] = None, **kwargs
+        self,
+        on_code_generation: Callable[[str, Exception], None] = None,
+        on_failure=None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.on_code_generation = on_code_generation
+        self.on_failure = on_failure
 
-    def execute(self, input: Any, **kwargs) -> Any:
+    def execute(self, input_data: Any, **kwargs) -> Any:
         """
         This method will return output according to
         Implementation.
 
-        :param input: Your input data.
+        :param input_data: Your input data.
         :param kwargs: A dictionary of keyword arguments.
             - 'logger' (any): The logger for logging.
             - 'config' (Config): Global configurations for the test
@@ -36,13 +41,16 @@ class CodeGenerator(BaseLogicUnit):
         schema = pipeline_context.get("df_schema")
         query_builder = QueryBuilder(schema)
 
-        sql_query = query_builder.generate_sql(input)
+        retry_count = 0
+        while retry_count <= pipeline_context.config.max_retries:
+            try:
+                sql_query = query_builder.generate_sql(input_data)
 
-        response_type = self._get_type(input)
+                response_type = self._get_type(input_data)
 
-        gen_code = self._generate_code(response_type, input)
+                gen_code = self._generate_code(response_type, input_data)
 
-        code = f"""
+                code = f"""
 {"import matplotlib.pyplot as plt" if response_type == "plot" else ""}
 import pandas as pd
 
@@ -52,27 +60,46 @@ data = execute_sql_query(sql_query)
 {gen_code}
 """
 
-        logger.log(f"""Code Generated: {code}""")
+                logger.log(f"""Code Generated: {code}""")
 
-        # Implement error handling pipeline here...
+                # Implement error handling pipeline here...
 
-        return LogicUnitOutput(
-            code,
-            True,
-            "Code Generated Successfully",
-            {"content_type": "string", "value": code},
-        )
+                return LogicUnitOutput(
+                    code,
+                    True,
+                    "Code Generated Successfully",
+                    {"content_type": "string", "value": code},
+                )
+            except Exception:
+                if (
+                    retry_count == pipeline_context.config.max_retries
+                    or not self.on_failure
+                ):
+                    raise
+
+                traceback_errors = traceback.format_exc()
+
+                input_data = self.on_failure(input, traceback_errors)
+
+                retry_count += 1
 
     def _get_type(self, input: dict) -> bool:
-        return "number" if input["type"] == "number" else "plot"
+        return (
+            "plot"
+            if input["type"] in ["bar", "line", "histogram", "pie", "scatter"]
+            else input["type"]
+        )
 
     def _generate_code(self, type, query):
         if type == "number":
             code = self._generate_code_for_number(query)
-
-            # Format code final output
             return f"""
-result = {{"type": "number","value": {code}}}
+{code}
+result = {{"type": "number","value": total_value}}
+"""
+        elif type == "dataframe":
+            return """
+result = {{"type": "dataframe","value": data}}
 """
         else:
             code = self.generate_matplotlib_code(query)
@@ -88,7 +115,7 @@ result = {"type": "plot","value": "charts.png"}"""
         else:
             value = query["dimensions"][0].split(".")[1]
 
-        return f'data["{value}"].iloc[0]'
+        return f'total_value = data["{value}"].sum()\n'
 
     def generate_matplotlib_code(self, query: dict) -> str:
         chart_type = query["type"]
@@ -135,11 +162,11 @@ result = {"type": "plot","value": "charts.png"}"""
         code += code_generator(query)
 
         if x_label:
-            code += f"plt.xlabel('{x_label}')\n"
+            code += f"plt.xlabel('''{x_label}''')\n"
         if y_label:
-            code += f"plt.ylabel('{y_label}')\n"
+            code += f"plt.ylabel('''{y_label}''')\n"
         if title:
-            code += f"plt.title('{title}')\n"
+            code += f"plt.title('''{title}''')\n"
 
         if legend_display:
             code += f"plt.legend(loc='{legend_position}')\n"
@@ -151,7 +178,7 @@ plt.savefig("charts.png")"""
         return code
 
     def _generate_bar_code(self, query):
-        x_key = query["dimensions"][0].split(".")[1]
+        x_key = self._get_dimensions_key(query)
         plots = ""
         for measure in query["measures"]:
             if isinstance(measure, str):
@@ -173,7 +200,7 @@ plt.savefig("charts.png")"""
         return f"""plt.pie(data["{measure}"], labels=data["{dimension}"], autopct='%1.1f%%')\n"""
 
     def _generate_line_code(self, query):
-        x_key = query["dimensions"][0].split(".")[1]
+        x_key = self._get_dimensions_key(query)
         plots = ""
         for measure in query["measures"]:
             field_name = measure.split(".")[1]
@@ -193,3 +220,11 @@ plt.savefig("charts.png")"""
     def _generate_box_code(self, query):
         y_key = query["measures"][0].split(".")[1]
         return f"plt.boxplot(data['{y_key}'])\n"
+
+    def _get_dimensions_key(self, query):
+        if "dimensions" in query and len(query["dimensions"]) > 0:
+            return query["dimensions"][0].split(".")[1]
+
+        time_dimension = query["timeDimensions"][0]
+        dimension = time_dimension["dimension"].split(".")[1]
+        return f"{dimension}_by_{time_dimension['granularity']}"

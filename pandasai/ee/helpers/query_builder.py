@@ -1,5 +1,10 @@
 import re
 
+from pandasai.exceptions import InvalidSchemaJson
+
+MISSING_TABLE_NAME_MESSAGE = "All measures, dimensions, timeDimensions, order and filters must have the format Table_Name.Dimension or Table_Name.Measure"
+TABLE_NOT_FOUND_MESSAGE = "Table {0} Doesn't exist"
+
 
 class QueryBuilder:
     """
@@ -28,6 +33,7 @@ class QueryBuilder:
         }
 
     def generate_sql(self, query):
+        self._validate_query(query)
         measures = query.get("measures", [])
         dimensions = query.get("dimensions", [])
         time_dimensions = query.get("timeDimensions", [])
@@ -54,10 +60,60 @@ class QueryBuilder:
 
         return sql
 
+    def _validate_table(self, value: str):
+        value_splitted = value.split(".")
+        if len(value_splitted) == 1:
+            raise InvalidSchemaJson(MISSING_TABLE_NAME_MESSAGE)
+
+        table = self.find_table(value_splitted[0])
+        if not table:
+            raise InvalidSchemaJson(TABLE_NOT_FOUND_MESSAGE.format(value_splitted[0]))
+
+    def _validate_query(self, query: dict):
+        for measure in query.get("measures", []):
+            self._validate_table(measure)
+
+        for dimension in query.get("dimensions", []):
+            self._validate_table(dimension)
+
+        for dimension in query.get("timeDimensions", []):
+            self._validate_table(dimension["dimension"])
+
+        for order in query.get("order", []):
+            self._validate_table(order["id"])
+
+        for filter in query.get("filters", []):
+            self._validate_table(filter["member"])
+
+    def _validate_fix_query(self, query):
+        for index, measure in enumerate(query.get("measures", [])):
+            query["measures"][index] = self._validate_and_fix_mapped_measure(measure)
+
+        for index, dimension in enumerate(query.get("dimensions", [])):
+            query["dimensions"][index] = self._validate_and_fix_mapped_dimension(
+                dimension
+            )
+
+        for index, dimension in enumerate(query.get("timeDimensions", [])):
+            query["timeDimensions"][index][
+                "dimension"
+            ] = self._validate_and_fix_mapped_dimension(dimension["dimension"])
+
+        for index, order in enumerate(query.get("order", [])):
+            query["order"][index]["id"] = self._validate_and_fix_mapped_order(
+                order["id"]
+            )
+
+        for index, filter in enumerate(query.get("filters", [])):
+            query["filters"][index]["member"] = self._validate_and_fix_mapped_order(
+                filter["member"]
+            )
+
+        return query
+
     def _generate_columns(self, dimensions, time_dimensions, measures):
-        all_dimensions = list(
-            dict.fromkeys(dimensions + [td["dimension"] for td in time_dimensions])
-        )
+        all_dimensions = list(dict.fromkeys(dimensions))
+        # + [td["dimension"] for td in time_dimensions]
         columns = []
 
         for dim in all_dimensions:
@@ -87,9 +143,111 @@ class QueryBuilder:
 
         return list(dict.fromkeys(columns))  # preserve order and return unique columns
 
+    def _validate_and_fix_mapped_measure(self, value):
+        value_splitted = value.split(".")
+        if len(value_splitted) == 1:
+            table_name = self._find_table_name_in_measure_if_not_exists(
+                value_splitted[0]
+            )
+            if table_name is None:
+                raise ValueError(
+                    "Measure must have table expected format is TableName.measure"
+                )
+            return f"{table_name}.{value_splitted[0]}"
+        return value
+
+    def _validate_and_fix_mapped_dimension(self, value):
+        value_splitted = value.split(".")
+        if len(value_splitted) == 1:
+            table_name = self._find_table_name_in_dimension_if_not_exists(
+                value_splitted[0]
+            )
+            if table_name is None:
+                raise ValueError(
+                    "Measure must have table expected format is TableName.measure"
+                )
+            return f"{table_name}.{value_splitted[0]}"
+        return value
+
+    def _validate_and_fix_mapped_order(self, value):
+        value_splitted = value.split(".")
+        if len(value_splitted) == 1:
+            table_name = self._find_table_name_in_orders_if_not_exists(
+                value_splitted[0]
+            )
+            if table_name is None:
+                raise ValueError(
+                    "Measure must have table expected format is TableName.measure"
+                )
+            return f"{table_name}.{value_splitted[0]}"
+        return value
+
+    def _validate_and_fix_mapped_filter(self, value):
+        value_splitted = value.split(".")
+        if len(value_splitted) == 1:
+            table_name = self._find_table_name_in_filter_if_not_exists(
+                value_splitted[0]
+            )
+            if table_name is None:
+                raise ValueError(
+                    "Measure must have table expected format is TableName.measure"
+                )
+            return f"{table_name}.{value_splitted[0]}"
+        return value
+
+    def _find_table_name_in_filter_if_not_exists(self, filter_name: str):
+        """
+        Find and add table name if not exists in Measure
+        """
+        for table in self.schema:
+            for dimension in table["dimensions"]:
+                if dimension["name"] == filter_name:
+                    return table["name"]
+
+        return None
+
+    def _find_table_name_in_measure_if_not_exists(self, measure_name: str):
+        """
+        Find and add table name if not exists in Measure
+        """
+        for table in self.schema:
+            for measure in table["measures"]:
+                if measure["name"] == measure_name:
+                    return table["name"]
+
+        return None
+
+    def _find_table_name_in_dimension_if_not_exists(self, dimension_name: str):
+        """
+        Find and add table name if not exists in Measure
+        """
+        for table in self.schema:
+            for dimension in table["dimensions"]:
+                if dimension["name"] == dimension_name:
+                    return table["name"]
+
+        return None
+
+    def _find_table_name_in_orders_if_not_exists(self, dimension_name: str):
+        """
+        Find and add table name if not exists in Measure
+        """
+        for table in self.schema:
+            for dimension in table["dimensions"]:
+                if dimension["name"] == dimension_name:
+                    return table["name"]
+
+            for measure in table["measures"]:
+                if measure["name"] == dimension_name:
+                    return table["name"]
+
+        return None
+
     def _generate_time_dimension_column(self, time_dimension):
         dimension = time_dimension["dimension"]
-        granularity = time_dimension["granularity"]
+        granularity = (
+            time_dimension["granularity"] if "granularity" in time_dimension else "day"
+        )
 
         if granularity not in self.supported_granularities:
             raise ValueError(
@@ -101,12 +259,12 @@ class QueryBuilder:
         sql_expr = f"`{table}`.`{dimension_info['sql']}`"
 
         granularity_sql = {
-            "year": f"EXTRACT(YEAR FROM {sql_expr})",
-            "month": f"TO_CHAR({sql_expr}, 'YYYY-MM')",
-            "day": f"TO_CHAR({sql_expr}, 'YYYY-MM-DD')",
-            "hour": f"EXTRACT(HOUR FROM {sql_expr})",
-            "minute": f"EXTRACT(MINUTE FROM {sql_expr})",
-            "second": f"EXTRACT(SECOND FROM {sql_expr})",
+            "year": f"YEAR({sql_expr})",
+            "month": f"DATE_FORMAT({sql_expr}, '%Y-%m')",
+            "day": f"DATE_FORMAT({sql_expr}, '%Y-%m-%d')",
+            "hour": f"HOUR({sql_expr})",
+            "minute": f"MINUTE({sql_expr})",
+            "second": f"SECOND({sql_expr})",
         }
 
         if granularity not in granularity_sql:
@@ -183,7 +341,7 @@ class QueryBuilder:
         group_by_dimensions = [
             self.find_dimension(dim)["name"] for dim in dimensions
         ] + [
-            f"{self.find_dimension(td['dimension'])['name']}_by_{td['granularity']}"
+            f"{self.find_dimension(td['dimension'])['name']}_by_{td.get('granularity', 'day')}"
             for td in time_dimensions
         ]
 
@@ -202,11 +360,36 @@ class QueryBuilder:
         if "order" not in query or len(query["order"]) == 0:
             return ""
 
-        order = query["order"][0]
-        name = (self.find_measure(order["id"]) or self.find_dimension(order["id"]))[
-            "name"
-        ]
-        return f" ORDER BY {name} {order['direction']}"
+        order_clauses = []
+        for order in query["order"]:
+            name = None
+            if measure := self.find_measure(order["id"]):
+                name = measure["name"]
+
+            if (
+                name is None
+                and "timeDimensions" in query
+                and len(query["timeDimensions"]) > 0
+            ):
+                for time_dimension in query["timeDimensions"]:
+                    if (
+                        dimension
+                        := f"{self.find_dimension(order['id'])['name']}_by_{time_dimension['granularity']}"
+                    ):
+                        name = dimension
+
+            if name is None and "dimensions" in query and len(query["dimensions"]) > 0:
+                if dimension := self.find_dimension(order["id"]):
+                    name = dimension["name"]
+
+            if name is None:
+                name = (
+                    self.find_measure(order["id"]) or self.find_dimension(order["id"])
+                )["name"]
+
+            order_clauses.append(f"{name} {order['direction']}")
+
+        return f" ORDER BY {', '.join(order_clauses)}"
 
     def _build_limit_clause(self, query):
         return f" LIMIT {query['limit']}" if "limit" in query else ""
@@ -223,15 +406,14 @@ class QueryBuilder:
 
         table_column = f"`{table['table']}`.`{dimension_info['sql']}`"
 
-        if isinstance(date_range, list):
-            if len(date_range) != 2:
-                raise ValueError(
-                    "Invalid date range. It should contain exactly two dates."
-                )
+        if isinstance(date_range, list) and len(date_range) == 2:
             start_date, end_date = date_range
             return f"{table_column} BETWEEN '{start_date}' AND '{end_date}'"
         else:
-            if date_range not in self.supportedDateRanges:
+            if isinstance(date_range, list) and len(date_range) == 1:
+                date_range = date_range[0]
+
+            if date_range not in self.supported_date_ranges:
                 raise ValueError(f"Unsupported date range: {date_range}")
 
             if date_range == "last week":
@@ -286,6 +468,7 @@ class QueryBuilder:
             "lte": "<=",
             "beforeDate": "<",
             "afterDate": ">",
+            "in": "IN",
         }
 
         multi_value_operators = {"equals": "IN", "notEquals": "NOT IN"}
@@ -307,12 +490,12 @@ class QueryBuilder:
         multi_value_operators,
     ):
         if operator in single_value_operators:
-            if operator in ["equals", "notEquals"]:
+            if operator in ["equals", "notEquals", "in"]:
                 if len(values) == 1:
                     operator_str = "=" if operator == "equals" else "!="
                     return f"{table_column} {operator_str} '{values[0]}'"
                 else:
-                    operator_str = "IN" if operator == "equals" else "NOT IN"
+                    operator_str = "IN" if operator in ["equals", "in"] else "NOT IN"
                     formatted_values = "', '".join(values)
                     return f"{table_column} {operator_str} ('{formatted_values}')"
 
