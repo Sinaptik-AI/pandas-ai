@@ -7,6 +7,7 @@ from functools import cache, cached_property
 from typing import Union
 
 import duckdb
+import sqlglot
 from pydantic import BaseModel
 
 import pandasai.pandas as pd
@@ -16,7 +17,6 @@ from ..helpers.data_sampler import DataSampler
 from ..helpers.file_importer import FileImporter
 from ..helpers.logger import Logger
 from .base import BaseConnector
-import sqlglot
 
 
 class PandasConnectorConfig(BaseModel):

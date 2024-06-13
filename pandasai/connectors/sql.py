@@ -9,9 +9,9 @@ import time
 from functools import cache, cached_property
 from typing import Optional, Union
 
+import sqlglot
 from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
-import sqlglot
 
 import pandasai.pandas as pd
 from pandasai.exceptions import MaliciousQueryError

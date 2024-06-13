@@ -2,7 +2,6 @@ import re
 
 from pandasai.exceptions import InvalidSchemaJson
 
-
 MISSING_TABLE_NAME_MESSAGE = "All measures, dimensions, timeDimensions, order and filters must have the format Table_Name.Dimension or Table_Name.Measure"
 TABLE_NOT_FOUND_MESSAGE = "Table {0} Doesn't exist"
 
