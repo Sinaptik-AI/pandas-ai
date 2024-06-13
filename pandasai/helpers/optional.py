@@ -5,6 +5,7 @@ Source: Taken from pandas/compat/_optional.py
 
 from __future__ import annotations
 
+import json
 import importlib
 import sys
 import warnings
@@ -58,6 +59,7 @@ def get_environment(additional_deps: List[dict]) -> dict:
         "pd": pd,
         "plt": plt,
         "np": np,
+        "json": json,
         **{
             lib["alias"]: (
                 getattr(import_dependency(lib["module"]), lib["name"])
