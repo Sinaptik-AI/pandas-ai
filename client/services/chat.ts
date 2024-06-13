@@ -1,4 +1,4 @@
-import { DeleteRequest, GetRequest, PatchRequest, PostRequest } from "@/utils/apiUtils";
+import { GetRequest, PostRequest } from "@/utils/apiUtils";
 
 const chatApiUrl = `/v1/chat`;
 
@@ -6,17 +6,6 @@ const chatApiUrl = `/v1/chat`;
 export const ChatApi = async (chatdata) => {
   try {
     const response = await PostRequest(`${chatApiUrl}/`, chatdata);
-    return response;
-  } catch (error) {
-    console.error("Get request failed", error);
-    throw error;
-  }
-};
-
-export const FetchDataframe = async (id: number | string) => {
-  const apiUrl = `${chatApiUrl}/conversation-message-dataframe/${id}`;
-  try {
-    const response = await GetRequest(apiUrl);
     return response;
   } catch (error) {
     console.error("Get request failed", error);

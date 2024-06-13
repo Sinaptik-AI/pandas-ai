@@ -771,3 +771,6 @@ body::-webkit-scrollbar-thumb {
   z-index: 999;
 }
 
+.gridjs-head {
+  display: none;
+}

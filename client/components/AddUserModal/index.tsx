@@ -5,8 +5,8 @@ import { useAddSpaceUsers, useDeleteSpaceUsers } from "hooks/useSpaces";
 import { Loader } from "components/loader/Loader";
 import { toast } from "react-toastify";
 import { useGetMembersList, useGetOrganizations } from "hooks/useOrganizations";
-import { Tooltip } from "react-tooltip";
 import { Input } from "../ui/input";
+import AppTooltip from "../AppTooltip";
 
 interface ISpaceUser {
   space_id: string;
@@ -111,15 +111,13 @@ const AddUserModal = ({ setIsModelOpen, spaceUsers, spaceId }: IProps) => {
                       className="cursor-pointer min-w-[50px] border-white/0 py-3 pr-4 pl-4 flex"
                       onClick={() => handleDeleteSpaceUser(user?.user_id)}
                     >
-                      <AiFillDelete id="deleteIcon" color="#ccc" size="1.5em" />
-
-                      <Tooltip
-                        anchorSelect="#deleteIcon"
-                        className="z-10"
-                        opacity={1}
-                      >
-                        You cannot remove the sole user from this workspace
-                      </Tooltip>
+                      <AppTooltip text="You cannot remove the sole user from this workspace">
+                        <AiFillDelete
+                          id="deleteIcon"
+                          color="#ccc"
+                          size="1.5em"
+                        />
+                      </AppTooltip>
                     </span>
                   ) : (
                     <span
