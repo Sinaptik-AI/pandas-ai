@@ -58,6 +58,7 @@ class ErrorCorrectionPipeline:
             on_code_generation=on_code_generation,
             on_prompt_generation=on_prompt_generation,
         )
+        self.query_exec_tracker = query_exec_tracker
 
         self._context = context
         self._logger = logger

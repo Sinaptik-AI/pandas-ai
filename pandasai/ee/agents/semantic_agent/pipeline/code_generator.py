@@ -99,7 +99,7 @@ result = {{"type": "number","value": total_value}}
 """
         elif type == "dataframe":
             return """
-result = {{"type": "dataframe","value": data}}
+result = {"type": "dataframe","value": data}
 """
         else:
             code = self.generate_matplotlib_code(query)
@@ -119,8 +119,8 @@ result = {"type": "plot","value": "charts.png"}"""
 
     def generate_matplotlib_code(self, query: dict) -> str:
         chart_type = query["type"]
-        x_label = query["options"].get("xLabel", None)
-        y_label = query["options"].get("yLabel", None)
+        x_label = query.get("options", {}).get("xLabel", None)
+        y_label = query.get("options", {}).get("yLabel", None)
         title = query["options"].get("title", None)
         legend_display = {"display": True}
         legend_position = "best"
