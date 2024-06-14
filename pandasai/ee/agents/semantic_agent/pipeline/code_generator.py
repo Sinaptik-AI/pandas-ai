@@ -79,14 +79,15 @@ data = execute_sql_query(sql_query)
 
                 traceback_errors = traceback.format_exc()
 
-                input_data = self.on_failure(input, traceback_errors)
+                input_data = self.on_failure(input_data, traceback_errors)
 
                 retry_count += 1
 
     def _get_type(self, input: dict) -> bool:
         return (
             "plot"
-            if input["type"] in ["bar", "line", "histogram", "pie", "scatter"]
+            if input["type"]
+            in ["bar", "line", "histogram", "pie", "scatter", "boxplot"]
             else input["type"]
         )
 
@@ -99,7 +100,7 @@ result = {{"type": "number","value": total_value}}
 """
         elif type == "dataframe":
             return """
-result = {{"type": "dataframe","value": data}}
+result = {"type": "dataframe","value": data}
 """
         else:
             code = self.generate_matplotlib_code(query)
@@ -119,8 +120,8 @@ result = {"type": "plot","value": "charts.png"}"""
 
     def generate_matplotlib_code(self, query: dict) -> str:
         chart_type = query["type"]
-        x_label = query["options"].get("xLabel", None)
-        y_label = query["options"].get("yLabel", None)
+        x_label = query.get("options", {}).get("xLabel", None)
+        y_label = query.get("options", {}).get("yLabel", None)
         title = query["options"].get("title", None)
         legend_display = {"display": True}
         legend_position = "best"

@@ -307,11 +307,10 @@ result = {"type": "plot","value": "charts.png"}
 
         logic_unit = code_gen.execute(json_str, context=context, logger=logger)
         assert isinstance(logic_unit, LogicUnitOutput)
-        print(logic_unit.output)
         assert (
             logic_unit.output
             == """
-
+import matplotlib.pyplot as plt
 import pandas as pd
 
 sql_query="SELECT `orders`.`ship_country` AS ship_country, SUM(`orders`.`freight`) AS total_freight FROM `orders` GROUP BY ship_country"
