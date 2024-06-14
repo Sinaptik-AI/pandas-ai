@@ -86,7 +86,8 @@ data = execute_sql_query(sql_query)
     def _get_type(self, input: dict) -> bool:
         return (
             "plot"
-            if input["type"] in ["bar", "line", "histogram", "pie", "scatter"]
+            if input["type"]
+            in ["bar", "line", "histogram", "pie", "scatter", "boxplot"]
             else input["type"]
         )
 
