@@ -132,7 +132,7 @@ class SemanticAgent(BaseAgent):
 
     def _sync_pandas_dataframe_schema(self, df: PandasConnector, schema: dict):
         for dimension in schema["dimensions"]:
-            if dimension["type"] == "date":
+            if dimension["type"] in ["date", "datetime", "timestamp"]:
                 column = dimension["sql"]
                 df.pandas_df[column] = pd.to_datetime(df.pandas_df[column])
 
