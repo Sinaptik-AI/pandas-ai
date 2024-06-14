@@ -79,7 +79,7 @@ data = execute_sql_query(sql_query)
 
                 traceback_errors = traceback.format_exc()
 
-                input_data = self.on_failure(input, traceback_errors)
+                input_data = self.on_failure(input_data, traceback_errors)
 
                 retry_count += 1
 
