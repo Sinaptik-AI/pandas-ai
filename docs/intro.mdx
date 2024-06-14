@@ -1,9 +1,9 @@
 ---
-title: "PandasAI"
+title: "Introduction to PandasAI"
 description: "PandasAI is a Python library that makes it easy to ask questions to your data in natural language."
 ---
 
-# ![PandasAI](https://github.com/Sinaptik-AI/pandas-ai/blob/main/images/logo.png?raw=true)
+# ![PandasAI](https://github.com/Sinaptik-AI/pandas-ai/blob/main/assets/logo.png?raw=true)
 
 Beyond querying, PandasAI offers functionalities to visualize data through graphs, cleanse datasets by addressing missing values, and enhance data quality through feature generation, making it a comprehensive tool for data scientists and analysts.
 
@@ -25,17 +25,29 @@ PandasAI is designed for data scientists, analysts, and engineers who want to in
 
 ## How to get started with PandasAI?
 
-To get started with PandasAI, you first need to install it. You can do this by running the following command:
+PandasAI is available as a Python library and a web-based platform. You can install the library using pip or poetry and use it in your Python code. You can also use the web-based platform to interact with your data in a more visual way.
 
-```bash
-# Using poetry (recommended)
-poetry add pandasai
+### ☁️ Using the platform
 
-# Using pip
-pip install pandasai
-```
+The PandasAI platform provides a web-based interface for interacting with your data in a more visual way. You can ask questions to your data in natural language, generate graphs and charts to visualize your data, and cleanse datasets by addressing missing values. It uses FastAPI as the backend and NextJS as the frontend.
 
-Once you have installed PandasAI, you can start using it by importing the `SmartDataframe` class and instantiating it with your data. You can then use the `chat` method to ask questions to your data in natural language.
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/kh61wEy9GYM"
+  title="PandasAI UI"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+If you want to learn more how to start the platform on your local machine, you can check out the [platform documentation](platform.mdx).
+
+### 📚 Using the library
+
+The PandasAI library provides a Python interface for interacting with your data in natural language. You can use it to ask questions to your data, generate graphs and charts, cleanse datasets, and enhance data quality through feature generation. It uses LLMs to understand and interpret natural language queries and translate them into python code and SQL queries.
+
+Once you have installed PandasAI, you can start using it by importing the `Agent` class and instantiating it with your data. You can then use the `chat` method to ask questions to your data in natural language.
 
 ```python
 import os
@@ -58,11 +70,7 @@ agent.chat('Which are the top 5 countries by sales?')
 # China, United States, Japan, Germany, Australia
 ```
 
-## Demo
-
-Try out PandasAI yourself in your browser:
-
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
+If you want to learn more about how to use the library, you can check out the [library documentation](library.mdx).
 
 ## Support
 

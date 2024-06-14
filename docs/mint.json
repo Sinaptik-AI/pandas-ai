@@ -17,8 +17,19 @@
       "pages": ["intro", "getting-started"]
     },
     {
-      "group": "Essentials",
-      "pages": ["connectors", "llms", "pipelines"]
+      "group": "Platform",
+      "pages": ["platform"]
+    },
+    {
+      "group": "Library",
+      "pages": [
+        "library",
+        "connectors",
+        "llms",
+        "pipelines",
+        "advanced-usage",
+        "examples"
+      ]
     },
     {
       "group": "Advanced agents",
@@ -36,10 +47,6 @@
         "skills",
         "determinism"
       ]
-    },
-    {
-      "group": "Examples",
-      "pages": ["examples"]
     },
     {
       "group": "About",

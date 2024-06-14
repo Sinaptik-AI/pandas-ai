@@ -1,0 +1,91 @@
+---
+title: "Getting started with the Platform"
+description: "A comprehensive guide on configuring, and using the PandasAI dockerized UI platform."
+---
+
+# Using the Dockerized Platform
+
+PandasAI provides a dockerized client-server architecture for easy deployment and local usage that adds a simple UI for conversational data analysis. This guide will walk you through the steps to set up and run the PandasAI platform on your local machine.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/kh61wEy9GYM"
+  title="PandasAI UI"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- Docker
+- Docker Compose
+
+**Note**: By default the platform will interact with the csv files located in the `server/data` directory. You can add your own csv files to this directory before running the platform and the platform will automatically detect them and make them available for querying. Make sure you replace the existing files with your own files if you want to use your own data.
+
+## Step-by-Step Installation Instructions
+
+1. Clone the PandasAI repository:
+
+   ```bash
+   git clone https://github.com/sinaptik-ai/pandas-ai/
+   cd pandas-ai
+   ```
+
+2. Copy thee `.env.example` file to `.env` in the client and server directories:
+
+   ```bash
+   cp client/.env.example client/.env
+   cp server/.env.example server/.env
+   ```
+
+3. Edit the `.env` files and update the `PANDASAI_API_KEY` with your API key:
+
+   ```bash
+   # Declare the API key
+   API_KEY="YOUR_PANDASAI_API_KEY"
+
+   # Update the server/.env file
+   sed -i "" "s/^PANDASAI_API_KEY=.*/PANDASAI_API_KEY=${API_KEY}/" server/.env
+   ```
+
+   Replace `YOUR_PANDASAI_API_KEY` with your PandasAI API key. You can get your free API key by signing up at [PandasAI](https://pandabi.ai).
+
+4. Build the Docker images:
+
+   ```bash
+   docker-compose build
+   ```
+
+## Running the Platform
+
+Once you have built the platform, you can run it with:
+
+```bash
+docker-compose up
+```
+
+### Accessing the Client and Server
+
+After deployment, the client can be accessed at `http://localhost:3000`, and the server will be available at `http://localhost:8000`.
+
+## Troubleshooting Tips
+
+- If you encounter any issues during the deployment process, ensure Docker and Docker Compose are correctly installed and up to date.
+- Check the Docker container logs for any error messages:
+  ```bash
+  docker-compose logs
+  ```
+
+## Understanding the `docker-compose.yml` File
+
+The `docker-compose.yml` file outlines the services required for the dockerized platform, including the client and server. Here's a brief overview of the service configurations:
+
+- `postgresql`: Configures the PostgreSQL database used by the server.
+- `server`: Builds and runs the PandasAI server.
+- `client`: Builds and runs the PandasAI client interface.
+
+For detailed information on each service configuration, refer to the comments within the `docker-compose.yml` file.
