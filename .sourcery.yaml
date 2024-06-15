@@ -20,6 +20,7 @@ ignore: # A list of paths or files which Sourcery will ignore.
   - .tox
   - node_modules
   - vendor
+  - benchmark
 
 rule_settings:
   enable:
