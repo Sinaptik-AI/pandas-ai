@@ -9,7 +9,6 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-
 from pandasai.ee.agents.judge_agent.pipeline.llm_call import LLMCall
 from pandasai.exceptions import InvalidOutputValueMismatch
 from pandasai.helpers.logger import Logger

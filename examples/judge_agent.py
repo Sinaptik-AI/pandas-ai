@@ -6,7 +6,6 @@ from pandasai.agent.agent import Agent
 from pandasai.ee.agents.judge_agent import JudgeAgent
 from pandasai.llm.openai import OpenAI
 
-
 os.environ["PANDASAI_API_KEY"] = "$2a****************************"
 
 github_stars = pd.read_csv("/Users/arslan/Downloads/stars (2).csv")

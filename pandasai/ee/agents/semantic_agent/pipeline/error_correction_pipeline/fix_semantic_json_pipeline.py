@@ -3,12 +3,12 @@ from typing import Optional
 from pandasai.ee.agents.semantic_agent.pipeline.error_correction_pipeline.fix_semantic_schema_prompt import (
     FixSemanticSchemaPrompt,
 )
+from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline_input import (
     ErrorCorrectionPipelineInput,
 )
-from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 

@@ -9,11 +9,10 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-
+from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.helpers.logger import Logger
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.pipelines.pipeline_context import PipelineContext
 from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
 

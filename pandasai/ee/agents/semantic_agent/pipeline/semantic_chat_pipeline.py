@@ -8,6 +8,7 @@ from pandasai.ee.agents.semantic_agent.pipeline.error_correction_pipeline.error_
 from pandasai.ee.agents.semantic_agent.pipeline.error_correction_pipeline.fix_semantic_json_pipeline import (
     FixSemanticJsonPipeline,
 )
+from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.ee.agents.semantic_agent.pipeline.Semantic_prompt_generation import (
     SemanticPromptGeneration,
 )
@@ -26,7 +27,6 @@ from pandasai.pipelines.chat.error_correction_pipeline.error_correction_pipeline
 )
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.pipelines.chat.result_validation import ResultValidation
-from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 

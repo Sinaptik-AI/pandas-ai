@@ -1,4 +1,5 @@
 from typing import Optional, Union
+
 from pandasai.agent.base_judge import BaseJudge
 from pandasai.config import load_config_from_json
 from pandasai.ee.agents.judge_agent.pipeline.judge_pipeline import JudgePipeline
