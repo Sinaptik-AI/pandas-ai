@@ -1,6 +1,6 @@
-import json
 from typing import Any
 
+from pandasai.exceptions import InvalidOutputValueMismatch
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
@@ -41,16 +41,21 @@ class LLMCall(BaseLogicUnit):
                     """
             )
             try:
-                # Validate is valid Json
-                response_json = json.loads(response)
+                result = False
+                if "<Yes>" in response:
+                    result = True
+                elif "<No>" in response:
+                    result = False
+                else:
+                    raise InvalidOutputValueMismatch("Invalid response of LLM Call")
 
                 pipeline_context.add("llm_call", response)
 
                 return LogicUnitOutput(
-                    response_json,
+                    result,
                     True,
                     "Code Generated Successfully",
-                    {"content_type": "string", "value": response_json},
+                    {"content_type": "string", "value": response},
                 )
             except Exception:
                 if retry_count == pipeline_context.config.max_retries:
