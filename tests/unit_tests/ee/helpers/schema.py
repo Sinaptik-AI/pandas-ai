@@ -43,3 +43,46 @@ STARS_SCHEMA = [
         ],
     }
 ]
+
+
+MULTI_JOIN_SCHEMA = [
+    {
+        "name": "Sales",
+        "table": "sales",
+        "measures": [
+            {"name": "total_revenue", "type": "sum", "sql": "revenue"},
+            {"name": "total_sales", "type": "count", "sql": "id"},
+        ],
+        "dimensions": [
+            {"name": "product", "type": "string", "sql": "product"},
+            {"name": "region", "type": "string", "sql": "region"},
+            {"name": "sales_date", "type": "date", "sql": "sales_date"},
+            {"name": "id", "type": "string", "sql": "id"},
+        ],
+        "joins": [
+            {
+                "name": "Engagement",
+                "join_type": "left",
+                "sql": "${Sales.id} = ${Engagement.id}",
+            }
+        ],
+    },
+    {
+        "name": "Engagement",
+        "table": "engagement",
+        "measures": [{"name": "total_duration", "type": "sum", "sql": "duration"}],
+        "dimensions": [
+            {"name": "id", "type": "string", "sql": "id"},
+            {"name": "user_id", "type": "string", "sql": "user_id"},
+            {"name": "activity_type", "type": "string", "sql": "activity_type"},
+            {"name": "engagement_date", "type": "date", "sql": "engagement_date"},
+        ],
+        "joins": [
+            {
+                "name": "Sales",
+                "join_type": "right",
+                "sql": "${Engagement.id} = ${Sales.id}",
+            }
+        ],
+    },
+]
