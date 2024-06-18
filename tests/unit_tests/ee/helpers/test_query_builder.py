@@ -1,7 +1,7 @@
 import unittest
 
 from pandasai.ee.helpers.query_builder import QueryBuilder
-from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA
+from tests.unit_tests.ee.helpers.schema import MULTI_JOIN_SCHEMA, VIZ_QUERY_SCHEMA
 
 
 class TestQueryBuilder(unittest.TestCase):
@@ -191,3 +191,40 @@ class TestQueryBuilder(unittest.TestCase):
             "SELECT SUM(`orders`.`freight`) AS total_freight, `orders`.`ship_country` AS ship_country FROM `orders` GROUP BY ship_country HAVING SUM(`orders`.`freight`) IS NOT NULL ORDER BY total_freight asc",
             "SELECT `orders`.`ship_country` AS ship_country, SUM(`orders`.`freight`) AS total_freight FROM `orders` GROUP BY ship_country HAVING SUM(`orders`.`freight`) IS NOT NULL ORDER BY total_freight asc",
         ]
+
+    def test_sql_with_filters_with_join(self):
+        query_builder = QueryBuilder(MULTI_JOIN_SCHEMA)
+
+        json_str = {
+            "type": "bar",
+            "dimensions": ["Engagement.activity_type"],
+            "measures": ["Sales.total_revenue"],
+            "timeDimensions": [],
+            "options": {
+                "xLabel": "Activity Type",
+                "yLabel": "Total Revenue",
+                "title": "Total Revenue Generated from Users who Logged in Before Purchase",
+                "legend": {"display": True, "position": "top"},
+            },
+            "joins": [
+                {
+                    "name": "Engagement",
+                    "join_type": "right",
+                    "sql": "${Sales.id} = ${Engagement.id}",
+                }
+            ],
+            "filters": [
+                {
+                    "member": "Engagement.engagement_date",
+                    "operator": "beforeDate",
+                    "values": ["${Sales.sales_date}"],
+                }
+            ],
+            "order": [{"id": "Sales.total_revenue", "direction": "asc"}],
+        }
+        sql_query = query_builder.generate_sql(json_str)
+
+        assert (
+            sql_query
+            == "SELECT `engagement`.`activity_type` AS activity_type, SUM(`sales`.`revenue`) AS total_revenue FROM `sales` RIGHT JOIN `engagement` ON `engagement`.`id` = `sales`.`id` WHERE `engagement`.`engagement_date` < '${Sales.sales_date}' GROUP BY activity_type ORDER BY total_revenue asc"
+        )

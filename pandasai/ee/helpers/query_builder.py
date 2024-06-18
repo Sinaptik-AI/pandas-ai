@@ -296,7 +296,7 @@ class QueryBuilder:
 
     def _build_joins_clause(self, main_table_entry, referenced_tables):
         sql = ""
-        main_table = main_table_entry["table"]
+        main_table = main_table_entry["name"]
 
         for table_name in referenced_tables:
             if table_name != main_table:
