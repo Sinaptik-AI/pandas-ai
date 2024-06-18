@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 from unittest.mock import patch
 
@@ -155,9 +156,16 @@ class TestJudgePromptGeneration:
             input_data=input_data, context=context, logger=logger
         )
 
+        match = re.search(
+            r"Today is ([A-Za-z]+, [A-Za-z]+ \d{1,2}, \d{4} \d{2}:\d{2} [APM]{2})",
+            response.output.to_string(),
+        )
+        datetime_str = match.group(1)
+
         assert (
             response.output.to_string()
-            == """### QUERY
+            == f"""Today is {datetime_str}
+### QUERY
 What is test?
 ### GENERATED CODE
 print('Code Data')

@@ -1,3 +1,4 @@
+import datetime
 from typing import Any
 
 from pandasai.ee.agents.judge_agent.prompts.judge_agent_prompt import JudgeAgentPrompt
@@ -30,8 +31,14 @@ class JudgePromptGeneration(BaseLogicUnit):
         self.context = kwargs.get("context")
         self.logger: Logger = kwargs.get("logger")
 
+        now = datetime.datetime.now()
+        human_readable_datetime = now.strftime("%A, %B %d, %Y %I:%M %p")
+
         prompt = JudgeAgentPrompt(
-            query=input_data.query, code=input_data.code, context=self.context
+            query=input_data.query,
+            code=input_data.code,
+            context=self.context,
+            date=human_readable_datetime,
         )
         self.logger.log(f"Using prompt: {prompt}")
 
