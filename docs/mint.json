@@ -33,7 +33,7 @@
     },
     {
       "group": "Advanced agents",
-      "pages": ["semantic-agent"]
+      "pages": ["semantic-agent", "judge-agent"]
     },
     {
       "group": "Advanced usage",
