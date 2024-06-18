@@ -43,21 +43,21 @@ class Pipeline(AbstractPipeline):
             logger: (Logger): logger
         """
 
-        if not isinstance(context, PipelineContext):
+        if context and not isinstance(context, PipelineContext):
             config = Config(**load_config_from_json(config))
             connectors = context
             context = PipelineContext(connectors, config)
 
         self._logger = (
             Logger(save_logs=context.config.save_logs, verbose=context.config.verbose)
-            if logger is None
+            if logger is None and context
             else logger
         )
 
         self._context = context
         self._steps = steps or []
-        self._query_exec_tracker = query_exec_tracker or QueryExecTracker(
-            server_config=self._context.config.log_server
+        self._query_exec_tracker = query_exec_tracker or (
+            context and QueryExecTracker(server_config=self._context.config.log_server)
         )
 
     def add_step(self, logic: BaseLogicUnit):
@@ -167,3 +167,27 @@ class Pipeline(AbstractPipeline):
             combined_pipeline.add_step(step)
 
         return combined_pipeline
+
+    @property
+    def context(self):
+        return self._context
+
+    @context.setter
+    def context(self, context: PipelineContext):
+        self._context = context
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @logger.setter
+    def logger(self, logger: Logger):
+        self._logger = logger
+
+    @property
+    def query_exec_tracker(self):
+        return self._query_exec_tracker
+
+    @query_exec_tracker.setter
+    def query_exec_tracker(self, query_exec_tracker: QueryExecTracker):
+        self._query_exec_tracker = query_exec_tracker

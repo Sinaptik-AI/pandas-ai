@@ -1,0 +1,64 @@
+---
+title: "Judge Agent"
+description: "Enhance the PandasAI library with the JudgeAgent that evaluates the generated code"
+---
+
+## Introduction to the Judge Agent
+
+The `JudgeAgent` extends the capabilities of the PandasAI library by adding an extra judgement in agents pipeline that validates the code generated against the query
+
+> **Note:** Usage of the Judge Agent may be subject to a license. For more details, refer to the [license documentation](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE).
+
+## Instantiating the Judge Agent
+
+JudgeAgent can be used both as a standalone agent and in conjunction with other agents. To use it with other agents, pass JudgeAgent as a parameter to them.
+
+### Using with other agents
+
+```python
+import os
+
+import pandas as pd
+
+from pandasai.agent.agent import Agent
+from pandasai.ee.agents.judge_agent import JudgeAgent
+
+os.environ["PANDASAI_API_KEY"] = "$2a****************************"
+
+github_stars = pd.read_csv("/Users/arslan/Downloads/stars (2).csv")
+
+judge = JudgeAgent()
+agent = Agent([github_stars], judge=judge)
+
+print(agent.chat("return total stars count"))
+```
+
+### Using as a standalone
+
+```python
+import os
+
+import pandas as pd
+
+from pandasai.ee.agents.judge_agent import JudgeAgent
+from pandasai.llm.openai import OpenAI
+
+# can be used with all LLM's
+llm = OpenAI("openai_key")
+judge_agent = JudgeAgent(config={"llm": llm})
+judge_agent.evaluate(
+    query="return total github star count for year 2023",
+    code="""sql_query = "SELECT COUNT(`users`.`login`) AS user_count, DATE_FORMAT(`users`.`starredAt`, '%Y-%m') AS starred_at_by_month FROM `users` WHERE `users`.`starredAt` BETWEEN '2023-01-01' AND '2023-12-31' GROUP BY starred_at_by_month ORDER BY starred_at_by_month asc"
+    data = execute_sql_query(sql_query)
+    plt.plot(data['starred_at_by_month'], data['user_count'])
+    plt.xlabel('Month')
+    plt.ylabel('User Count')
+    plt.title('GitHub Star Count Per Month - Year 2023')
+    plt.legend(loc='best')
+    plt.savefig('/Users/arslan/Documents/SinapTik/pandas-ai/exports/charts/temp_chart.png')
+    result = {'type': 'plot', 'value': '/Users/arslan/Documents/SinapTik/pandas-ai/exports/charts/temp_chart.png'}
+                        """,
+)
+```
+
+Judge Agent integration with other agents also gives the flexibility to use different LLM's

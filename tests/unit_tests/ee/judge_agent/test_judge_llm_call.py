@@ -1,5 +1,5 @@
 from typing import Optional
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -9,10 +9,12 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.ee.agents.semantic_agent.pipeline.llm_call import LLMCall
+from pandasai.ee.agents.judge_agent.pipeline.llm_call import LLMCall
+from pandasai.exceptions import InvalidOutputValueMismatch
 from pandasai.helpers.logger import Logger
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
+from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 from tests.unit_tests.ee.helpers.schema import VIZ_QUERY_SCHEMA_STR
 
@@ -25,7 +27,7 @@ class MockBambooLLM(BambooLLM):
         return VIZ_QUERY_SCHEMA_STR
 
 
-class TestSemanticLLMCall:
+class TestJudgeLLMCall:
     "Unit test for Validate Pipeline Input"
 
     @pytest.fixture
@@ -130,79 +132,48 @@ class TestSemanticLLMCall:
         code_generator = LLMCall()
         assert isinstance(code_generator, LLMCall)
 
-    def test_validate_input_llm_call(self, sample_df, context, logger):
+    def test_llm_call(self, sample_df, context, logger, config):
         input_validator = LLMCall()
 
-        llm = MockBambooLLM()
-
-        # context for true config
-        config = {"llm": llm, "enable_cache": True, "direct_sql": False}
-
-        context = PipelineContext([sample_df], config)
-
-        input_validator.execute(input="test", context=context, logger=logger)
-
-    def test_validate_input_with_direct_sql_false_and_non_connector(
-        self, sample_df, logger
-    ):
-        input_validator = LLMCall()
-
-        llm = MockBambooLLM()
-
-        # context for true config
-        config = {"llm": llm, "enable_cache": True, "direct_sql": False}
+        config["llm"].call = MagicMock(return_value="<Yes>")
 
         context = PipelineContext([sample_df], config)
 
         result = input_validator.execute(input="test", context=context, logger=logger)
 
-        assert result.output == [
-            {
-                "name": "Orders",
-                "table": "orders",
-                "measures": [
-                    {"name": "order_count", "type": "count"},
-                    {"name": "total_freight", "type": "sum", "sql": "freight"},
-                ],
-                "dimensions": [
-                    {"name": "order_id", "type": "int", "sql": "order_id"},
-                    {"name": "customer_id", "type": "string", "sql": "customer_id"},
-                    {"name": "employee_id", "type": "int", "sql": "employee_id"},
-                    {"name": "order_date", "type": "date", "sql": "order_date"},
-                    {"name": "required_date", "type": "date", "sql": "required_date"},
-                    {"name": "shipped_date", "type": "date", "sql": "shipped_date"},
-                    {"name": "ship_via", "type": "int", "sql": "ship_via"},
-                    {"name": "ship_name", "type": "string", "sql": "ship_name"},
-                    {"name": "ship_address", "type": "string", "sql": "ship_address"},
-                    {"name": "ship_city", "type": "string", "sql": "ship_city"},
-                    {"name": "ship_region", "type": "string", "sql": "ship_region"},
-                    {
-                        "name": "ship_postal_code",
-                        "type": "string",
-                        "sql": "ship_postal_code",
-                    },
-                    {"name": "ship_country", "type": "string", "sql": "ship_country"},
-                ],
-                "joins": [],
-            }
-        ]
+        assert isinstance(result, LogicUnitOutput)
+        assert result.output is True
 
-    def test_validate_input_llm_call_raise_exception(self, sample_df, context, logger):
+    def test_llm_call_no(self, sample_df, context, logger, config):
         input_validator = LLMCall()
 
-        class MockBambooLLM(BambooLLM):
-            def __init__(self):
-                pass
-
-            def call(self, *args, **kwargs):
-                return "Hello World!"
-
-        llm = MockBambooLLM()
-
-        # context for true config
-        config = {"llm": llm, "enable_cache": True, "direct_sql": False}
+        config["llm"].call = MagicMock(return_value="<No>")
 
         context = PipelineContext([sample_df], config)
 
-        with pytest.raises(Exception):
+        result = input_validator.execute(input="test", context=context, logger=logger)
+
+        assert isinstance(result, LogicUnitOutput)
+        assert result.output is False
+
+    def test_llm_call_(self, sample_df, context, logger, config):
+        input_validator = LLMCall()
+
+        config["llm"].call = MagicMock(return_value="<No>")
+
+        context = PipelineContext([sample_df], config)
+
+        result = input_validator.execute(input="test", context=context, logger=logger)
+
+        assert isinstance(result, LogicUnitOutput)
+        assert result.output is False
+
+    def test_llm_call_with_no_tags(self, sample_df, context, logger, config):
+        input_validator = LLMCall()
+
+        config["llm"].call = MagicMock(return_value="yes")
+
+        context = PipelineContext([sample_df], config)
+
+        with pytest.raises(InvalidOutputValueMismatch):
             input_validator.execute(input="test", context=context, logger=logger)

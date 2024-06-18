@@ -4,6 +4,7 @@ from typing import List, Optional, Type, Union
 import pandas as pd
 
 from pandasai.agent.base import BaseAgent
+from pandasai.agent.base_judge import BaseJudge
 from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
@@ -41,6 +42,7 @@ class SemanticAgent(BaseAgent):
         pipeline: Optional[Type[GenerateChatPipeline]] = None,
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
+        judge: BaseJudge = None,
     ):
         super().__init__(dfs, config, memory_size, vectorstore, description)
 
@@ -70,6 +72,7 @@ class SemanticAgent(BaseAgent):
             pipeline(
                 self.context,
                 self.logger,
+                judge=judge,
                 on_prompt_generation=self._callbacks.on_prompt_generation,
                 on_code_generation=self._callbacks.on_code_generation,
                 before_code_execution=self._callbacks.before_code_execution,
@@ -79,6 +82,7 @@ class SemanticAgent(BaseAgent):
             else SemanticChatPipeline(
                 self.context,
                 self.logger,
+                judge=judge,
                 on_prompt_generation=self._callbacks.on_prompt_generation,
                 on_code_generation=self._callbacks.on_code_generation,
                 before_code_execution=self._callbacks.before_code_execution,

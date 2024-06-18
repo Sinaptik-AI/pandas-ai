@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pandasai.agent.base_judge import BaseJudge
 from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
 from pandasai.ee.agents.semantic_agent.pipeline.error_correction_pipeline.error_correction_pipeline import (
     ErrorCorrectionPipeline,
@@ -41,6 +42,7 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self,
         context: Optional[PipelineContext] = None,
         logger: Optional[Logger] = None,
+        judge: BaseJudge = None,
         on_prompt_generation=None,
         on_code_generation=None,
         before_code_execution=None,
@@ -49,6 +51,7 @@ class SemanticChatPipeline(GenerateChatPipeline):
         super().__init__(
             context,
             logger,
+            judge=judge,
             on_prompt_generation=on_prompt_generation,
             on_code_generation=on_code_generation,
             before_code_execution=before_code_execution,

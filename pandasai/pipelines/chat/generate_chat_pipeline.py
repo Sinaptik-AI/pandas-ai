@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pandasai.agent.base_judge import BaseJudge
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
@@ -41,6 +42,7 @@ class GenerateChatPipeline:
         self,
         context: Optional[PipelineContext] = None,
         logger: Optional[Logger] = None,
+        judge: BaseJudge = None,
         on_prompt_generation=None,
         on_code_generation=None,
         before_code_execution=None,
@@ -98,6 +100,17 @@ class GenerateChatPipeline:
             on_code_generation=on_code_generation,
             on_prompt_generation=on_prompt_generation,
         )
+
+        self.judge = judge
+
+        if self.judge:
+            if self.judge.pipeline.pipeline.context:
+                self.judge.pipeline.pipeline.context.memory = context.memory
+            else:
+                self.judge.pipeline.pipeline.context = context
+
+            self.judge.pipeline.pipeline.logger = logger
+            self.judge.pipeline.pipeline.query_exec_tracker = self.query_exec_tracker
 
         self.context = context
         self._logger = logger
@@ -304,7 +317,19 @@ class GenerateChatPipeline:
             }
         )
         try:
-            if self.code_execution_pipeline:
+            if self.judge:
+                code = self.code_generation_pipeline.run(input)
+
+                retry_count = 0
+                while retry_count < self.context.config.max_retries:
+                    if self.judge.evaluate(query=input.query, code=code):
+                        break
+                    code = self.code_generation_pipeline.run(input)
+                    retry_count += 1
+
+                output = self.code_execution_pipeline.run(code)
+
+            elif self.code_execution_pipeline:
                 output = (
                     self.code_generation_pipeline | self.code_execution_pipeline
                 ).run(input)
