@@ -12,16 +12,15 @@ from pandasai.schemas.df_config import Config
 class JudgeAgent(BaseJudge):
     def __init__(
         self,
-        pipeline: AbstractPipeline = None,
         config: Optional[Union[Config, dict]] = None,
+        pipeline: AbstractPipeline = None,
     ) -> None:
         context = None
         if config:
             if isinstance(config, dict):
                 config = Config(**load_config_from_json(config))
 
-            connectors = context
-            context = PipelineContext(connectors, config)
+            context = PipelineContext(None, config)
 
         pipeline = pipeline or JudgePipeline(context=context)
         super().__init__(pipeline)

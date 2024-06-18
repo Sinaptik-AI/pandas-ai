@@ -104,7 +104,11 @@ class GenerateChatPipeline:
         self.judge = judge
 
         if self.judge:
-            self.judge.pipeline.pipeline.context = context
+            if self.judge.pipeline.pipeline.context:
+                self.judge.pipeline.pipeline.context.memory = context.memory
+            else:
+                self.judge.pipeline.pipeline.context = context
+
             self.judge.pipeline.pipeline.logger = logger
             self.judge.pipeline.pipeline.query_exec_tracker = self.query_exec_tracker
 
