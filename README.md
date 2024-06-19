@@ -14,7 +14,7 @@ PandasAI is a Python platform that makes it easy to ask questions to your data i
 
 PandasAI can be used in a variety of ways. You can easily use it in your Jupyter notebooks or streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
 
-If you are interested in the managed PandasAI Cloud or our self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
+If you are interested in the managed PandasAI Cloud or our self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com).
 
 # 🔧 Getting started
 
@@ -170,7 +170,7 @@ If you want to enforce further your privacy you can instantiate PandasAI with `e
 
 PandasAI is available under the MIT expat license, except for the `pandasai/ee` directory (which has it's [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE) if applicable.
 
-If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
+If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com).
 
 ## Resources
 
