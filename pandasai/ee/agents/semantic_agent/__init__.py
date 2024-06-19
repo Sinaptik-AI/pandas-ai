@@ -15,6 +15,7 @@ from pandasai.ee.agents.semantic_agent.pipeline.semantic_chat_pipeline import (
 from pandasai.ee.agents.semantic_agent.prompts.generate_df_schema import (
     GenerateDFSchemaPrompt,
 )
+from pandasai.ee.helpers.json_helper import extract_json_from_json_str
 from pandasai.exceptions import InvalidConfigError, InvalidSchemaJson, InvalidTrainJson
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
@@ -186,7 +187,7 @@ class SemanticAgent(BaseAgent):
             """
         )
         self._schema = result.replace("# SAMPLE SCHEMA", "")
-        schema_data = json.loads(result.replace("# SAMPLE SCHEMA", ""))
+        schema_data = extract_json_from_json_str(result.replace("# SAMPLE SCHEMA", ""))
         if isinstance(schema_data, dict):
             schema_data = [schema_data]
 
