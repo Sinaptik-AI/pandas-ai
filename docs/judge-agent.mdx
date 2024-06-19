@@ -18,17 +18,13 @@ JudgeAgent can be used both as a standalone agent and in conjunction with other 
 ```python
 import os
 
-import pandas as pd
-
 from pandasai.agent.agent import Agent
 from pandasai.ee.agents.judge_agent import JudgeAgent
 
 os.environ["PANDASAI_API_KEY"] = "$2a****************************"
 
-github_stars = pd.read_csv("/Users/arslan/Downloads/stars (2).csv")
-
 judge = JudgeAgent()
-agent = Agent([github_stars], judge=judge)
+agent = Agent('github-stars.csv', judge=judge)
 
 print(agent.chat("return total stars count"))
 ```
@@ -36,10 +32,6 @@ print(agent.chat("return total stars count"))
 ### Using as a standalone
 
 ```python
-import os
-
-import pandas as pd
-
 from pandasai.ee.agents.judge_agent import JudgeAgent
 from pandasai.llm.openai import OpenAI
 
@@ -61,4 +53,4 @@ judge_agent.evaluate(
 )
 ```
 
-Judge Agent integration with other agents also gives the flexibility to use different LLM's
+Judge Agent integration with other agents also gives the flexibility to use different LLMs.
