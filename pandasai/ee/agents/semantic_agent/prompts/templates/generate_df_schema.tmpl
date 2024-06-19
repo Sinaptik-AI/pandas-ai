@@ -1,132 +1,147 @@
 # SAMPLE SCHEMA
 [
    {
-      "name":"Contracts",
-      "table":"contracts",
-      "measures":[
+      "name": "Contracts",
+      "table": "contracts",
+      "measures": [
          {
-            "name":"contract_count",
-            "type":"count",
-            "sql":"store_id"
+            "name": "contract_count",
+            "type": "count",
+            "sql": "store_id"
          },
          {
-            "name":"contract_duration",
-            "type":"number",
-            "sql":"${contract_end_date} - ${contract_start_date}"
+            "name": "contract_duration",
+            "type": "number",
+            "sql": "${contract_end_date} - ${contract_start_date}"
          },
          {
-            "name":"contract_avg_duration",
-            "type":"avg",
-            "sql":"${contract_duration}"
+            "name": "contract_avg_duration",
+            "type": "avg",
+            "sql": "${contract_duration}"
          }
       ],
-      "dimensions":[
+      "dimensions": [
          {
-            "name":"contract_code",
-            "type":"string",
-            "sql":"contract_code"
+            "name": "contract_code",
+            "type": "string",
+            "sql": "contract_code",
+            "samples": ["C12345", "C67890"]
          },
          {
-            "name":"store_id",
-            "type":"string",
-            "sql":"store_id"
+            "name": "store_id",
+            "type": "string",
+            "sql": "store_id",
+            "samples": ["S12345", "S67890"]
          },
          {
-            "name":"tenant_code",
-            "type":"string",
-            "sql":"tenant_code"
+            "name": "tenant_code",
+            "type": "string",
+            "sql": "tenant_code",
+            "samples": ["T12345", "T67890"]
          },
          {
-            "name":"tenant_name",
-            "type":"string",
-            "sql":"tenant_name"
+            "name": "tenant_name",
+            "type": "string",
+            "sql": "tenant_name",
+            "samples": ["Tenant A", "Tenant B"]
          },
          {
-            "name":"store_brand",
-            "type":"string",
-            "sql":"store_brand"
+            "name": "store_brand",
+            "type": "string",
+            "sql": "store_brand",
+            "samples": ["Brand X", "Brand Y"]
          },
          {
-            "name":"branch_segment_1",
-            "type":"string",
-            "sql":"branch_segment_1"
+            "name": "branch_segment_1",
+            "type": "string",
+            "sql": "branch_segment_1",
+            "samples": ["Segment 1", "Segment 2"]
          },
          {
-            "name":"branch_segment_2",
-            "type":"string",
-            "sql":"branch_segment_2"
+            "name": "branch_segment_2",
+            "type": "string",
+            "sql": "branch_segment_2",
+            "samples": ["Segment A", "Segment B"]
          },
          {
-            "name":"contract_start_date",
-            "type":"date",
-            "sql":"contract_start_date"
+            "name": "contract_start_date",
+            "type": "date",
+            "sql": "contract_start_date",
+            "samples": ["2023-01-01", "2023-02-01"]
          },
          {
-            "name":"contract_end_date",
-            "type":"date",
-            "sql":"contract_end_date"
+            "name": "contract_end_date",
+            "type": "date",
+            "sql": "contract_end_date",
+            "samples": ["2024-01-01", "2024-02-01"]
          }
       ],
-      "joins":[
+      "joins": [
          {
-            "name":"corrispettivi",
-            "join_type":"left",
-            "sql":"${Contracts.contract_code} = ${Fees.contract_id}"
+            "name": "Fee",
+            "join_type": "left",
+            "sql": "${Contracts.contract_code} = ${Fees.contract_id}"
          }
       ]
    },
    {
-      "name":"Fees",
-      "table":"fees",
-      "measures":[
+      "name": "Fees",
+      "table": "fees",
+      "measures": [
          {
-            "name":"total_taxable",
-            "type":"sum",
-            "sql":"imponibile_tot"
+            "name": "total_taxable",
+            "type": "sum",
+            "sql": "imponibile_tot"
          },
          {
-            "name":"total_revenue",
-            "type":"sum",
-            "sql":"totale_tot"
+            "name": "total_revenue",
+            "type": "sum",
+            "sql": "totale_tot"
          }
       ],
-      "dimensions":[
+      "dimensions": [
          {
-            "name":"contract_id",
-            "type":"string",
-            "sql":"contract_id"
+            "name": "contract_id",
+            "type": "string",
+            "sql": "contract_id",
+            "samples": ["C12345", "C67890"]
          },
          {
-            "name":"code",
-            "type":"string",
-            "sql":"code"
+            "name": "code",
+            "type": "string",
+            "sql": "code",
+            "samples": ["F12345", "F67890"]
          },
          {
-            "name":"station",
-            "type":"string",
-            "sql":"station"
+            "name": "station",
+            "type": "string",
+            "sql": "station",
+            "samples": ["Station X", "Station Y"]
          },
          {
-            "name":"tenant_id",
-            "type":"string",
-            "sql":"tenant_id"
+            "name": "tenant_id",
+            "type": "string",
+            "sql": "tenant_id",
+            "samples": ["T12345", "T67890"]
          },
          {
-            "name":"day",
-            "type":"date",
-            "sql":"day"
+            "name": "day",
+            "type": "date",
+            "sql": "day",
+            "samples": ["2023-01-01", "2023-02-01"]
          },
          {
-            "name":"store_id",
-            "type":"string",
-            "sql":"store_id"
+            "name": "store_id",
+            "type": "string",
+            "sql": "store_id",
+            "samples": ["S12345", "S67890"]
          }
       ],
-      "joins":[
+      "joins": [
          {
-            "name":"contracts",
-            "join_type":"right",
-            "sql":"${Fees.contract_id} = ${Fees.contract_code}"
+            "name": "Contracts",
+            "join_type": "right",
+            "sql": "${Fees.contract_id} = ${Contracts.contract_code}"
          }
       ]
    }

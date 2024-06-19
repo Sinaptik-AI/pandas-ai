@@ -1,6 +1,6 @@
-import json
 from typing import Any
 
+from pandasai.ee.helpers.json_helper import extract_json_from_json_str
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
@@ -42,7 +42,7 @@ class LLMCall(BaseLogicUnit):
             )
             try:
                 # Validate is valid Json
-                response_json = json.loads(response)
+                response_json = extract_json_from_json_str(response)
 
                 pipeline_context.add("llm_call", response)
 
