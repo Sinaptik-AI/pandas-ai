@@ -6,8 +6,8 @@ from collections import defaultdict
 from typing import Any, List, TypedDict, Union
 
 import requests
-import pandasai
 
+import pandasai
 from pandasai.connectors import BaseConnector
 from pandasai.helpers.encoder import CustomEncoder
 from pandasai.pipelines.chat.chat_pipeline_input import (
