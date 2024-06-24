@@ -5,6 +5,7 @@ import pandas as pd
 
 from pandasai.connectors.sql import (
     MySQLConnector,
+    OracleConnector,
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
@@ -276,3 +277,64 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
             "mysql+pymysql://your_username:your_password@your_host:443/your_database",
             connect_args={},
         )
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_oracle_connector(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        self.config = SQLConnectorConfig(
+            dialect="oracle",
+            driver="cx_oracle",
+            username="your_username_differ",
+            password="your_password",
+            host="your_host",
+            port=1521,
+            database="your_database",
+            table="your_table",
+            where=[["column_name", "=", "value"]],
+        ).dict()
+
+        # Create an instance of OracleConnector
+        connector_2 = OracleConnector(self.config)
+
+        assert not self.connector.equals(connector_2)
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    def test_equals_oracle_connector_type(self, mock_init_connection):
+        # Define your ConnectorConfig instance here
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 1521,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of OracleConnector
+        connector_2 = OracleConnector(config)
+
+        assert connector_2.type == "oracle"
+
+    @patch("pandasai.connectors.SQLConnector._init_connection")
+    @patch("pandasai.connectors.sql.pd.read_sql")
+    def test_equals_connector_execute_direct_sql(
+        self, mock_read_sql, mock_init_connection
+    ):
+        # Define your ConnectorConfig instance here
+        config = {
+            "username": "your_username_differ",
+            "password": "your_password",
+            "host": "your_host",
+            "port": 443,
+            "database": "your_database",
+            "table": "your_table",
+            "where": [["column_name", "=", "value"]],
+        }
+
+        # Create an instance of SQLConnector
+        connector_2 = PostgreSQLConnector(config)
+
+        connector_2.execute_direct_sql_query("SELECT * from `orders`")
+
+        mock_read_sql.assert_called_once()

@@ -1,0 +1,28 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2023,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": ["error", { "forbid": [">", "}"] }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-useless-catch": "off",
+    "react-hooks/exhaustive-deps": 0,
+    "react/prop-types": "off"
+  }
+}

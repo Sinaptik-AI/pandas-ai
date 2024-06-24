@@ -22,7 +22,7 @@ class BedrockClaude(LLM):
     Attributes:
         bedrock_runtime_client: The boto3 bedrock runtime client.
         max_tokens: Max number of tokens to generate.
-        model: The Bedrock Claude model to use, currently only anthropic.claude-3-sonnet-20240229-v1:0 is supported
+        model: The Bedrock Claude model to use.
         temperature: (Optional) The amount of randomness injected into the response.
         top_p: (Optional) Use nucleus sampling. In nucleus sampling, Anthropic Claude computes the cumulative distribution over all the options for each subsequent token in decreasing probability order and cuts it off once it reaches a particular probability specified by top_p. You should alter either temperature or top_p, but not both.
         top_k: (Optional) Only sample from the top K options for each subsequent token.
@@ -31,7 +31,10 @@ class BedrockClaude(LLM):
 
     _supported__models = [
         "anthropic.claude-3-opus-20240229-v1:0",
+<<<<<<< fix/adding_sonnet35_to_bedrock
         "anthropic.claude-3-5-sonnet-20240620-v1:0",
+=======
+>>>>>>> main
         "anthropic.claude-3-sonnet-20240229-v1:0",
         "anthropic.claude-3-haiku-20240307-v1:0",
     ]

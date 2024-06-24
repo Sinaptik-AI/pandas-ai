@@ -1,21 +1,56 @@
-# ![PandasAI](images/logo.png)
+# ![PandasAI](assets/logo.png)
 
 [![Release](https://img.shields.io/pypi/v/pandasai?label=Release&style=flat-square)](https://pypi.org/project/pandasai/)
 [![CI](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/gventuri/pandas-ai/actions/workflows/ci.yml/badge.svg)
 [![CD](https://github.com/gventuri/pandas-ai/actions/workflows/cd.yml/badge.svg)](https://github.com/gventuri/pandas-ai/actions/workflows/cd.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/gventuri/pandas-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/gventuri/pandas-ai)
-[![Documentation Status](https://readthedocs.org/projects/pandas-ai/badge/?version=latest)](https://pandas-ai.readthedocs.io/en/latest/?badge=latest)
 [![Discord](https://dcbadge.vercel.app/api/server/kF7FqH2FwS?style=flat&compact=true)](https://discord.gg/kF7FqH2FwS)
 [![Downloads](https://static.pepy.tech/badge/pandasai)](https://pepy.tech/project/pandasai) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-PandasAI is a Python library that makes it easy to ask questions to your data in natural language. It helps you to explore, clean, and analyze your data using generative AI.
+PandasAI is a Python platform that makes it easy to ask questions to your data in natural language. It helps non-technical users to interact with their data in a more natural way, and it helps technical users to save time and effort when working with data.
+
+# 🚀 Deploying PandasAI
+
+PandasAI can be used in a variety of ways. You can easily use it in your Jupyter notebooks or streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
+
+If you are interested in the managed PandasAI Cloud or our self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
 # 🔧 Getting started
 
-The documentation for PandasAI to use it with specific LLMs, vector stores and connectors, can be found [here](https://pandas-ai.readthedocs.io/en/latest/).
+You can find the full documentation for PandasAI [here](https://pandas-ai.readthedocs.io/en/latest/).
 
-## 📦 Installation
+You can either decide to use PandasAI in your Jupyter notebooks, streamlit apps, or use the client and server architecture from the repo.
+
+## ☁️ Using the platform
+
+[![PandasAI platform](assets/demo.gif?raw=true)](https://www.youtube.com/watch?v=kh61wEy9GYM)
+
+### 📦 Installation
+
+PandasAI platform is uses a dockerized client-server architecture. You will need to have Docker installed in your machine.
+
+```bash
+git clone https://github.com/sinaptik-ai/pandas-ai/
+cd pandas-ai
+docker-compose build
+```
+
+### 🚀 Running the platform
+
+Once you have built the platform, you can run it with:
+
+```bash
+docker-compose up
+```
+
+This will start the client and server, and you can access the client at `http://localhost:3000`.
+
+## 📚 Using the library
+
+### 📦 Installation
+
+You can install the PandasAI library using pip or poetry.
 
 With pip:
 
@@ -29,21 +64,15 @@ With poetry:
 poetry add pandasai
 ```
 
-## 🔍 Demo
+### 🔍 Demo
 
-Try out PandasAI yourself in your browser:
+Try out the PandasAI library yourself in your browser:
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-# 🚀 Deploying PandasAI
+### 💻 Usage
 
-PandasAI can be deployed in a variety of ways. You can easily use it in your Jupyter notebooks or streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
-
-If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
-
-## 💻 Usage
-
-### Ask questions
+#### Ask questions
 
 ```python
 import os
@@ -53,7 +82,7 @@ from pandasai import Agent
 # Sample DataFrame
 sales_by_country = pd.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
+    "revenue": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
@@ -82,19 +111,19 @@ agent.chat(
 The total sales for the top 3 countries by sales is 16500.
 ```
 
-### Visualize charts
+#### Visualize charts
 
 You can also ask PandasAI to generate charts for you:
 
 ```python
 agent.chat(
-    "Plot the histogram of countries showing for each the gdp, using different colors for each bar",
+    "Plot the histogram of countries showing for each one the gd. Use different colors for each bar",
 )
 ```
 
-![Chart](images/histogram-chart.png?raw=true)
+![Chart](assets/histogram-chart.png?raw=true)
 
-### Multiple DataFrames
+#### Multiple DataFrames
 
 You can also pass in multiple dataframes to PandasAI and ask questions relating them.
 
@@ -141,7 +170,7 @@ If you want to enforce further your privacy you can instantiate PandasAI with `e
 
 PandasAI is available under the MIT expat license, except for the `pandasai/ee` directory (which has it's [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE) if applicable.
 
-If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, take a look at [our website](https://pandas-ai.com) or [book a meeting with us](https://zcal.co/gventuri/pandas-ai-demo).
+If you are interested in managed PandasAI Cloud or self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
 ## Resources
 

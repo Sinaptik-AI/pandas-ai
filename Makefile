@@ -34,10 +34,10 @@ format_diff:  ## run code formatters in diff mode
 	poetry run ruff --select I pandasai examples tests
 
 spell_check:  ## run codespell on the project
-	poetry run codespell --toml pyproject.toml --skip=$(IGNORE_FORMATS)
+	poetry run codespell --toml pyproject.toml --ignore-words=ignore-words.txt --skip=$(IGNORE_FORMATS)
 
 spell_fix:  ## run codespell on the project and fix the errors
-	poetry run codespell --toml pyproject.toml --skip=$(IGNORE_FORMATS) -w
+	poetry run codespell --toml pyproject.toml --ignore-words=ignore-words.txt --skip=$(IGNORE_FORMATS) -w
 
 ######################
 # DOCS

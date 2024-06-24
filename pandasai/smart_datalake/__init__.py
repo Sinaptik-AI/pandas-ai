@@ -17,10 +17,11 @@ Example:
     # The average loan amount is $15,000.
     ```
 """
+
 import uuid
 from typing import Any, List, Optional, Union
 
-from pandasai.agent.base import Agent
+from pandasai.agent import Agent
 from pandasai.skills import Skill
 
 from ..helpers.cache import Cache

@@ -1,0 +1,6 @@
+=== SemanticAgent ===
+{% include 'shared/vectordb_docs.tmpl' with context %}
+# SCHEMA
+{{schema}}
+
+{{ context.memory.get_last_message() }}

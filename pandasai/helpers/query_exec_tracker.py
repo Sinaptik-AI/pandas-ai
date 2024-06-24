@@ -7,6 +7,7 @@ from typing import Any, List, TypedDict, Union
 
 import requests
 
+import pandasai
 from pandasai.connectors import BaseConnector
 from pandasai.helpers.encoder import CustomEncoder
 from pandasai.pipelines.chat.chat_pipeline_input import (
@@ -47,6 +48,7 @@ class QueryExecTracker:
     ) -> None:
         self._success = False
         self._start_time = None
+        self._last_log_id = None
         self._server_config = server_config
         self._query_info = {}
 
@@ -68,6 +70,7 @@ class QueryExecTracker:
             "instance": "Agent",
             "query": input.query,
             "output_type": input.output_type,
+            "pandasai_version": pandasai.__version__,
         }
 
     def convert_dataframe_to_dict(self, df):
@@ -100,6 +103,9 @@ class QueryExecTracker:
         Args:
             step (dict): dictionary containing information
         """
+        if "_steps" not in self.__dict__:
+            self._steps = []
+
         self._steps.append(step)
 
     def set_final_response(self, response: Any):
