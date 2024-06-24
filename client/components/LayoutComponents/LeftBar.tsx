@@ -139,7 +139,7 @@ const LeftBar = ({ isMobileView = false }: IProps) => {
                   🚀 Public Roadmap
                 </Link>
                 <Link
-                  href="https://pandas-ai.com/contact-us"
+                  href="https://forms.gle/JEUqkwuTqFZjhP7h8"
                   className="hover:underline py-1 text-[18px]"
                 >
                   💬 Need help? Talk to us
