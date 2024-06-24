@@ -7,12 +7,12 @@ import { DatasetCardLoading } from "@/components/Skeletons";
 import { useGetDatasetDetails } from "@/hooks/useDatasets";
 
 const DatasetDetailsPage = () => {
-  const parmas: { id: string } = useParams();
+  const params: { id: string } = useParams();
 
   const {
     data: datasetDetailsResponse,
     isLoading: isDatasetDetailsResponseLoading,
-  } = useGetDatasetDetails(parmas.id);
+  } = useGetDatasetDetails(params.id);
 
   const dataframe = datasetDetailsResponse?.data?.dataset;
 
