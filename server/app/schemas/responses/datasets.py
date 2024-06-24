@@ -20,3 +20,6 @@ class DatasetModel(BaseModel):
 
 class WorkspaceDatasetsResponseModel(BaseModel):
     datasets: List[DatasetModel]
+
+class DatasetsDetailsResponseModel(BaseModel):
+    dataset: DatasetModel

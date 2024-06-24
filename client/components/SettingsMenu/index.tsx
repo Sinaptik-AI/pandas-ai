@@ -4,6 +4,16 @@ import Dropdown from "../../components/dropdown";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import ToggleDarkModeComponent from "components/ToggleDarkMode";
+import Link from "next/link";
+
+const routes = [
+  {
+    id: 1,
+    name: "Settings",
+    url: "/settings",
+    isAdmin: true,
+  },
+];
 
 const SettingsMenu = () => {
   const router = useRouter();
@@ -43,6 +53,16 @@ const SettingsMenu = () => {
           <div className="mt-3 h-px w-full bg-gray-200 dark:bg-white/20 " />
 
           <div className="p-4 flex flex-col">
+            {routes.map((route) => (
+              <React.Fragment key={route.id}>
+                <Link
+                  href={route.url}
+                  className="text-sm text-gray-800 dark:text-white hover:dark:text-white cursor-pointer hover:underline mt-1"
+                >
+                  {route.name}
+                </Link>
+              </React.Fragment>
+            ))}
             <a
               className="mt-2 text-sm font-medium text-red-500 hover:text-red-500 cursor-pointer"
               onClick={handleLogOut}
