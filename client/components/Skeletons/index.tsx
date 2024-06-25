@@ -2,6 +2,7 @@ import React from "react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useAppStore } from "store";
+import Card from "../card";
 
 export const WorkSpaceLoader = () => {
   const darkMode = useAppStore((state) => state.darkMode);
@@ -131,6 +132,30 @@ export const ExplainMessageLoader = () => {
       <Skeleton />
       <Skeleton />
       <Skeleton />
+    </SkeletonTheme>
+  );
+};
+export const DatasetCardLoading = () => {
+  const darkMode = useAppStore((state) => state.darkMode);
+  return (
+    <SkeletonTheme
+      baseColor={darkMode && "#191919"}
+      highlightColor={darkMode && "#333333"}
+    >
+      <Card extra={"w-full py-4 px-6 h-full mb-4"}>
+        <div className="flex flex-col justify-between h-[170px]">
+          <div>
+            <Skeleton width={200} className="mb-1" />
+
+            <h3 className="font-bold text-sm mb-1">
+              <Skeleton width={200} className="mb-2" />
+            </h3>
+          </div>
+          <div className="flex justify-start gap-4 items-center flex-wrap">
+            <Skeleton width={290} />
+          </div>
+        </div>
+      </Card>
     </SkeletonTheme>
   );
 };

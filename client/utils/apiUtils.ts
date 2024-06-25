@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { BASE_API_URL } from './constants';
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: BASE_API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -27,9 +27,14 @@ export async function GetRequest(url: string): Promise<AxiosResponse<any, any>> 
   }
 }
 
-export async function PostRequest(url: string, requestData: object): Promise<AxiosResponse<any, any>> {
+export async function PostRequest(url: string, requestData: object, headers = {}): Promise<AxiosResponse<any, any>> {
   try {
-    const response = await axiosInstance.post(url, requestData);
+    const defaultHeaders = {
+      'Content-Type': 'application/json',
+    };
+    const updatedHeader = { ...defaultHeaders, ...headers }
+
+    const response = await axiosInstance.post(url, requestData, { headers: updatedHeader });
     return response;
   } catch (error) {
     throw error;
