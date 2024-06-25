@@ -6,6 +6,7 @@ from .users import users_router
 from .datasets import datasets_router
 from .conversations import conversation_router
 from .workspace import workspaces_router
+from .logs import logs_router
 
 v1_router = APIRouter()
 v1_router.include_router(monitoring_router, prefix="/monitoring")
@@ -17,4 +18,7 @@ v1_router.include_router(
 )
 v1_router.include_router(
     workspaces_router, prefix="/workspace", tags=["Workspace"]
+)
+v1_router.include_router(
+    logs_router, prefix="/logs", tags=["Logs"]
 )

@@ -28,6 +28,7 @@ pyyaml = "^6.0.1"
 passlib = "^1.7.4"
 bcrypt = "3.1.7"
 python-dotenv = "^1.0.1"
+psycopg2 = "^2.9.9"
 
 [tool.poetry.dev-dependencies]
 behave = "^1.2.6"
