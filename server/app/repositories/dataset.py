@@ -30,6 +30,7 @@ class DatasetRepository(BaseRepository[Dataset]):
             user_id=user_id,
             organization_id=organization_id,
             connector_id=connector.id,
+            description=description
         )
 
         self.session.add(dataset)
@@ -42,3 +43,12 @@ class DatasetRepository(BaseRepository[Dataset]):
         )
         datasets = result.scalars().all()
         return datasets
+    
+
+    async def update_dataset(self, dataset):
+        self.session.add(dataset)
+        await self.session.commit()
+        await self.session.refresh(dataset)
+
+        return dataset
+

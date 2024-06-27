@@ -107,3 +107,17 @@ class WorkspaceRepository(BaseRepository[Workspace]):
             ).join(UserSpace).filter(UserSpace.workspace_id == workspace_id)
         )
         return result.all()
+    
+
+    async def delete_datasetspace(self, dataset_id: str, workspace_id: str):
+        await self.session.execute(
+            delete(DatasetSpace).where(
+                DatasetSpace.dataset_id == dataset_id,
+                DatasetSpace.workspace_id == workspace_id
+            )
+        )
+
+        # Delete the Dataset entry
+        await self.session.execute(
+            delete(Dataset).where(Dataset.id == dataset_id)
+        )
