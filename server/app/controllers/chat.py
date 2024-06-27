@@ -12,6 +12,7 @@ from app.models import Dataset, User
 from app.repositories import UserRepository
 from app.repositories.conversation import ConversationRepository
 from app.repositories.workspace import WorkspaceRepository
+from app.repositories.logs import LogsRepository
 from app.schemas.requests.chat import ChatRequest
 from app.schemas.responses.chat import ChatResponse
 from app.schemas.responses.users import UserInfo
@@ -31,11 +32,13 @@ class ChatController(BaseController[User]):
         user_repository: UserRepository,
         space_repository: WorkspaceRepository,
         conversation_repository: ConversationRepository,
+        logs_repository: LogsRepository,
     ):
         super().__init__(model=User, repository=user_repository)
         self.user_repository = user_repository
         self.space_repository = space_repository
         self.conversation_repository = conversation_repository
+        self.logs_repository = logs_repository
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def start_new_conversation(self, user: UserInfo, chat_request: ChatRequest):
@@ -94,6 +97,9 @@ class ChatController(BaseController[User]):
             config["llm"] = llm
 
         agent = Agent(connectors, config=config)
+
+        # add to log get log id
+        
         if memory:
             agent.context.memory = memory
 
@@ -113,12 +119,16 @@ class ChatController(BaseController[User]):
                 }
             ]
 
+        summary = agent.pipeline.query_exec_tracker.get_summary()
+        log = await self.logs_repository.add_log(user.id, "", summary, chat_request.query, summary['success'], summary['execution_time'])
+
         response = jsonable_encoder([response])
         conversation_message = await self.conversation_repository.add_conversation_message(
             conversation_id=conversation_id,
             query=chat_request.query,
             response=response,
             code_generated=agent.last_code_executed,
+            log_id=log.id
         )
 
         return ChatResponse(

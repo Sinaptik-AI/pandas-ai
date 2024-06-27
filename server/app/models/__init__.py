@@ -178,7 +178,7 @@ class ConversationMessage(Base):
     response = Column(JSON, nullable=True)
     code_generated = Column(String, nullable=True)
     label = Column(String, nullable=True)
-    log_id = Column(UUID(as_uuid=True), nullable=True)
+    log_id = Column(UUID(as_uuid=True), ForeignKey("logs.id"))
     settings = Column(JSON, nullable=True)
 
     user_conversation = relationship("UserConversation", back_populates="messages")

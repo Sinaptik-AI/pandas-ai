@@ -66,6 +66,7 @@ class Factory:
             user_repository=self.user_repository(db_session=db_session),
             space_repository=self.space_repository(db_session=db_session),
             conversation_repository=self.conversation_repository(db_session=db_session),
+            logs_repository=self.logs_repository(db_session=db_session),
         )
     
     def get_datasets_controller(self, db_session=Depends(get_session)):
@@ -82,6 +83,5 @@ class Factory:
     
     def get_logs_controller(self, db_session=Depends(get_session)):
         return LogsController(
-            user_repository=self.user_repository(db_session=db_session),
             logs_repository=self.logs_repository(db_session=db_session),
         )
