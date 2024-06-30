@@ -7,13 +7,13 @@ from typing import Any, List, TypedDict, Union
 
 import requests
 
-import pandasai
 from pandasai.connectors import BaseConnector
 from pandasai.helpers.encoder import CustomEncoder
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
 from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.__version__ import __version__
 
 
 class ResponseType(TypedDict):
@@ -70,7 +70,7 @@ class QueryExecTracker:
             "instance": "Agent",
             "query": input.query,
             "output_type": input.output_type,
-            "pandasai_version": pandasai.__version__,
+            "pandasai_version": __version__,
         }
 
     def convert_dataframe_to_dict(self, df):
