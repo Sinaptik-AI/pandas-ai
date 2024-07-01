@@ -1,6 +1,8 @@
 import os
 import platform
+
 import requests
+
 from pandasai.__version__ import __version__
 
 

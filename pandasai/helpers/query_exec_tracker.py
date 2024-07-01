@@ -7,13 +7,13 @@ from typing import Any, List, TypedDict, Union
 
 import requests
 
+from pandasai.__version__ import __version__
 from pandasai.connectors import BaseConnector
 from pandasai.helpers.encoder import CustomEncoder
 from pandasai.pipelines.chat.chat_pipeline_input import (
     ChatPipelineInput,
 )
 from pandasai.pipelines.pipeline_context import PipelineContext
-from pandasai.__version__ import __version__
 
 
 class ResponseType(TypedDict):
