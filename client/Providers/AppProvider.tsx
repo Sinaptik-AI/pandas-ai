@@ -2,7 +2,6 @@
 import React, { ReactNode, useEffect } from "react";
 import ContextProvider from "@/contexts/ContextProvider";
 import { usePathname } from "next/navigation";
-import dynamic from "next/dynamic";
 import { getTitleFromPath } from "@/utils/getTitleFromPath";
 import {
   NEXT_PUBLIC_INTERCOM_APP_ID,
@@ -18,11 +17,6 @@ import "styles/globals.css";
 import "styles/App.css";
 import "styles/multi-range-slider.css";
 import "react-toastify/dist/ReactToastify.css";
-
-const _NoSSR = ({ children }) => <React.Fragment>{children}</React.Fragment>;
-const NoSSR = dynamic(() => Promise.resolve(_NoSSR), {
-  ssr: false,
-});
 
 export default function AppProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -48,10 +42,8 @@ export default function AppProvider({ children }: { children: ReactNode }) {
       <RollbarProvider config={rollbarConfig}>
         <ErrorBoundary>
           <ContextProvider>
-            <NoSSR>
-              <ToastContainer autoClose={3000} className="w-64 text-white" />
-              <QueryProvider>{children}</QueryProvider>
-            </NoSSR>
+            <ToastContainer autoClose={3000} className="w-64 text-white" />
+            <QueryProvider>{children}</QueryProvider>
           </ContextProvider>
         </ErrorBoundary>
       </RollbarProvider>
