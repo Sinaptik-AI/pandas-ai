@@ -1,7 +1,7 @@
 export interface LogsData extends Array<LogData> { }
 export interface LogData {
   timestamp: string | number | Date;
-  id?: number;
+  id?: string;
   query?: string;
   executionDate?: string;
   success?: boolean;
@@ -10,6 +10,7 @@ export interface LogData {
   execution_time?: string;
   name?: string;
   surname?: string;
+  created_at?: string;
 }
 
 export interface LogsContextData {

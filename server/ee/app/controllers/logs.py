@@ -1,8 +1,8 @@
 from fastapi import status, HTTPException
 from app.models import Logs
-from app.repositories import LogsRepository
+from ee.app.repositories import LogsRepository
 from core.controller import BaseController
-from app.schemas.responses.logs import LogsResponseModel, LogResponseModel
+from ee.app.schemas.responses.logs import LogsResponseModel, LogResponseModel
 
 class LogsController(BaseController[Logs]):
     def __init__(

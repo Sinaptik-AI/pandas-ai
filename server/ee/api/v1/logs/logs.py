@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Query, Path
 from uuid import UUID
-from app.controllers.logs import LogsController
+from ee.app.controllers.logs import LogsController
 from core.factory import Factory
 from app.schemas.responses.users import UserInfo
 from core.fastapi.dependencies.current_user import get_current_user
-from app.schemas.responses.logs import LogsResponseModel
+from ee.app.schemas.responses.logs import LogsResponseModel
 
 log_router = APIRouter()
 

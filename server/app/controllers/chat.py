@@ -12,7 +12,7 @@ from app.models import Dataset, User
 from app.repositories import UserRepository
 from app.repositories.conversation import ConversationRepository
 from app.repositories.workspace import WorkspaceRepository
-from app.repositories.logs import LogsRepository
+from ee.app.repositories.logs import LogsRepository
 from app.schemas.requests.chat import ChatRequest
 from app.schemas.responses.chat import ChatResponse
 from app.schemas.responses.users import UserInfo

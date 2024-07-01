@@ -5,7 +5,6 @@ from .organization_membership import OrganizationMembershipRepository
 from .workspace import WorkspaceRepository
 from .user import UserRepository
 from .conversation import ConversationRepository
-from .logs import LogsRepository
 
 __all__ = [
     "UserRepository",
@@ -16,5 +15,4 @@ __all__ = [
     "OrganizationRepository",
     "WorkspaceRepository",
     "ConversationRepository",
-    "LogsRepository",
 ]

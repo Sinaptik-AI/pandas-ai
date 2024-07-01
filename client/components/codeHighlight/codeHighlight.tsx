@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";

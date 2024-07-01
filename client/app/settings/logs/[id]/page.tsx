@@ -1,8 +1,6 @@
-"use client";
 import React from "react";
 import { MdCheckCircle, MdAvTimer, MdCancel } from "react-icons/md";
 import Card from "components/card";
-import { Loader } from "components/loader/Loader";
 import CodeHighlight from "components/codeHighlight/codeHighlight";
 import Image from "next/image";
 import { isBase64Image } from "utils/base64";
@@ -12,7 +10,7 @@ import ExecutionDetails from "components/ExecutionDetails";
 import Link from "next/link";
 import RenderDataFrame from "./RenderDataFrame";
 import ChartRenderer from "components/LoadChartJs/ChartRenderer";
-import { useGetLogDetails } from "@/hooks/useLogs";
+import { GetLogDetails } from "@/services/logs";
 
 const FormattedOutput = ({ data }: { data: any }) => {
   const inputData = Array.isArray(data?.data?.value)
@@ -41,12 +39,13 @@ const FormattedOutput = ({ data }: { data: any }) => {
   ));
 };
 
-const Page: React.FC = ({ params }: { params: { id: string } }) => {
-  const { data: logDetailsResponse, isLoading } = useGetLogDetails(params.id);
-  const logsDetail: LogsDetailInterface =
-    logDetailsResponse?.data?.log?.json_log;
-
-  const firstName = localStorage.getItem("firstName");
+export default async function LogDetails({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const data = await GetLogDetails(params.id);
+  const logsDetail: LogsDetailInterface = data?.log?.json_log;
 
   return (
     <div className="w-full h-full overflow-y-auto custom-scroll mt-5 px-2 md:px-4">
@@ -57,9 +56,7 @@ const Page: React.FC = ({ params }: { params: { id: string } }) => {
             ` › ${logsDetail?.query_info?.query}`}
         </small>
       </h1>
-      {isLoading ? (
-        <Loader />
-      ) : !logsDetail ? (
+      {!logsDetail ? (
         <div className="dark:text-white mt-4">No logs available</div>
       ) : (
         <div>
@@ -78,11 +75,9 @@ const Page: React.FC = ({ params }: { params: { id: string } }) => {
                 executionTime={`${parseFloat(
                   String(logsDetail?.execution_time)
                 ).toFixed(2)} s`}
-                executionDate={FormatDate(
-                  logDetailsResponse?.data?.log?.created_at
-                )}
+                executionDate={FormatDate(data?.log?.created_at)}
                 instance={logsDetail?.query_info?.instance}
-                user={firstName}
+                user={"PandasAI"}
               />
             </div>
             <div className="mx-auto mt-8 grid w-full divide-y">
@@ -267,6 +262,4 @@ const Page: React.FC = ({ params }: { params: { id: string } }) => {
       )}
     </div>
   );
-};
-
-export default Page;
+}

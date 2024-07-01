@@ -17,7 +17,7 @@ export const GetAllDataSets = async () => {
 
 export const GetDatasetDetails = async (datasetId: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}${datasetsApiUrl}/${datasetId}`, { next: { tags: ['GetDatasetDetails'] } })
+        const response = await fetch(`${BASE_API_URL}${datasetsApiUrl}/${datasetId}`, { next: { tags: ['GetDatasetDetails', datasetId] } })
         return await response.json();
     } catch (error) {
         console.error('Get request failed', error);

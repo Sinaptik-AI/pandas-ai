@@ -7,7 +7,7 @@ from app.controllers.chat import ChatController
 from app.controllers.conversation import ConversationController
 from app.controllers.workspace import WorkspaceController
 from app.controllers.datasets import DatasetController
-from app.controllers.logs import LogsController
+from ee.app.controllers.logs import LogsController
 from app.models import (
     Dataset,
     Organization,
@@ -23,7 +23,7 @@ from app.repositories.conversation import ConversationRepository
 from app.repositories.dataset import DatasetRepository
 from app.repositories.organization import OrganizationRepository
 from app.repositories.workspace import WorkspaceRepository
-from app.repositories.logs import LogsRepository
+from ee.app.repositories.logs import LogsRepository
 from core.database import get_session
 
 

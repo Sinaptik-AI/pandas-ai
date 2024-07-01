@@ -8,7 +8,11 @@ import { useAppStore } from "store";
 import Navbar from "@/components/Navbar";
 import SettingsLeftBar from "@/components/SettingsLayout/LeftBar";
 
-export default function Admin({ children }: { children: React.ReactNode }) {
+export default function SettingsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const isSideBarOpen = useAppStore((state) => state.isSideBarOpen);
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
 

@@ -2,7 +2,7 @@ from app.models import Logs
 from core.repository import BaseRepository
 from core.database.transactional import Propagation, Transactional
 from sqlalchemy.future import select
-from app.schemas.responses.logs import LogResponse
+from ee.app.schemas.responses.logs import LogResponse
 from typing import List
 from sqlalchemy import func
 
