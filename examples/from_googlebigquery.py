@@ -4,7 +4,8 @@ import os
 
 from pandasai import SmartDataframe
 
-# A license might be required for using BigQuery with PandasAI
+# The usage of this connector in production is subject to a license ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
+# If you plan to use it in production, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 from pandasai.ee.connectors import GoogleBigQueryConnector
 
 # ENV's

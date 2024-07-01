@@ -22,6 +22,7 @@ import sys
 import time
 from typing import List
 
+from pandasai.helpers.telemetry import scarf_analytics
 from pandasai.pydantic import BaseModel
 
 from .path import find_closest
@@ -148,3 +149,6 @@ class Logger:
             for handler in self._logger.handlers:
                 if isinstance(handler, logging.FileHandler):
                     self._logger.removeHandler(handler)
+
+
+scarf_analytics()
