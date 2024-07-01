@@ -173,7 +173,7 @@ class SQLConnector(BaseConnector):
                         query_params[f"value_{i}"] = value
 
             if condition_strings:
-                where_clause = " AND ".join(condition_strings)
+                where_clause = " OR ".join(condition_strings)
                 base_query = base_query.where(
                     text(where_clause).bindparams(**query_params)
                 )
