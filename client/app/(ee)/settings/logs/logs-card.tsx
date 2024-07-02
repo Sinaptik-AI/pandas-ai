@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import Card from "@/components/card";
-import Pagination from "../../../components/pagination/index";
 import LogsTable from "components/LogsTable/index";
 import { LogData } from "./logs-interface";
+import Pagination from "@/components/pagination";
 
 interface IProps {
   logs: LogData[];

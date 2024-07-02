@@ -1,5 +1,4 @@
 "use client";
-import { isWindowAvailable } from "utils/navigation";
 import React from "react";
 import VerticalLineSeperator from "components/VerticalLineSeperator";
 import Drawer from "react-modern-drawer";
@@ -15,8 +14,6 @@ export default function SettingsLayout({
 }) {
   const isSideBarOpen = useAppStore((state) => state.isSideBarOpen);
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
-
-  if (isWindowAvailable()) document.documentElement.dir = "ltr";
 
   return (
     <>
