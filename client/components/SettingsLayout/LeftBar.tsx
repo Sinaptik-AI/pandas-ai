@@ -14,6 +14,11 @@ const routes = [
     url: "/settings/datasets",
     isAdmin: true,
   },
+  {
+    name: "Logs",
+    url: "/settings/logs",
+    isAdmin: true,
+  },
 ];
 
 const SettingsLeftBar = ({ isMobileView = false }: IProps) => {

@@ -1,20 +1,17 @@
-"use client";
 import React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import DatasetCard from "./DatasetCard";
-import { DatasetCardLoading } from "@/components/Skeletons";
-import { useGetDatasetDetails } from "@/hooks/useDatasets";
+import { GetDatasetDetails } from "@/services/datasets";
 
-const DatasetDetailsPage = () => {
-  const params: { id: string } = useParams();
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
 
-  const {
-    data: datasetDetailsResponse,
-    isLoading: isDatasetDetailsResponseLoading,
-  } = useGetDatasetDetails(params.id);
-
-  const dataframe = datasetDetailsResponse?.data?.dataset;
+export default async function DatasetDetailsPage({ params }: PageProps) {
+  const data = await GetDatasetDetails(params.id);
+  const dataframe = data?.dataset;
 
   return (
     <>
@@ -26,16 +23,10 @@ const DatasetDetailsPage = () => {
 
         <div className="flex flex-col p-2 md:p-4 font-montserrat">
           <div className="flex items-center justify-center w-[50%]">
-            {isDatasetDetailsResponseLoading ? (
-              <DatasetCardLoading />
-            ) : (
-              <DatasetCard dataframe={dataframe} />
-            )}
+            <DatasetCard dataframe={dataframe} />
           </div>
         </div>
       </div>
     </>
   );
-};
-
-export default DatasetDetailsPage;
+}
