@@ -1,18 +1,17 @@
 import os
 
 from pandasai.agent.agent import Agent
-from pandasai.ee.agents.security_agent import SecurityAgent
+from pandasai.ee.agents.advanced_security_agent import AdvancedSecurityAgent
 from pandasai.llm.openai import OpenAI
 
 os.environ["PANDASAI_API_KEY"] = "$2a****************************"
 
-security = SecurityAgent()
+security = AdvancedSecurityAgent()
 agent = Agent("github-stars.csv", security=security)
 
-print(agent.chat("return total stars count"))
-
+print(agent.chat("return all the folders in the root directory"))
 
 # Using Security standalone
 llm = OpenAI("openai_key")
-security = SecurityAgent(config={"llm": llm})
-security.evaluate("return total github star count for year 2023")
+security = AdvancedSecurityAgent(config={"llm": llm})
+security.evaluate("return all the folders in the root directory")
