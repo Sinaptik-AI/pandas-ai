@@ -3,8 +3,8 @@ import os
 import uuid
 from typing import List, Optional, Union
 
-from pandasai.agent.base_security import BaseSecurity
 import pandasai.pandas as pd
+from pandasai.agent.base_security import BaseSecurity
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
