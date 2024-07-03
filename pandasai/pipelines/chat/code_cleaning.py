@@ -122,7 +122,9 @@ class CodeCleaning(BaseLogicUnit):
 
     def get_code_to_run(self, code: str, context: CodeExecutionContext) -> Any:
         if self._is_malicious_code(code):
-            raise MaliciousQueryError("Code shouldn't use 'os' or 'io' operations!")
+            raise MaliciousQueryError(
+                "Code shouldn't use 'os', 'io' or 'chr', 'b64decode' functions as this could lead to malicious code execution."
+            )
         code = self._replace_plot_png(code)
         self._current_code_executed = code
 
@@ -159,7 +161,21 @@ Code running:
         return code_to_run
 
     def _is_malicious_code(self, code) -> bool:
-        dangerous_modules = [" os", " io", ".os", ".io"]
+        dangerous_modules = [
+            " os",
+            " io",
+            ".os",
+            ".io",
+            "'os'",
+            "'io'",
+            '"os"',
+            '"io"',
+            "chr(",
+            "chr)",
+            "chr ",
+            "(chr",
+            "b64decode",
+        ]
         return any(module in code for module in dangerous_modules)
 
     def _is_jailbreak(self, node: ast.stmt) -> bool:

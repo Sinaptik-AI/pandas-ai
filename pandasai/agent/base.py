@@ -234,7 +234,21 @@ class BaseAgent:
                 retry_count += 1
 
     def check_malicious_keywords_in_query(self, query):
-        dangerous_modules = [" os", " io", ".os", ".io"]
+        dangerous_modules = [
+            " os",
+            " io",
+            ".os",
+            ".io",
+            "'os'",
+            "'io'",
+            '"os"',
+            '"io"',
+            "chr(",
+            "chr)",
+            "chr ",
+            "(chr",
+            "b64decode",
+        ]
         return any(module in query for module in dangerous_modules)
 
     def chat(self, query: str, output_type: Optional[str] = None):
@@ -257,7 +271,7 @@ class BaseAgent:
 
             if self.check_malicious_keywords_in_query(query):
                 raise MaliciousQueryError(
-                    "Query can result in a malicious code, query contain io and os which can lead to malicious code"
+                    "The query contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways."
                 )
 
             if self.security and self.security.evaluate(query):

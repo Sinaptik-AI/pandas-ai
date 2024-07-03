@@ -672,6 +672,6 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             response
             == """Unfortunately, I was not able to get your answers, because of the following error:
 
-Query can result in a malicious code, query contain io and os which can lead to malicious code
+The query contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways.
 """
         )
