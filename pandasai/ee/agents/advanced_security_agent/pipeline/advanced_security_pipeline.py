@@ -1,8 +1,8 @@
 from typing import Optional
 
 from pandasai.ee.agents.judge_agent.pipeline.llm_call import LLMCall
-from pandasai.ee.agents.security_agent.pipeline.security_prompt_generation import (
-    SecurityPromptGeneration,
+from pandasai.ee.agents.advanced_security_agent.pipeline.advanced_security_prompt_generation import (
+    AdvancedSecurityPromptGeneration,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.query_exec_tracker import QueryExecTracker
@@ -10,7 +10,7 @@ from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 
 
-class SecurityPipeline:
+class AdvancedSecurityPipeline:
     def __init__(
         self,
         context: Optional[PipelineContext] = None,
@@ -24,7 +24,7 @@ class SecurityPipeline:
             logger=logger,
             query_exec_tracker=self.query_exec_tracker,
             steps=[
-                SecurityPromptGeneration(),
+                AdvancedSecurityPromptGeneration(),
                 LLMCall(),
             ],
         )

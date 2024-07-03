@@ -5,10 +5,10 @@ from jinja2 import Environment, FileSystemLoader
 from pandasai.prompts.base import BasePrompt
 
 
-class SecurityAgentPrompt(BasePrompt):
+class AdvancedSecurityAgentPrompt(BasePrompt):
     """Prompt to generate Python code from a dataframe."""
 
-    template_path = "security_agent_prompt.tmpl"
+    template_path = "advanced_security_agent_prompt.tmpl"
 
     def __init__(self, **kwargs):
         """Initialize the prompt."""

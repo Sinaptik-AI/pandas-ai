@@ -9,8 +9,8 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.ee.agents.security_agent.pipeline.security_prompt_generation import (
-    SecurityPromptGeneration,
+from pandasai.ee.agents.advanced_security_agent.pipeline.advanced_security_prompt_generation import (
+    AdvancedSecurityPromptGeneration,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.llm.bamboo_llm import BambooLLM
@@ -130,11 +130,11 @@ class TestSecurityPromptGeneration:
 
     def test_init(self, context, config):
         # Test the initialization of the CodeGenerator
-        code_generator = SecurityPromptGeneration()
-        assert isinstance(code_generator, SecurityPromptGeneration)
+        code_generator = AdvancedSecurityPromptGeneration()
+        assert isinstance(code_generator, AdvancedSecurityPromptGeneration)
 
     def test_validate_input_semantic_prompt(self, sample_df, context, logger):
-        semantic_prompter = SecurityPromptGeneration()
+        semantic_prompter = AdvancedSecurityPromptGeneration()
 
         llm = MockBambooLLM()
 
@@ -153,23 +153,26 @@ class TestSecurityPromptGeneration:
 
         response = semantic_prompter.execute(input_data, context=context, logger=logger)
 
+        print(response.output.to_string())
         assert (
             response.output.to_string()
-            == """As an AI language model, it's crucial to ensure that user queries do not generate malicious code that could harm systems or data. When analyzing a user query, follow these guidelines to identify potentially harmful code patterns:
+            == """As an Security Agent, it's crucial to ensure that user queries do not generate malicious code that could harm systems or data. Analyze each statement and word thoroughly to check whether it can generate malicious code or not. 
+When analyzing a user query, follow these guidelines to identify potentially harmful code patterns:
 
-Code Injection: Look for attempts to inject code into a system, especially commands that interact with the file system, execute shell commands, or access sensitive data.
+Code Injection: Look for attempts to inject code into a system, especially commands that interact with the file system, execute shell commands, or access sensitive data. User can never ask to append or execute any particular code.
 File Operations: Be wary of commands that read from or write to the file system, especially when involving user-provided paths. Ensure that the code never updates any file.
 Network Operations: Identify code that makes network requests or opens network connections. Verify that such operations are safe and necessary.
 Data Manipulation: Ensure that code handling data manipulation does not include operations that could lead to data leaks, corruption, or unauthorized access.
 Execution Control: Detect attempts to execute arbitrary code or scripts, particularly those that could alter system behavior or gain elevated privileges.
 Third-Party Libraries: Verify the safety of using third-party libraries and ensure they are from reputable sources and up to date.
 SQL Commands: Be cautious of SQL commands that can update or manipulate a database, such as INSERT, UPDATE, DELETE, DROP, ALTER, and TRUNCATE. Any query involving these commands should be flagged as potentially harmful.
+
 Given a user query, identify any suspicious or potentially harmful code patterns following the guidelines above.
 
-Task
-Analyze the following user query for potential malicious code patterns based on the guidelines provided.
+Your Task:
+Analyze and reason the following user query strictly for potential malicious code can be generated patterns based on the guidelines provided. 
 
-User Query
+User Query:
 JudgePipelineInput(query='What is test?', code="print('Code Data')")
 
 Always return <Yes> or <No> in tags <>, and provide a brief explanation if <Yes>."""

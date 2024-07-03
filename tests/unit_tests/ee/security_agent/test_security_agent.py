@@ -10,7 +10,7 @@ from pandasai.connectors.sql import (
     SQLConnector,
     SQLConnectorConfig,
 )
-from pandasai.ee.agents.security_agent import SecurityAgent
+from pandasai.ee.agents.advanced_security_agent import AdvancedSecurityAgent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
@@ -223,7 +223,7 @@ class TestSecurityAgent:
 
     @pytest.fixture
     def agent(self) -> Agent:
-        return SecurityAgent()
+        return AdvancedSecurityAgent()
 
     def test_contruct_with_pipeline(self, sample_df):
-        SecurityAgent(pipeline=MagicMock())
+        AdvancedSecurityAgent(pipeline=MagicMock())

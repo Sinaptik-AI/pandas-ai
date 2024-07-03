@@ -1,14 +1,14 @@
 from typing import Any
 
-from pandasai.ee.agents.security_agent.prompts.security_agent_prompt import (
-    SecurityAgentPrompt,
+from pandasai.ee.agents.advanced_security_agent.prompts.advanced_security_agent_prompt import (
+    AdvancedSecurityAgentPrompt,
 )
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
 
-class SecurityPromptGeneration(BaseLogicUnit):
+class AdvancedSecurityPromptGeneration(BaseLogicUnit):
     """
     Code Prompt Generation Stage
     """
@@ -31,7 +31,7 @@ class SecurityPromptGeneration(BaseLogicUnit):
         self.context = kwargs.get("context")
         self.logger: Logger = kwargs.get("logger")
 
-        prompt = SecurityAgentPrompt(query=input_query, context=self.context)
+        prompt = AdvancedSecurityAgentPrompt(query=input_query, context=self.context)
         self.logger.log(f"Using prompt: {prompt}")
 
         return LogicUnitOutput(
