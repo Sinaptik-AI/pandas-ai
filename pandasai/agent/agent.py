@@ -4,6 +4,7 @@ import pandas as pd
 
 from pandasai.agent.base import BaseAgent
 from pandasai.agent.base_judge import BaseJudge
+from pandasai.agent.base_security import BaseSecurity
 from pandasai.connectors.base import BaseConnector
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.schemas.df_config import Config
@@ -22,8 +23,11 @@ class Agent(BaseAgent):
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
         judge: BaseJudge = None,
+        security: BaseSecurity = None,
     ):
-        super().__init__(dfs, config, memory_size, vectorstore, description)
+        super().__init__(
+            dfs, config, memory_size, vectorstore, description, security=security
+        )
 
         self.pipeline = (
             pipeline(

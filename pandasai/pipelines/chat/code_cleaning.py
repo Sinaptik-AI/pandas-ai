@@ -121,6 +121,8 @@ class CodeCleaning(BaseLogicUnit):
         return re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
 
     def get_code_to_run(self, code: str, context: CodeExecutionContext) -> Any:
+        if self._is_malicious_code(code):
+            raise MaliciousQueryError("Code shouldn't use 'os' or 'io' operations!")
         code = self._replace_plot_png(code)
         self._current_code_executed = code
 
@@ -155,6 +157,10 @@ Code running:
         )
 
         return code_to_run
+
+    def _is_malicious_code(self, code) -> bool:
+        dangerous_modules = [" os", " io", ".os", ".io"]
+        return any(module in code for module in dangerous_modules)
 
     def _is_jailbreak(self, node: ast.stmt) -> bool:
         """

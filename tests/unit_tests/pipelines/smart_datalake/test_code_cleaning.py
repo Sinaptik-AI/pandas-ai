@@ -266,7 +266,7 @@ np.array()
 import os
 print(os.listdir())
 """
-        with pytest.raises(BadImportError):
+        with pytest.raises(MaliciousQueryError):
             code_cleaning.execute(malicious_code, context=context, logger=logger)
 
     def test_clean_code_accesses_node_id(
