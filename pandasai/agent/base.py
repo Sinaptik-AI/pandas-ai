@@ -3,6 +3,7 @@ import os
 import uuid
 from typing import List, Optional, Union
 
+from pandasai.agent.base_security import BaseSecurity
 import pandasai.pandas as pd
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
@@ -14,7 +15,11 @@ from pandasai.vectorstores.vectorstore import VectorStore
 from ..config import load_config_from_json
 from ..connectors import BaseConnector, PandasConnector
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
-from ..exceptions import InvalidLLMOutputType, MissingVectorStoreError
+from ..exceptions import (
+    InvalidLLMOutputType,
+    MaliciousQueryError,
+    MissingVectorStoreError,
+)
 from ..helpers.df_info import df_type
 from ..helpers.folder import Folder
 from ..helpers.logger import Logger
@@ -45,6 +50,7 @@ class BaseAgent:
         memory_size: Optional[int] = 10,
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
+        security: BaseSecurity = None,
     ):
         """
         Args:
@@ -97,6 +103,7 @@ class BaseAgent:
         self.configure()
 
         self.pipeline = None
+        self.security = security
 
     def configure(self):
         # Add project root path if save_charts_path is default
@@ -226,6 +233,10 @@ class BaseAgent:
                     raise
                 retry_count += 1
 
+    def check_malicious_keywords_in_query(self, query):
+        dangerous_modules = [" os", " io", ".os", ".io"]
+        return any(module in query for module in dangerous_modules)
+
     def chat(self, query: str, output_type: Optional[str] = None):
         """
         Simulate a chat interaction with the assistant on Dataframe.
@@ -244,11 +255,20 @@ class BaseAgent:
 
             self.assign_prompt_id()
 
+            if self.check_malicious_keywords_in_query(query):
+                raise MaliciousQueryError(
+                    "Query can result in a malicious code, query contain io and os which can lead to malicious code"
+                )
+
+            if self.security and self.security.evaluate(query):
+                raise MaliciousQueryError("Query can result in a malicious code")
+
             pipeline_input = ChatPipelineInput(
                 query, output_type, self.conversation_id, self.last_prompt_id
             )
 
             return self.pipeline.run(pipeline_input)
+
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to get your answers, "
