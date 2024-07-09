@@ -4,14 +4,18 @@ import pandas as pd
 
 from pandasai.agent import Agent
 from pandasai.llm import OpenAI
-
-from . import PATH_DATA
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+prjRoot = ROOT_DIR.rsplit("com")[0]
+print("Project Path:" + prjRoot)
+sys.path.append(prjRoot)
+from tests.integration_tests import PATH_DATA
 
 
 class TestSpotify(unittest.TestCase):
     def setUp(self) -> None:
         # export OPENAI_API_KEY='sk-...'
-        llm = OpenAI(temperature=0)
+        llm = OpenAI(temperature=0, api_token="fake_key")
         csv_file_path = f"{PATH_DATA}/artists.csv"
 
         # Read the CSV file into a DataFrame

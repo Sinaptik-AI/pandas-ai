@@ -9,7 +9,7 @@ from pandasai.llm import OpenAI
 class TestLoanPayments(unittest.TestCase):
     def setUp(self) -> None:
         # export OPENAI_API_KEY='sk-...'
-        llm = OpenAI(temperature=0)
+        llm = OpenAI(temperature=0, api_token="fake_key")
 
         csv_file_path = "examples/data/Loan payments data.csv"
 
