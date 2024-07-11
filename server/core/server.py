@@ -8,7 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from api import router
-from ee.api import ee_router
 from app.controllers.workspace import WorkspaceController
 from app.controllers.user import UserController
 from app.models import Dataset, Workspace, User
@@ -42,7 +41,6 @@ def on_auth_error(request: Request, exc: Exception):
 
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(router)
-    app_.include_router(ee_router)
 
 
 def init_listeners(app_: FastAPI) -> None:

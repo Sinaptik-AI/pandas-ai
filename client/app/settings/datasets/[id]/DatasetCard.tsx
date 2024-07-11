@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +7,11 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { IDatasetDetails } from "../datasets-interface";
+import { convertToCSV } from "@/utils/convertToCSV";
 import { useDeleteDataset, useUpdateDatasetCard } from "@/hooks/useDatasets";
 import { Loader } from "@/components/loader/Loader";
+import { DeleteDataset } from "@/services/datasets";
 import { axiosInstance } from "@/utils/apiUtils";
-import { revalidateDatasets } from "@/lib/actions";
 
 interface IProps {
   dataframe: IDatasetDetails;
@@ -19,6 +19,7 @@ interface IProps {
 
 const DatasetCard = ({ dataframe }: IProps) => {
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
@@ -42,6 +43,20 @@ const DatasetCard = ({ dataframe }: IProps) => {
     });
   };
 
+  const onSuccess = (response: any) => {
+    toast.success(response?.data?.message);
+    setIsEditFormOpen(false);
+    setIsDeleteModalOpen(false);
+  };
+
+  const onError = (error: any) => {
+    toast.error(
+      error?.response?.data?.message
+        ? error?.response?.data?.message
+        : error.message
+    );
+  };
+
   const handleSubmit = async () => {
     const dataSet = {
       name: datasetForm.name,
@@ -52,21 +67,7 @@ const DatasetCard = ({ dataframe }: IProps) => {
         id: dataframe.id,
         body: dataSet,
       },
-      {
-        onSuccess(response) {
-          toast.success(response?.data?.message);
-          setIsEditFormOpen(false);
-          setIsDeleteModalOpen(false);
-          revalidateDatasets();
-        },
-        onError(error: any) {
-          toast.error(
-            error?.response?.data?.message
-              ? error?.response?.data?.message
-              : error.message
-          );
-        },
-      }
+      { onSuccess, onError }
     );
   };
 
@@ -105,7 +106,6 @@ const DatasetCard = ({ dataframe }: IProps) => {
         onSuccess(response) {
           toast.success(response?.data?.message);
           setIsDeleteModalOpen(false);
-          revalidateDatasets();
           router.push("/settings/datasets");
         },
         onError(error: any) {
@@ -147,11 +147,7 @@ const DatasetCard = ({ dataframe }: IProps) => {
                 onClick={() => {
                   handleDownload();
                 }}
-                disabled={
-                  isEditDatasetLoading ||
-                  isDeleteDatasetLoading ||
-                  isDownloadLoading
-                }
+                disabled={isEditDatasetLoading || isDeleteDatasetLoading}
               >
                 Download
               </Button>
@@ -222,7 +218,7 @@ const DatasetCard = ({ dataframe }: IProps) => {
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}
-          isLoading={isDeleteDatasetLoading}
+          isLoading={isDeleteLoading}
           onSubmit={handleDelete}
         />
       )}

@@ -41,7 +41,7 @@ class GenerateDFSchemaPrompt(BasePrompt):
                 for record in json_data:
                     if not all(key in record for key in ("name", "table")):
                         return False
-
+                # print(f"LLM output: {output}")  # Add this line to print the LLM output
                 return len(context.dfs) == len(json_data)
 
         except json.JSONDecodeError:

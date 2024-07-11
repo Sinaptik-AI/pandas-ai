@@ -17,6 +17,8 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 RUN apt-get update && apt-get install netcat-openbsd -y 
 
+
+
 # Add Poetry to PATH
 ENV PATH="/root/.local/bin:$PATH"
 
@@ -27,6 +29,9 @@ RUN poetry lock --no-update
 
 # Install Python dependencies
 RUN poetry install --no-root
+
+# Install Python dependencies
+RUN pip install python-multipart
 
 # Add wait-for-it.sh script to the container
 COPY wait-for-it.sh /wait-for-it.sh

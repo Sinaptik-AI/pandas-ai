@@ -46,6 +46,22 @@ spell_fix:  ## run codespell on the project and fix the errors
 docs:  ## run docs serving
 	mkdocs serve
 
+
+
+######################
+# PROJECT SETUP
+######################
+
+install:  ## install project dependencies
+	poetry install --no-root
+
+migrate:  ## run database migrations
+	poetry run alembic upgrade head
+
+start:  ## start the application
+	poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+
 ######################
 # HELP
 ######################

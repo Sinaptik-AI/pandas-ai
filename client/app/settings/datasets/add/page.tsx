@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useCreateDataset } from "@/hooks/useDatasets";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { revalidateDatasets } from "@/lib/actions";
 
 const AddDataSet = () => {
   const [inputFile, setInputFile] = useState(null);
@@ -64,6 +63,12 @@ const AddDataSet = () => {
     return Object.keys(errors)?.length === 0;
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+    });
+  };
   const handleAdd = async () => {
     if (!validateForm()) {
       return;
@@ -82,7 +87,6 @@ const AddDataSet = () => {
   };
   const onSuccess = (response: any) => {
     toast.success(response?.data?.message);
-    revalidateDatasets();
     router.push("/settings/datasets");
   };
 

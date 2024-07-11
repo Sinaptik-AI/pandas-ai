@@ -7,7 +7,6 @@ from app.controllers.chat import ChatController
 from app.controllers.conversation import ConversationController
 from app.controllers.workspace import WorkspaceController
 from app.controllers.datasets import DatasetController
-from ee.app.controllers.logs import LogsController
 from app.models import (
     Dataset,
     Organization,
@@ -15,7 +14,6 @@ from app.models import (
     Workspace,
     User,
     UserConversation,
-    Logs
 )
 from app.repositories import UserRepository
 from app.repositories.api_key import APIKeyRepository
@@ -23,7 +21,6 @@ from app.repositories.conversation import ConversationRepository
 from app.repositories.dataset import DatasetRepository
 from app.repositories.organization import OrganizationRepository
 from app.repositories.workspace import WorkspaceRepository
-from ee.app.repositories.logs import LogsRepository
 from core.database import get_session
 
 
@@ -42,7 +39,6 @@ class Factory:
     dataset_repository = partial(DatasetRepository, Dataset)
     conversation_repository = partial(ConversationRepository, UserConversation)
     datasets_repository = partial(ConversationRepository, UserConversation)
-    logs_repository = partial(LogsRepository, Logs)
 
     def get_user_controller(self, db_session=Depends(get_session)):
         return UserController(
@@ -66,7 +62,6 @@ class Factory:
             user_repository=self.user_repository(db_session=db_session),
             space_repository=self.space_repository(db_session=db_session),
             conversation_repository=self.conversation_repository(db_session=db_session),
-            logs_repository=self.logs_repository(db_session=db_session),
         )
     
     def get_datasets_controller(self, db_session=Depends(get_session)):
@@ -79,9 +74,4 @@ class Factory:
         return ConversationController(
             user_repository=self.user_repository(db_session=db_session),
             conversation_repository=self.conversation_repository(db_session=db_session),
-        )
-    
-    def get_logs_controller(self, db_session=Depends(get_session)):
-        return LogsController(
-            logs_repository=self.logs_repository(db_session=db_session),
         )
