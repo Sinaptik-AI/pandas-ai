@@ -10,6 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     UniqueConstraint,
+    Float
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -50,7 +51,12 @@ class User(Base):
     )
     spaces = relationship("Workspace", back_populates="user")
     user_spaces = relationship("UserSpace", back_populates="user")
+<<<<<<< HEAD
     features = Column(JSON, nullable=True)
+=======
+    logs = relationship("Logs", back_populates="user")
+
+>>>>>>> main
 
 
 class Organization(Base):
@@ -176,10 +182,12 @@ class ConversationMessage(Base):
     response = Column(JSON, nullable=True)
     code_generated = Column(String, nullable=True)
     label = Column(String, nullable=True)
-    log_id = Column(UUID(as_uuid=True), nullable=True)
+    log_id = Column(UUID(as_uuid=True), ForeignKey("logs.id"))
     settings = Column(JSON, nullable=True)
 
     user_conversation = relationship("UserConversation", back_populates="messages")
+    log = relationship("Logs", back_populates="conversation_messages")
+
 
 
 class DatasetSpace(Base):
@@ -190,3 +198,17 @@ class DatasetSpace(Base):
 
     dataset = relationship("Dataset", back_populates="dataset_spaces")
     workspace = relationship("Workspace", back_populates="dataset_spaces")
+
+class Logs(Base):
+    __tablename__ = "logs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
+    api_key = Column(String(255))
+    created_at = Column(DateTime, default=datetime.datetime.now)
+    query = Column(String, default="")
+    execution_time = Column(Float, default=2.0)
+    success = Column(Boolean, default=True)
+    json_log = Column(JSON, nullable=True)
+
+    user = relationship("User", back_populates="logs")
+    conversation_messages = relationship("ConversationMessage", back_populates="log")
