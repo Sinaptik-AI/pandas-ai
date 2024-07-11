@@ -2,7 +2,7 @@
   "routes": [
     {
       "name": "General",
-      "path": "/settings/datasets",
+      "path": "/settings/general",
       "isAdmin": true,
       "isEnterprise": false,
       "enabled": true,

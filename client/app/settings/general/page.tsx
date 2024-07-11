@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "./FeatureIcon";
 import AppTooltip from "@/components/AppTooltip";
+import { revalidateLogs } from "@/lib/actions";
+import { useQueryClient } from "@tanstack/react-query";
 
 const GeneralPage = () => {
   const [routes, setRoutes] = useState([]);
@@ -17,6 +19,7 @@ const GeneralPage = () => {
     routeName: "",
     featureName: null,
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (userResponse) {
@@ -54,6 +57,8 @@ const GeneralPage = () => {
     setRoutes(updatedRoutes);
     updateUserRoutes(body, {
       onSuccess() {
+        queryClient.invalidateQueries({ queryKey: ["useGetMe"] });
+        revalidateLogs();
         setIsModalOpen(false);
       },
       onError(error: any) {

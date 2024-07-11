@@ -51,12 +51,9 @@ class User(Base):
     )
     spaces = relationship("Workspace", back_populates="user")
     user_spaces = relationship("UserSpace", back_populates="user")
-<<<<<<< HEAD
-    features = Column(JSON, nullable=True)
-=======
     logs = relationship("Logs", back_populates="user")
+    features = Column(JSON, nullable=True)
 
->>>>>>> main
 
 
 class Organization(Base):

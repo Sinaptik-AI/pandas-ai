@@ -1,3 +1,4 @@
+from fastapi import status, HTTPException
 from app.models import User
 from app.repositories import UserRepository
 from app.repositories.workspace import WorkspaceRepository
@@ -66,3 +67,24 @@ class UserController(BaseController[User]):
 
         user.features = features
         return user.features
+
+    async def check_log_feature(self, user_id: str):
+        user_in_db = await self.user_repository.get_by_id(user_id)
+        if not user_in_db:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found."
+            )
+        
+        logs_feature = next(
+            (route for route in user_in_db.features["routes"] if route["name"] == "Logs"),
+            None
+        )
+        
+        if not logs_feature or not logs_feature["enabled"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Logs feature is disabled for this user."
+            )
+
+        return True
