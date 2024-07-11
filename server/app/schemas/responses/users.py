@@ -4,7 +4,7 @@ from pydantic import UUID4, BaseModel, Field
 
 from app.schemas.responses.organization import OrganizationBase
 from app.schemas.responses.space import SpaceBase
-
+from typing import Any, Dict
 
 class UserResponse(BaseModel):
     email: str = Field(..., example="john.doe@example.com")
@@ -28,6 +28,7 @@ class UserInfo(BaseModel):
     id: UUID4 = Field(..., example="a3b8f042-1e16-4f0a-a8f0-421e16df0a2f")
     organizations: List[OrganizationBase] = Field(...)
     space: SpaceBase = Field(...)
+    features: Dict[str, Any] | None
 
     class Config:
         orm_mode = True

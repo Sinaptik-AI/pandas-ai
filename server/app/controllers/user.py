@@ -53,4 +53,16 @@ class UserController(BaseController[User]):
             id=user.id,
             organizations=organizations,
             space=space_base,
+            features=user.features
         )
+    
+    @Transactional(propagation=Propagation.REQUIRED_NEW)
+    async def update_features(self, user_id, features):
+        user = await self.user_repository.get_by_id(user_id)
+        if not user:
+            raise NotFoundException(
+                "No user found. Please restart the server and try again"
+            )        
+
+        user.features = features
+        return user.features

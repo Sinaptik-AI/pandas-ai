@@ -13,7 +13,8 @@ from app.models import (
 from core.config import config
 from core.repository import BaseRepository
 from core.security.password import PasswordHandler
-
+import json
+import os
 
 class UserRepository(BaseRepository[User]):
     """
@@ -43,12 +44,16 @@ class UserRepository(BaseRepository[User]):
 
     async def create_and_init_dummy_user(self) -> User:
         # Create user
+        file_path = os.path.join(os.getcwd(), 'data', "features.json")
+        with open(file_path, 'r') as file:
+            features_json = json.load(file)
         password = PasswordHandler.hash(config.PASSWORD)
         user = User(
             email=config.EMAIL,
             password=password,
             first_name="pandasai",
             verified=True,
+            features=features_json
         )
         self.session.add(user)
 
