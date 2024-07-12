@@ -5,10 +5,10 @@ import { Loader } from "@/components/loader/Loader";
 import { useGetMe, useUpdateUserRoutes } from "@/hooks/useUsers";
 import { toast } from "react-toastify";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import FeatureIcon from "./FeatureIcon";
 import AppTooltip from "@/components/AppTooltip";
 import { revalidateLogs } from "@/lib/actions";
 import { useQueryClient } from "@tanstack/react-query";
+import { FaCrown } from "react-icons/fa";
 
 const GeneralPage = () => {
   const [routes, setRoutes] = useState([]);
@@ -83,19 +83,23 @@ const GeneralPage = () => {
               <>
                 {route?.isEnterprise && (
                   <div className="mt-5" key={route.name}>
-                    <AppTooltip text="Disable Logs on/off">
-                      <div className="flex gap-5 mb-5">
-                        <h2 className="text-xl font-semibold dark:text-white">
-                          {route.name}
-                        </h2>
-                        <FeatureIcon name={route.name} />
-                      </div>
-                    </AppTooltip>
+                    <div className="flex gap-5 mb-5">
+                      <h2 className="text-xl font-semibold dark:text-white">
+                        {route.name}
+                      </h2>
+                    </div>
                     <div className="flex items-center gap-5">
-                      <p className="dark:text-white">
-                        {route.enabled ? "Disable" : "Enable"}{" "}
-                        {route.name.toLowerCase()}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="dark:text-white">
+                          {route.enabled ? "Disable" : "Enable"}{" "}
+                          {route.name.toLowerCase()}
+                        </p>
+                        {route.isEnterprise && (
+                          <AppTooltip text="Enterprise Feature">
+                            <FaCrown />
+                          </AppTooltip>
+                        )}
+                      </div>
                       <Switch
                         name={route.name}
                         checked={route.enabled}
