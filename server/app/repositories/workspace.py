@@ -1,6 +1,6 @@
+from fastapi import HTTPException
 from typing import List
-
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import joinedload
 
 from app.models import Connector, Dataset, DatasetSpace, Workspace, UserSpace, User
@@ -8,7 +8,7 @@ from app.repositories.dataset import DatasetRepository
 from core.config import config
 from core.repository import BaseRepository
 from app.schemas.responses.users import WorkspaceUserResponse
-
+from core.database.transactional import Propagation, Transactional
 
 class WorkspaceRepository(BaseRepository[Workspace]):
     """
@@ -121,3 +121,114 @@ class WorkspaceRepository(BaseRepository[Workspace]):
         await self.session.execute(
             delete(Dataset).where(Dataset.id == dataset_id)
         )
+
+    async def get_user_workspaces(self, user):
+        space_result = await self.session.execute(
+            select(Workspace).filter(Workspace.user_id == user.id)
+        )
+        user_spaces = space_result.scalars().all()
+
+
+        return user_spaces
+    
+
+    async def get_workspace_datails(self, workspace_id: str):
+        result = await self.session.execute(
+            select(Workspace)
+            .options(
+                joinedload(Workspace.dataset_spaces)
+                .joinedload(DatasetSpace.dataset)
+                .joinedload(Dataset.connector)
+            )
+            .where(Workspace.id == workspace_id)
+        )
+        workspace = result.scalars().first()
+        if not workspace:
+            raise HTTPException(status_code=404, detail="Workspace not found")
+        return workspace
+    
+
+    
+    async def delete_workspace(self, workspace_id: str):
+       async with self.session.begin():
+            result = await self.session.execute(
+                select(Workspace)
+                .options(
+                    joinedload(Workspace.dataset_spaces),
+                    joinedload(Workspace.user_spaces)
+                )
+                .where(Workspace.id == workspace_id)
+            )
+            workspace = result.scalars().first()
+
+            if not workspace:
+                raise HTTPException(status_code=404, detail="Workspace not found")
+
+            for dataset_space in workspace.dataset_spaces:
+                await self.session.delete(dataset_space)
+
+            for user_space in workspace.user_spaces:
+                await self.session.delete(user_space)
+
+            await self.session.delete(workspace)
+            await self.session.commit()
+
+
+
+    @Transactional(propagation=Propagation.REQUIRED_NEW)
+    async def create_workspace(self, workspace_data, user):
+        new_workspace = Workspace(
+            name=workspace_data.name,
+            user_id=user.id,
+            organization_id=user.organizations[0].id,
+        )
+        self.session.add(new_workspace)
+        await self.session.flush()
+
+        dataset_spaces = [
+            DatasetSpace(workspace_id=new_workspace.id, dataset_id=dataset_id)
+            for dataset_id in workspace_data.datasets
+        ]
+        self.session.add_all(dataset_spaces)
+
+        user_space = UserSpace(workspace_id=new_workspace.id, user_id=user.id)
+        self.session.add(user_space)
+
+        return new_workspace
+    
+
+    @Transactional(propagation=Propagation.REQUIRED_NEW)
+    async def edit_workspace(self, workspace_id, workspace_data):
+        async with self.session.begin():
+            result = await self.session.execute(
+                select(Workspace)
+                .options(
+                    joinedload(Workspace.dataset_spaces),
+                )
+                .where(Workspace.id == workspace_id)
+            )
+            workspace = result.scalars().first()
+
+            if not workspace:
+                raise HTTPException(status_code=404, detail="Workspace not found")
+            
+            await self.session.execute(
+                delete(DatasetSpace).where(DatasetSpace.workspace_id == workspace_id)
+            )
+
+            update_data = {
+                Workspace.name: workspace_data.name
+            }
+
+            await self.session.execute(
+                update(Workspace)
+                .where(Workspace.id == workspace_id)
+                .values(update_data)
+            )
+            dataset_spaces = [
+                DatasetSpace(workspace_id=workspace_id, dataset_id=dataset_id)
+                for dataset_id in workspace_data.datasets
+            ]
+            self.session.add_all(dataset_spaces)
+            await self.session.commit()
+            return workspace

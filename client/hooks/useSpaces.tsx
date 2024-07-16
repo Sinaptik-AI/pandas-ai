@@ -2,17 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AddNewUserSpace,
   DeleteSpaceUser,
-  GetAllSpacesList,
+  DeleteWorkspace,
   GetSpaceUser,
 } from "@/services/spaces";
-
-export const useGetAllSpaces = () => {
-  const { data, isLoading, error, isError } = useQuery({
-    queryKey: ["useGetAllSpaces"],
-    queryFn: GetAllSpacesList,
-  });
-  return { data, isLoading, error, isError };
-};
 
 export const useGetSpaceUsers = (spaceId: string) => {
   const { data, isLoading, error, isError } = useQuery({
@@ -42,6 +34,13 @@ export const useAddSpaceUsers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["useGetSpaceUsers"] });
     },
+  });
+  return { data, isPending, error, isError, mutateAsync };
+};
+export const useDeleteWorkspace = () => {
+  const { data, isPending, error, isError, mutateAsync } = useMutation({
+    mutationFn: (params: any) => DeleteWorkspace(params.id),
+    onSuccess: () => {},
   });
   return { data, isPending, error, isError, mutateAsync };
 };
