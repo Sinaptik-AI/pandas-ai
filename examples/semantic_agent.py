@@ -7,7 +7,7 @@ from pandasai.exceptions import InvalidLLMOutputType
 
 
 
-os.environ["PANDASAI_API_KEY"] = "api_key_here"
+os.environ["PANDASAI_API_KEY"] = "API_KEY"
 
 config_ = {"enable_cache": False, "direct_sql": True}
 
@@ -71,8 +71,8 @@ schema = [
 agent = SemanticAgent([employees_df, salaries_df], config=config_, schema=schema)
 
 # Chat with the agent
-# response = agent.chat("Plot a chart of the average salary of employees by department")
-# print(response)
+response = agent.chat("Plot a chart of the average salary of employees by department")
+print(response)
 
 
 
@@ -83,18 +83,5 @@ df = pd.DataFrame(columns=["Empdata"], data=[[1], [2]])
 df.head()
 
 
-try:
-    #  Create an instance of the SemanticAgent with the provided dataframe
-    semantic_agent = SemanticAgent(dfs=df)
-    #  Print the generated schema
-    print(semantic_agent._schema)
-except InvalidLLMOutputType as e:
-    #  If the LLM fails to generate a valid schema, catch the InvalidLLMOutputType exception
-    print(f"Error: {e}")  # Print the error message
-    print("Using fallback schema...")  # Inform the user that a fallback schema will be used
-
-
-# Here, you can provide a fallback schema or take appropriate action
-# For example, you can define a default schema and assign it to semantic_agent._schema
-# fallback_schema = [...]
-# semantic_agent._schema = fallback_schema
+semantic_agent = SemanticAgent(dfs=df)
+print(semantic_agent._schema)

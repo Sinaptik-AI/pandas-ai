@@ -41,6 +41,7 @@ def on_auth_error(request: Request, exc: Exception):
 
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(router)
+    app_.include_router(ee_router)
 
 
 def init_listeners(app_: FastAPI) -> None:
