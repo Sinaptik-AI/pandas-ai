@@ -11,6 +11,8 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-1106-preview": 0.01,
     "gpt-4o": 0.005,
     "gpt-4o-2024-05-13": 0.005,
+    "gpt-4o-mini": 0.00015,
+    "gpt-4o-mini-2024-07-18": 0.00015,
     "gpt-4-32k": 0.06,
     "gpt-4-32k-0613": 0.06,
     # GPT-4 output
@@ -21,6 +23,8 @@ MODEL_COST_PER_1K_TOKENS = {
     "gpt-4-1106-preview-completion": 0.03,
     "gpt-4o-completion": 0.015,
     "gpt-4o-2024-05-13-completion": 0.015,
+    "gpt-4o-mini-completion": 0.00015,
+    "gpt-4o-mini-2024-07-18-completion": 0.00015,
     "gpt-4-32k-completion": 0.12,
     "gpt-4-32k-0613-completion": 0.12,
     # GPT-3.5 input
