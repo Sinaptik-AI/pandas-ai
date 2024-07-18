@@ -10,3 +10,8 @@ export async function revalidateLogs() {
     revalidateTag('GetLogs')
     revalidateTag('GetLogDetails')
 }
+
+export async function revalidateWorkspaces() {
+    revalidateTag('GetWorkspaceDetails')
+    revalidateTag('GetAllWorkspaces')
+}

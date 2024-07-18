@@ -47,7 +47,7 @@ export default async function Datasets() {
         ))}
 
         <Link href={`/settings/datasets/add`}>
-          <AddNewCard />
+          <AddNewCard text="New dataset" />
         </Link>
       </div>
     </div>
