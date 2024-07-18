@@ -13,7 +13,7 @@ import {
   HeaderCell,
   Cell,
 } from "@table-library/react-table-library/table";
-import { LogData } from "app/settings/logs/logs-interface";
+import { LogData } from "@/app/(ee)/settings/logs/logs-interface";
 
 const LogList: React.FC<{ data: LogData[] }> = ({
   data,

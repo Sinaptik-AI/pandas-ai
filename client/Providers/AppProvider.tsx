@@ -13,10 +13,16 @@ import { Provider as RollbarProvider, ErrorBoundary } from "@rollbar/react";
 import QueryProvider from "./QueryProvider";
 import Intercom from "@/components/Intercom/Intercom";
 import { ToastContainer } from "react-toastify";
+import dynamic from "next/dynamic";
 import "styles/globals.css";
 import "styles/App.css";
 import "styles/multi-range-slider.css";
 import "react-toastify/dist/ReactToastify.css";
+
+const _NoSSR = ({ children }) => <React.Fragment>{children}</React.Fragment>;
+const NoSSR = dynamic(() => Promise.resolve(_NoSSR), {
+  ssr: false,
+});
 
 export default function AppProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -41,10 +47,12 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     <>
       <RollbarProvider config={rollbarConfig}>
         <ErrorBoundary>
-          <ContextProvider>
-            <ToastContainer autoClose={3000} className="w-64 text-white" />
-            <QueryProvider>{children}</QueryProvider>
-          </ContextProvider>
+          <NoSSR>
+            <ContextProvider>
+              <ToastContainer autoClose={3000} className="w-64 text-white" />
+              <QueryProvider>{children}</QueryProvider>
+            </ContextProvider>
+          </NoSSR>
         </ErrorBoundary>
       </RollbarProvider>
       <Intercom appID={NEXT_PUBLIC_INTERCOM_APP_ID} />
