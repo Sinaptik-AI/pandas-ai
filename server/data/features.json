@@ -1,8 +1,8 @@
 {
   "routes": [
     {
-      "name": "General",
-      "path": "/settings/general",
+      "name": "Workspaces",
+      "path": "/settings/workspaces",
       "isAdmin": true,
       "isEnterprise": false,
       "enabled": true,
@@ -32,6 +32,19 @@
       "isAdmin": true,
       "isEnterprise": true,
       "enabled": false,
+      "features": [
+        {
+          "name": "Test",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "General",
+      "path": "/settings/general",
+      "isAdmin": true,
+      "isEnterprise": false,
+      "enabled": true,
       "features": [
         {
           "name": "Test",
