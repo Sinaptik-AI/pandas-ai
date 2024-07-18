@@ -167,6 +167,13 @@ class PandasConnector(BaseConnector):
 
         table = table_name or self.name
 
+        # Check if the table already exists in DuckDB
+        existing_tables = duckdb.query("SHOW TABLES").fetchall()
+
+        # If the table already exists, drop it
+        if table in [t[0] for t in existing_tables]:
+            duckdb.query(f"DROP TABLE {table}")
+
         duckdb_relation = duckdb.from_df(self.pandas_df)
         duckdb_relation.create(table)
         self.sql_enabled = True
