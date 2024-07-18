@@ -1,0 +1,56 @@
+{
+  "routes": [
+    {
+      "name": "Workspaces",
+      "path": "/settings/workspaces",
+      "isAdmin": true,
+      "isEnterprise": false,
+      "enabled": true,
+      "features": [
+        {
+          "name": "Test",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "Datasets",
+      "path": "/settings/datasets",
+      "isAdmin": true,
+      "isEnterprise": false,
+      "enabled": true,
+      "features": [
+        {
+          "name": "Test",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "Logs",
+      "path": "/settings/logs",
+      "isAdmin": true,
+      "isEnterprise": true,
+      "enabled": false,
+      "features": [
+        {
+          "name": "Test",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "General",
+      "path": "/settings/general",
+      "isAdmin": true,
+      "isEnterprise": false,
+      "enabled": true,
+      "features": [
+        {
+          "name": "Test",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

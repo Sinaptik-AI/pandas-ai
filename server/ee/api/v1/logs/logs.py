@@ -5,10 +5,11 @@ from core.factory import Factory
 from app.schemas.responses.users import UserInfo
 from core.fastapi.dependencies.current_user import get_current_user
 from ee.app.schemas.responses.logs import LogsResponseModel
+from core.fastapi.dependencies.check_logs_feature import check_logs_feature
 
 log_router = APIRouter()
 
-@log_router.get("/", response_model=LogsResponseModel)
+@log_router.get("/", response_model=LogsResponseModel, dependencies=[Depends(check_logs_feature)])
 async def get_logs(
         skip: int = Query(0, alias="skip", description="Number of logs to skip"),
         limit: int = Query(10, alias="limit", description="Max number of logs to return"),

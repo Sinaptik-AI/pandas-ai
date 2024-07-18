@@ -3,31 +3,16 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAppStore } from "store";
+import { useGetMe } from "@/hooks/useUsers";
 
 interface IProps {
   isMobileView?: boolean;
 }
 
-const routes = [
-  {
-    name: "Datasets",
-    url: "/settings/datasets",
-    isAdmin: true,
-  },
-  {
-    name: "Logs",
-    url: "/settings/logs",
-    isAdmin: true,
-  },
-  {
-    name: "Workspaces",
-    url: "/settings/workspaces",
-    isAdmin: true,
-  },
-];
-
 const SettingsLeftBar = ({ isMobileView = false }: IProps) => {
   const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
+  const { data: userResponse } = useGetMe();
+
   const pathname = usePathname();
   const closeSidebar = () => {
     setIsSidebarOpen(false);
@@ -52,17 +37,19 @@ const SettingsLeftBar = ({ isMobileView = false }: IProps) => {
             Settings
           </h2>
         </div>
-        {routes?.map((route, index) => (
-          <Link href={route.url} key={index}>
-            <div
-              onClick={() => closeSidebar()}
-              key={index}
-              className={`px-4 py-1 dark:text-white text-base truncate cursor-pointer hover:underline ${
-                route.url === pathname ? "font-bold" : "font-light"
-              }`}
-            >
-              {route.name}
-            </div>
+        {userResponse?.data?.features?.routes?.map((route, index) => (
+          <Link href={route.path} key={index}>
+            {route.enabled && (
+              <div
+                onClick={() => closeSidebar()}
+                key={index}
+                className={`px-4 py-1 dark:text-white text-base truncate cursor-pointer hover:underline ${
+                  route.path === pathname ? "font-bold" : "font-light"
+                }`}
+              >
+                {route.name}
+              </div>
+            )}
           </Link>
         ))}
       </div>

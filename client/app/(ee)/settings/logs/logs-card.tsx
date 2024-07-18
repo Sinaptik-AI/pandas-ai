@@ -4,6 +4,7 @@ import Card from "@/components/card";
 import LogsTable from "components/LogsTable/index";
 import { LogData } from "./logs-interface";
 import Pagination from "@/components/pagination";
+import usePermissionCheck from "@/hooks/useCheckFeature";
 
 interface IProps {
   logs: LogData[];
@@ -14,7 +15,10 @@ const LogsCard = ({ logs, logs_count }: IProps) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 15;
 
+  usePermissionCheck();
+
   const totalPages = Math.ceil(logs_count / itemsPerPage);
+
   return (
     <Card extra="w-full py-2 px-5">
       <LogsTable data={logs} />

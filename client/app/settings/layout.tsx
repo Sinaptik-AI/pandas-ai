@@ -1,20 +1,14 @@
-"use client";
 import React from "react";
 import VerticalLineSeperator from "components/VerticalLineSeperator";
-import Drawer from "react-modern-drawer";
-import "react-modern-drawer/dist/index.css";
-import { useAppStore } from "store";
 import Navbar from "@/components/Navbar";
 import SettingsLeftBar from "@/components/SettingsLayout/LeftBar";
+import LeftBarDrawer from "@/components/SettingsLayout/LeftBarDrawer";
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const isSideBarOpen = useAppStore((state) => state.isSideBarOpen);
-  const setIsSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
-
   return (
     <>
       <div className="flex flex-col h-screen">
@@ -30,15 +24,7 @@ export default function SettingsLayout({
           <div className="flex-1 w-full">{children}</div>
         </div>
       </div>
-      <Drawer
-        open={isSideBarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        direction="left"
-        className=""
-        zIndex={1000}
-      >
-        <SettingsLeftBar isMobileView={true} />
-      </Drawer>
+      <LeftBarDrawer />
     </>
   );
 }
