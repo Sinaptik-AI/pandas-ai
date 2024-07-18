@@ -70,3 +70,35 @@ class WorkspaceController(BaseController[Workspace]):
                 detail="No dataset found. Please restart the server and try again"
             )
         return WorkspaceDatasetsResponseModel(datasets=datasets)
+    
+
+    async def get_user_workspaces(self, user):
+        result = await self.space_repository.get_user_workspaces(user)
+
+        return result
+    
+    async def get_workspace_datails(self, workspace_id) -> WorkspaceDatasetsResponseModel:
+        await self.get_workspace_by_id(workspace_id)        
+        workspace = await self.space_repository.get_workspace_datails(workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No workspace found. Please restart the server and try again"
+            )
+        return workspace
+
+
+    async def delete_workspace(self, workspace_id):
+        await self.space_repository.delete_workspace(workspace_id)
+        return {"message": "Workspace deleted successfully"}
+
+    
+
+    async def add_workspace(self, workspace,  user):
+        await self.space_repository.create_workspace(workspace, user)
+        return {"message": "Workspace successfully Added"}
+    
+
+    async def edit_workspace(self, workspace_id, workspace):
+        await self.space_repository.edit_workspace(workspace_id, workspace)
+        return {"message": "Workspace successfully Updated"}

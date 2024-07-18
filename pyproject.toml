@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "2.2.10"
+version = "2.2.11"
 description = "Chat with your database (SQL, CSV, pandas, polars, mongodb, noSQL, etc). PandasAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -16,7 +16,7 @@ openai = "<2"
 matplotlib = "^3.7.1"
 pydantic = ">=1,<3"
 sqlalchemy = ">=1.4,<3"
-duckdb = "<1"
+duckdb = "^1.0.0"
 faker = "^19.12.0"
 pillow = "^10.1.0"
 requests = "^2.31.0"
