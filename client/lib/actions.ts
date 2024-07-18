@@ -6,3 +6,8 @@ export async function revalidateDatasets() {
     revalidateTag('GetDatasetDetails')
     revalidateTag('GetAllDataSets')
 }
+
+export async function revalidateWorkspaces() {
+    revalidateTag('GetWorkspaceDetails')
+    revalidateTag('GetAllWorkspaces')
+}
