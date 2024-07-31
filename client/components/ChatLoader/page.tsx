@@ -15,3 +15,5 @@ const ChatLoader = () => {
   );
 };
 export default ChatLoader;
+export const dynamic='force-dynamic';
+
