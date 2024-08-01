@@ -688,7 +688,6 @@ The query contains references to io or os modules or b64decode method which can 
             "file = open('file.txt', 'os')",
             "os.system('rm -rf /')",
             "io.open('file.txt', 'w')",
-
         ]
 
         expected_malicious_response = (
@@ -710,4 +709,4 @@ The query contains references to io or os modules or b64decode method which can 
 
         for query in safe_queries:
             response = agent.chat(query)
-            assert response != expected_malicious_response
+            assert "Unfortunately, I was not able to get your answers" not in response
