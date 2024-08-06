@@ -407,7 +407,7 @@ Code running:
         return original_dfs
 
     def _extract_fix_dataframe_redeclarations(
-        self, node: ast.AST, code_lines: list[str]
+        self, node: ast.AST, code_lines: list[str], context: CodeExecutionContext
     ) -> ast.AST:
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
@@ -417,6 +417,12 @@ Code running:
                 code = "\n".join(code_lines)
                 env = get_environment(self._additional_dependencies)
                 env["dfs"] = copy.deepcopy(self._get_originals(self._dfs))
+                if context.skills_manager.used_skills:
+                    for skill_func_name in context.skills_manager.used_skills:
+                        skill = context.skills_manager.get_skill_by_func_name(
+                            skill_func_name
+                        )
+                        env[skill_func_name] = skill
                 exec(code, env)
 
                 df_generated = (
@@ -512,7 +518,9 @@ Code running:
             clean_code_lines.append(astor.to_source(node))
 
             new_body.append(
-                self._extract_fix_dataframe_redeclarations(node, clean_code_lines)
+                self._extract_fix_dataframe_redeclarations(
+                    node, clean_code_lines, context
+                )
                 or node
             )
 
