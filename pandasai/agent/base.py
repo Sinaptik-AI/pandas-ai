@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import uuid
 from typing import List, Optional, Union
 
@@ -234,22 +235,11 @@ class BaseAgent:
                 retry_count += 1
 
     def check_malicious_keywords_in_query(self, query):
-        dangerous_modules = [
-            " os",
-            " io",
-            ".os",
-            ".io",
-            "'os'",
-            "'io'",
-            '"os"',
-            '"io"',
-            "chr(",
-            "chr)",
-            "chr ",
-            "(chr",
-            "b64decode",
-        ]
-        return any(module in query for module in dangerous_modules)
+        dangerous_pattern = re.compile(
+            r"\b(os|io|chr|b64decode)\b|"
+            r"(\.os|\.io|'os'|'io'|\"os\"|\"io\"|chr\(|chr\)|chr |\(chr)"
+        )
+        return bool(dangerous_pattern.search(query))
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
