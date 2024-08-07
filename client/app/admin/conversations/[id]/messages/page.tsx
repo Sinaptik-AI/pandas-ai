@@ -266,3 +266,5 @@ const ChatDetails = () => {
   );
 };
 export default ChatDetails;
+export const dynamic='force-dynamic';
+

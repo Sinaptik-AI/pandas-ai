@@ -156,3 +156,5 @@ const GeneralPage = () => {
 };
 
 export default GeneralPage;
+export const dynamic='force-dynamic';
+

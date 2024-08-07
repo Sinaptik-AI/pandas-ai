@@ -48,3 +48,5 @@ export default async function WorkSpaces() {
     </div>
   );
 }
+export const dynamic='force-dynamic';
+
