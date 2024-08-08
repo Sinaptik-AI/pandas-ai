@@ -98,6 +98,19 @@ class BaseAgent:
             self._vectorstore = BambooVectorStore(logger=self.logger)
             self.context.vectorstore = self._vectorstore
 
+        elif self._vectorstore == "lancedb" and os.environ.get("PANDASAI_API_KEY"):
+            try:
+                from pandasai.vectorstores.lancedb_vectorstore import LanceDBVectorStore
+            except ImportError as e:
+                raise ImportError(
+                    "Could not import LanceDBVectorStore. Please install the required dependencies."
+                ) from e
+
+            self._vectorstore = LanceDBVectorStore(
+                logger=self.logger, uri="/tmp/lancedb"
+            )
+            self.context.vectorstore = self._vectorstore
+
         self._callbacks = Callbacks(self)
 
         self.configure()

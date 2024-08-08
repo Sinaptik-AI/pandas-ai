@@ -97,18 +97,21 @@ Also in this case, your training data is persisted, so you only need to train th
 
 If you want to train the model with a local vector store, you can use the local `ChromaDB`, `Qdrant` or `Pinecone` vector stores. Here's how to do it:
 An enterprise license is required for using the vector stores locally, ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
-If you plan to use it in production, [contact us](https://tally.so/r/wzZNWg).
+If you plan to use it in production, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
 ```python
 from pandasai import Agent
 from pandasai.ee.vectorstores import ChromaDB
 from pandasai.ee.vectorstores import Qdrant
 from pandasai.ee.vectorstores import Pinecone
+from pandasai.ee.vector_stores import LanceDB
 
 # Instantiate the vector store
 vector_store = ChromaDB()
 # or with Qdrant
 # vector_store = Qdrant()
+# or with LanceDB
+vector_store = LanceDB()
 # or with Pinecone
 # vector_store = Pinecone(
 #     api_key="*****",
