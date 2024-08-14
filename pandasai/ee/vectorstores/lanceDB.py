@@ -3,12 +3,62 @@ from typing import Callable, Iterable, List, Optional, Union
 
 import lancedb
 import pandas as pd
-from lancedb.embeddings import get_registry
+from lancedb.embeddings import EmbeddingFunctionRegistry, get_registry
+from lancedb.embeddings.base import TextEmbeddingFunction
+from lancedb.embeddings.registry import register
 from lancedb.pydantic import LanceModel, Vector
 from sentence_transformers import SentenceTransformer
 
 from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
+
+
+@register("embedding_function")
+class EmbeddingFunction(TextEmbeddingFunction):
+    def __init__(self, model, **kwargs):
+        super().__init__(**kwargs)
+        self._ndims = None
+        self._model = model
+
+    def generate_embeddings(self, texts):
+        return self._model(list(texts))
+
+    def ndims(self):
+        if self._ndims is None:
+            self._ndims = len(self.generate_embeddings(texts=["foo"])[0])
+        return self._ndims
+
+
+class Schema:
+    def __init__(self, custom_embedding_function, model=None):
+        if custom_embedding_function:
+            self._embed = (
+                EmbeddingFunctionRegistry.get_instance(model)
+                .get("embedding_function")
+                .create()
+            )
+        else:
+            self._embed = (
+                get_registry()
+                .get("sentence-transformers")
+                .create(name="BAAI/bge-small-en-v1.5", device="cpu")
+            )
+
+    def _create_schema(self):
+        class QA_pairs(LanceModel):
+            id: str
+            qa: str = self._embed.SourceField()
+            metadata: str
+            vector: Vector(self._embed.ndims()) = self._embed.VectorField()
+
+        # schema for docs
+        class Docs(LanceModel):
+            id: str
+            doc: str = self._embed.SourceField()
+            metadata: str
+            vector: Vector(self._embed.ndims()) = self._embed.VectorField()
+
+        return QA_pairs, Docs
 
 
 class LanceDB(VectorStore):
@@ -34,48 +84,15 @@ class LanceDB(VectorStore):
 
         # Initialize LanceDB database
         self._db = lancedb.connect(self._persist_directory)
+
         # Embedding function
         self._embedding_function = embedding_function
-
         if self._embedding_function is None:
-            embedding_function = (
-                get_registry()
-                .get("sentence-transformers")
-                .create(name="BAAI/bge-small-en-v1.5", device="cpu")
-            )
-
-            # schema for qa-pairs
-            class QA_pairs(LanceModel):
-                id: str
-                qa: str = embedding_function.SourceField()
-                metadata: str
-                vector: Vector(
-                    embedding_function.ndims()
-                ) = embedding_function.VectorField()
-
-            # schema for docs
-            class Docs(LanceModel):
-                id: str
-                doc: str = embedding_function.SourceField()
-                metadata: str
-                vector: Vector(
-                    embedding_function.ndims()
-                ) = embedding_function.VectorField()
-
+            QA_pairs, Docs = Schema(custom_embedding_function=False)._create_schema()
         else:
-            # schema for qa-pairs
-            class QA_pairs(LanceModel):
-                id: str
-                qa: str
-                metadata: str
-                vector: Vector
-
-            # schema for docs
-            class Docs(LanceModel):
-                id: str
-                doc: str
-                metadata: str
-                vector: Vector
+            QA_pairs, Docs = Schema(
+                custom_embedding_function=True, model=self._embedding_function
+            )._create_schema()
 
         self._logger.log(f"Persisting Agent Training data in {self._persist_directory}")
 
