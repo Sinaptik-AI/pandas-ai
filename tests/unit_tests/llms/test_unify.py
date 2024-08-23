@@ -44,7 +44,7 @@ def test_unify_initialization_without_api_key():
         Unify(model="test_model", provider="test_provider")
 
 def test_unify_initialization_with_additional_params(mock_unify_client, mock_env_variables):
-    unify = Unify(model="test_model", provider="test_provider", max_tokens=100, temperature=0.7)
+    Unify(model="test_model", provider="test_provider", max_tokens=100, temperature=0.7)
     mock_unify_client.assert_called_once_with(
         api_key="test_api_key",
         endpoint=None,

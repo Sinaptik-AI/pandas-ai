@@ -9,9 +9,9 @@ Example:
 """
 
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
-from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
+from ..exceptions import APIKeyNotFoundError
 from ..helpers import load_dotenv
 from .base import LLM
 
