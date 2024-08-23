@@ -1401,6 +1401,7 @@ statsmodels = ["statsmodels (>=0.14.0,<0.15.0)"]
 streamlit = ["streamlit (>=1.23.1,<2.0.0)"]
 text-generation = ["text-generation (>=0.6.0)"]
 yfinance = ["yfinance (>=0.2.28,<0.3.0)"]
+unify = ["unifyai"]
 
 [[package]]
 name = "parse"

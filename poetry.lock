@@ -7386,6 +7386,7 @@ statsmodels = ["statsmodels"]
 streamlit = ["streamlit"]
 text-generation = ["text-generation"]
 yfinance = ["yfinance"]
+unify = ["unifyai"]
 
 [metadata]
 lock-version = "2.0"
