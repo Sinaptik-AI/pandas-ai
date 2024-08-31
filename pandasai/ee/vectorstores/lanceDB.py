@@ -153,11 +153,8 @@ class LanceDB(VectorStore):
         else:
             data = {"id": ids, "qa": qa_str, "metadata": metadatas}
 
-        print("data: ", data)
         df = pd.DataFrame(data)
-        print("df: ", df)
         self._qa_table.add(df)
-        print("Len of table: ", self._qa_table.head())
 
         return ids
 
@@ -244,7 +241,6 @@ class LanceDB(VectorStore):
                 "qa": str(qa_str[i]),
                 "metadata": metadatas[i],
             }
-            print("updated values: ", updated_values, ids[i])
             self._qa_table.update(values=updated_values, where=f"id = '{ids[i]}'")
 
         return ids
@@ -409,6 +405,8 @@ class LanceDB(VectorStore):
         Returns:
             _type_: _description_
         """
+        if not documents:
+            return documents
         relevant_column = list(
             documents[0].keys() - {"id", "vector", "metadata", "_distance"}
         )
