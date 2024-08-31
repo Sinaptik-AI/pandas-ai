@@ -1,3 +1,5 @@
+import os
+import shutil
 import unittest
 from unittest.mock import MagicMock
 
@@ -12,11 +14,11 @@ class TestLanceDB(unittest.TestCase):
         self.vector_store._format_qa = MagicMock(
             side_effect=lambda q, c: f"Q: {q}\nA: {c}"
         )
-        # self.vector_store._embedding_function = MagicMock(
-        #     return_value=[[1.0, 2.0, 3.0]] * 2
-        # )
-        self.vector_store._qa_table
-        self.vector_store._docs_table
+
+    def tearDown(self) -> None:
+        path = "/tmp/lancedb"
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
     def test_constructor_default_parameters(self):
         self.assertEqual(self.vector_store._max_samples, 1)
@@ -46,9 +48,9 @@ class TestLanceDB(unittest.TestCase):
         inserted_ids = self.vector_store.add_question_answer(
             ["What is LanceDB?", "How does it work?"],
             ["print('Hello')", "for i in range(10): print(i)"],
-            ["test_id_1", "test_id_2"],
+            ["test_id_11", "test_id_12"],
         )
-        assert inserted_ids == ["test_id_1", "test_id_2"]
+        assert inserted_ids == ["test_id_11", "test_id_12"]
 
     def test_add_question_answer_different_dimensions(self):
         with self.assertRaises(ValueError):
@@ -92,17 +94,22 @@ class TestLanceDB(unittest.TestCase):
         self.assertEqual(deleted_docs, True)
 
     def test_get_relevant_question_answers(self):
+        self.vector_store.add_question_answer(
+            ["What is LanceDB?", "How does it work?"],
+            ["print('Hello')", "for i in range(10): print(i)"],
+            ["test_id_11", "test_id_12"],
+        )
         result = self.vector_store.get_relevant_question_answers(
             "What is LanceDB?", k=2
         )
-        print("result: ", result)
+
         self.assertEqual(
             result,
             {
                 "documents": [
                     [
                         "Q: What is LanceDB?\nA: print('Hello')",
-                        "Q: What is LanceDB?\nA: print('Hello')",
+                        "Q: How does it work?\nA: for i in range(10): print(i)",
                     ]
                 ],
                 "metadatas": [["None", "None"]],
@@ -110,26 +117,45 @@ class TestLanceDB(unittest.TestCase):
         )
 
     def test_get_relevant_question_answers_by_ids(self):
-        result = self.vector_store.get_relevant_question_answers_by_id(["test_id_1"])
+        self.vector_store.add_question_answer(
+            ["What is LanceDB?", "How does it work?"],
+            ["print('Hello')", "for i in range(10): print(i)"],
+            ["test_id_11", "test_id_12"],
+        )
+        result = self.vector_store.get_relevant_question_answers_by_id(["test_id_11"])
+        print(result)
         self.assertEqual(
             result,
-            [[{"metadata": "None", "qa": "Q: What is LanceDB?\nA: print('Hello')"}]],
+            [
+                [
+                    {
+                        "metadata": "None",
+                        "qa": "Q: What is LanceDB?\nA: print('Hello')",
+                    }
+                ]
+            ],
         )
 
     def test_get_relevant_docs(self):
+        self.vector_store.add_docs(
+            ["Document 1", "Document 2", "Document 3"],
+            ["test_id_1", "test_id_2", "test_id_3"],
+        )
         result = self.vector_store.get_relevant_docs("What is LanceDB?", k=3)
-        print("result:", result)
         self.assertEqual(
             result,
             {
-                "documents": [["Document 1", "Document 1", "Document 2"]],
+                "documents": [["Document 1", "Document 2", "Document 3"]],
                 "metadatas": [["None", "None", "None"]],
             },
         )
 
     def test_get_relevant_docs_by_ids(self):
+        self.vector_store.add_docs(
+            ["Document 1", "Document 2", "Document 3"],
+            ["test_id_1", "test_id_2", "test_id_3"],
+        )
         result = self.vector_store.get_relevant_docs_by_id(["test_id_1"])
-        print("Result docs ids: ", result)
         self.assertEqual(result, [[{"doc": "Document 1", "metadata": "None"}]])
 
 
