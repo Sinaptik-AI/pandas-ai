@@ -272,6 +272,14 @@ class Qdrant(VectorStore):
         """
         Returns relevant question answers based on search
         """
+        if not self._client.collection_exists(self._qa_collection_name):
+            return {
+                "documents": [],
+                "distances": [],
+                "metadatas": [],
+                "ids": [],
+            }
+
         response = self._client.query(
             self._qa_collection_name,
             query_text=question,
@@ -285,13 +293,19 @@ class Qdrant(VectorStore):
         """
         Returns relevant documents based on semantic search
         """
+        if not self._client.collection_exists(self._docs_collection_name):
+            return {
+                "documents": [],
+                "distances": [],
+                "metadatas": [],
+                "ids": [],
+            }
         response = self._client.query(
             self._docs_collection_name,
             query_text=question,
             limit=k,
             score_threshold=self._similarity_threshold,
         )
-
         return self._convert_query_response(response)
 
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
@@ -356,9 +370,11 @@ class Qdrant(VectorStore):
         This allows us to overwrite the same point with the original ID.
         """
         return [
-            id
-            if self._is_valid_uuid(id)
-            else str(uuid.uuid5(uuid.UUID(UUID_NAMESPACE), id))
+            (
+                id
+                if self._is_valid_uuid(id)
+                else str(uuid.uuid5(uuid.UUID(UUID_NAMESPACE), id))
+            )
             for id in ids
         ]
 
