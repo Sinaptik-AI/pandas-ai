@@ -135,3 +135,5 @@ const AddDataSet = () => {
   );
 };
 export default AddDataSet;
+export const dynamic='force-dynamic';
+
