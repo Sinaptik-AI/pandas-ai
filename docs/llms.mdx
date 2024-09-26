@@ -311,6 +311,36 @@ df = SmartDataframe("data.csv", config={"llm": llm})
 For more information on the [watsonx.ai SDK](https://ibm.github.io/watsonx-ai-python-sdk/index.html) you can read
 more [here](https://ibm.github.io/watsonx-ai-python-sdk/fm_model.html).
 
+## Unify Models
+
+In order to use LLM Models via Unify, you need to have a [Unify API key](https://console.unify.ai/profile)
+
+With Unify you can use all LLMs from all providers by simply changing model name. No need to manage several API keys or handle different input-output formats. Unify handles all of that for you!
+
+In order to use Unify models, you need to install the `unifyai` package.
+
+```bash
+pip install pandasai[unifyai]
+```
+
+Then you can use the Unify models as follows
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm import Unify
+
+llm = Unify(
+    api_token="",
+    model="gpt-4o", # or llama-3-8b-chat
+    provider="openai" # or together-ai
+)
+df = SmartDataframe("data.csv", config={"llm": llm})
+```  
+### More information
+
+For more information about Unify AI, please refer to
+the [Unify documentation](https://docs.unify.ai/basics/welcome).
+
 ## Local models
 
 PandasAI supports local models, though smaller models typically don't perform as well. To use local models, first host
