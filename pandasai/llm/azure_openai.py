@@ -176,6 +176,7 @@ class AzureOpenAI(BaseOpenAI):
             "azure_deployment": self.deployment_name,
             "azure_ad_token": self.azure_ad_token,
             "azure_ad_token_provider": self.azure_ad_token_provider,
+            "api_key": self.api_token,
         }
         return {**client_params, **super()._client_params}
 
