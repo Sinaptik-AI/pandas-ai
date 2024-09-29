@@ -2,6 +2,8 @@ import React from "react";
 import { GetLogs } from "@/services/logs";
 import LogsCard from "./logs-card";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Logs() {
   const data = await GetLogs();
 
