@@ -4,6 +4,8 @@ import { GetAllDataSets } from "@/services/datasets";
 import AddSpaceCard from "./AddSpaceCard";
 import { Button } from "@/components/ui/button";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AddSpaces() {
   const data = await GetAllDataSets();
 

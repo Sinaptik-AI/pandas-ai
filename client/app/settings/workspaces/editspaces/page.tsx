@@ -4,6 +4,8 @@ import { GetAllDataSets } from "@/services/datasets";
 import EditSpaceCard from "./EditSpaceCard";
 import { GetWorkspaceDetails } from "@/services/spaces";
 
+export const dynamic = 'force-dynamic';
+
 export default async function EditWorkSpaces({ searchParams }) {
   const data = await GetAllDataSets();
   const workspaceDetails = await GetWorkspaceDetails(searchParams.id);
