@@ -160,7 +160,7 @@ class DataframeSerializer:
 
     def convert_df_to_yml(self, df: pd.DataFrame, extras: dict) -> str:
         json_df = self.convert_df_to_json(df, extras)
-        yml_str = yaml.dump(json_df, sort_keys=False)
+        yml_str = yaml.dump(json_df, sort_keys=False, allow_unicode=True)
         if "is_direct_sql" in extras and extras["is_direct_sql"]:
             return f"<table>\n{yml_str}\n</table>\n"
         return yml_str
