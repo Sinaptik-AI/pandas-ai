@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai"
 version = "2.2.15"
-description = "Chat with your database (SQL, CSV, pandas, polars, mongodb, noSQL, etc). PandasAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
+description = "Chat with your database (SQL, CSV, pandas, mongodb, noSQL, etc). PandasAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"
@@ -26,7 +26,6 @@ beautifulsoup4 = {version="^4.12.2", optional = true}
 google-generativeai = {version = "^0.3.2", optional = true}
 google-cloud-aiplatform = {version = "^1.26.1", optional = true}
 langchain = {version = "^0.1.0", optional = true}
-polars = {version = "^0.18.15", optional = true}
 statsmodels = {version = "^0.14.0", optional = true}
 scikit-learn = {version = "^1.2.2", optional = true}
 seaborn = {version = "^0.12.2", optional = true}
@@ -77,7 +76,6 @@ connectors = [ "pymysql", "psycopg2-binary", "sqlalchemy-cockroachdb", "sqlalche
 google-ai = ["google-generativeai", "google-cloud-aiplatform"]
 google-sheets = ["beautifulsoup4"]
 excel = ["openpyxl"]
-polars = ["polars"]
 langchain = ["langchain", "langchain_openai", "langchain_community"]
 numpy = ["numpy"]
 ggplot = ["ggplot"]

@@ -53,8 +53,7 @@ class BaseAgent:
     ):
         """
         Args:
-            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas or Modin dataframe
-            Polars or Database connectors
+            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas or Modin dataframe or Database connectors
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.
         """
@@ -186,22 +185,9 @@ class BaseAgent:
             ):
                 connectors.append(df.dataframe)
             else:
-                try:
-                    import polars as pl
-
-                    if isinstance(df, pl.DataFrame):
-                        from ..connectors.polars import PolarsConnector
-
-                        connectors.append(PolarsConnector({"original_df": df}))
-
-                    else:
-                        raise ValueError(
-                            "Invalid input data. We cannot convert it to a dataframe."
-                        )
-                except ImportError as e:
-                    raise ValueError(
-                        "Invalid input data. We cannot convert it to a dataframe."
-                    ) from e
+                raise ValueError(
+                    "Invalid input data. We cannot convert it to a dataframe."
+                )
         return connectors
 
     def add_skills(self, *skills: Skill):

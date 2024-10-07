@@ -91,7 +91,7 @@ class DfValidator:
     def _df_to_list_of_dict(self, df: DataFrameType, dataframe_type: str) -> List[Dict]:
         """
         Create list of dict of dataframe rows on basis of dataframe type
-        Supports only polars and pandas dataframe
+        Supports only pandas dataframe
 
         Args:
             df: dataframe to be converted
@@ -102,8 +102,6 @@ class DfValidator:
         """
         if dataframe_type in {"pandas", "modin"}:
             return df.to_dict(orient="records")
-        elif dataframe_type == "polars":
-            return df.to_dicts()
         else:
             return []
 

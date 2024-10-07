@@ -1,5 +1,5 @@
 """
-A smart dataframe class is a wrapper around the pandas/polars dataframe that allows you
+A smart dataframe class is a wrapper around the pandas dataframe that allows you
 to query it using natural language. It uses the LLMs to generate Python code from
 natural language and then executes it on the dataframe.
 
@@ -60,7 +60,7 @@ class SmartDatalake:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/polars dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text

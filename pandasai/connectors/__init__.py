@@ -7,7 +7,6 @@ The connectors package contains all the connectors that are used by the applicat
 from .airtable import AirtableConnector
 from .base import BaseConnector
 from .pandas import PandasConnector
-from .polars import PolarsConnector
 from .sql import (
     MySQLConnector,
     OracleConnector,
@@ -26,6 +25,5 @@ __all__ = [
     "AirtableConnector",
     "SqliteConnector",
     "PandasConnector",
-    "PolarsConnector",
     "OracleConnector",
 ]

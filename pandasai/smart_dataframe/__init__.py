@@ -1,5 +1,5 @@
 """
-A smart dataframe class is a wrapper around the pandas/polars dataframe that allows you
+A smart dataframe class is a wrapper around the pandas dataframe that allows you
 to query it using natural language. It uses the LLMs to generate Python code from
 natural language and then executes it on the dataframe.
 
@@ -79,26 +79,7 @@ class SmartDataframe:
                 custom_head=custom_head,
             )
         else:
-            try:
-                import polars as pl
-
-                if isinstance(df, pl.DataFrame):
-                    from ..connectors.polars import PolarsConnector
-
-                    df = PolarsConnector(
-                        {"original_df": df},
-                        name=name,
-                        description=description,
-                        custom_head=custom_head,
-                    )
-                else:
-                    raise ValueError(
-                        "Invalid input data. We cannot convert it to a dataframe."
-                    )
-            except ImportError as e:
-                raise ValueError(
-                    "Invalid input data. We cannot convert it to a dataframe."
-                ) from e
+            raise ValueError("Invalid input data. We cannot convert it to a dataframe.")
         return df
 
     def add_skills(self, *skills: Skill):
@@ -119,7 +100,7 @@ class SmartDataframe:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/modin/polars dataframe as a response object
+                        pandas/modin dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -146,7 +127,7 @@ class SmartDataframe:
         Get the head of the dataframe as a dataframe.
 
         Returns:
-            DataFrameType: Pandas, Modin or Polars dataframe
+            DataFrameType: Pandas or Modin dataframe
         """
         return self.dataframe.get_head()
 

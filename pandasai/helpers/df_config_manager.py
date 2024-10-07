@@ -81,10 +81,6 @@ class DfConfigManager:
         if dataframe_type in ("pandas", "modin"):
             file_path = self._create_save_path()
             self._sdf.dataframe.to_parquet(file_path)
-        elif dataframe_type == "polars":
-            file_path = self._create_save_path()
-            with open(file_path, "w") as f:
-                self._sdf.dataframe.write_csv(f)
         else:
             raise ValueError("Unknown dataframe type")
 
