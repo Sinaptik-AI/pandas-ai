@@ -28,12 +28,6 @@ agent = Agent([employees_df, salaries_df], memory_size=10)
 response = agent.chat("Who gets paid the most?")
 print(response)
 
-
-# Get Clarification Questions
-questions = agent.clarification_questions("Who gets paid the most?")
-for question in questions:
-    print(question)
-
 # Explain how the chat response is generated
 response = agent.explain()
 print(response)

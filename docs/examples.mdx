@@ -280,8 +280,6 @@ With the chat agent, you can engage in dynamic conversations where the agent ret
 
 - **Context Retention:** The agent remembers the conversation history, allowing for seamless, context-aware interactions.
 
-- **Clarification Questions:** You can use the `clarification_questions` method to request clarification on any aspect of the conversation. This helps ensure you fully understand the information provided.
-
 - **Explanation:** The `explain` method is available to obtain detailed explanations of how the agent arrived at a particular solution or response. It offers transparency and insights into the agent's decision-making process.
 
 Feel free to initiate conversations, seek clarifications, and explore explanations to enhance your interactions with the chat agent!
@@ -317,12 +315,6 @@ query = "Who gets paid the most?"
 # Chat with the agent
 response = agent.chat(query)
 print(response)
-
-# Get Clarification Questions
-questions = agent.clarification_questions(query)
-
-for question in questions:
-    print(question)
 
 # Explain how the chat response is generated
 response = agent.explain()

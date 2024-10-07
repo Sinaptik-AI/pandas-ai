@@ -6,7 +6,6 @@ import pytest
 
 from pandasai.agent import Agent
 from pandasai.llm.fake import FakeLLM
-from pandasai.prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from pandasai.prompts.explain_prompt import ExplainPrompt
 from pandasai.smart_datalake import SmartDatalake
 
@@ -104,53 +103,6 @@ class TestAgent:
         memory = agent._lake._memory.all()
         assert len(memory) == 0
 
-    def test_clarification_questions(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.llm.call = Mock()
-        clarification_response = (
-            '["What is happiest index for you?", "What is unit of measure for gdp?"]'
-        )
-        agent._lake.llm.call.return_value = clarification_response
-
-        questions = agent.clarification_questions("What is the happiest country?")
-        assert len(questions) == 2
-        assert questions[0] == "What is happiest index for you?"
-        assert questions[1] == "What is unit of measure for gdp?"
-
-    def test_clarification_questions_failure(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.llm.call = Mock()
-
-        agent._lake.llm.call.return_value = Exception("This is a mock exception")
-
-        with pytest.raises(Exception):
-            agent.clarification_questions("What is the happiest country?")
-
-    def test_clarification_questions_fail_non_json(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.llm.call = Mock()
-
-        agent._lake.llm.call.return_value = "This is not json response"
-
-        with pytest.raises(Exception):
-            agent.clarification_questions("What is the happiest country?")
-
-    def test_clarification_questions_max_3(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.llm.call = Mock()
-        clarification_response = (
-            '["What is happiest index for you", '
-            '"What is unit of measure for gdp", '
-            '"How many countries are involved in the survey", '
-            '"How do you want this data to be represented"]'
-        )
-        agent._lake.llm.call.return_value = clarification_response
-
-        questions = agent.clarification_questions("What is the happiest country?")
-
-        assert isinstance(questions, list)
-        assert len(questions) == 3
-
     def test_explain(self, agent: Agent):
         agent._lake.llm.call = Mock()
         clarification_response = """
@@ -242,33 +194,6 @@ What is expected Salary Increase?
             agent._call_llm_with_prompt("Test Prompt")
 
         assert agent._lake.llm.call.call_count == 5
-
-    def test_clarification_prompt_validate_output_false_case(self, agent: Agent):
-        # Test whether the output is json or not
-        agent._lake.llm.call = Mock()
-        agent._lake.llm.call.return_value = "This is not json"
-
-        prompt = ClarificationQuestionPrompt(
-            dataframes=agent._lake.dfs,
-            conversation="test conversation",
-            query="test query",
-        )
-        with pytest.raises(Exception):
-            agent._call_llm_with_prompt(prompt)
-
-    def test_clarification_prompt_validate_output_true_case(self, agent: Agent):
-        # Test whether the output is json or not
-        agent._lake.llm.call = Mock()
-        agent._lake.llm.call.return_value = '["This is test question"]'
-
-        prompt = ClarificationQuestionPrompt(
-            dataframes=agent._lake.dfs,
-            conversation="test conversation",
-            query="test query",
-        )
-        result = agent._call_llm_with_prompt(prompt)
-        # Didn't raise any exception
-        assert isinstance(result, str)
 
     def test_rephrase(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)

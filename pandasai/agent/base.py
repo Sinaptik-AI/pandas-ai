@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import uuid
@@ -29,7 +28,6 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
-from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
 from ..prompts.explain_prompt import ExplainPrompt
 from ..prompts.rephase_query_prompt import RephraseQueryPrompt
 from ..schemas.df_config import Config
@@ -397,24 +395,6 @@ class BaseAgent:
 
         if self.logger:
             self.logger.log(f"Prompt ID: {self.last_prompt_id}")
-
-    def clarification_questions(self, query: str) -> List[str]:
-        """
-        Generate clarification questions based on the data
-        """
-        prompt = ClarificationQuestionPrompt(
-            context=self.context,
-            query=query,
-        )
-
-        result = self.call_llm_with_prompt(prompt)
-        self.logger.log(
-            f"""Clarification Questions:  {result}
-            """
-        )
-        result = result.replace("```json", "").replace("```", "")
-        questions: list[str] = json.loads(result)
-        return questions[:3]
 
     def start_new_conversation(self):
         """
