@@ -76,11 +76,10 @@ Try out the PandasAI library yourself in your browser:
 
 ```python
 import os
-import pandas as pd
-from pandasai import Agent
+import pandasai as pai
 
 # Sample DataFrame
-sales_by_country = pd.DataFrame({
+df = pai.DataFrame({
     "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
     "revenue": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
 })
@@ -89,8 +88,7 @@ sales_by_country = pd.DataFrame({
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-agent = Agent(sales_by_country)
-agent.chat('Which are the top 5 countries by sales?')
+df.chat('Which are the top 5 countries by sales?')
 ```
 
 ```
@@ -102,7 +100,7 @@ China, United States, Japan, Germany, Australia
 Or you can ask more complex questions:
 
 ```python
-agent.chat(
+df.chat(
     "What is the total sales for the top 3 countries by sales?"
 )
 ```
@@ -116,7 +114,7 @@ The total sales for the top 3 countries by sales is 16500.
 You can also ask PandasAI to generate charts for you:
 
 ```python
-agent.chat(
+df.chat(
     "Plot the histogram of countries showing for each one the gd. Use different colors for each bar",
 )
 ```

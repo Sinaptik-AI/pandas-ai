@@ -10,6 +10,7 @@ from .agent import Agent
 from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .skills import skill
+from .dataframe.base import DataFrame
 
 
 def clear_cache(filename: str = None):
@@ -27,4 +28,5 @@ __all__ = [
     "pandas",
     "SmartDataframe",
     "SmartDatalake",
+    "DataFrame",
 ]
