@@ -264,9 +264,7 @@ class SmartDataframe:
         return self.dataframe.equals(other.dataframe)
 
     def __getattr__(self, name):
-        if name in self._core.__dir__():
-            return getattr(self._core, name)
-        elif name in self.dataframe.__dir__():
+        if name in self.dataframe.__dir__():
             return getattr(self.dataframe, name)
         else:
             return self.__getattribute__(name)
