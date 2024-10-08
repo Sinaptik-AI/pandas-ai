@@ -13,8 +13,7 @@ UUID_NAMESPACE = "f55f1395-e097-4f35-8c20-90fdea7baa14"
 ID = "id"
 EMBEDDING = "vector"
 DOCUMENT = "document"
-# URI = "milvus_demo.db"
-URI = "http://10.100.30.11:19530"
+URI = "milvus_demo.db"
 
 
 class Milvus(VectorStore):
@@ -26,6 +25,8 @@ class Milvus(VectorStore):
         default=384, description="default embedding model dimension"
     )
 
+    # Initializes the Milvus object with collection names, a URI for the Milvus database, 
+    # a logger, and the embedding function.
     def __init__(
         self,
         collection_name: Optional[str] = DEFAULT_COLLECTION_NAME,
@@ -41,6 +42,10 @@ class Milvus(VectorStore):
         self.emb_function = model.DefaultEmbeddingFunction()
         self.client = MilvusClient(uri=self.uri)
 
+    # Adds question-answer pairs to the Milvus collection.
+    # It takes queries (questions), codes (answers), optional IDs, and metadata.
+    # If queries and codes have mismatched lengths, it raises a ValueError.
+    # The embeddings are calculated, and data is inserted into the QA collection.
     def add_question_answer(
         self,
         queries: Iterable[str],
@@ -85,6 +90,8 @@ class Milvus(VectorStore):
             data=data,
         )
 
+    # Adds documents to the Milvus collection.
+    # It accepts documents, optional IDs, and metadata, and stores them in the document collection.
     def add_docs(
         self,
         docs: Iterable[str],
@@ -117,6 +124,8 @@ class Milvus(VectorStore):
             data=data,
         )
 
+    # Retrieves the most relevant question-answer pairs from the QA collection
+    # based on a given query and returns the top-k results.
     def get_relevant_question_answers(self, question: str, k: int = 1) -> List[Dict]:
         if not self.client.has_collection(collection_name=self.qa_collection_name):
             return {
@@ -137,6 +146,8 @@ class Milvus(VectorStore):
 
         return self._convert_search_response(response)
 
+    # Retrieves the most relevant documents from the document collection
+    # based on a given query and returns the top-k results.
     def get_relevant_docs(self, question: str, k: int = 1) -> List[Dict]:
         if not self.client.has_collection(collection_name=self.docs_collection_name):
             return {
@@ -155,6 +166,8 @@ class Milvus(VectorStore):
         #### TODO: Need to address the logic of threshold explicitly
         return self._convert_search_response(response)
 
+    # Converts the search response returned by Milvus into a list of dictionaries
+    # with document content, ids, metadata, and distances.
     def _convert_search_response(self, response):
         document = []
         ids = []
@@ -175,6 +188,8 @@ class Milvus(VectorStore):
             "ids": ids,
         }
 
+    # Creates the QA collection schema and defines the fields to store question-answer pairs,
+    # including ID, embeddings, and document content.
     def _initiate_qa_collection(self):
         schema = MilvusClient.create_schema(
             auto_id=False,
@@ -204,6 +219,8 @@ class Milvus(VectorStore):
             index_params=index_params,
         )
 
+    # Creates the document collection schema and defines the fields to store documents,
+    # including ID, embeddings, and document content.
     def _initiate_docs_collection(self):
         schema = MilvusClient.create_schema(
             auto_id=False,
@@ -233,12 +250,17 @@ class Milvus(VectorStore):
             index_params=index_params,
         )
 
+    # Returns the list of relevant document contents from the document collection
+    # based on a given query and the top-k results.
     def get_relevant_docs_documents(self, question: str, k: int = 1) -> List[str]:
         return self.get_relevant_docs(question, k)["documents"]
 
+    # Returns the list of relevant question-answer document contents from the QA collection
+    # based on a given query and the top-k results.
     def get_relevant_qa_documents(self, question: str, k: int = 1) -> List[str]:
         return self.get_relevant_question_answers(question, k)["documents"]
 
+    # Retrieves question-answer documents by their IDs and returns the corresponding documents.
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[Dict]:
         milvus_ids = self._convert_ids(ids)
         response = self.client.query(
@@ -249,6 +271,7 @@ class Milvus(VectorStore):
 
         return self._convert_search_response(response)["documents"]
 
+    # Deletes documents from the document collection based on a list of document IDs.
     def delete_docs(self, ids: List[str] = None) -> bool:
         milvus_ids = self._convert_ids(ids)
         id_filter = str(milvus_ids)
@@ -258,6 +281,7 @@ class Milvus(VectorStore):
         )
         return True
 
+    # Deletes question-answer pairs from the QA collection based on a list of question-answer IDs.
     def delete_question_and_answers(self, ids: List[str] = None) -> bool:
         milvus_ids = self._convert_ids(ids)
         id_filter = str(milvus_ids)
@@ -267,6 +291,8 @@ class Milvus(VectorStore):
         )
         return True
 
+    # Updates the existing question-answer pairs in the QA collection based on given IDs.
+    # This replaces the question-answer text and embeddings, and allows optional metadata.
     def update_question_answer(
         self,
         ids: Iterable[str],
@@ -298,6 +324,8 @@ class Milvus(VectorStore):
             data=data,
         )
 
+    # Updates the existing documents in the document collection based on given IDs.
+    # This replaces the document text and embeddings, and allows optional metadata.
     def update_docs(
         self, ids: Iterable[str], docs: Iterable[str], metadatas: List[Dict] = None
     ) -> List[str]:
@@ -319,6 +347,8 @@ class Milvus(VectorStore):
 
         return self.client.insert(collection_name=self.docs_collection_name, data=data)
 
+    # Validates that the given IDs exist in the collection.
+    # Returns True if all IDs are present, otherwise logs the missing IDs and returns False.
     def _validate_update_ids(self, collection_name: str, ids: List[str]) -> bool:
         response = self.client.query(collection_name=collection_name, ids=ids)
         retrieved_ids = [p["id"] for p in response[0]]
@@ -330,10 +360,13 @@ class Milvus(VectorStore):
             return False
         return True
 
+    # Deletes the QA and document collections for a given collection name.
     def delete_collection(self, collection_name: str) -> Optional[bool]:
         self.client.drop_collection(collection_name=f"{collection_name}-qa")
         self.client.drop_collection(collection_name=f"{collection_name}-docs")
 
+    # Converts given IDs to UUIDs using a namespace.
+    # If the ID is already a valid UUID, it returns the ID unchanged.
     def _convert_ids(self, ids: Iterable[str]) -> List[str]:
         return [
             id
@@ -342,6 +375,7 @@ class Milvus(VectorStore):
             for id in ids
         ]
 
+    # Checks if a given ID is a valid UUID.
     def _is_valid_uuid(self, id: str):
         try:
             uuid.UUID(id)
@@ -349,5 +383,6 @@ class Milvus(VectorStore):
         except ValueError:
             return False
 
+    # Generates a list of random UUIDs.
     def generate_random_uuids(self, n):
         return [str(uuid.uuid4()) for _ in range(n)]
