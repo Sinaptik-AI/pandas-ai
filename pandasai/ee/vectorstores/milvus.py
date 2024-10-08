@@ -1,12 +1,11 @@
-from typing import Any, Dict, Iterable, List, Optional
-import uuid
 import logging
+import uuid
+from typing import Any, Dict, Iterable, List, Optional
 
-from pymilvus import MilvusClient, DataType
-from pymilvus import model
 from pydantic.v1 import Field
-from pandasai.helpers.logger import Logger
+from pymilvus import DataType, MilvusClient, model
 
+from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
 
 DEFAULT_COLLECTION_NAME = "pandasai"

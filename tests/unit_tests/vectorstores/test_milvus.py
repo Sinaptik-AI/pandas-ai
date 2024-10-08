@@ -1,6 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
-from unittest.mock import ANY
+from unittest.mock import ANY, MagicMock, patch
 
 import numpy as np  # Assuming `encode_documents` returns `numpy` arrays
 
@@ -23,7 +22,7 @@ class TestMilvus(unittest.TestCase):
         ids = ["test id 1", "test id 2"]
         documents = [
             "Q: What is AGI?\n A: print('Hello')",
-            "Q: How does it work?\n A: for i in range(10): print(i)"
+            "Q: How does it work?\n A: for i in range(10): print(i)",
         ]
 
         # Mock the embedding function and ID conversion
@@ -37,11 +36,7 @@ class TestMilvus(unittest.TestCase):
 
         # Construct the expected data
         expected_data = [
-            {
-                'id': mock_ids[i],
-                'vector': ANY,
-                'document': documents[i]
-            }
+            {"id": mock_ids[i], "vector": ANY, "document": documents[i]}
             for i in range(len(documents))
         ]
 
@@ -127,7 +122,7 @@ class TestMilvus(unittest.TestCase):
         question = "What is AGI?"
         mock_vector = milvus.emb_function.encode_documents(question)
         milvus.emb_function.encode_documents = MagicMock(return_value=mock_vector)
-        
+
         milvus.get_relevant_question_answers(question, k=3)
         mock_client.return_value.search.assert_called_once_with(
             collection_name=milvus.qa_collection_name,

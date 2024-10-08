@@ -410,8 +410,8 @@ files = [
 jmespath = ">=0.7.1,<2.0.0"
 python-dateutil = ">=2.1,<3.0.0"
 urllib3 = [
-    {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""},
     {version = ">=1.25.4,<1.27", markers = "python_version < \"3.10\""},
+    {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""},
 ]
 
 [package.extras]
@@ -1072,15 +1072,15 @@ files = [
 alembic = ">=1.0.11,<2.0.0"
 lz4 = ">=4.0.2,<5.0.0"
 numpy = [
-    {version = ">=1.23.4", markers = "python_version >= \"3.11\""},
     {version = ">=1.16.6", markers = "python_version >= \"3.7\" and python_version < \"3.11\""},
+    {version = ">=1.23.4", markers = "python_version >= \"3.11\""},
 ]
 oauthlib = ">=3.1.0,<4.0.0"
 openpyxl = ">=3.0.10,<4.0.0"
 pandas = {version = ">=1.2.5,<3.0.0", markers = "python_version >= \"3.8\""}
 pyarrow = [
-    {version = ">=10.0.1", markers = "python_version >= \"3.11\""},
     {version = ">=6.0.0", markers = "python_version >= \"3.7\" and python_version < \"3.11\""},
+    {version = ">=10.0.1", markers = "python_version >= \"3.11\""},
 ]
 requests = ">=2.18.1,<3.0.0"
 sqlalchemy = ">=1.3.24,<2.0.0"
@@ -1328,8 +1328,8 @@ huggingface-hub = ">=0.20,<1.0"
 loguru = ">=0.7.2,<0.8.0"
 mmh3 = ">=4.0,<5.0"
 numpy = [
-    {version = ">=1.26,<2", markers = "python_version >= \"3.12\""},
     {version = ">=1.21,<2", markers = "python_version < \"3.12\""},
+    {version = ">=1.26,<2", markers = "python_version >= \"3.12\""},
 ]
 onnx = ">=1.15.0,<2.0.0"
 onnxruntime = ">=1.17.0,<2.0.0"
@@ -1735,12 +1735,12 @@ files = [
 google-auth = ">=2.14.1,<3.0.dev0"
 googleapis-common-protos = ">=1.56.2,<2.0.dev0"
 grpcio = [
-    {version = ">=1.49.1,<2.0dev", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
     {version = ">=1.33.2,<2.0dev", optional = true, markers = "python_version < \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.49.1,<2.0dev", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
 ]
 grpcio-status = [
-    {version = ">=1.49.1,<2.0.dev0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
     {version = ">=1.33.2,<2.0.dev0", optional = true, markers = "python_version < \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.49.1,<2.0.dev0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
 ]
 proto-plus = ">=1.22.3,<2.0.0dev"
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0.dev0"
@@ -3149,8 +3149,8 @@ files = [
 [package.dependencies]
 orjson = ">=3.9.14,<4.0.0"
 pydantic = [
-    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
     {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""},
+    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
 ]
 requests = ">=2,<3"
 
@@ -4838,8 +4838,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
+    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.1"
@@ -5001,8 +5001,8 @@ pinecone-plugin-interface = ">=0.0.7,<0.0.8"
 tqdm = ">=4.64.1"
 typing-extensions = ">=3.7.4"
 urllib3 = [
-    {version = ">=1.26.5", markers = "python_version >= \"3.12\" and python_version < \"4.0\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.8\" and python_version < \"3.12\""},
+    {version = ">=1.26.5", markers = "python_version >= \"3.12\" and python_version < \"4.0\""},
 ]
 
 [package.extras]
@@ -5494,8 +5494,8 @@ files = [
 annotated-types = ">=0.4.0"
 pydantic-core = "2.20.1"
 typing-extensions = [
-    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
     {version = ">=4.6.1", markers = "python_version < \"3.13\""},
+    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
 ]
 
 [package.extras]
@@ -6043,8 +6043,8 @@ grpcio = ">=1.41.0"
 grpcio-tools = ">=1.41.0"
 httpx = {version = ">=0.20.0", extras = ["http2"]}
 numpy = [
-    {version = ">=1.26", markers = "python_version >= \"3.12\""},
     {version = ">=1.21", markers = "python_version >= \"3.8\" and python_version < \"3.12\""},
+    {version = ">=1.26", markers = "python_version >= \"3.12\""},
 ]
 portalocker = ">=2.7.0,<3.0.0"
 pydantic = ">=1.10.8"
@@ -6106,8 +6106,8 @@ colorful = {version = "*", optional = true, markers = "extra == \"default\""}
 filelock = "*"
 frozenlist = "*"
 grpcio = [
-    {version = ">=1.42.0", optional = true, markers = "python_version >= \"3.10\" and extra == \"default\""},
     {version = ">=1.32.0", optional = true, markers = "python_version < \"3.10\" and extra == \"default\""},
+    {version = ">=1.42.0", optional = true, markers = "python_version >= \"3.10\" and extra == \"default\""},
 ]
 jsonschema = "*"
 memray = {version = "*", optional = true, markers = "sys_platform != \"win32\" and extra == \"default\""}
@@ -8578,4 +8578,4 @@ yfinance = ["yfinance"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<4.0"
-content-hash = "d21c51d44da069b6eca3acef9b565b552e37e8a784aad15515787a98b176a190"
+content-hash = "748812b6e4635f681051e932856e544ccb3a75ad77de888a5d73a0b5930fdd7f"
