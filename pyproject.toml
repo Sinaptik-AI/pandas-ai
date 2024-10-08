@@ -56,7 +56,6 @@ lancedb = {version = "^0.11.0", optional = true}
 sentence-transformers = {version = "^2.3.0", optional = true}
 sqlglot = {extras = ["rs"], version = "^25.0.3"}
 pymilvus = {version = "^2.4.6", optional = true}
-codespell = "^2.3.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -65,6 +64,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.2.2"
 ruff = "^0.1.0"
+codespell = "^2.2.0"
 pytest = "^7.3.1"
 pytest-mock = "^3.10.0"
 pytest-env = "^0.8.1"
