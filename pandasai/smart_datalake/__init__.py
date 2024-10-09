@@ -5,7 +5,7 @@ natural language and then executes it on the dataframe.
 
 Example:
     ```python
-    from pandasai.smart_dataframe import SmartDataframe
+    from pandasai.smart_datalake import SmartDatalake
     from pandasai.llm.openai import OpenAI
 
     df = pd.read_csv("examples/data/Loan payments data.csv")
@@ -35,11 +35,11 @@ class SmartDatalake:
         dfs: List[Union[DataFrameType, Any]],
         config: Optional[Union[Config, dict]] = None,
     ):
-        """
-        Args:
-            dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
-            config (Union[Config, dict], optional): Config to be used. Defaults to None.
-        """
+        print("\n" + "*" * 80)
+        print("\033[1;33mDEPRECATION WARNING:\033[0m")
+        print("SmartDatalake will be deprecated soon. Use pai.chat() instead.")
+        print("*" * 80 + "\n")
+
         self._agent = Agent(dfs, config=config)
 
     def add_skills(self, *skills: Skill):

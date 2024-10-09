@@ -50,14 +50,11 @@ class SmartDataframe:
         custom_head: pd.DataFrame = None,
         config: Config = None,
     ):
-        """
-        Args:
-            df: A supported dataframe type, or a pandasai Connector
-            name (str, optional): Name of the dataframe. Defaults to None.
-            description (str, optional): Description of the dataframe. Defaults to "".
-            custom_head (pd.DataFrame, optional): Sample head of the dataframe.
-            config (Config, optional): Config to be used. Defaults to None.
-        """
+        print("\n" + "*" * 80)
+        print("\033[1;33mDEPRECATION WARNING:\033[0m")
+        print("SmartDataframe will be deprecated soon. Use df.chat() instead.")
+        print("*" * 80 + "\n")
+
         self._original_import = df
 
         self._agent = Agent([df], config=config)
