@@ -19,3 +19,11 @@ os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 # Chat with the DataFrame
 answer = df.chat("Who has the highest salary?")
 print(f"Answer: {answer}")
+
+# Follow up question
+follow_up_answer = df.follow_up("What is their age?")
+print(f"Follow-up answer: {follow_up_answer}")
+
+# Another follow-up question
+another_follow_up = df.follow_up("How many people are younger than this person?")
+print(f"Another follow-up answer: {another_follow_up}")

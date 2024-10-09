@@ -227,7 +227,20 @@ class BaseAgent:
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
-        Simulate a chat interaction with the assistant on Dataframe.
+        Start a new chat interaction with the assistant on Dataframe.
+        """
+        self.start_new_conversation()
+        return self._process_query(query, output_type)
+
+    def follow_up(self, query: str, output_type: Optional[str] = None):
+        """
+        Continue the existing chat interaction with the assistant on Dataframe.
+        """
+        return self._process_query(query, output_type)
+
+    def _process_query(self, query: str, output_type: Optional[str] = None):
+        """
+        Process a query and return the result.
         """
         if not self.pipeline:
             return (
