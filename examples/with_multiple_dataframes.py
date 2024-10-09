@@ -2,11 +2,9 @@
 
 import os
 
-import pandas as pd
+import pandasai as pai
 
-from pandasai import Agent
-
-employees_df = pd.DataFrame(
+employees_df = pai.DataFrame(
     {
         "EmployeeID": [1, 2, 3, 4, 5],
         "Name": ["John", "Emma", "Liam", "Olivia", "William"],
@@ -14,7 +12,7 @@ employees_df = pd.DataFrame(
     }
 )
 
-salaries_df = pd.DataFrame(
+salaries_df = pai.DataFrame(
     {
         "EmployeeID": [1, 2, 3, 4, 5],
         "Salary": [5000, 6000, 4500, 7000, 5500],
@@ -25,7 +23,6 @@ salaries_df = pd.DataFrame(
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
 os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
 
-agent = Agent([employees_df, salaries_df])
-response = agent.chat("Plot salaries against name")
+response = pai.chat("Plot salaries against name", employees_df, salaries_df)
 print(response)
 # Output: <displays the plot>
