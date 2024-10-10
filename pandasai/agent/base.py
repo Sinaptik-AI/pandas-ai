@@ -28,7 +28,6 @@ from ..llm.base import LLM
 from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
-from ..prompts.explain_prompt import ExplainPrompt
 from ..schemas.df_config import Config
 from ..skills import Skill
 from .callbacks import Callbacks
@@ -399,28 +398,6 @@ class BaseAgent:
         Clears the previous conversation
         """
         self.clear_memory()
-
-    def explain(self) -> str:
-        """
-        Returns the explanation of the code how it reached to the solution
-        """
-        try:
-            prompt = ExplainPrompt(
-                context=self.context,
-                code=self.last_code_executed,
-            )
-            response = self.call_llm_with_prompt(prompt)
-            self.logger.log(
-                f"""Explanation:  {response}
-                """
-            )
-            return response
-        except Exception as exception:
-            return (
-                "Unfortunately, I was not able to explain, "
-                "because of the following error:\n"
-                f"\n{exception}\n"
-            )
 
     @property
     def logs(self):

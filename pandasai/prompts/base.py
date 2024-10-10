@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader
+from abc import ABC, abstractmethod
 
 
 class BasePrompt:
@@ -73,3 +74,13 @@ class BasePrompt:
             "system_prompt": system_prompt,
             "prompt": self.to_string(),
         }
+
+
+class AbstractPrompt(ABC):
+    @abstractmethod
+    def get_prompt(self):
+        pass
+
+
+# Make sure to export AbstractPrompt if using __all__
+__all__ = ["AbstractPrompt"]

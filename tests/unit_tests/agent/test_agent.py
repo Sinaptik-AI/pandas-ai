@@ -21,7 +21,7 @@ from pandasai.llm.langchain import LangchainLLM
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 
 # from pandasai.pipelines.chat.code_cleaning import CodeManager
-from pandasai.prompts.explain_prompt import ExplainPrompt
+from pandasai.prompts.base import BasePrompt
 
 
 class TestAgent:
@@ -206,40 +206,13 @@ class TestAgent:
         memory = agent.context.memory.all()
         assert len(memory) == 0
 
-    def test_explain(self, agent: Agent):
-        agent.context.config.llm.call = Mock()
-        clarification_response = """
-Combine the Data: To find out who gets paid the most, 
-I needed to match the names of people with the amounts of money they earn. 
-It's like making sure the right names are next to the right amounts. 
-I used a method to do this, like connecting pieces of a puzzle.
-Find the Top Earner: After combining the data, I looked through it to find 
-the person with the most money. 
-It's like finding the person who has the most marbles in a game
-        """
-        agent.context.config.llm.call.return_value = clarification_response
-
-        response = agent.explain()
-
-        assert response == (
-            """
-Combine the Data: To find out who gets paid the most, 
-I needed to match the names of people with the amounts of money they earn. 
-It's like making sure the right names are next to the right amounts. 
-I used a method to do this, like connecting pieces of a puzzle.
-Find the Top Earner: After combining the data, I looked through it to find 
-the person with the most money. 
-It's like finding the person who has the most marbles in a game
-        """
-        )
-
     def test_call_prompt_success(self, agent: Agent):
         agent.context.config.llm.call = Mock()
         clarification_response = """
 What is expected Salary Increase?
         """
         agent.context.config.llm.call.return_value = clarification_response
-        prompt = ExplainPrompt(
+        prompt = BasePrompt(
             context=agent.context,
             code="test code",
         )
@@ -263,7 +236,7 @@ What is expected Salary Increase?
             Exception(),
             "LLM Result",
         ]
-        prompt = ExplainPrompt(
+        prompt = BasePrompt(
             context=agent.context,
             code="test code",
         )
@@ -275,7 +248,7 @@ What is expected Salary Increase?
         # test the LLM call failed once but succeed second time
         agent.context.config.llm.call = Mock()
         agent.context.config.llm.call.side_effect = [Exception(), "LLM Result"]
-        prompt = ExplainPrompt(
+        prompt = BasePrompt(
             context=agent.context,
             code="test code",
         )

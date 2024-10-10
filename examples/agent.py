@@ -28,10 +28,6 @@ agent = Agent([employees_df, salaries_df], memory_size=10)
 response = agent.chat("Who gets paid the most?")
 print(response)
 
-# Explain how the chat response is generated
-response = agent.explain()
-print(response)
-
 # Train with data
 queries = [
     "Display the distribution of ages in the population.",

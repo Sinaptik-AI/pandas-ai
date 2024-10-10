@@ -170,18 +170,6 @@ agent.chat('And which one has the most deals?')
 # Output: United States has the most deals
 ```
 
-### Explanation
-
-An agent will also be able to explain the answer given to the user. For example:
-
-```python
-response = agent.chat('What is the GDP of the United States?')
-explanation = agent.explain()
-
-print("The answer is", response)
-print("The explanation is", explanation)
-```
-
 ## Config
 
 To customize PandasAI's `SmartDataframe`, you can either pass a `config` object with specific settings upon instantiation or modify the `pandasai.json` file in your project's root. The latter serves as the default configuration but can be overridden by directly specifying settings in the `config` object at creation. This approach ensures flexibility and precision in how PandasAI handles your data.
