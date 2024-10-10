@@ -85,32 +85,6 @@ class QueryBuilder:
         for filter in query.get("filters", []):
             self._validate_table(filter["member"])
 
-    def _validate_fix_query(self, query):
-        for index, measure in enumerate(query.get("measures", [])):
-            query["measures"][index] = self._validate_and_fix_mapped_measure(measure)
-
-        for index, dimension in enumerate(query.get("dimensions", [])):
-            query["dimensions"][index] = self._validate_and_fix_mapped_dimension(
-                dimension
-            )
-
-        for index, dimension in enumerate(query.get("timeDimensions", [])):
-            query["timeDimensions"][index][
-                "dimension"
-            ] = self._validate_and_fix_mapped_dimension(dimension["dimension"])
-
-        for index, order in enumerate(query.get("order", [])):
-            query["order"][index]["id"] = self._validate_and_fix_mapped_order(
-                order["id"]
-            )
-
-        for index, filter in enumerate(query.get("filters", [])):
-            query["filters"][index]["member"] = self._validate_and_fix_mapped_order(
-                filter["member"]
-            )
-
-        return query
-
     def _generate_columns(self, dimensions, time_dimensions, measures):
         all_dimensions = list(dict.fromkeys(dimensions))
         # + [td["dimension"] for td in time_dimensions]
@@ -173,19 +147,6 @@ class QueryBuilder:
         value_splitted = value.split(".")
         if len(value_splitted) == 1:
             table_name = self._find_table_name_in_orders_if_not_exists(
-                value_splitted[0]
-            )
-            if table_name is None:
-                raise ValueError(
-                    "Measure must have table expected format is TableName.measure"
-                )
-            return f"{table_name}.{value_splitted[0]}"
-        return value
-
-    def _validate_and_fix_mapped_filter(self, value):
-        value_splitted = value.split(".")
-        if len(value_splitted) == 1:
-            table_name = self._find_table_name_in_filter_if_not_exists(
                 value_splitted[0]
             )
             if table_name is None:

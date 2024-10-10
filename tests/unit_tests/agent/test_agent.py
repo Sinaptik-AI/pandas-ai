@@ -308,22 +308,6 @@ What is expected Salary Increase?
 
         assert agent.context.config.llm.call.call_count == 5
 
-    def test_rephrase(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent.context.config.llm.call = Mock()
-        clarification_response = """
-How much has the total salary expense increased?
-        """
-        agent.context.config.llm.call.return_value = clarification_response
-
-        response = agent.rephrase_query("how much has the revenue increased?")
-
-        assert response == (
-            """
-How much has the total salary expense increased?
-        """
-        )
-
     def test_load_llm_with_pandasai_llm(self, agent: Agent, llm):
         assert agent.get_llm(llm) == llm
 

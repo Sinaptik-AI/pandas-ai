@@ -182,17 +182,6 @@ print("The answer is", response)
 print("The explanation is", explanation)
 ```
 
-### Rephrase Question
-
-Rephrase question to get accurate and comprehensive response from the model. For example:
-
-```python
-rephrased_query = agent.rephrase_query('What is the GDP of the United States?')
-
-print("The rephrased query is", rephrased_query)
-
-```
-
 ## Config
 
 To customize PandasAI's `SmartDataframe`, you can either pass a `config` object with specific settings upon instantiation or modify the `pandasai.json` file in your project's root. The latter serves as the default configuration but can be overridden by directly specifying settings in the `config` object at creation. This approach ensures flexibility and precision in how PandasAI handles your data.

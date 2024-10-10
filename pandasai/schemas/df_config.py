@@ -23,7 +23,6 @@ class Config(BaseModel):
     save_charts_path: str = DEFAULT_CHART_DIRECTORY
     custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
-    lazy_load_connector: bool = True
     response_parser: Any = None
     llm: LLM = None
     data_viz_library: Optional[str] = ""

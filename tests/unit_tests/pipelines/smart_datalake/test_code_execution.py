@@ -114,8 +114,6 @@ class TestCodeExecution:
                 return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
-        # context._query_exec_tracker = Mock()
-        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         result = code_execution.execute(
             input='result={"type":"string", "value":"5"}',
@@ -207,8 +205,6 @@ class TestCodeExecution:
                 return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
-        # context._query_exec_tracker = Mock()
-        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         with pytest.raises(InvalidOutputValueMismatch):
             code_execution.execute(
@@ -235,8 +231,6 @@ class TestCodeExecution:
                 return []
 
         context.get = Mock(side_effect=mock_intermediate_values)
-        # context._query_exec_tracker = Mock()
-        # context.query_exec_tracker.execute_func = Mock(return_value="Mocked Result")
 
         with pytest.raises(InvalidOutputValueMismatch):
             code_execution.execute(

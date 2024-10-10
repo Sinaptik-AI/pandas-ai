@@ -301,6 +301,3 @@ class BaseConnector(ABC):
             "description": self.description,
             "head": json.loads(df_head.to_json(orient="records", date_format="iso")),
         }
-
-    def register_enable_sql_query(self, table_name=None):
-        raise NotImplementedError

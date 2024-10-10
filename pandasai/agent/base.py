@@ -29,7 +29,6 @@ from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
 from ..prompts.explain_prompt import ExplainPrompt
-from ..prompts.rephase_query_prompt import RephraseQueryPrompt
 from ..schemas.df_config import Config
 from ..skills import Skill
 from .callbacks import Callbacks
@@ -419,25 +418,6 @@ class BaseAgent:
         except Exception as exception:
             return (
                 "Unfortunately, I was not able to explain, "
-                "because of the following error:\n"
-                f"\n{exception}\n"
-            )
-
-    def rephrase_query(self, query: str):
-        try:
-            prompt = RephraseQueryPrompt(
-                context=self.context,
-                query=query,
-            )
-            response = self.call_llm_with_prompt(prompt)
-            self.logger.log(
-                f"""Rephrased Response:  {response}
-                """
-            )
-            return response
-        except Exception as exception:
-            return (
-                "Unfortunately, I was not able to rephrase query, "
                 "because of the following error:\n"
                 f"\n{exception}\n"
             )

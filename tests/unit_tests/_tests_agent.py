@@ -194,19 +194,3 @@ What is expected Salary Increase?
             agent._call_llm_with_prompt("Test Prompt")
 
         assert agent._lake.llm.call.call_count == 5
-
-    def test_rephrase(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-        agent._lake.llm.call = Mock()
-        clarification_response = """
-How much has the total salary expense increased?
-        """
-        agent._lake.llm.call.return_value = clarification_response
-
-        response = agent.rephrase_query("how much has the revenue increased?")
-
-        assert response == (
-            """
-How much has the total salary expense increased?
-        """
-        )

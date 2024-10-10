@@ -152,26 +152,6 @@ class LLM:
         """
         return memory.get_previous_conversation()
 
-    def _extract_tag_text(self, response: str, tag: str) -> str:
-        """
-        Extracts the text between two tags in the response.
-
-        Args:
-            response (str): Response
-            tag (str): Tag name
-
-        Returns:
-            (str or None): Extracted text from the response
-        """
-
-        if match := re.search(
-            f"(<{tag}>)(.*)(</{tag}>)",
-            response,
-            re.DOTALL | re.MULTILINE,
-        ):
-            return match[2]
-        return None
-
     @abstractmethod
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
         """

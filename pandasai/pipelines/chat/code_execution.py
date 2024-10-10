@@ -383,33 +383,6 @@ class CodeExecution(BaseLogicUnit):
             yield operand_node.value
 
     @staticmethod
-    def _get_nearest_func_call(current_lineno, calls, func_name):
-        """
-        Utility function to get the nearest previous call node.
-
-        Sort call nodes list (copy of the list) by line number.
-        Iterate over the call nodes list. If the call node's function name
-        equals to `func_name`, set `nearest_call` to the node object.
-
-        Args:
-            current_lineno (int): Number of the current processed line.
-            calls (list[ast.Assign]): List of call nodes.
-            func_name (str): Name of the target function.
-
-        Returns:
-            ast.Call: The node of the nearest previous call `<func_name>()`.
-        """
-        for call in reversed(calls):
-            if call.lineno < current_lineno:
-                try:
-                    if call.func.attr == func_name:
-                        return call
-                except AttributeError:
-                    continue
-
-        return None
-
-    @staticmethod
     def _get_df_id_by_nearest_assignment(
         current_lineno: int, assignments: list[ast.Assign], target_name: str
     ):

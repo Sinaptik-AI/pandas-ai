@@ -34,16 +34,6 @@ class DfValidationResult:
     def errors(self) -> List[Dict]:
         return self._errors
 
-    def add_error(self, error_message: str):
-        """
-        Add an error message to the validation results.
-
-        Args:
-            error_message: Error message to add.
-        """
-        self._passed = False
-        self._errors.append(error_message)
-
     def __bool__(self) -> bool:
         """
         Define the truthiness of ValidationResults.
