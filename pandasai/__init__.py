@@ -6,12 +6,12 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 from typing import List
 from pandasai.smart_dataframe import SmartDataframe
 from pandasai.smart_datalake import SmartDatalake
-
 from .agent import Agent
 from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .skills import skill
 from .dataframe.base import DataFrame
+from .dataset_loader import DatasetLoader
 
 # Global variable to store the current agent
 _current_agent = None
@@ -54,15 +54,29 @@ def follow_up(query: str):
     """
     global _current_agent
 
-    # debug the current agent
-    print("Current agent:", _current_agent)
-
     if _current_agent is None:
         raise ValueError(
             "No existing conversation. Please use chat() to start a new conversation."
         )
 
     return _current_agent.follow_up(query)
+
+
+_dataset_loader = DatasetLoader()
+
+
+def load(dataset_path: str) -> DataFrame:
+    """
+    Load data based on the provided dataset path.
+
+    Args:
+        dataset_path (str): Path in the format 'organization/dataset_name'.
+
+    Returns:
+        DataFrame: A new PandasAI DataFrame instance with loaded data.
+    """
+    global _dataset_loader
+    return _dataset_loader.load(dataset_path)
 
 
 __all__ = [
@@ -76,4 +90,5 @@ __all__ = [
     "DataFrame",
     "chat",
     "follow_up",
+    "load",
 ]

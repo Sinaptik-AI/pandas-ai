@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import Optional, Union
+from pandasai.agent.agent import Agent
 from pandasai.schemas.df_config import Config
-from pandasai import Agent
 
 
 class DataFrame(pd.DataFrame):

@@ -45,3 +45,6 @@ coverage.xml
 
 # pgdata
 pgdata/
+
+# datasets
+datasets/

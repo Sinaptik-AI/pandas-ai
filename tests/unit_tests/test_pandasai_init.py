@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 import pandasai
 from pandasai.dataframe.base import DataFrame
+import pandas as pd
 
 
 class TestPandasAIInit:
@@ -26,7 +27,6 @@ class TestPandasAIInit:
 
     def test_follow_up_without_chat_raises_error(self):
         pandasai._current_agent = None
-
         with pytest.raises(ValueError, match="No existing conversation"):
             pandasai.follow_up("Follow-up query")
 
@@ -66,3 +66,20 @@ class TestPandasAIInit:
                 "What is the average of column X?"
             )
             assert result == "Mocked response"
+
+    def test_load(self):
+        with patch("pandasai.DatasetLoader.load") as mock_load:
+            mock_load.return_value = DataFrame(
+                pd.DataFrame({"email": ["test@example.com"]})
+            )
+
+            result = pandasai.load("test/users")
+
+            assert isinstance(result, DataFrame)
+            assert "email" in result.columns
+            mock_load.assert_called_once_with("test/users")
+
+    def test_clear_cache(self):
+        with patch("pandasai.helpers.cache.Cache.clear") as mock_clear:
+            pandasai.clear_cache()
+            mock_clear.assert_called_once()
