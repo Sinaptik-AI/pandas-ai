@@ -1,8 +1,8 @@
 import logging
 import uuid
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
-from pydantic.v1 import Field
+from pydantic import Field
 from pymilvus import DataType, MilvusClient, model
 
 from pandasai.helpers.logger import Logger
@@ -66,9 +66,6 @@ class Milvus(VectorStore):
             self._convert_ids(ids) if ids else self.generate_random_uuids(len(queries))
         )
 
-        ## delete this
-        a = self.client.list_collections()
-
         if not self.client.has_collection(collection_name=self.qa_collection_name):
             self._initiate_qa_collection()
 
@@ -89,6 +86,10 @@ class Milvus(VectorStore):
             collection_name=self.qa_collection_name,
             data=data,
         )
+        
+        return milvus_ids
+        
+        
 
     # Adds documents to the Milvus collection.
     # It accepts documents, optional IDs, and metadata, and stores them in the document collection.
@@ -123,6 +124,8 @@ class Milvus(VectorStore):
             collection_name=self.docs_collection_name,
             data=data,
         )
+        
+        return milvus_ids
 
     # Retrieves the most relevant question-answer pairs from the QA collection
     # based on a given query and returns the top-k results.
@@ -163,7 +166,7 @@ class Milvus(VectorStore):
             limit=k,
             output_fields=[DOCUMENT],
         )
-        #### TODO: Need to address the logic of threshold explicitly
+        
         return self._convert_search_response(response)
 
     # Converts the search response returned by Milvus into a list of dictionaries
@@ -199,7 +202,7 @@ class Milvus(VectorStore):
             field_name=ID, datatype=DataType.VARCHAR, max_length=1000, is_primary=True
         )
         schema.add_field(
-            field_name=e, datatype=DataType.FLOAT_VECTOR, dim=self.qa_dimension
+            field_name=EMBEDDING, datatype=DataType.FLOAT_VECTOR, dim=self.qa_dimension
         )
         schema.add_field(
             field_name=DOCUMENT, datatype=DataType.VARCHAR, max_length=1000
