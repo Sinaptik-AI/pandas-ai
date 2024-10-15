@@ -2,7 +2,10 @@ import glob
 import os
 from typing import Any
 
-import duckdb
+try:
+    import duckdb
+except ImportError:
+    duckdb = None
 
 from ..constants import CACHE_TOKEN, DEFAULT_FILE_PERMISSIONS
 from .path import find_project_root

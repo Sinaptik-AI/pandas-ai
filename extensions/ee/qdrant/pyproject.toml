@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pandasai-qdrant"
+version = "0.1.0"
+description = "Qdrant integration for PandasAI"
+authors = ["Gabriele Venturi"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+pandasai = "^2.2.15"
+qdrant-client = {version = "^1.11.3", extras = ["fastembed"]}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

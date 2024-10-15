@@ -6,7 +6,10 @@ import hashlib
 from functools import cache, cached_property
 from typing import Union
 
-import duckdb
+try:
+    import duckdb
+except ImportError:
+    duckdb = None
 import sqlglot
 from pydantic import BaseModel
 
@@ -162,6 +165,11 @@ class PandasConnector(BaseConnector):
         return self._original_df.equals(other._original_df)
 
     def enable_sql_query(self, table_name=None):
+        if duckdb is None:
+            raise ImportError(
+                "DuckDB is not installed. Please install it to use SQL queries."
+            )
+
         if not table_name and not self.name:
             raise PandasConnectorTableNotFound("Table name not found!")
 
@@ -180,6 +188,11 @@ class PandasConnector(BaseConnector):
         self.name = table
 
     def execute_direct_sql_query(self, sql_query):
+        if duckdb is None:
+            raise ImportError(
+                "DuckDB is not installed. Please install it to use SQL queries."
+            )
+
         if not self.sql_enabled:
             self.enable_sql_query()
 

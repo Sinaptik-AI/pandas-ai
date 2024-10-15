@@ -1,5 +1,5 @@
 import uuid
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Callable, Iterable, List, Optional, Union, Any
 
 import pinecone
 
@@ -25,9 +25,10 @@ class Pinecone(VectorStore):
         specs: pinecone.ServerlessSpec = None,
         max_samples: int = 1,
         similary_threshold: int = 1.5,
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
     ) -> None:
-        self._logger = logger or Logger()
+        self._logger = Logger() if logger is None else logger
+        self._logger.log("Initializing Pinecone vector store")
         self._max_samples = max_samples
         self._similarity_threshold = similary_threshold
         self._api_key = api_key
@@ -62,17 +63,6 @@ class Pinecone(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add question and answer(code) to the training set
-        Args:
-            query: string of question
-            code: str
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -103,17 +93,6 @@ class Pinecone(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add docs to the training set
-        Args:
-            docs: Iterable of strings to add to the vectorstore.
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if not isinstance(docs, list):
             raise ValueError("Docs must be list of strings!")
 
@@ -143,17 +122,6 @@ class Pinecone(VectorStore):
         codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update question and answer(code) to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            queries: string of question
-            codes: str
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from updating the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -177,18 +145,6 @@ class Pinecone(VectorStore):
         docs: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update docs to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            docs: Iterable of strings to update to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
-
         doc_embeddings = self._embedding_function(docs)
 
         metadatas = metadatas or [{} for _ in ids]
@@ -207,38 +163,16 @@ class Pinecone(VectorStore):
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
     ) -> Optional[bool]:
-        """
-        Delete by vector ID to delete question and answers
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
-
         self._index.delete(ids=ids, namespace="qa")
         return True
 
     def delete_docs(self, ids: Optional[List[str]] = None) -> Optional[bool]:
-        """
-        Delete by vector ID to delete docs
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
         self._index.delete(ids=ids, namespace="docs")
         return True
 
     def get_relevant_question_answers(
         self, question: str, k: Union[int, None] = None
     ) -> List[dict]:
-        """
-        Returns relevant question answers based on search
-        """
         k = k or self._max_samples
 
         questions = self._embedding_function([question])
@@ -254,9 +188,6 @@ class Pinecone(VectorStore):
         return self._filter_docs_based_on_distance(results, self._similarity_threshold)
 
     def get_relevant_docs(self, question: str, k: int = None) -> List[dict]:
-        """
-        Returns relevant documents based search
-        """
         k = k or self._max_samples
 
         questions = self._embedding_function([question])
@@ -272,45 +203,18 @@ class Pinecone(VectorStore):
         return self._filter_docs_based_on_distance(results, self._similarity_threshold)
 
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
         return self._index.fetch(id=ids, namespace="qa")
 
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
-
         return self._index.fetch(id=ids, namespace="docs")
 
     def get_relevant_qa_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_question_answers(question, k)["documents"][0]
 
     def get_relevant_docs_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_docs(question, k)["documents"][0]
 
     def _filter_docs_based_on_distance(self, documents, threshold: int) -> List[str]:
-        """
-        Filter documents based on threshold
-        Args:
-            documents (List[str]): list of documents in string
-            distances (List[float]): list of distances in float
-            threshold (int): similarity threshold
-
-        Returns:
-            _type_: _description_
-        """
         filtered_data = [
             (
                 document["metadata"][self._metatext_key],

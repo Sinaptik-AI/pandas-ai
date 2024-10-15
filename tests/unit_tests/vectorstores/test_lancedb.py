@@ -3,7 +3,7 @@ import shutil
 import unittest
 from unittest.mock import MagicMock
 
-from pandasai.ee.vectorstores import LanceDB
+from extensions.ee.lancedb.lancedb import LanceDB
 from pandasai.helpers.logger import Logger
 
 

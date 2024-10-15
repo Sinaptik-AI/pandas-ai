@@ -14,10 +14,6 @@ DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
 
 
 class ChromaDB(VectorStore):
-    """
-    Implementation of ChromeDB vector store
-    """
-
     _logger: Logger
 
     def __init__(
@@ -34,21 +30,16 @@ class ChromaDB(VectorStore):
         self._max_samples = max_samples
         self._similarity_threshold = similary_threshold
 
-        # Initialize Chromadb Client
-        # initialize from client settings if exists
         if client_settings:
             client_settings.persist_directory = (
                 persist_path or client_settings.persist_directory
             )
             _client_settings = client_settings
-
-        # use persist path if exists
         elif persist_path:
             _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
             )
             _client_settings.persist_directory = persist_path
-        # else use root as default path
         else:
             _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
@@ -82,17 +73,6 @@ class ChromaDB(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add question and answer(code) to the training set
-        Args:
-            query: string of question
-            code: str
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -114,17 +94,6 @@ class ChromaDB(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add docs to the training set
-        Args:
-            docs: Iterable of strings to add to the vectorstore.
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
         self._docs_collection.add(
@@ -140,17 +109,6 @@ class ChromaDB(VectorStore):
         codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update question and answer(code) to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            queries: string of question
-            codes: str
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from updating the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -169,17 +127,6 @@ class ChromaDB(VectorStore):
         docs: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update docs to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            docs: Iterable of strings to update to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         self._docs_collection.update(
             documents=docs,
             metadatas=metadatas,
@@ -189,37 +136,16 @@ class ChromaDB(VectorStore):
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
     ) -> Optional[bool]:
-        """
-        Delete by vector ID to delete question and answers
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
         self._qa_collection.delete(ids=ids)
         return True
 
     def delete_docs(self, ids: Optional[List[str]] = None) -> Optional[bool]:
-        """
-        Delete by vector ID to delete docs
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
         self._docs_collection.delete(ids=ids)
         return True
 
     def get_relevant_question_answers(
         self, question: str, k: Union[int, None] = None
     ) -> List[dict]:
-        """
-        Returns relevant question answers based on search
-        """
         k = k or self._max_samples
 
         relevant_data: chromadb.QueryResult = self._qa_collection.query(
@@ -233,9 +159,6 @@ class ChromaDB(VectorStore):
         )
 
     def get_relevant_docs(self, question: str, k: int = None) -> List[dict]:
-        """
-        Returns relevant documents based search
-        """
         k = k or self._max_samples
 
         relevant_data: chromadb.QueryResult = self._docs_collection.query(
@@ -249,10 +172,6 @@ class ChromaDB(VectorStore):
         )
 
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
-
         relevant_data: chromadb.QueryResult = self._qa_collection.get(
             ids=ids,
             include=["metadatas", "documents"],
@@ -261,10 +180,6 @@ class ChromaDB(VectorStore):
         return relevant_data
 
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
-
         relevant_data: chromadb.QueryResult = self._docs_collection.get(
             ids=ids,
             include=["metadatas", "documents"],
@@ -273,34 +188,14 @@ class ChromaDB(VectorStore):
         return relevant_data
 
     def get_relevant_qa_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_question_answers(question, k)["documents"][0]
 
     def get_relevant_docs_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_docs(question, k)["documents"][0]
 
     def _filter_docs_based_on_distance(
         self, documents: chromadb.QueryResult, threshold: int
     ) -> List[str]:
-        """
-        Filter documents based on threshold
-        Args:
-            documents (List[str]): list of documents in string
-            distances (List[float]): list of distances in float
-            threshold (int): similarity threshold
-
-        Returns:
-            _type_: _description_
-        """
         filtered_data = [
             (doc, distance, metadata, ids)
             for doc, distance, metadata, ids in zip(

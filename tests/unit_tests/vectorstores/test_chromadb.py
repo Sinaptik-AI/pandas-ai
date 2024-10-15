@@ -1,16 +1,13 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-from pandasai.ee.vectorstores.chroma import ChromaDB
+from extensions.ee.chromadb.chroma import ChromaDB
 
 
 class TestChromaDB(unittest.TestCase):
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_add_question_answer(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_add_question_answer(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
 
         chroma = ChromaDB()
@@ -20,12 +17,9 @@ class TestChromaDB(unittest.TestCase):
         )
         mock_collection.add.assert_called_once()
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_add_question_answer_with_ids(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_add_question_answer_with_ids(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
 
         chroma = ChromaDB()
@@ -43,14 +37,9 @@ class TestChromaDB(unittest.TestCase):
             ids=["test id 1", "test id 2"],
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_add_question_answer_different_dimensions(
-        self, mock_client, mock_collection
-    ):
+    @patch("chromadb.Client", autospec=True)
+    def test_add_question_answer_different_dimensions(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
 
         chroma = ChromaDB()
@@ -60,12 +49,9 @@ class TestChromaDB(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_update_question_answer(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_update_question_answer(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
 
         chroma = ChromaDB()
@@ -76,14 +62,9 @@ class TestChromaDB(unittest.TestCase):
         )
         mock_collection.update.assert_called_once()
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_update_question_answer_different_dimensions(
-        self, mock_client, mock_collection
-    ):
+    @patch("chromadb.Client", autospec=True)
+    def test_update_question_answer_different_dimensions(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
 
         chroma = ChromaDB()
@@ -94,23 +75,17 @@ class TestChromaDB(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_add_docs(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_add_docs(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma.add_docs(["Document 1", "Document 2"])
         mock_collection.add.assert_called_once()
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_add_docs_with_ids(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_add_docs_with_ids(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma.add_docs(["Document 1", "Document 2"], ["test id 1", "test id 2"])
@@ -120,36 +95,27 @@ class TestChromaDB(unittest.TestCase):
             ids=["test id 1", "test id 2"],
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_delete_question_and_answers(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_delete_question_and_answers(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._qa_collection = mock_collection
         chroma.delete_question_and_answers(["id1", "id2"])
         mock_collection.delete.assert_called_once_with(ids=["id1", "id2"])
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_delete_docs(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_delete_docs(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._docs_collection = mock_collection
         chroma.delete_docs(["id1", "id2"])
         mock_collection.delete.assert_called_once_with(ids=["id1", "id2"])
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_question_answers(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_question_answers(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._qa_collection = mock_collection
@@ -170,12 +136,9 @@ class TestChromaDB(unittest.TestCase):
             },
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_question_answers_by_ids(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_question_answers_by_ids(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._qa_collection = mock_collection
@@ -196,12 +159,9 @@ class TestChromaDB(unittest.TestCase):
             },
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_docs(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_docs(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._docs_collection = mock_collection
@@ -222,12 +182,9 @@ class TestChromaDB(unittest.TestCase):
             },
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_docs_by_id(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_docs_by_id(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._docs_collection = mock_collection
@@ -246,14 +203,9 @@ class TestChromaDB(unittest.TestCase):
             },
         )
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_question_answers_documents(
-        self, mock_client, mock_collection
-    ):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_question_answers_documents(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._qa_collection = mock_collection
@@ -266,12 +218,9 @@ class TestChromaDB(unittest.TestCase):
         result = chroma.get_relevant_qa_documents("What is Chroma?", k=3)
         self.assertEqual(result, ["Document 1", "Document 2", "Document 3"])
 
-    @patch(
-        "pandasai.ee.vectorstores.chroma.chromadb.api.models.Collection.Collection",
-        autospec=True,
-    )
-    @patch("pandasai.ee.vectorstores.chroma.chromadb.Client", autospec=True)
-    def test_get_relevant_docs_documents(self, mock_client, mock_collection):
+    @patch("chromadb.Client", autospec=True)
+    def test_get_relevant_docs_documents(self, mock_client):
+        mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         chroma = ChromaDB()
         chroma._qa_collection = mock_collection

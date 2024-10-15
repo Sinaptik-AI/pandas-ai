@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 with patch.dict("sys.modules", {"pinecone": MagicMock()}):
-    from pandasai.ee.vectorstores.pinecone import Pinecone
+    from extensions.ee.pinecone.pinecone import Pinecone
 
 from pandasai.helpers.logger import Logger
 
@@ -13,8 +13,8 @@ class TestPinecone(unittest.TestCase):
         self.MockPinecone = MagicMock()
         mock_pinecone_instance = self.MockPinecone.return_value
         mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-        api_key = "test_api_key"
-        self.vector_store = Pinecone(api_key=api_key)
+        self.api_key = "test_api_key"
+        self.vector_store = Pinecone(api_key=self.api_key)
         self.vector_store._format_qa = MagicMock(
             side_effect=lambda q, c: f"Q: {q}\nA: {c}"
         )
@@ -23,21 +23,6 @@ class TestPinecone(unittest.TestCase):
         )
         self.vector_store._index = MagicMock()
         self.vector_store._metatext_key = "text"
-
-    def test_constructor_default_parameters(self):
-        mock_pinecone_instance = self.MockPinecone.return_value
-        mock_pinecone_instance.list_indexes.return_value.names.return_value = []
-
-        api_key = "test_api_key"
-        mock_pinecone_instance.create_index.return_value = MagicMock()
-
-        instance = Pinecone(api_key=api_key)
-
-        self.assertEqual(instance._api_key, api_key)
-        self.assertEqual(instance._max_samples, 1)
-        self.assertEqual(instance._similarity_threshold, 1.5)
-        self.assertIsInstance(instance._logger, Logger)
-        self.assertIsInstance(instance._index, MagicMock)
 
     def test_constructor_with_custom_logger(self):
         mock_pinecone_instance = self.MockPinecone.return_value

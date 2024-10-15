@@ -51,7 +51,6 @@ class Schema:
             metadata: str
             vector: Vector(self._embed.ndims()) = self._embed.VectorField()
 
-        # schema for docs
         class Docs(LanceModel):
             id: str
             doc: str = self._embed.SourceField()
@@ -62,10 +61,6 @@ class Schema:
 
 
 class LanceDB(VectorStore):
-    """
-    Implementation of LanceDB vector store
-    """
-
     _logger: Logger
 
     def __init__(
@@ -82,10 +77,8 @@ class LanceDB(VectorStore):
         self._similarity_threshold = similary_threshold
         self._persist_directory = persist_path
 
-        # Initialize LanceDB database
         self._db = lancedb.connect(self._persist_directory)
 
-        # Embedding function
         self._embedding_function = embedding_function
         if self._embedding_function is None:
             QA_pairs, Docs = Schema(custom_embedding_function=False)._create_schema()
@@ -96,13 +89,11 @@ class LanceDB(VectorStore):
 
         self._logger.log(f"Persisting Agent Training data in {self._persist_directory}")
 
-        # table for qa pairs
         if f"{table_name}-qa" not in self._db.table_names():
             self._qa_table = self._db.create_table(f"{table_name}-qa", schema=QA_pairs)
         else:
             self._qa_table = self._db.open_table(f"{table_name}-qa")
 
-        # table for docs
         if f"{table_name}-docs" not in self._db.table_names():
             self._docs_table = self._db.create_table(f"{table_name}-docs", schema=Docs)
         else:
@@ -117,17 +108,6 @@ class LanceDB(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add question and answer(code) to the training set
-        Args:
-            query: string of question
-            code: str
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -164,17 +144,6 @@ class LanceDB(VectorStore):
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Add docs to the training set
-        Args:
-            docs: Iterable of strings to add to the vectorstore.
-            ids: Optional Iterable of ids associated with the texts.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
 
@@ -214,17 +183,6 @@ class LanceDB(VectorStore):
         codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update question and answer(code) to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            queries: string of question
-            codes: str
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-        Returns:
-            List of ids from updating the texts into the vectorstore.
-        """
         if len(queries) != len(codes):
             raise ValueError(
                 f"Queries and codes dimension doesn't match {len(queries)} != {len(codes)}"
@@ -251,17 +209,6 @@ class LanceDB(VectorStore):
         docs: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ) -> List[str]:
-        """
-        Update docs to the training set
-        Args:
-            ids: Iterable of ids associated with the texts.
-            docs: Iterable of strings to update to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
         if metadatas is not None and len(metadatas):
             metadatas = [str(data) for data in metadatas]
         else:
@@ -278,29 +225,11 @@ class LanceDB(VectorStore):
     def delete_question_and_answers(
         self, ids: Optional[List[str]] = None
     ) -> Optional[bool]:
-        """
-        Delete by vector ID to delete question and answers
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
         for id in ids:
             self._qa_table.delete(f"id = '{id}'")
         return True
 
     def delete_docs(self, ids: Optional[List[str]] = None) -> Optional[bool]:
-        """
-        Delete by vector ID to delete docs
-        Args:
-            ids: List of ids to delete
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise
-        """
         for id in ids:
             self._docs_table.delete(f"id = '{id}'")
         return True
@@ -308,9 +237,6 @@ class LanceDB(VectorStore):
     def get_relevant_question_answers(
         self, question: str, k: Union[int, None] = None
     ) -> List[dict]:
-        """
-        Returns relevant question answers based on search
-        """
         k = k or self._max_samples
 
         if self._embedding_function is None:
@@ -326,9 +252,6 @@ class LanceDB(VectorStore):
         )
 
     def get_relevant_docs(self, question: str, k: int = None) -> List[dict]:
-        """
-        Returns relevant documents based search
-        """
         k = k or self._max_samples
 
         if self._embedding_function is None:
@@ -344,10 +267,6 @@ class LanceDB(VectorStore):
         )
 
     def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
-        # to_search = ', ' .join([str(id) for id in ids])
         results = []
         for qa_id in ids:
             relevant_data = (
@@ -361,10 +280,6 @@ class LanceDB(VectorStore):
         return results
 
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
-        """
-        Returns relevant question answers based on ids
-        """
-        # to_search = ', '.join([str(id) for id in ids])
         results = []
         for doc_id in ids:
             relevant_data = (
@@ -378,33 +293,14 @@ class LanceDB(VectorStore):
         return results
 
     def get_relevant_qa_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_question_answers(question, k)["documents"][0]
 
     def get_relevant_docs_documents(self, question: str, k: int = None) -> List[str]:
-        """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
-        """
         return self.get_relevant_docs(question, k)["documents"][0]
 
     def _filter_docs_based_on_distance(
         self, documents: list, threshold: int
     ) -> List[str]:
-        """
-        Filter documents based on threshold
-        Args:
-            documents (List[str]): list of documents in string
-            threshold (int): similarity threshold
-
-        Returns:
-            _type_: _description_
-        """
         if not documents:
             return documents
         relevant_column = list(

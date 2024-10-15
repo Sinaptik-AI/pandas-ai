@@ -1,6 +1,8 @@
 """Unit tests for the openai LLM class"""
 import openai
 import pytest
+from unittest import mock
+import os
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.llm import OpenAI
@@ -23,8 +25,9 @@ class TestOpenAILLM:
         return MockBasePrompt()
 
     def test_type_without_token(self):
-        with pytest.raises(APIKeyNotFoundError):
-            OpenAI().type
+        with mock.patch.dict(os.environ, clear=True):
+            with pytest.raises(APIKeyNotFoundError):
+                OpenAI()
 
     def test_type_with_token(self):
         assert OpenAI(api_token="test").type == "openai"

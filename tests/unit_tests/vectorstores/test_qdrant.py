@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch
 
-from pandasai.ee.vectorstores.qdrant import Qdrant
+# Update this import statement
+from extensions.ee.qdrant.qdrant import Qdrant
 
 
 class TestQdrant(unittest.TestCase):
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_add_question_answer(self, mock_client):
         qdrant = Qdrant()
         qdrant.add_question_answer(
@@ -14,7 +15,7 @@ class TestQdrant(unittest.TestCase):
         )
         mock_client.return_value.add.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_add_question_answer_with_ids(self, mock_client):
         qdrant = Qdrant()
         ids = ["test id 1", "test id 2"]
@@ -33,7 +34,7 @@ class TestQdrant(unittest.TestCase):
             ids=qdrant._convert_ids(ids),
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_add_question_answer_different_dimensions(self, mock_client):
         qdrant = Qdrant()
         with self.assertRaises(ValueError):
@@ -42,7 +43,7 @@ class TestQdrant(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_update_question_answer(self, mock_client):
         qdrant = Qdrant()
         qdrant.update_question_answer(
@@ -52,7 +53,7 @@ class TestQdrant(unittest.TestCase):
         )
         mock_client.return_value.retrieve.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_update_question_answer_different_dimensions(self, mock_client):
         qdrant = Qdrant()
         with self.assertRaises(ValueError):
@@ -62,13 +63,13 @@ class TestQdrant(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_add_docs(self, mock_client):
         qdrant = Qdrant()
         qdrant.add_docs(["Document 1", "Document 2"])
         mock_client.return_value.add.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_add_docs_with_ids(self, mock_client):
         qdrant = Qdrant()
         ids = ["test id 1", "test id 2"]
@@ -80,7 +81,7 @@ class TestQdrant(unittest.TestCase):
             ids=qdrant._convert_ids(ids),
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_delete_question_and_answers(self, mock_client):
         qdrant = Qdrant()
         ids = ["id1", "id2"]
@@ -90,7 +91,7 @@ class TestQdrant(unittest.TestCase):
             points_selector=qdrant._convert_ids(ids),
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_delete_docs(self, mock_client):
         qdrant = Qdrant()
         ids = ["id1", "id2"]
@@ -100,7 +101,7 @@ class TestQdrant(unittest.TestCase):
             points_selector=qdrant._convert_ids(ids),
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_get_relevant_question_answers(self, mock_client):
         qdrant = Qdrant()
         qdrant.get_relevant_question_answers("What is AGI?", k=3)
@@ -112,7 +113,7 @@ class TestQdrant(unittest.TestCase):
             score_threshold=None,
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_get_relevant_question_answers_by_ids(
         self,
         mock_client,
@@ -125,7 +126,7 @@ class TestQdrant(unittest.TestCase):
             ids=qdrant._convert_ids(ids),
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_get_relevant_docs(self, mock_client):
         qdrant = Qdrant()
         qdrant.get_relevant_docs("What is AGI?", k=3)
@@ -136,7 +137,7 @@ class TestQdrant(unittest.TestCase):
             score_threshold=None,
         )
 
-    @patch("pandasai.ee.vectorstores.qdrant.qdrant_client.QdrantClient", autospec=True)
+    @patch("extensions.ee.qdrant.qdrant.qdrant_client.QdrantClient", autospec=True)
     def test_get_relevant_docs_by_id(self, mock_client):
         qdrant = Qdrant()
         ids = ["test id1", "test id2", "test id3"]
