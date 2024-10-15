@@ -30,7 +30,6 @@ from ..exceptions import (
     NoCodeFoundError,
 )
 from ..helpers.openai import is_openai_v1
-from ..helpers.openai_info import openai_callback_var
 from ..prompts.base import BasePrompt
 
 if TYPE_CHECKING:
@@ -306,9 +305,6 @@ class BaseOpenAI(LLM):
 
         response = self.client.create(**params)
 
-        if openai_handler := openai_callback_var.get():
-            openai_handler(response)
-
         self.last_prompt = prompt
 
         return response.choices[0].text
@@ -343,9 +339,6 @@ class BaseOpenAI(LLM):
             params["stop"] = [self.stop]
 
         response = self.client.create(**params)
-
-        if openai_handler := openai_callback_var.get():
-            openai_handler(response)
 
         return response.choices[0].message.content
 

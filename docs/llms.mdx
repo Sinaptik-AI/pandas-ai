@@ -82,35 +82,6 @@ pandas_ai = SmartDataframe("data.csv", config={"llm": llm})
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `OpenAI` object or set
 the `OPENAI_PROXY` environment variable to pass through.
 
-### Count tokens
-
-You can count the number of tokens used by a prompt as follows:
-
-```python
-"""Example of using PandasAI with a pandas dataframe"""
-
-from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
-from pandasai.helpers.openai_info import get_openai_callback
-import pandas as pd
-
-llm = OpenAI()
-
-# conversational=False is supposed to display lower usage and cost
-df = SmartDataframe("data.csv", config={"llm": llm, "conversational": False})
-
-with get_openai_callback() as cb:
-    response = df.chat("Calculate the sum of the gdp of north american countries")
-
-    print(response)
-    print(cb)
-#  The sum of the GDP of North American countries is 19,294,482,071,552.
-#  Tokens Used: 375
-#	Prompt Tokens: 210
-#	Completion Tokens: 165
-# Total Cost (USD): $ 0.000750
-```
-
 ## Google PaLM
 
 In order to use Google PaLM models, you need to have a Google Cloud API key. You can get
