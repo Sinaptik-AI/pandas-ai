@@ -26,8 +26,6 @@ from typing import Any, List, Optional, Union
 import pandasai.pandas as pd
 from pandasai.agent import Agent
 from pandasai.connectors.pandas import PandasConnector
-from pandasai.helpers.df_validator import DfValidator
-from pandasai.pydantic import BaseModel
 
 from ..connectors.base import BaseConnector
 from ..helpers.df_info import DataFrameType
@@ -100,16 +98,6 @@ class SmartDataframe:
             ValueError: If the query is empty
         """
         return self._agent.chat(query, output_type)
-
-    def validate(self, schema: BaseModel):
-        """
-        Validates Dataframe rows on the basis Pydantic schema input
-        (Args):
-            schema: Pydantic schema class
-            verbose: Print Errors
-        """
-        df_validator = DfValidator(self.dataframe)
-        return df_validator.validate(schema)
 
     @cached_property
     def head_df(self):
