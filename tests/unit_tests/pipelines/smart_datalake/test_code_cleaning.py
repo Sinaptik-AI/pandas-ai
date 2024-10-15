@@ -21,7 +21,6 @@ from pandasai.exceptions import (
     MaliciousQueryError,
 )
 from pandasai.helpers.logger import Logger
-from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning, CodeExecutionContext
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
@@ -127,7 +126,7 @@ class TestCodeCleaning:
 
     @pytest.fixture
     def exec_context(self) -> MagicMock:
-        return CodeExecutionContext(uuid.uuid4(), SkillsManager())
+        return CodeExecutionContext(uuid.uuid4())
 
     @pytest.fixture
     @patch("pandasai.connectors.sql.create_engine", autospec=True)
@@ -604,7 +603,7 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         clean_code = ["df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})"]
 
         output = code_cleaning._extract_fix_dataframe_redeclarations(
-            tree.body[0], clean_code, context
+            tree.body[0], clean_code
         )
 
         assert isinstance(output, ast.Assign)
@@ -634,9 +633,7 @@ print(df1)
         ]
 
         outputs = [
-            code_cleaning._extract_fix_dataframe_redeclarations(
-                node, clean_codes, context
-            )
+            code_cleaning._extract_fix_dataframe_redeclarations(node, clean_codes)
             for node in tree.body
         ]
 
@@ -663,7 +660,7 @@ df1 = dfs[0]
         code_list = ["df1 = dfs[0]"]
 
         output = code_cleaning._extract_fix_dataframe_redeclarations(
-            tree.body[0], code_list, context
+            tree.body[0], code_list
         )
 
         assert output is None
@@ -688,7 +685,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         code_list = ["dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})"]
 
         output = code_cleaning._extract_fix_dataframe_redeclarations(
-            tree.body[0], code_list, context
+            tree.body[0], code_list
         )
 
         assert isinstance(output, ast.Assign)
@@ -722,7 +719,7 @@ dfs[0] = pd.DataFrame(data)
         ]
 
         output = code_cleaning._extract_fix_dataframe_redeclarations(
-            tree.body[1], code_list, context
+            tree.body[1], code_list
         )
 
         assert isinstance(output, ast.Assign)
@@ -756,7 +753,7 @@ df = pd.DataFrame(data)
         ]
 
         output = code_cleaning._extract_fix_dataframe_redeclarations(
-            tree.body[1], code_list, context
+            tree.body[1], code_list
         )
 
         assert isinstance(output, ast.Assign)

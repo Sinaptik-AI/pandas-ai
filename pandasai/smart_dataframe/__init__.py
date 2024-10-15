@@ -33,7 +33,6 @@ from ..connectors.base import BaseConnector
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
-from ..skills import Skill
 
 
 class SmartDataframe:
@@ -78,12 +77,6 @@ class SmartDataframe:
         else:
             raise ValueError("Invalid input data. We cannot convert it to a dataframe.")
         return df
-
-    def add_skills(self, *skills: Skill):
-        """
-        Add Skills to PandasAI
-        """
-        self._agent.add_skills(*skills)
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """

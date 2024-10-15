@@ -44,7 +44,6 @@
         "train",
         "custom-response",
         "custom-whitelisted-dependencies",
-        "skills",
         "determinism"
       ]
     },

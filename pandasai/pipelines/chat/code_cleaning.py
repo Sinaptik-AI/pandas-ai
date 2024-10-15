@@ -10,7 +10,6 @@ import astor
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.helpers.sql import extract_table_names
 
 from ...connectors import BaseConnector
@@ -34,15 +33,12 @@ class CodeExecutionContext:
     def __init__(
         self,
         prompt_id: uuid.UUID,
-        skills_manager: SkillsManager,
     ):
         """
         Code Execution Context
         Args:
             prompt_id (uuid.UUID): Prompt ID
-            skills_manager (SkillsManager): Skills Manager
         """
-        self.skills_manager = skills_manager
         self.prompt_id = prompt_id
 
 
@@ -87,9 +83,7 @@ class CodeCleaning(BaseLogicUnit):
         self._config = context.config
         self._logger = kwargs.get("logger")
 
-        code_context = CodeExecutionContext(
-            context.get("last_prompt_id"), context.skills_manager
-        )
+        code_context = CodeExecutionContext(context.get("last_prompt_id"))
         code_to_run = input
         try:
             code_to_run = self.get_code_to_run(input, code_context)
@@ -144,9 +138,6 @@ class CodeCleaning(BaseLogicUnit):
                 file_name="temp_chart",
                 save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
-
-        # Reset used skills
-        context.skills_manager.used_skills = []
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code, context)
@@ -226,20 +217,19 @@ Code running:
             )
         )
 
-    def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
+    def find_function_calls(self, node: ast.AST):
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name):
-                if context.skills_manager.skill_exists(node.func.id):
-                    context.skills_manager.add_used_skill(node.func.id)
+                self._function_call_visitor.function_calls.append(node.func.id)
             elif isinstance(node.func, ast.Attribute) and isinstance(
                 node.func.value, ast.Name
             ):
-                context.skills_manager.add_used_skill(
+                self._function_call_visitor.function_calls.append(
                     f"{node.func.value.id}.{node.func.attr}"
                 )
 
         for child_node in ast.iter_child_nodes(node):
-            self.find_function_calls(child_node, context)
+            self.find_function_calls(child_node)
 
     def check_direct_sql_func_def_exists(self, node: ast.AST):
         return (
@@ -247,11 +237,6 @@ Code running:
             and isinstance(node, ast.FunctionDef)
             and node.name == "execute_sql_query"
         )
-
-    def check_skill_func_def_exists(self, node: ast.AST, context: CodeExecutionContext):
-        return isinstance(
-            node, ast.FunctionDef
-        ) and context.skills_manager.skill_exists(node.name)
 
     def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
@@ -407,7 +392,7 @@ Code running:
         return original_dfs
 
     def _extract_fix_dataframe_redeclarations(
-        self, node: ast.AST, code_lines: list[str], context: CodeExecutionContext
+        self, node: ast.AST, code_lines: list[str]
     ) -> ast.AST:
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
@@ -417,12 +402,6 @@ Code running:
                 code = "\n".join(code_lines)
                 env = get_environment(self._additional_dependencies)
                 env["dfs"] = copy.deepcopy(self._get_originals(self._dfs))
-                if context.skills_manager.used_skills:
-                    for skill_func_name in context.skills_manager.used_skills:
-                        skill = context.skills_manager.get_skill_by_func_name(
-                            skill_func_name
-                        )
-                        env[skill_func_name] = skill
                 exec(code, env)
 
                 df_generated = (
@@ -499,9 +478,6 @@ Code running:
             if self.check_direct_sql_func_def_exists(node):
                 continue
 
-            if self.check_skill_func_def_exists(node, context):
-                continue
-
             # if generated code contain execute_sql_query usage
             if (
                 self._validate_direct_sql(self._dfs)
@@ -513,14 +489,12 @@ Code running:
             if self._config.direct_sql:
                 node = self._validate_and_make_table_name_case_sensitive(node)
 
-            self.find_function_calls(node, context)
+            self.find_function_calls(node)
 
             clean_code_lines.append(astor.to_source(node))
 
             new_body.append(
-                self._extract_fix_dataframe_redeclarations(
-                    node, clean_code_lines, context
-                )
+                self._extract_fix_dataframe_redeclarations(node, clean_code_lines)
                 or node
             )
 

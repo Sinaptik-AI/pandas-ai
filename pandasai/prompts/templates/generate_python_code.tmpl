@@ -1,8 +1,5 @@
 {% for df in context.dfs %}{% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}{% endfor %}
 
-{% if context.skills_manager.has_skills() %}
-{{context.skills_manager.prompt_display()}}
-{% endif %}
 {% if last_code_generated != "" and context.memory.count() > 0 %}
 {{ last_code_generated }}
 {% else %}

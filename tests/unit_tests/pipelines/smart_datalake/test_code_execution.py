@@ -9,7 +9,6 @@ from pandasai.agent import Agent
 from pandasai.exceptions import InvalidOutputValueMismatch, NoCodeFoundError
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.optional import get_environment
-from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_execution import CodeExecution
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -106,8 +105,6 @@ class TestCodeExecution:
         def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
             elif key == "additional_dependencies":
@@ -139,8 +136,6 @@ class TestCodeExecution:
         def mock_intermediate_values(key: str):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
 
@@ -197,8 +192,6 @@ class TestCodeExecution:
         def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
             elif key == "additional_dependencies":
@@ -223,8 +216,6 @@ class TestCodeExecution:
         def mock_intermediate_values(key: str, default=None):
             if key == "last_prompt_id":
                 return "Mocked Prompt ID"
-            elif key == "skills":
-                return SkillsManager()
             elif key == "code_manager":
                 return mock_code_manager
             elif key == "additional_dependencies":

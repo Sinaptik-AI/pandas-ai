@@ -4,11 +4,7 @@
 {% endfor %}
 </tables>
 
-{% if context.skills_manager.has_skills() %}
-{{context.skills_manager.prompt_display()}}
-{% else %}
 You are already provided with the following functions that you can call:
-{% endif %}
 <function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe
     """This method connects to the database, executes the sql query and returns the dataframe"""

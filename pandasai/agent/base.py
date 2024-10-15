@@ -29,7 +29,6 @@ from ..llm.langchain import LangchainLLM, is_langchain_llm
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
 from ..schemas.df_config import Config
-from ..skills import Skill
 from .callbacks import Callbacks
 
 
@@ -187,12 +186,6 @@ class BaseAgent:
                     "Invalid input data. We cannot convert it to a dataframe."
                 )
         return connectors
-
-    def add_skills(self, *skills: Skill):
-        """
-        Add Skills to PandasAI
-        """
-        self.context.skills_manager.add_skills(*skills)
 
     def call_llm_with_prompt(self, prompt: BasePrompt):
         """

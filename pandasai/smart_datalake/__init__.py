@@ -22,7 +22,6 @@ import uuid
 from typing import Any, List, Optional, Union
 
 from pandasai.agent import Agent
-from pandasai.skills import Skill
 
 from ..helpers.cache import Cache
 from ..helpers.df_info import DataFrameType
@@ -41,12 +40,6 @@ class SmartDatalake:
         print("*" * 80 + "\n")
 
         self._agent = Agent(dfs, config=config)
-
-    def add_skills(self, *skills: Skill):
-        """
-        Add Skills to PandasAI
-        """
-        self._agent.add_skills(*skills)
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """

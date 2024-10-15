@@ -73,9 +73,7 @@ class CodeExecution(BaseLogicUnit):
         self.logger: Logger = kwargs.get("logger")
 
         # Execute the code
-        code_context = CodeExecutionContext(
-            self.context.get("last_prompt_id"), self.context.skills_manager
-        )
+        code_context = CodeExecutionContext(self.context.get("last_prompt_id"))
 
         retry_count = 0
         code_to_run = input
@@ -143,7 +141,7 @@ class CodeExecution(BaseLogicUnit):
         Args:
             code (str): Python code to execute.
             context (CodeExecutionContext): Code Execution Context
-                    with prompt id and skills.
+                    with prompt id.
 
         Returns:
             Any: The result of the code execution. The type of the result depends
@@ -160,12 +158,6 @@ class CodeExecution(BaseLogicUnit):
 
         if self._config.direct_sql:
             environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
-
-        # Add skills to the env
-        if context.skills_manager.used_skills:
-            for skill_func_name in context.skills_manager.used_skills:
-                skill = context.skills_manager.get_skill_by_func_name(skill_func_name)
-                environment[skill_func_name] = skill
 
         # Execute the code
         exec(code, environment)

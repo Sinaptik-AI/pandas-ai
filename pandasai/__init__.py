@@ -9,7 +9,6 @@ from pandasai.smart_datalake import SmartDatalake
 from .agent import Agent
 from .engine import set_pd_engine
 from .helpers.cache import Cache
-from .skills import skill
 from .dataframe.base import DataFrame
 from .dataset_loader import DatasetLoader
 
@@ -82,7 +81,6 @@ def load(dataset_path: str) -> DataFrame:
 __all__ = [
     "Agent",
     "clear_cache",
-    "skill",
     "set_pd_engine",
     "pandas",
     "SmartDataframe",

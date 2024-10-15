@@ -79,9 +79,7 @@ dfs[0]:
 
 </tables>
 
-
 You are already provided with the following functions that you can call:
-
 <function>
 def execute_sql_query(sql_query: str) -> pd.Dataframe
     """This method connects to the database, executes the sql query and returns the dataframe"""

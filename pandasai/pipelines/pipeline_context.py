@@ -2,7 +2,6 @@ from typing import Any, List, Optional, Union
 
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
-from pandasai.helpers.skills_manager import SkillsManager
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
 
@@ -19,7 +18,6 @@ class PipelineContext:
         dfs: List[BaseConnector],
         config: Optional[Union[Config, dict]] = None,
         memory: Optional[Memory] = None,
-        skills_manager: Optional[SkillsManager] = None,
         cache: Optional[Cache] = None,
         vectorstore: VectorStore = None,
         initial_values: dict = None,
@@ -29,7 +27,6 @@ class PipelineContext:
 
         self.dfs = dfs
         self.memory = memory or Memory()
-        self.skills_manager = skills_manager or SkillsManager()
 
         if config.enable_cache:
             self.cache = cache if cache is not None else Cache()
