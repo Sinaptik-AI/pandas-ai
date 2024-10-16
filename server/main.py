@@ -1,10 +1,9 @@
 import os
 import uvicorn
 from dotenv import load_dotenv
+from core.config import config
 
 load_dotenv()
-
-from core.config import config
 
 if __name__ == "__main__":
     uvicorn.run(

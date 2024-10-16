@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import ANY, MagicMock, patch
 
-import numpy as np  # Assuming `encode_documents` returns `numpy` arrays
 
 from pandasai.ee.vectorstores.milvus import Milvus
 
@@ -58,7 +57,6 @@ class TestMilvus(unittest.TestCase):
     @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
     def test_update_question_answer(self, mock_client):
         milvus = Milvus()
-        ids = ["test id 1", "test id 2"]
         milvus.update_question_answer(
             ["test id", "test id"],
             ["What is AGI?", "How does it work?"],
