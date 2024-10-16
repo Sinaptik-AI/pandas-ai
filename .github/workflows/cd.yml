@@ -15,10 +15,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: JRubics/poetry-publish@v1.16
-        name: Build and publish to PyPI
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-          ignore_dev_requirements: "yes"
-          repository_url: https://upload.pypi.org/legacy/
-          repository_name: pandasai
+          python-version: "3.x"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Build and publish main package
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry build
+          poetry publish
+
+      - name: Build and publish extensions
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          find extensions -name pyproject.toml | while read -r project; do
+            dir=$(dirname "$project")
+            echo "Building and publishing $dir"
+            cd "$dir"
+            poetry build
+            poetry publish
+            cd - > /dev/null
+          done
