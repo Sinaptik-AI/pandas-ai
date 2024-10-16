@@ -3,6 +3,8 @@ import Link from "next/link";
 import DatasetCard from "./DatasetCard";
 import { GetDatasetDetails } from "@/services/datasets";
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: {
     id: string;
