@@ -25,7 +25,7 @@ class Milvus(VectorStore):
         default=384, description="default embedding model dimension"
     )
 
-    # Initializes the Milvus object with collection names, a URI for the Milvus database, 
+    # Initializes the Milvus object with collection names, a URI for the Milvus database,
     # a logger, and the embedding function.
     def __init__(
         self,
@@ -86,10 +86,7 @@ class Milvus(VectorStore):
             collection_name=self.qa_collection_name,
             data=data,
         )
-        
         return milvus_ids
-        
-        
 
     # Adds documents to the Milvus collection.
     # It accepts documents, optional IDs, and metadata, and stores them in the document collection.
@@ -124,7 +121,7 @@ class Milvus(VectorStore):
             collection_name=self.docs_collection_name,
             data=data,
         )
-        
+
         return milvus_ids
 
     # Retrieves the most relevant question-answer pairs from the QA collection
@@ -146,7 +143,6 @@ class Milvus(VectorStore):
             filter="",
             output_fields=[DOCUMENT],
         )
-
         return self._convert_search_response(response)
 
     # Retrieves the most relevant documents from the document collection
@@ -166,7 +162,6 @@ class Milvus(VectorStore):
             limit=k,
             output_fields=[DOCUMENT],
         )
-        
         return self._convert_search_response(response)
 
     # Converts the search response returned by Milvus into a list of dictionaries
@@ -271,7 +266,6 @@ class Milvus(VectorStore):
             ids=milvus_ids,
             output_fields=[DOCUMENT, ID, "distance", "entity"],
         )
-
         return self._convert_search_response(response)["documents"]
 
     # Deletes documents from the document collection based on a list of document IDs.
