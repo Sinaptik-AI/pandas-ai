@@ -21,9 +21,10 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install Poetry
+      - name: Install Poetry and dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
+          pip install requests
 
       - name: Build and publish main package
         env:
@@ -31,7 +32,8 @@ jobs:
         run: |
           poetry config pypi-token.pypi $PYPI_TOKEN
           poetry build
-          poetry publish
+          VERSION=$(poetry version -s)
+          python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/pandasai/{VERSION}/json').status_code == 200 else exit(1)" || poetry publish
 
       - name: Build and publish extensions
         env:
@@ -43,6 +45,8 @@ jobs:
             echo "Building and publishing $dir"
             cd "$dir"
             poetry build
-            poetry publish
+            PACKAGE_NAME=$(poetry version | cut -d' ' -f1)
+            VERSION=$(poetry version -s)
+            python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/{VERSION}/json').status_code == 200 else exit(1)" || poetry publish
             cd $GITHUB_WORKSPACE
           done
