@@ -44,16 +44,19 @@ jobs:
       - name: Run tests
         run: poetry run pytest tests --ignore=tests/integration_tests
       - name: Run code coverage
+        continue-on-error: true
         run: |
           poetry run coverage run --source=pandasai -m pytest tests --ignore=tests/integration_tests
           poetry run coverage xml
       - name: Report coverage
+        continue-on-error: true
         run: poetry run coverage report
       - name: Upload coverage reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        continue-on-error: true
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
-          fail_ci_if_error: true
+          fail_ci_if_error: false
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

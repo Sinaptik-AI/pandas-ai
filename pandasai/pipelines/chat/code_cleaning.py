@@ -167,7 +167,10 @@ Code running:
             "(chr",
             "b64decode",
         ]
-        return any(module in code for module in dangerous_modules)
+        return any(
+            re.search(r"\b" + re.escape(module) + r"\b", code)
+            for module in dangerous_modules
+        )
 
     def _is_jailbreak(self, node: ast.stmt) -> bool:
         """

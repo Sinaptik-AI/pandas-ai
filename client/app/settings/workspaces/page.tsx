@@ -6,6 +6,8 @@ import AppTooltip from "@/components/AppTooltip";
 import { Button } from "@/components/ui/button";
 import { GetAllWorkspaces } from "@/services/spaces";
 
+export const dynamic = 'force-dynamic';
+
 export default async function WorkSpaces() {
   const data = await GetAllWorkspaces();
 
@@ -48,3 +50,5 @@ export default async function WorkSpaces() {
     </div>
   );
 }
+export const dynamic='force-dynamic';
+

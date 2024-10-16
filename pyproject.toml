@@ -50,6 +50,8 @@ cx-Oracle = { version = "^8.3.0", optional = true }
 sentence-transformers = {version = "^2.3.0", optional = true}
 sqlglot = {extras = ["rs"], version = "^25.0.3"}
 transformers = "^4.45.2"
+pymilvus = {version = "^2.4.6", optional = true}
+milvus-model = {version = "^0.2.7", optional = true}
 
 [tool.poetry.group.dev]
 optional = true
@@ -89,6 +91,7 @@ chromadb = ["pandasai-chromadb"]
 lancedb = ["pandasai-lancedb"]
 pinecone = ["pandasai-pinecone"]
 qdrant = ["pandasai-qdrant"]
+milvus = ["pymilvus", "milvus-model"]
 
 [tool.poetry.group.docs]
 optional = true

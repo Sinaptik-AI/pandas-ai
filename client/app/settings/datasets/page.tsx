@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { GetAllDataSets } from "@/services/datasets";
 import AddNewCard from "./AddNewCard";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Datasets() {
   const data = await GetAllDataSets();
 
@@ -53,3 +55,5 @@ export default async function Datasets() {
     </div>
   );
 }
+export const dynamic='force-dynamic';
+

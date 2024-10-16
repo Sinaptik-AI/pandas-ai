@@ -9,13 +9,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     make \
+    libpq-dev \
+    gcc \
+    netcat-openbsd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
-
-RUN apt-get update && apt-get install netcat-openbsd -y 
 
 # Add Poetry to PATH
 ENV PATH="/root/.local/bin:$PATH"
