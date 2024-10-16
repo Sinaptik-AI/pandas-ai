@@ -34,7 +34,7 @@ jobs:
           poetry build
           VERSION=$(poetry version -s)
           echo "Checking if pandasai $VERSION exists on PyPI"
-          if python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/pandasai/{VERSION}/json').status_code == 200 else exit(1)"; then
+          if python -c "import requests, sys; sys.exit(requests.get(f'https://pypi.org/pypi/pandasai/{VERSION}/json').status_code != 200)"; then
             echo "Version $VERSION already exists on PyPI. Skipping publish."
           else
             echo "Publishing pandasai $VERSION to PyPI"
@@ -54,11 +54,11 @@ jobs:
             PACKAGE_NAME=$(poetry version | cut -d' ' -f1)
             VERSION=$(poetry version -s)
             echo "Checking if $PACKAGE_NAME $VERSION exists on PyPI"
-            if python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/{VERSION}/json').status_code == 200 else exit(1)"; then
+            if python -c "import requests, sys; package_name='$PACKAGE_NAME'; version='$VERSION'; sys.exit(requests.get(f'https://pypi.org/pypi/{package_name}/{version}/json').status_code != 200)"; then
               echo "Version $VERSION of $PACKAGE_NAME already exists on PyPI. Skipping publish."
             else
               echo "Publishing $PACKAGE_NAME $VERSION to PyPI"
-              poetry publish
+              poetry publish || echo "Failed to publish $PACKAGE_NAME $VERSION"
             fi
             cd $GITHUB_WORKSPACE
           done
