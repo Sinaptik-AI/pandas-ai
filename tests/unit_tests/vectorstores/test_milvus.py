@@ -1,11 +1,11 @@
 import unittest
 from unittest.mock import ANY, MagicMock, patch
 
-from pandasai.ee.vectorstores.milvus import Milvus
+from extensions.ee.milvus.pandasai_milvus.milvus import Milvus
 
 
 class TestMilvus(unittest.TestCase):
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_add_question_answer(self, mock_client):
         milvus = Milvus()
         milvus.add_question_answer(
@@ -14,7 +14,7 @@ class TestMilvus(unittest.TestCase):
         )
         mock_client.return_value.insert.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_add_question_answer_with_ids(self, mock_client):
         milvus = Milvus()
         ids = ["test id 1", "test id 2"]
@@ -44,7 +44,7 @@ class TestMilvus(unittest.TestCase):
             data=expected_data,
         )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_add_question_answer_different_dimensions(self, mock_client):
         milvus = Milvus()
         with self.assertRaises(ValueError):
@@ -53,7 +53,7 @@ class TestMilvus(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_update_question_answer(self, mock_client):
         milvus = Milvus()
         milvus.update_question_answer(
@@ -63,7 +63,7 @@ class TestMilvus(unittest.TestCase):
         )
         mock_client.return_value.query.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_update_question_answer_different_dimensions(self, mock_client):
         milvus = Milvus()
         with self.assertRaises(ValueError):
@@ -73,13 +73,13 @@ class TestMilvus(unittest.TestCase):
                 ["print('Hello')"],
             )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_add_docs(self, mock_client):
         milvus = Milvus()
         milvus.add_docs(["Document 1", "Document 2"])
         mock_client.return_value.insert.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_add_docs_with_ids(self, mock_client):
         milvus = Milvus()
         ids = ["test id 1", "test id 2"]
@@ -91,7 +91,7 @@ class TestMilvus(unittest.TestCase):
         # Assert insert was called correctly
         mock_client.return_value.insert.assert_called_once()
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_delete_question_and_answers(self, mock_client):
         milvus = Milvus()
         ids = ["id1", "id2"]
@@ -102,7 +102,7 @@ class TestMilvus(unittest.TestCase):
             filter=f"id in {id_filter}",
         )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_delete_docs(self, mock_client):
         milvus = Milvus()
         ids = ["id1", "id2"]
@@ -113,7 +113,7 @@ class TestMilvus(unittest.TestCase):
             filter=f"id in {id_filter}",
         )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_get_relevant_question_answers(self, mock_client):
         milvus = Milvus()
         question = "What is AGI?"
@@ -129,7 +129,7 @@ class TestMilvus(unittest.TestCase):
             output_fields=["document"],
         )
 
-    @patch("pandasai.ee.vectorstores.milvus.MilvusClient", autospec=True)
+    @patch("extensions.ee.milvus.pandasai_milvus.milvus.MilvusClient", autospec=True)
     def test_get_relevant_docs(self, mock_client):
         milvus = Milvus()
         question = "What is AGI?"
