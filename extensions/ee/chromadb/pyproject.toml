@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = "^2.2.15"
+pandasai = "^3.0.0"
 chromadb = "^0.4.22"
 
 [build-system]

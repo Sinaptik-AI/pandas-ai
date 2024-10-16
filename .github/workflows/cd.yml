@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Define the root dir
+        run: |
+          root_dir=$(pwd)
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,23 +31,35 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
 
-      - name: Build and publish main package
+      - name: Configure Poetry
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
           poetry config pypi-token.pypi $PYPI_TOKEN
-          poetry build
-          poetry publish
 
-      - name: Build and publish extensions
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      - name: Build and publish changed extensions
         run: |
+          # Get the latest tag
+          latest_tag=$(git describe --tags --abbrev=0)
+
           find extensions -name pyproject.toml | while read -r project; do
             dir=$(dirname "$project")
-            echo "Building and publishing $dir"
-            cd "$dir"
-            poetry build
-            poetry publish
-            cd - > /dev/null
+            echo "Checking changes in $dir"
+            
+            # Check if there are any changes in the extension directory since the last tag
+            if git diff --quiet $latest_tag HEAD -- "$dir"; then
+              echo "No changes in $dir since last release. Skipping."
+            else
+              echo "Changes detected in $dir. Building and publishing."
+              cd "$dir"
+              poetry build
+              poetry publish
+              cd $root_dir
+            fi
           done
+
+      - name: Build and publish main package
+        run: |
+          cd $root_dir
+          poetry build
+          poetry publish

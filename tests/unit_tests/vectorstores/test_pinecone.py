@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 with patch.dict("sys.modules", {"pinecone": MagicMock()}):
-    from extensions.ee.pinecone.pinecone import Pinecone
+    from extensions.ee.pinecone.pandasai_pinecone import Pinecone
 
 from pandasai.helpers.logger import Logger
 

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from extensions.ee.chromadb.chroma import ChromaDB
+from extensions.ee.chromadb.pandasai_chromadb import ChromaDB
 
 
 class TestChromaDB(unittest.TestCase):
