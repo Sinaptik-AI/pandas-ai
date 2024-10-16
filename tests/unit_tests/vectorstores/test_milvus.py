@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import ANY, MagicMock, patch
 
-
 from pandasai.ee.vectorstores.milvus import Milvus
 
 

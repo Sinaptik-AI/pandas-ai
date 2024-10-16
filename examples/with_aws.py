@@ -1,9 +1,10 @@
 """Example of using PandasAI with a Dataframe and Amazon Bedrock."""
 
+import boto3
 import pandas as pd
+
 from pandasai import Agent
 from pandasai.llm import BedrockClaude
-import boto3
 
 # Configure the AWS account credential files : https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html
 
