@@ -33,7 +33,13 @@ jobs:
           poetry config pypi-token.pypi $PYPI_TOKEN
           poetry build
           VERSION=$(poetry version -s)
-          python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/pandasai/{VERSION}/json').status_code == 200 else exit(1)" || poetry publish
+          echo "Checking if pandasai $VERSION exists on PyPI"
+          if python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/pandasai/{VERSION}/json').status_code == 200 else exit(1)"; then
+            echo "Version $VERSION already exists on PyPI. Skipping publish."
+          else
+            echo "Publishing pandasai $VERSION to PyPI"
+            poetry publish
+          fi
 
       - name: Build and publish extensions
         env:
@@ -42,11 +48,17 @@ jobs:
           cd $GITHUB_WORKSPACE
           find extensions -name pyproject.toml | while read -r project; do
             dir=$(dirname "$project")
-            echo "Building and publishing $dir"
+            echo "Processing $dir"
             cd "$dir"
             poetry build
             PACKAGE_NAME=$(poetry version | cut -d' ' -f1)
             VERSION=$(poetry version -s)
-            python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/{VERSION}/json').status_code == 200 else exit(1)" || poetry publish
+            echo "Checking if $PACKAGE_NAME $VERSION exists on PyPI"
+            if python -c "import requests; exit(0) if requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/{VERSION}/json').status_code == 200 else exit(1)"; then
+              echo "Version $VERSION of $PACKAGE_NAME already exists on PyPI. Skipping publish."
+            else
+              echo "Publishing $PACKAGE_NAME $VERSION to PyPI"
+              poetry publish
+            fi
             cd $GITHUB_WORKSPACE
           done
