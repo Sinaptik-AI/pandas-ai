@@ -82,21 +82,6 @@ pandas_ai = SmartDataframe("data.csv", config={"llm": llm})
 If you are behind an explicit proxy, you can specify `openai_proxy` when instantiating the `OpenAI` object or set
 the `OPENAI_PROXY` environment variable to pass through.
 
-## Google PaLM
-
-In order to use Google PaLM models, you need to have a Google Cloud API key. You can get
-one [here](https://developers.generativeai.google/tutorials/setup).
-
-Once you have an API key, you can use it to instantiate a Google PaLM object:
-
-```python
-from pandasai import SmartDataframe
-from pandasai.llm import GooglePalm
-
-llm = GooglePalm(api_key="my-google-cloud-api-key")
-df = SmartDataframe("data.csv", config={"llm": llm})
-```
-
 ## Google Vertexai
 
 In order to use Google PaLM models through Vertexai api, you need to have

@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 pandasai = "^3.0.0"
-openai = "^2"
+openai = "^1"
 
 [build-system]
 requires = ["poetry-core"]
