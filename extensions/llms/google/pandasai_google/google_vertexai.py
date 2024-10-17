@@ -1,21 +1,9 @@
-"""Google VertexAI
-
-This module is to run the Google VertexAI LLM.
-To read more on VertexAI:
-https://cloud.google.com/vertex-ai/docs/generative-ai/learn/generative-ai-studio.
-
-Example:
-    Use below example to call Google VertexAI
-
-    >>> from pandasai.llm.google_palm import GoogleVertexAI
-
-"""
 from typing import Optional
 
 from pandasai.helpers.memory import Memory
 
-from ..exceptions import UnsupportedModelError
-from ..helpers.optional import import_dependency
+from pandasai.exceptions import UnsupportedModelError
+from pandasai.helpers.optional import import_dependency
 from .base import BaseGoogle
 
 

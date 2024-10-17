@@ -1,19 +1,8 @@
-"""Google Gemini LLM
-
-This module is to run the Google Gemini API hosted and maintained by Google.
-To read more on Google Gemini follow
-https://ai.google.dev/docs/gemini_api_overview.
-
-Example:
-    Use below example to call GoogleGemini Model
-
-    >>> from pandasai.llm.google_gemini import GoogleGemini
-"""
 from typing import Any, Optional
 
-from ..exceptions import APIKeyNotFoundError
-from ..helpers.memory import Memory
-from ..helpers.optional import import_dependency
+from pandasai.exceptions import APIKeyNotFoundError
+from pandasai.helpers.memory import Memory
+from pandasai.helpers.optional import import_dependency
 from .base import BaseGoogle
 
 
