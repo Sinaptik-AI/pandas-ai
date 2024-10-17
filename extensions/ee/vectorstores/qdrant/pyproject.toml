@@ -3,7 +3,6 @@ name = "pandasai-qdrant"
 version = "0.1.0"
 description = "Qdrant integration for PandasAI"
 authors = ["Gabriele Venturi"]
-license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
