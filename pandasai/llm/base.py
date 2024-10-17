@@ -29,7 +29,6 @@ from ..exceptions import (
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..helpers.openai import is_openai_v1
 from ..prompts.base import BasePrompt
 
 if TYPE_CHECKING:
@@ -265,11 +264,6 @@ class BaseOpenAI(LLM):
     def _invocation_params(self) -> Dict[str, Any]:
         """Get the parameters used to invoke the model."""
         openai_creds: Dict[str, Any] = {}
-        if not is_openai_v1():
-            openai_creds |= {
-                "api_key": self.api_token,
-                "api_base": self.api_base,
-            }
 
         return {**openai_creds, **self._default_params}
 

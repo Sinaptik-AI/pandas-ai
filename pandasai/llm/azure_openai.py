@@ -18,7 +18,6 @@ import openai
 
 from ..exceptions import APIKeyNotFoundError, MissingModelError
 from ..helpers import load_dotenv
-from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -95,16 +94,10 @@ class AzureOpenAI(BaseOpenAI):
                 "Azure OpenAI key is required. Please add an environment variable "
                 "`AZURE_OPENAI_API_KEY` or `OPENAI_API_KEY` or pass `api_token` as a named parameter"
             )
-        if is_openai_v1():
-            if self.azure_endpoint is None:
-                raise APIKeyNotFoundError(
-                    "Azure endpoint is required. Please add an environment variable "
-                    "`AZURE_OPENAI_API_ENDPOINT` or pass `azure_endpoint` as a named parameter"
-                )
-        elif self.api_base is None:
+        if self.azure_endpoint is None:
             raise APIKeyNotFoundError(
-                "Azure OpenAI base is required. Please add an environment variable "
-                "`OPENAI_API_BASE` or pass `api_base` as a named parameter"
+                "Azure endpoint is required. Please add an environment variable "
+                "`AZURE_OPENAI_API_ENDPOINT` or pass `azure_endpoint` as a named parameter"
             )
 
         if self.api_version is None:
@@ -130,17 +123,9 @@ class AzureOpenAI(BaseOpenAI):
         self._set_params(**kwargs)
         # set the client
         if self._is_chat_model:
-            self.client = (
-                openai.AzureOpenAI(**self._client_params).chat.completions
-                if is_openai_v1()
-                else openai.ChatCompletion
-            )
+            self.client = openai.AzureOpenAI(**self._client_params).chat.completions
         else:
-            self.client = (
-                openai.AzureOpenAI(**self._client_params).completions
-                if is_openai_v1()
-                else openai.Completion
-            )
+            self.client = openai.AzureOpenAI(**self._client_params).completions
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -153,20 +138,8 @@ class AzureOpenAI(BaseOpenAI):
         """
         return {
             **super()._default_params,
-            "model" if is_openai_v1() else "engine": self.deployment_name,
+            "model": self.deployment_name,
         }
-
-    @property
-    def _invocation_params(self) -> Dict[str, Any]:
-        """Get the parameters used to invoke the model."""
-        if is_openai_v1():
-            return super()._invocation_params
-        else:
-            return {
-                **super()._invocation_params,
-                "api_type": self.api_type,
-                "api_version": self.api_version,
-            }
 
     @property
     def _client_params(self) -> Dict[str, any]:

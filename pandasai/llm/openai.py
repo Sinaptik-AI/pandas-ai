@@ -15,7 +15,6 @@ import openai
 
 from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
 from ..helpers import load_dotenv
-from ..helpers.openai import is_openai_v1
 from .base import BaseOpenAI
 
 load_dotenv()
@@ -86,18 +85,10 @@ class OpenAI(BaseOpenAI):
         model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
         if model_name in self._supported_chat_models:
             self._is_chat_model = True
-            self.client = (
-                openai.OpenAI(**self._client_params).chat.completions
-                if is_openai_v1()
-                else openai.ChatCompletion
-            )
+            self.client = openai.OpenAI(**self._client_params).chat.completions
         elif model_name in self._supported_completion_models:
             self._is_chat_model = False
-            self.client = (
-                openai.OpenAI(**self._client_params).completions
-                if is_openai_v1()
-                else openai.Completion
-            )
+            self.client = openai.OpenAI(**self._client_params).completions
         else:
             raise UnsupportedModelError(self.model)
 
