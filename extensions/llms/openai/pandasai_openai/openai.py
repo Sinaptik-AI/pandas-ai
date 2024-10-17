@@ -13,8 +13,8 @@ from typing import Any, Dict, Optional
 
 import openai
 
-from ..exceptions import APIKeyNotFoundError, UnsupportedModelError
-from ..helpers import load_dotenv
+from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
+from pandasai.helpers import load_dotenv
 from .base import BaseOpenAI
 
 load_dotenv()

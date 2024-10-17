@@ -1,23 +1,10 @@
-"""OpenAI LLM via Microsoft Azure Cloud
-
-This module is to run the OpenAI API when using Microsoft Cloud infrastructure.
-Azure has implemented the openai API access to its platform.
-For details https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference.
-
-Example:
-    Use below example to call AzureOpenAI class
-
-    >>> from pandasai.llm.azure_openai import AzureOpenAI
-
-"""
-
 import os
 from typing import Any, Callable, Dict, Optional, Union
 
 import openai
 
-from ..exceptions import APIKeyNotFoundError, MissingModelError
-from ..helpers import load_dotenv
+from pandasai.exceptions import APIKeyNotFoundError, MissingModelError
+from pandasai.helpers import load_dotenv
 from .base import BaseOpenAI
 
 load_dotenv()

@@ -5,7 +5,7 @@ from unittest import mock
 import os
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
-from pandasai.llm import OpenAI
+from extensions.llms.openai.pandasai_openai import OpenAI
 from pandasai.prompts import BasePrompt
 
 
