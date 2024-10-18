@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pandasai-huggingface"
+version = "0.1.0"
+description = "HuggingFace integration for PandasAI"
+authors = ["Gabriele Venturi"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pandasai = "^3.0.0"
+text-generation = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

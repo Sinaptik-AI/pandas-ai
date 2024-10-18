@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from ..helpers import load_dotenv
-from ..prompts.base import BasePrompt
-from .base import LLM
+from pandasai.helpers import load_dotenv
+from pandasai.prompts.base import BasePrompt
+from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
     from pandasai.pipelines.pipeline_context import PipelineContext

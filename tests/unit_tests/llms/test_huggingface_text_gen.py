@@ -1,5 +1,7 @@
 """Unit tests for the LLaMa2TextGen LLM class"""
-from pandasai.llm import HuggingFaceTextGen
+from extensions.llms.huggingface.padasai_huggingface.huggingface_text_gen import (
+    HuggingFaceTextGen,
+)
 from pandasai.prompts import BasePrompt
 
 
