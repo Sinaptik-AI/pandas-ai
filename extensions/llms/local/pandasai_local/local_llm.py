@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 from openai import OpenAI
 
-from ..helpers.memory import Memory
-from ..prompts.base import BasePrompt
-from .base import LLM
+from pandasai.helpers.memory import Memory
+from pandasai.prompts.base import BasePrompt
+from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
     from pandasai.pipelines.pipeline_context import PipelineContext

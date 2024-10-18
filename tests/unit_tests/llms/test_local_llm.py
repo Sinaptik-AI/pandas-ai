@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pandasai.helpers.memory import Memory
-from pandasai.llm.local_llm import LocalLLM
+from extensions.llms.local.pandasai_local.local_llm import LocalLLM
 from pandasai.prompts import BasePrompt
 
 
