@@ -1,18 +1,13 @@
-"""IBM watsonx
-
-This module is for the IBM watsonx.ai large language models.
-
-"""
 from __future__ import annotations
 
 import os
 from typing import TYPE_CHECKING, Optional
 
-from ..exceptions import APIKeyNotFoundError
-from ..helpers import load_dotenv
-from ..helpers.optional import import_dependency
-from ..prompts.base import BasePrompt
-from .base import LLM
+from pandasai.exceptions import APIKeyNotFoundError
+from pandasai.helpers import load_dotenv
+from pandasai.helpers.optional import import_dependency
+from pandasai.prompts.base import BasePrompt
+from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
     from pandasai.pipelines.pipeline_context import PipelineContext
