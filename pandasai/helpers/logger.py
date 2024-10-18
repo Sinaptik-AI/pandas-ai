@@ -23,7 +23,7 @@ import time
 from typing import List
 
 from pandasai.helpers.telemetry import scarf_analytics
-from pandasai.pydantic import BaseModel
+from pydantic import BaseModel
 
 from .path import find_closest
 

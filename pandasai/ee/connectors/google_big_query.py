@@ -3,7 +3,8 @@ Google Big Query connector is used to connect to dataset from
 google big query api.
 """
 
-from typing import Union
+from typing import Union, Optional
+from pydantic import Field
 
 from sqlalchemy import create_engine
 
@@ -18,11 +19,15 @@ class GoogleBigQueryConnectorConfig(SQLBaseConnectorConfig):
     Connector configuration for big query.
     """
 
-    credentials_path: str = None
-    credentials_base64: str = None
+    dialect: str = "bigquery"
     database: str
     table: str
     projectID: str
+    credentials_path: Optional[str] = None
+    credentials_base64: Optional[str] = Field(default=None)
+
+    class Config:
+        extra = "allow"
 
 
 class GoogleBigQueryConnector(SQLConnector):

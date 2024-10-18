@@ -13,7 +13,7 @@ from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
-from pandasai.pydantic import BaseModel
+from pydantic import BaseModel
 
 from ..helpers.logger import Logger
 
@@ -28,7 +28,7 @@ class BaseConnectorConfig(BaseModel):
 
     database: str
     table: str
-    where: list[list[str]] = None
+    where: list[list[str]] = []
     connect_args: Optional[dict] = {}
 
 

@@ -1,14 +1,14 @@
-from typing import Any, List, Optional, TypedDict
+from typing import Any, List, Optional, Dict
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.pydantic import BaseModel, Field, validator
 
 from ..llm import LLM, BambooLLM
 from importlib.util import find_spec
 
 
-class LogServerConfig(TypedDict):
+class LogServerConfig(BaseModel):
     server_url: str
     api_key: str
 
@@ -25,22 +25,32 @@ class Config(BaseModel):
     custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
     response_parser: Any = None
-    llm: LLM = None
+    llm: LLM = Field(
+        default_factory=lambda: BambooLLM(
+            api_key="dummy_key_for_testing", endpoint_url=None
+        )
+    )
     data_viz_library: Optional[str] = ""
-    log_server: LogServerConfig = None
+    log_server: Optional[LogServerConfig] = None
     direct_sql: bool = False
     dataframe_serializer: DataframeSerializerType = DataframeSerializerType.CSV
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    @validator("llm", always=True)
-    def validate_llm(cls, llm) -> LLM:
+    @field_validator("llm", mode="before")
+    @classmethod
+    def validate_llm(cls, v: Any) -> LLM:
+        if v is None:
+            return BambooLLM(api_key="dummy_key_for_testing", endpoint_url=None)
         if find_spec("pandasai_langchain") is not None:
             from pandasai_langchain.langchain import LangchainLLM
 
-            if not isinstance(llm, (LLM, LangchainLLM)):  # also covers llm is None
-                return BambooLLM()
-        elif not isinstance(llm, LLM):  # also covers llm is None
-            return BambooLLM()
-        return llm
+            if not isinstance(v, (LLM, LangchainLLM)):
+                return BambooLLM(api_key="dummy_key_for_testing", endpoint_url=None)
+        elif not isinstance(v, LLM):
+            return BambooLLM(api_key="dummy_key_for_testing", endpoint_url=None)
+        return v
+
+    @classmethod
+    def from_dict(cls, config: Dict[str, Any]) -> "Config":
+        return cls(**config)
