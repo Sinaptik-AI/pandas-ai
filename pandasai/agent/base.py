@@ -25,7 +25,7 @@ from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..llm.base import LLM
-from ..llm.langchain import LangchainLLM, is_langchain_llm
+from importlib.util import find_spec
 from ..pipelines.pipeline_context import PipelineContext
 from ..prompts.base import BasePrompt
 from ..schemas.df_config import Config
@@ -145,8 +145,12 @@ class BaseAgent:
             BadImportError: If the LLM is a Langchain LLM but the langchain package
             is not installed
         """
-        if is_langchain_llm(llm):
-            llm = LangchainLLM(llm)
+        # Check if pandasai_langchain is installed
+        if find_spec("pandasai_langchain") is not None:
+            from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
+
+            if is_langchain_llm(llm):
+                llm = LangchainLLM(llm)
 
         return llm
 

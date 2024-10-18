@@ -4,7 +4,8 @@ from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.pydantic import BaseModel, Field, validator
 
-from ..llm import LLM, BambooLLM, LangchainLLM
+from ..llm import LLM, BambooLLM
+from importlib.util import find_spec
 
 
 class LogServerConfig(TypedDict):
@@ -35,6 +36,11 @@ class Config(BaseModel):
 
     @validator("llm", always=True)
     def validate_llm(cls, llm) -> LLM:
-        if not isinstance(llm, (LLM, LangchainLLM)):  # also covers llm is None
+        if find_spec("pandasai_langchain") is not None:
+            from pandasai_langchain.langchain import LangchainLLM
+
+            if not isinstance(llm, (LLM, LangchainLLM)):  # also covers llm is None
+                return BambooLLM()
+        elif not isinstance(llm, LLM):  # also covers llm is None
             return BambooLLM()
         return llm

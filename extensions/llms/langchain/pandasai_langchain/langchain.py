@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from pandasai.prompts.base import BasePrompt
 
-from .base import LLM
+from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
     from pandasai.pipelines.pipeline_context import PipelineContext
@@ -30,7 +30,7 @@ Example:
 
 
 def is_langchain_llm(llm) -> bool:
-    return isinstance(llm, BaseLanguageModel)
+    return hasattr(llm, "langchain_llm") or isinstance(llm, BaseLanguageModel)
 
 
 class LangchainLLM(LLM):

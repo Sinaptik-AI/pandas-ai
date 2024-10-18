@@ -17,7 +17,7 @@ from pandasai.constants import DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
-from pandasai.llm.langchain import LangchainLLM
+from extensions.llms.langchain.pandasai_langchain.langchain import is_langchain_llm
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 
 # from pandasai.pipelines.chat.code_cleaning import CodeManager
@@ -288,7 +288,7 @@ What is expected Salary Increase?
         langchain_llm = OpenAI(openai_api_key="fake_key")
 
         config = agent.get_config({"llm": langchain_llm})
-        assert isinstance(config.llm, LangchainLLM)
+        assert is_langchain_llm(config.llm)
         assert config.llm.langchain_llm == langchain_llm
 
     def test_load_llm_none(self, agent: Agent, llm):

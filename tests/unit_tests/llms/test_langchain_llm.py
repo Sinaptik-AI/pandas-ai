@@ -10,7 +10,7 @@ from langchain_core.outputs import (
     LLMResult,
 )
 
-from pandasai.llm import LangchainLLM
+from extensions.llms.langchain.pandasai_langchain.langchain import LangchainLLM
 from pandasai.prompts import BasePrompt
 
 

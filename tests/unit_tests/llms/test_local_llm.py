@@ -11,7 +11,7 @@ from pandasai.prompts import BasePrompt
 
 @pytest.fixture
 def client():
-    with patch("pandasai.llm.local_llm.OpenAI") as client:
+    with patch("extensions.llms.local.pandasai_local.local_llm.OpenAI") as client:
         mock_completions = MagicMock()
         mock_response = MagicMock(
             choices=[MagicMock(message=MagicMock(content="Mocked response"))]
