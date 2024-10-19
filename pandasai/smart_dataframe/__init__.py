@@ -1,23 +1,3 @@
-"""
-A smart dataframe class is a wrapper around the pandas dataframe that allows you
-to query it using natural language. It uses the LLMs to generate Python code from
-natural language and then executes it on the dataframe.
-
-Example:
-    ```python
-    from pandasai.smart_dataframe import SmartDataframe
-    from pandasai.llm.openai import OpenAI
-
-    df = pd.read_csv("examples/data/Loan payments data.csv")
-    llm = OpenAI()
-
-    df = SmartDataframe(df, config={"llm": llm})
-    response = df.chat("What is the average loan amount?")
-    print(response)
-    # The average loan amount is $15,000.
-    ```
-"""
-
 import uuid
 from functools import cached_property
 from io import StringIO

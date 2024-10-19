@@ -17,8 +17,8 @@ import pandasai.pandas as pd
 from pandasai.exceptions import MaliciousQueryError
 from pandasai.helpers.path import find_project_root
 
-from ..constants import DEFAULT_FILE_PERMISSIONS
-from .base import BaseConnector, BaseConnectorConfig
+from pandasai.constants import DEFAULT_FILE_PERMISSIONS
+from pandasai.connectors.base import BaseConnector, BaseConnectorConfig
 
 
 class SQLBaseConnectorConfig(BaseConnectorConfig):
@@ -55,6 +55,7 @@ class SQLConnector(BaseConnector):
     SQL connectors are used to connect to SQL databases in different dialects.
     """
 
+    is_sql_connector = True
     _engine = None
     _connection: Connection = None
     _rows_count: int = None
@@ -654,61 +655,3 @@ class PostgreSQLConnector(SQLConnector):
     def execute_direct_sql_query(self, sql_query):
         sql_query = sqlglot.transpile(sql_query, read="mysql", write="postgres")[0]
         return super().execute_direct_sql_query(sql_query)
-
-
-class OracleConnector(SQLConnector):
-    """
-    Oracle connectors are used to connect to Oracle databases.
-    """
-
-    def __init__(
-        self,
-        config: Union[SQLConnectorConfig, dict],
-        **kwargs,
-    ):
-        """
-        Initialize the Oracle connector with the given configuration.
-
-        Args:
-            config (ConnectorConfig): The configuration for the Oracle connector.
-        """
-        config["dialect"] = "oracle"
-        config["driver"] = "cx_oracle"
-
-        if isinstance(config, dict):
-            oracle_env_vars = {
-                "host": "ORACLE_HOST",
-                "port": "ORACLE_PORT",
-                "database": "ORACLE_DATABASE",
-                "username": "ORACLE_USERNAME",
-                "password": "ORACLE_PASSWORD",
-            }
-            config = self._populate_config_from_env(config, oracle_env_vars)
-
-        super().__init__(config, **kwargs)
-
-    @cache
-    def head(self, n: int = 5) -> pd.DataFrame:
-        """
-        Return the head of the data source that the connector is connected to.
-        This information is passed to the LLM to provide the schema of the data source.
-
-        Returns:
-            DataFrame: The head of the data source.
-        """
-
-        if self.logger:
-            self.logger.log(
-                f"Getting head of {self.config.table} "
-                f"using dialect {self.config.dialect}"
-            )
-
-        # Run a SQL query to get all the columns names and 5 random rows
-        query = self._build_query(limit=n, order="dbms_random.value")
-
-        # Return the head of the data source
-        return pd.read_sql(query, self._connection)
-
-    @property
-    def cs_table_name(self):
-        return f'"{self.config.table}"'

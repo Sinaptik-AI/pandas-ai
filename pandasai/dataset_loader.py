@@ -3,9 +3,8 @@ import yaml
 import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
-import pymysql
-import psycopg2
 from .dataframe.base import DataFrame
+import importlib
 
 
 class DatasetLoader:
@@ -38,10 +37,16 @@ class DatasetLoader:
         connection_info = schema["source"]["connection"]
         query = self._generate_query(schema)
 
-        if db_type == "mysql":
-            df = self._load_from_mysql(connection_info, query)
-        elif db_type == "postgres":
-            df = self._load_from_postgres(connection_info, query)
+        try:
+            pandasai_sql = importlib.import_module("pandasai_sql")
+            if db_type == "mysql":
+                df = pandasai_sql.load_from_mysql(connection_info, query)
+            elif db_type == "postgres":
+                df = pandasai_sql.load_from_postgres(connection_info, query)
+        except ImportError as e:
+            raise ImportError(
+                f"Failed to load data: {str(e)}. Make sure the pandasai_sql library is installed."
+            ) from e
 
         # Apply transformations
         df = self._apply_transformations(df, schema)
@@ -101,26 +106,6 @@ class DatasetLoader:
             query += f" LIMIT {schema['limit']}"
 
         return query
-
-    def _load_from_mysql(self, connection_info, query):
-        conn = pymysql.connect(
-            host=connection_info["host"],
-            user=connection_info["user"],
-            password=connection_info["password"],
-            database=connection_info["database"],
-            port=connection_info["port"],
-        )
-        return pd.read_sql(query, conn)
-
-    def _load_from_postgres(self, connection_info, query):
-        conn = psycopg2.connect(
-            host=connection_info["host"],
-            user=connection_info["user"],
-            password=connection_info["password"],
-            dbname=connection_info["database"],
-            port=connection_info["port"],
-        )
-        return pd.read_sql(query, conn)
 
     def _apply_transformations(self, df, schema):
         for transform in schema.get("transformations", []):

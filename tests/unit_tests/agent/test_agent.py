@@ -8,7 +8,7 @@ import pytest
 from langchain import OpenAI
 
 from pandasai.agent import Agent
-from pandasai.connectors.sql import (
+from extensions.connectors.sql.pandasai_sql.sql import (
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
@@ -83,7 +83,7 @@ class TestAgent:
         return Agent(sample_df, config, vectorstore=MagicMock())
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def sql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
@@ -102,7 +102,7 @@ class TestAgent:
         return SQLConnector(self.config)
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def pgsql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(

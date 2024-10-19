@@ -3,12 +3,17 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.ee.connectors import DatabricksConnector
-from pandasai.ee.connectors.databricks import DatabricksConnectorConfig
+from extensions.ee.connectors.databricks.pandasai_databricks.databricks import (
+    DatabricksConnector,
+    DatabricksConnectorConfig,
+)
 
 
 class TestDataBricksConnector(unittest.TestCase):
-    @patch("pandasai.ee.connectors.databricks.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.databricks.pandasai_databricks.databricks.create_engine",
+        autospec=True,
+    )
     # @patch("pandasai.connectors.sql.sql", autospec=True)
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
@@ -32,8 +37,12 @@ class TestDataBricksConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = DatabricksConnector(self.config)
 
-    @patch("pandasai.ee.connectors.DatabricksConnector._load_connector_config")
-    @patch("pandasai.ee.connectors.DatabricksConnector._init_connection")
+    @patch(
+        "extensions.ee.connectors.databricks.pandasai_databricks.databricks.DatabricksConnector._load_connector_config"
+    )
+    @patch(
+        "extensions.ee.connectors.databricks.pandasai_databricks.databricks.DatabricksConnector._init_connection"
+    )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -67,7 +76,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
  LIMIT :param_1"""
         self.assertEqual(str(query), expected_query)
 
-    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data

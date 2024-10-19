@@ -3,12 +3,17 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.ee.connectors import SnowFlakeConnector
-from pandasai.ee.connectors.snowflake import SnowFlakeConnectorConfig
+from extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake import (
+    SnowFlakeConnector,
+    SnowFlakeConnectorConfig,
+)
 
 
 class TestSQLConnector(unittest.TestCase):
-    @patch("pandasai.ee.connectors.snowflake.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.create_engine",
+        autospec=True,
+    )
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
@@ -32,8 +37,12 @@ class TestSQLConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = SnowFlakeConnector(self.config)
 
-    @patch("pandasai.ee.connectors.SnowFlakeConnector._load_connector_config")
-    @patch("pandasai.ee.connectors.SnowFlakeConnector._init_connection")
+    @patch(
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowFlakeConnector._load_connector_config"
+    )
+    @patch(
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowFlakeConnector._init_connection"
+    )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -65,7 +74,10 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
 
         self.assertEqual(str(query), expected_query)
 
-    @patch("pandasai.ee.connectors.snowflake.pd.read_sql", autospec=True)
+    @patch(
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.pd.read_sql",
+        autospec=True,
+    )
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data

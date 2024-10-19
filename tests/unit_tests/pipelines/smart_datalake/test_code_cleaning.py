@@ -10,7 +10,7 @@ import pytest
 
 from pandasai import Agent
 from pandasai.connectors.pandas import PandasConnector
-from pandasai.connectors.sql import (
+from extensions.connectors.sql.pandasai_sql.sql import (
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
@@ -129,7 +129,7 @@ class TestCodeCleaning:
         return CodeExecutionContext(uuid.uuid4())
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def sql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
@@ -148,7 +148,7 @@ class TestCodeCleaning:
         return SQLConnector(self.config)
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def pgsql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(

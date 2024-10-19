@@ -66,9 +66,7 @@ class TestDatasetLoader:
     def test_load_from_database(self, sample_schema):
         with patch("os.path.exists", return_value=True), patch(
             "os.path.getmtime", return_value=pd.Timestamp.now().timestamp() - 86400 * 8
-        ), patch(
-            "pandasai.dataset_loader.DatasetLoader._load_from_mysql"
-        ) as mock_load_from_mysql, patch(
+        ), patch("pandasai_sql.load_from_mysql") as mock_load_from_mysql, patch(
             "pandasai.dataset_loader.DatasetLoader._cache_data"
         ) as mock_cache_data, patch(
             "builtins.open", mock_open(read_data=str(sample_schema))

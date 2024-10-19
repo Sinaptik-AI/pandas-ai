@@ -1,13 +1,3 @@
-"""OpenAI LLM API
-
-This module is to run the OpenAI API using OpenAI API.
-
-Example:
-    Use below example to call OpenAI Model
-
-    >>> from pandasai.llm.openai import OpenAI
-"""
-
 import os
 from typing import Any, Dict, Optional
 

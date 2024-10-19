@@ -6,7 +6,7 @@ import pandas as pd
 from pandasai import Agent
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.path import find_project_root
-from pandasai.llm.openai import OpenAI
+from pandasai_openai import OpenAI
 
 from app.models import Dataset, User
 from app.repositories import UserRepository
@@ -99,7 +99,7 @@ class ChatController(BaseController[User]):
         agent = Agent(connectors, config=config)
 
         # add to log get log id
-        
+
         if memory:
             agent.context.memory = memory
 
@@ -120,20 +120,29 @@ class ChatController(BaseController[User]):
             ]
 
         summary = agent.pipeline.query_exec_tracker.get_summary()
-        log = await self.logs_repository.add_log(user.id, "", summary, chat_request.query, summary['success'], summary['execution_time'])
+        log = await self.logs_repository.add_log(
+            user.id,
+            "",
+            summary,
+            chat_request.query,
+            summary["success"],
+            summary["execution_time"],
+        )
 
         response = jsonable_encoder([response])
-        conversation_message = await self.conversation_repository.add_conversation_message(
-            conversation_id=conversation_id,
-            query=chat_request.query,
-            response=response,
-            code_generated=agent.last_code_executed,
-            log_id=log.id
+        conversation_message = (
+            await self.conversation_repository.add_conversation_message(
+                conversation_id=conversation_id,
+                query=chat_request.query,
+                response=response,
+                code_generated=agent.last_code_executed,
+                log_id=log.id,
+            )
         )
 
         return ChatResponse(
             response=response,
             conversation_id=str(conversation_id),
-            message_id = str(conversation_message.id),
-            query = str(conversation_message.query)
+            message_id=str(conversation_message.id),
+            query=str(conversation_message.query),
         )

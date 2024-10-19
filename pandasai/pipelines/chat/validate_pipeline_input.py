@@ -1,7 +1,5 @@
 from typing import Any, List
 
-from pandasai.connectors.pandas import PandasConnector
-from pandasai.connectors.sql import SQLConnector
 from pandasai.exceptions import InvalidConfigError
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
@@ -19,27 +17,27 @@ class ValidatePipelineInput(BaseLogicUnit):
 
     def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
-        Raises error if they don't belong sqlconnector or have different credentials
-        Args:
-            dfs (List[BaseConnector]): list of BaseConnectors
-
-        Raises:
-            InvalidConfigError: Raise Error in case of config is set but criteria is not met
+        Validates that all connectors are SQL connectors and belong to the same datasource
+        when direct_sql is True.
         """
 
-        if self.context.config.direct_sql:
-            if all(
-                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
-            ) or all(
-                (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
-            ):
-                return True
-            else:
+        if not self.context.config.direct_sql:
+            return False
+
+        if not all(hasattr(df, "is_sql_connector") for df in dfs):
+            raise InvalidConfigError(
+                "Direct SQL requires all connectors to be SQLConnectors"
+            )
+
+        if len(dfs) > 1:
+            first_connector = dfs[0]
+            if not all(connector.equals(first_connector) for connector in dfs[1:]):
                 raise InvalidConfigError(
-                    "Direct requires all Connector and they belong to same datasource "
-                    "and have same credentials"
+                    "Direct SQL requires all connectors to belong to the same datasource "
+                    "and have the same credentials"
                 )
-        return False
+
+        return True
 
     def execute(self, input: Any, **kwargs) -> Any:
         """

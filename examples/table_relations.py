@@ -1,7 +1,7 @@
 from pandasai.agent.base import Agent
-from pandasai.connectors.sql import PostgreSQLConnector
+from pandasai_sql.sql import PostgreSQLConnector
 from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
-from pandasai.llm.openai import OpenAI
+from pandasai_openai import OpenAI
 
 llm = OpenAI("sk-*************")
 

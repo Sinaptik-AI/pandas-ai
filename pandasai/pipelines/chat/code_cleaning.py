@@ -13,7 +13,6 @@ from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
 
 from ...connectors import BaseConnector
-from ...connectors.sql import SQLConnector
 from ...constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ...exceptions import (
     BadImportError,
@@ -253,15 +252,20 @@ Code running:
 
         if self._config.direct_sql:
             if all(
-                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
+                (
+                    hasattr(df, "is_sql_connector")
+                    and df.is_sql_connector
+                    and df.equals(dfs[0])
+                )
+                for df in dfs
             ) or all(
                 (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
             ):
                 return True
             else:
                 raise InvalidConfigError(
-                    "Direct requires all SQLConnector and they belong to same datasource "
-                    "and have same credentials"
+                    "Direct SQL requires all connectors to be SQL connectors and they must belong to the same datasource "
+                    "and have the same credentials"
                 )
         return False
 

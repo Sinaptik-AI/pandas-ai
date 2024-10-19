@@ -3,12 +3,14 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.connectors import SqliteConnector
-from pandasai.connectors.sql import SqliteConnectorConfig
+from extensions.connectors.sql.pandasai_sql.sql import (
+    SqliteConnector,
+    SqliteConnectorConfig,
+)
 
 
 class TestSqliteConnector(unittest.TestCase):
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def setUp(self, mock_create_engine) -> None:
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -21,8 +23,12 @@ class TestSqliteConnector(unittest.TestCase):
 
         self.connector = SqliteConnector(self.config)
 
-    @patch("pandasai.connectors.SqliteConnector._load_connector_config")
-    @patch("pandasai.connectors.SqliteConnector._init_connection")
+    @patch(
+        "extensions.connectors.sql.pandasai_sql.sql.SqliteConnector._load_connector_config"
+    )
+    @patch(
+        "extensions.connectors.sql.pandasai_sql.sql.SqliteConnector._init_connection"
+    )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -42,7 +48,7 @@ class TestSqliteConnector(unittest.TestCase):
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
-    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data
@@ -84,7 +90,9 @@ class TestSqliteConnector(unittest.TestCase):
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "yourtable")
 
-    @patch("pandasai.connectors.SqliteConnector._init_connection")
+    @patch(
+        "extensions.connectors.sql.pandasai_sql.sql.SqliteConnector._init_connection"
+    )
     def test_two_connector_equal(self, mock_init_connection):
         conn1 = SqliteConnector(self.config)
 
@@ -99,7 +107,9 @@ class TestSqliteConnector(unittest.TestCase):
 
         assert conn1.equals(conn3)
 
-    @patch("pandasai.connectors.SqliteConnector._init_connection")
+    @patch(
+        "extensions.connectors.sql.pandasai_sql.sql.SqliteConnector._init_connection"
+    )
     def test_two_connector_not_equal(self, mock_init_connection):
         conn1 = SqliteConnector(self.config)
 

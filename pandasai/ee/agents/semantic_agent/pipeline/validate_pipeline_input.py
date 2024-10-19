@@ -2,7 +2,6 @@ from typing import Any, List
 
 from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
-from pandasai.connectors.sql import SQLConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
 from pandasai.exceptions import InvalidConfigError
 from pandasai.llm.bamboo_llm import BambooLLM
@@ -20,7 +19,7 @@ class ValidatePipelineInput(BaseLogicUnit):
 
     def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
         """
-        Raises error if they don't belong sqlconnector or have different credentials
+        Raises error if they don't belong to SQL connectors or have different credentials
         Args:
             dfs (List[BaseConnector]): list of BaseConnectors
 
@@ -30,15 +29,20 @@ class ValidatePipelineInput(BaseLogicUnit):
 
         if self.context.config.direct_sql:
             if all(
-                (isinstance(df, SQLConnector) and df.equals(dfs[0])) for df in dfs
+                (
+                    hasattr(df, "is_sql_connector")
+                    and df.is_sql_connector
+                    and df.equals(dfs[0])
+                )
+                for df in dfs
             ) or all(
                 (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
             ):
                 return True
             else:
                 raise InvalidConfigError(
-                    "Direct requires all SQLConnector and they belong to same datasource "
-                    "and have same credentials"
+                    "Direct SQL requires all connectors to be SQL connectors and they must belong to the same datasource "
+                    "and have the same credentials"
                 )
         return False
 

@@ -1,7 +1,3 @@
-"""
-SnowFlake connectors are used to connect to SnowFlake Data Cloud.
-"""
-
 from functools import cache
 from typing import Union
 
@@ -9,8 +5,8 @@ from sqlalchemy import create_engine
 
 import pandasai.pandas as pd
 
-from ...connectors.base import BaseConnectorConfig
-from ...connectors.sql import SQLBaseConnectorConfig, SQLConnector
+from pandasai.connectors.base import BaseConnectorConfig
+from pandasai_sql.sql import SQLBaseConnectorConfig, SQLConnector
 
 
 class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):

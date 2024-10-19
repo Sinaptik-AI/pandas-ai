@@ -3,13 +3,18 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from pandasai.connectors.sql import PostgreSQLConnector
-from pandasai.ee.connectors import GoogleBigQueryConnector
-from pandasai.ee.connectors.google_big_query import GoogleBigQueryConnectorConfig
+from extensions.connectors.sql.pandasai_sql.sql import PostgreSQLConnector
+from extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query import (
+    GoogleBigQueryConnector,
+    GoogleBigQueryConnectorConfig,
+)
 
 
 class TestGoogleBigQueryConnector(unittest.TestCase):
-    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        autospec=True,
+    )
     def setUp(self, mock_create_engine) -> None:
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -26,8 +31,12 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
 
         self.connector = GoogleBigQueryConnector(self.config)
 
-    @patch("pandasai.ee.connectors.GoogleBigQueryConnector._load_connector_config")
-    @patch("pandasai.ee.connectors.GoogleBigQueryConnector._init_connection")
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.GoogleBigQueryConnector._load_connector_config"
+    )
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.GoogleBigQueryConnector._init_connection"
+    )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -40,7 +49,10 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         mock_load_connector_config.assert_called()
         mock_init_connection.assert_called()
 
-    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        autospec=True,
+    )
     def test_constructor_and_properties_with_base64_string(self, mock_create_engine):
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -68,7 +80,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
-    @patch("pandasai.connectors.sql.pd.read_sql", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data
@@ -110,7 +122,10 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "yourtable")
 
-    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        autospec=True,
+    )
     def test_constructor_and_properties_equal_func(self, mock_create_engine):
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -130,7 +145,10 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
 
         assert self.connector.equals(connector_2)
 
-    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        autospec=True,
+    )
     def test_constructor_and_properties_not_equal_func(self, mock_create_engine):
         self.mock_engine = Mock()
         self.mock_connection = Mock()
@@ -158,8 +176,11 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
 
         assert not self.connector.equals(connector_2)
 
-    @patch("pandasai.ee.connectors.google_big_query.create_engine", autospec=True)
-    @patch("pandasai.connectors.SQLConnector._init_connection")
+    @patch(
+        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        autospec=True,
+    )
+    @patch("extensions.connectors.sql.pandasai_sql.SQLConnector._init_connection")
     def test_constructor_and_properties_different_type(
         self, mock_connection, mock_create_engine
     ):

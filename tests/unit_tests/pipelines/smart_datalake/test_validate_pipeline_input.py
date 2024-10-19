@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from pandasai.connectors.sql import (
+from extensions.connectors.sql.pandasai_sql.sql import (
     PostgreSQLConnector,
     SQLConnector,
     SQLConnectorConfig,
@@ -70,7 +70,7 @@ class TestValidatePipelineInput:
         )
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def sql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
@@ -89,7 +89,7 @@ class TestValidatePipelineInput:
         return SQLConnector(self.config)
 
     @pytest.fixture
-    @patch("pandasai.connectors.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def pgsql_connector(self, create_engine):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
