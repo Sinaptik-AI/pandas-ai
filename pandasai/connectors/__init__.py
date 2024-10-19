@@ -4,10 +4,9 @@ Connectors are used to connect to databases, external APIs, and other data sourc
 The connectors package contains all the connectors that are used by the application.
 """
 
-from .airtable import AirtableConnector
 from .base import BaseConnector
 from .pandas import PandasConnector
-from .sql import (
+from ...extensions.connectors.sql.pandasai_sql.sql import (
     MySQLConnector,
     OracleConnector,
     PostgreSQLConnector,
@@ -22,7 +21,6 @@ __all__ = [
     "MySQLConnector",
     "PostgreSQLConnector",
     "YahooFinanceConnector",
-    "AirtableConnector",
     "SqliteConnector",
     "PandasConnector",
     "OracleConnector",
