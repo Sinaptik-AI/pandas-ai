@@ -1,10 +1,9 @@
 from .sql import SQLConnector, SqliteConnector, SQLConnectorConfig
-import importlib
+import pandas as pd
 
 
 def load_from_mysql(connection_info, query):
-    pymysql = importlib.import_module("pymysql")
-    pd = importlib.import_module("pandas")
+    import pymysql
 
     conn = pymysql.connect(
         host=connection_info["host"],
@@ -17,8 +16,8 @@ def load_from_mysql(connection_info, query):
 
 
 def load_from_postgres(connection_info, query):
-    psycopg2 = importlib.import_module("psycopg2")
-    pd = importlib.import_module("pandas")
+    import psycopg2
+
     conn = psycopg2.connect(
         host=connection_info["host"],
         user=connection_info["user"],

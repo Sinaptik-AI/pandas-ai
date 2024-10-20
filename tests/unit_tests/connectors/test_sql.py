@@ -3,11 +3,15 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from extensions.connectors.sql.pandasai_sql.sql import (
-    MySQLConnector,
-    PostgreSQLConnector,
+from extensions.connectors.sql.pandasai_sql import (
     SQLConnector,
     SQLConnectorConfig,
+    load_from_mysql,
+    load_from_postgres,
+)
+from extensions.connectors.sql.pandasai_sql.sql import (
+    PostgreSQLConnector,
+    MySQLConnector,
 )
 from pandasai.exceptions import MaliciousQueryError
 
@@ -303,3 +307,59 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         connector_2.execute_direct_sql_query("SELECT * from `orders`")
 
         mock_read_sql.assert_called_once()
+
+
+class TestSQLLoaders(unittest.TestCase):
+    def setUp(self):
+        self.connection_info = {
+            "host": "localhost",
+            "user": "testuser",
+            "password": "testpass",
+            "database": "testdb",
+            "port": 3306,
+        }
+        self.query = "SELECT * FROM test_table"
+
+    @patch("extensions.connectors.sql.pandasai_sql.pd.read_sql")
+    def test_load_from_mysql(self, mock_read_sql):
+        mock_pymysql = Mock()
+        mock_connection = Mock()
+        mock_pymysql.connect.return_value = mock_connection
+
+        expected_df = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})
+        mock_read_sql.return_value = expected_df
+
+        with patch.dict("sys.modules", {"pymysql": mock_pymysql}):
+            result = load_from_mysql(self.connection_info, self.query)
+
+        mock_pymysql.connect.assert_called_once_with(
+            host=self.connection_info["host"],
+            user=self.connection_info["user"],
+            password=self.connection_info["password"],
+            database=self.connection_info["database"],
+            port=self.connection_info["port"],
+        )
+        mock_read_sql.assert_called_once_with(self.query, mock_connection)
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.connectors.sql.pandasai_sql.pd.read_sql")
+    def test_load_from_postgres(self, mock_read_sql):
+        mock_psycopg2 = Mock()
+        mock_connection = Mock()
+        mock_psycopg2.connect.return_value = mock_connection
+
+        expected_df = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})
+        mock_read_sql.return_value = expected_df
+
+        with patch.dict("sys.modules", {"psycopg2": mock_psycopg2}):
+            result = load_from_postgres(self.connection_info, self.query)
+
+        mock_psycopg2.connect.assert_called_once_with(
+            host=self.connection_info["host"],
+            user=self.connection_info["user"],
+            password=self.connection_info["password"],
+            dbname=self.connection_info["database"],
+            port=self.connection_info["port"],
+        )
+        mock_read_sql.assert_called_once_with(self.query, mock_connection)
+        pd.testing.assert_frame_equal(result, expected_df)

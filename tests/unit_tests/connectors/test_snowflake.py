@@ -4,9 +4,10 @@ from unittest.mock import Mock, patch
 import pandas as pd
 
 from extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake import (
-    SnowFlakeConnector,
-    SnowFlakeConnectorConfig,
+    SnowflakeConnector,
+    SnowflakeConnectorConfig,
 )
+from extensions.ee.connectors.snowflake.pandasai_snowflake import load_from_snowflake
 
 
 class TestSQLConnector(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestSQLConnector(unittest.TestCase):
         mock_create_engine.return_value = self.mock_engine
 
         # Define your ConnectorConfig instance here
-        self.config = SnowFlakeConnectorConfig(
+        self.config = SnowflakeConnectorConfig(
             dialect="snowflake",
             account="ehxzojy-ue47135",
             username="your_username",
@@ -35,13 +36,13 @@ class TestSQLConnector(unittest.TestCase):
         ).dict()
 
         # Create an instance of SQLConnector
-        self.connector = SnowFlakeConnector(self.config)
+        self.connector = SnowflakeConnector(self.config)
 
     @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowFlakeConnector._load_connector_config"
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowflakeConnector._load_connector_config"
     )
     @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowFlakeConnector._init_connection"
+        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowflakeConnector._init_connection"
     )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
@@ -51,14 +52,14 @@ class TestSQLConnector(unittest.TestCase):
         self.assertEqual(self.connector._engine, self.mock_engine)
         self.assertEqual(self.connector._connection, self.mock_connection)
         self.assertEqual(self.connector._cache_interval, 600)
-        SnowFlakeConnector(self.config)
+        SnowflakeConnector(self.config)
         mock_load_connector_config.assert_called()
         mock_init_connection.assert_called()
 
     def test_repr_method(self):
         # Test __repr__ method
         expected_repr = (
-            "<SnowFlakeConnector dialect=snowflake "
+            "<SnowflakeConnector dialect=snowflake "
             "Account=ehxzojy-ue47135 warehouse=COMPUTED "
             "database=SNOWFLAKE_SAMPLE_DATA schema=tpch_sf1  table=lineitem>"
         )
@@ -118,3 +119,125 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "lineitem")
+
+
+class TestLoadFromSnowflake(unittest.TestCase):
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    def test_load_from_snowflake(self, mock_read_sql, mock_connect):
+        # Mock the connection info
+        connection_info = {
+            "account": "test_account",
+            "user": "test_user",
+            "password": "test_password",
+            "warehouse": "test_warehouse",
+            "database": "test_db",
+            "schema": "test_schema",
+            "role": "test_role",
+        }
+
+        # Mock the query
+        query = "SELECT * FROM test_table"
+
+        # Mock the connection
+        mock_conn = Mock()
+        mock_connect.return_value = mock_conn
+
+        # Mock the query result
+        expected_df = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})
+        mock_read_sql.return_value = expected_df
+
+        # Call the function
+        result = load_from_snowflake(connection_info, query)
+
+        # Assert that connect was called with the correct arguments
+        mock_connect.assert_called_once_with(
+            account="test_account",
+            user="test_user",
+            password="test_password",
+            warehouse="test_warehouse",
+            database="test_db",
+            schema="test_schema",
+            role="test_role",
+        )
+
+        # Assert that read_sql was called with the correct arguments
+        mock_read_sql.assert_called_once_with(query, mock_conn)
+
+        # Assert that the result is the expected DataFrame
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    def test_load_from_snowflake_empty_result(self, mock_read_sql, mock_connect):
+        connection_info = {
+            "account": "test_account",
+            "user": "test_user",
+            "password": "test_password",
+            "warehouse": "test_warehouse",
+            "database": "test_db",
+            "schema": "test_schema",
+            "role": "test_role",
+        }
+
+        query = "SELECT * FROM empty_table"
+
+        mock_conn = Mock()
+        mock_connect.return_value = mock_conn
+
+        # Mock an empty DataFrame as the query result
+        expected_df = pd.DataFrame()
+        mock_read_sql.return_value = expected_df
+
+        result = load_from_snowflake(connection_info, query)
+
+        mock_connect.assert_called_once_with(
+            account="test_account",
+            user="test_user",
+            password="test_password",
+            warehouse="test_warehouse",
+            database="test_db",
+            schema="test_schema",
+            role="test_role",
+        )
+
+        mock_read_sql.assert_called_once_with(query, mock_conn)
+
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
+    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    def test_load_from_snowflake_without_optional_params(
+        self, mock_read_sql, mock_connect
+    ):
+        connection_info = {
+            "account": "test_account",
+            "user": "test_user",
+            "password": "test_password",
+            "warehouse": "test_warehouse",
+            "database": "test_db",
+        }
+
+        query = "SELECT * FROM test_table"
+
+        mock_conn = Mock()
+        mock_connect.return_value = mock_conn
+
+        expected_df = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})
+        mock_read_sql.return_value = expected_df
+
+        result = load_from_snowflake(connection_info, query)
+
+        mock_connect.assert_called_once_with(
+            account="test_account",
+            user="test_user",
+            password="test_password",
+            warehouse="test_warehouse",
+            database="test_db",
+            schema=None,
+            role=None,
+        )
+
+        mock_read_sql.assert_called_once_with(query, mock_conn)
+
+        pd.testing.assert_frame_equal(result, expected_df)

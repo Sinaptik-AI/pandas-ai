@@ -7,6 +7,7 @@ from extensions.ee.connectors.databricks.pandasai_databricks.databricks import (
     DatabricksConnector,
     DatabricksConnectorConfig,
 )
+from extensions.ee.connectors.databricks.pandasai_databricks import load_from_databricks
 
 
 class TestDataBricksConnector(unittest.TestCase):
@@ -117,3 +118,100 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         # Test fallback_name property
         fallback_name = self.connector.fallback_name
         self.assertEqual(fallback_name, "lineitem")
+
+
+class TestLoadFromDatabricks(unittest.TestCase):
+    @patch("extensions.ee.connectors.databricks.pandasai_databricks.sql.connect")
+    def test_load_from_databricks(self, mock_connect):
+        # Mock the connection info
+        connection_info = {
+            "server_hostname": "test_hostname",
+            "http_path": "test_path",
+            "access_token": "test_token",
+        }
+
+        # Mock the query
+        query = "SELECT * FROM test_table"
+
+        # Mock the cursor and its methods
+        mock_cursor = Mock()
+        mock_connection = Mock()
+        mock_connection.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_connection
+
+        # Mock the query result
+        mock_cursor.fetchall.return_value = [(1, "a"), (2, "b")]
+        mock_cursor.description = [("col1", None), ("col2", None)]
+
+        # Call the function
+        result = load_from_databricks(connection_info, query)
+
+        # Assert that connect was called with the correct arguments
+        mock_connect.assert_called_once_with(
+            server_hostname="test_hostname",
+            http_path="test_path",
+            access_token="test_token",
+        )
+
+        # Assert that execute was called with the correct query
+        mock_cursor.execute.assert_called_once_with(query)
+
+        # Assert that the result is the expected DataFrame
+        expected_df = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.databricks.pandasai_databricks.sql.connect")
+    def test_load_from_databricks_empty_result(self, mock_connect):
+        connection_info = {
+            "server_hostname": "test_hostname",
+            "http_path": "test_path",
+            "access_token": "test_token",
+        }
+
+        query = "SELECT * FROM empty_table"
+
+        mock_cursor = Mock()
+        mock_connection = Mock()
+        mock_connection.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_connection
+
+        # Mock an empty result
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.description = [("col1", None), ("col2", None)]
+
+        result = load_from_databricks(connection_info, query)
+
+        mock_connect.assert_called_once_with(
+            server_hostname="test_hostname",
+            http_path="test_path",
+            access_token="test_token",
+        )
+
+        mock_cursor.execute.assert_called_once_with(query)
+
+        expected_df = pd.DataFrame(columns=["col1", "col2"])
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.databricks.pandasai_databricks.sql.connect")
+    def test_load_from_databricks_connection_error(self, mock_connect):
+        connection_info = {
+            "server_hostname": "test_hostname",
+            "http_path": "test_path",
+            "access_token": "test_token",
+        }
+
+        query = "SELECT * FROM test_table"
+
+        # Simulate a connection error
+        mock_connect.side_effect = Exception("Connection failed")
+
+        with self.assertRaises(Exception) as context:
+            load_from_databricks(connection_info, query)
+
+        self.assertTrue("Connection failed" in str(context.exception))
+
+        mock_connect.assert_called_once_with(
+            server_hostname="test_hostname",
+            http_path="test_path",
+            access_token="test_token",
+        )

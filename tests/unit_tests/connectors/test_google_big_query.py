@@ -8,6 +8,7 @@ from extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query import
     GoogleBigQueryConnector,
     GoogleBigQueryConnectorConfig,
 )
+from extensions.ee.connectors.bigquery.pandasai_bigquery import load_from_bigquery
 
 
 class TestGoogleBigQueryConnector(unittest.TestCase):
@@ -213,3 +214,95 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         self.connector = GoogleBigQueryConnector(self.config)
 
         assert not self.connector.equals(connector_2)
+
+
+class TestLoadFromBigQuery(unittest.TestCase):
+    @patch("extensions.ee.connectors.bigquery.pandasai_bigquery.bigquery.Client")
+    def test_load_from_bigquery(self, mock_client):
+        # Mock the connection info
+        connection_info = {
+            "project_id": "test_project",
+            "credentials": "test_credentials",
+        }
+
+        # Mock the query
+        query = "SELECT * FROM test_table"
+
+        # Mock the query job and its result
+        mock_query_job = Mock()
+        mock_result = [{"col1": 1, "col2": "a"}, {"col1": 2, "col2": "b"}]
+        mock_query_job.result.return_value = mock_result
+
+        # Set up the mock client to return our mock query job
+        mock_client_instance = mock_client.return_value
+        mock_client_instance.query.return_value = mock_query_job
+
+        # Call the function
+        result = load_from_bigquery(connection_info, query)
+
+        # Assert that the client was created with the correct arguments
+        mock_client.assert_called_once_with(
+            project=connection_info["project_id"],
+            credentials=connection_info["credentials"],
+        )
+
+        # Assert that the query was executed
+        mock_client_instance.query.assert_called_once_with(query)
+
+        # Assert that the result is a pandas DataFrame with the expected data
+        expected_df = pd.DataFrame(mock_result)
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.bigquery.pandasai_bigquery.bigquery.Client")
+    def test_load_from_bigquery_without_credentials(self, mock_client):
+        # Mock the connection info without credentials
+        connection_info = {"project_id": "test_project"}
+
+        query = "SELECT * FROM test_table"
+
+        mock_query_job = Mock()
+        mock_result = [{"col1": 1, "col2": "a"}, {"col1": 2, "col2": "b"}]
+        mock_query_job.result.return_value = mock_result
+
+        mock_client_instance = mock_client.return_value
+        mock_client_instance.query.return_value = mock_query_job
+
+        result = load_from_bigquery(connection_info, query)
+
+        # Assert that the client was created with the correct arguments
+        mock_client.assert_called_once_with(
+            project=connection_info["project_id"], credentials=None
+        )
+
+        mock_client_instance.query.assert_called_once_with(query)
+
+        expected_df = pd.DataFrame(mock_result)
+        pd.testing.assert_frame_equal(result, expected_df)
+
+    @patch("extensions.ee.connectors.bigquery.pandasai_bigquery.bigquery.Client")
+    def test_load_from_bigquery_empty_result(self, mock_client):
+        connection_info = {
+            "project_id": "test_project",
+            "credentials": "test_credentials",
+        }
+
+        query = "SELECT * FROM empty_table"
+
+        mock_query_job = Mock()
+        mock_result = []  # Empty result
+        mock_query_job.result.return_value = mock_result
+
+        mock_client_instance = mock_client.return_value
+        mock_client_instance.query.return_value = mock_query_job
+
+        result = load_from_bigquery(connection_info, query)
+
+        mock_client.assert_called_once_with(
+            project=connection_info["project_id"],
+            credentials=connection_info["credentials"],
+        )
+
+        mock_client_instance.query.assert_called_once_with(query)
+
+        expected_df = pd.DataFrame()  # Empty DataFrame
+        pd.testing.assert_frame_equal(result, expected_df)

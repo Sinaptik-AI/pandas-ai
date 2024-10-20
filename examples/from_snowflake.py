@@ -6,9 +6,9 @@ from pandasai import Agent
 
 # The usage of this connector in production is subject to a license ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
 # If you plan to use it in production, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
-from pandasai.ee.connectors import SnowFlakeConnector
+from pandasai.ee.connectors import SnowflakeConnector
 
-snowflake_connector = SnowFlakeConnector(
+snowflake_connector = SnowflakeConnector(
     config={
         "account": "ehxzojy-ue47135",
         "database": "SNOWFLAKE_SAMPLE_DATA",

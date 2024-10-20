@@ -9,9 +9,9 @@ from pandasai.connectors.base import BaseConnectorConfig
 from pandasai_sql.sql import SQLBaseConnectorConfig, SQLConnector
 
 
-class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
+class SnowflakeConnectorConfig(SQLBaseConnectorConfig):
     """
-    Connector configuration for SnowFlake.
+    Connector configuration for Snowflake.
     """
 
     account: str
@@ -22,21 +22,21 @@ class SnowFlakeConnectorConfig(SQLBaseConnectorConfig):
     warehouse: str
 
 
-class SnowFlakeConnector(SQLConnector):
+class SnowflakeConnector(SQLConnector):
     """
-    SnowFlake connectors are used to connect to SnowFlake Data Cloud.
+    Snowflake connectors are used to connect to Snowflake Data Cloud.
     """
 
     def __init__(
         self,
-        config: Union[SnowFlakeConnectorConfig, dict],
+        config: Union[SnowflakeConnectorConfig, dict],
         **kwargs,
     ):
         """
-        Initialize the SnowFlake connector with the given configuration.
+        Initialize the Snowflake connector with the given configuration.
 
         Args:
-            config (ConnectorConfig): The configuration for the SnowFlake connector.
+            config (ConnectorConfig): The configuration for the Snowflake connector.
         """
         config["dialect"] = "snowflake"
 
@@ -54,9 +54,9 @@ class SnowFlakeConnector(SQLConnector):
         super().__init__(config, **kwargs)
 
     def _load_connector_config(self, config: Union[BaseConnectorConfig, dict]):
-        return SnowFlakeConnectorConfig(**config)
+        return SnowflakeConnectorConfig(**config)
 
-    def _init_connection(self, config: SnowFlakeConnectorConfig):
+    def _init_connection(self, config: SnowflakeConnectorConfig):
         """
         Initialize Database Connection
 
@@ -94,10 +94,10 @@ class SnowFlakeConnector(SQLConnector):
 
     def __repr__(self):
         """
-        Return the string representation of the SnowFlake connector.
+        Return the string representation of the Snowflake connector.
 
         Returns:
-            str: The string representation of the SnowFlake connector.
+            str: The string representation of the Snowflake connector.
         """
         return (
             f"<{self.__class__.__name__} dialect={self.config.dialect} "
