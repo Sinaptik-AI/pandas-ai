@@ -8,11 +8,11 @@
 [![Downloads](https://static.pepy.tech/badge/pandasai)](https://pepy.tech/project/pandasai) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
-PandasAI is a Python platform that makes it easy to ask questions to your data in natural language. It helps non-technical users to interact with their data in a more natural way, and it helps technical users to save time and effort when working with data.
+PandasAI is a Python platform that makes it easy to ask questions to your data in natural language. It helps non-technical users to interact with their data in a more natural way, and it helps technical users to save time, and effort when working with data.
 
 # 🚀 Deploying PandasAI
 
-PandasAI can be used in a variety of ways. You can easily use it in your Jupyter notebooks or streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
+PandasAI can be used in a variety of ways. You can easily use it in your Jupyter notebooks or Streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
 
 If you are interested in the managed PandasAI Cloud or our self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
@@ -20,7 +20,7 @@ If you are interested in the managed PandasAI Cloud or our self-hosted Enterpris
 
 You can find the full documentation for PandasAI [here](https://pandas-ai.readthedocs.io/en/latest/).
 
-You can either decide to use PandasAI in your Jupyter notebooks, streamlit apps, or use the client and server architecture from the repo.
+You can either decide to use PandasAI in your Jupyter notebooks, Streamlit apps, or use the client and server architecture from the repo.
 
 ## ☁️ Using the platform
 
