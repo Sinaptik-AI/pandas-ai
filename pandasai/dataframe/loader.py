@@ -3,7 +3,7 @@ import yaml
 import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
-from .dataframe.base import DataFrame
+from .base import DataFrame
 import importlib
 from typing import Dict, Any
 
@@ -12,11 +12,13 @@ class DatasetLoader:
     SUPPORTED_SOURCES = {
         "mysql": "pandasai_sql",
         "postgres": "pandasai_sql",
-        "yahoo_finance": "pandasai.connectors.yfinance",
-        "bigquery": "pandasai.ee.connectors.bigquery",
-        "snowflake": "pandasai.ee.connectors.snowflake",
-        "databricks": "pandasai.ee.connectors.databricks",
-        "oracle": "pandasai.ee.connectors.oracle",
+        "cockroachdb": "pandasai_sql",
+        "sqlite": "pandasai_sql",
+        "yahoo_finance": "pandasai_yfinance",
+        "bigquery": "pandasai_bigquery",
+        "snowflake": "pandasai_snowflake",
+        "databricks": "pandasai_databricks",
+        "oracle": "pandasai_oracle",
     }
 
     def __init__(self):
@@ -93,7 +95,13 @@ class DatasetLoader:
             module_name = self.SUPPORTED_SOURCES[source_type]
             module = importlib.import_module(module_name)
 
-            if source_type in ["mysql", "postgres"]:
+            if source_type in [
+                "mysql",
+                "postgres",
+                "cockroach",
+                "sqlite",
+                "cockroachdb",
+            ]:
                 load_function = getattr(module, f"load_from_{source_type}")
                 return load_function(connection_info, query)
             else:

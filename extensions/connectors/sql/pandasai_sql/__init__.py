@@ -28,10 +28,26 @@ def load_from_postgres(connection_info, query):
     return pd.read_sql(query, conn)
 
 
+def load_from_sqlite(connection_info, query):
+    import sqlite3
+
+    conn = sqlite3.connect(connection_info["database"])
+    return pd.read_sql(query, conn)
+
+
+def load_from_cockroachdb(connection_info, query):
+    import cockroachdb
+
+    conn = cockroachdb.connect(connection_info)
+    return pd.read_sql(query, conn)
+
+
 __all__ = [
     "SQLConnector",
     "SqliteConnector",
     "SQLConnectorConfig",
     "load_from_mysql",
     "load_from_postgres",
+    "load_from_sqlite",
+    "load_from_cockroach",
 ]

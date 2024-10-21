@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, mock_open
 import pandas as pd
-from pandasai.dataset_loader import DatasetLoader
+from pandasai.dataframe.loader import DatasetLoader
 from pandasai.dataframe.base import DataFrame
 from datetime import datetime, timedelta
 
@@ -60,7 +60,7 @@ class TestDatasetLoader:
         with patch("os.path.exists", return_value=True), patch(
             "os.path.getmtime", return_value=pd.Timestamp.now().timestamp()
         ), patch(
-            "pandasai.dataset_loader.DatasetLoader._read_cache"
+            "pandasai.dataframe.loader.DatasetLoader._read_cache"
         ) as mock_read_cache, patch(
             "builtins.open", mock_open(read_data=str(sample_schema))
         ):

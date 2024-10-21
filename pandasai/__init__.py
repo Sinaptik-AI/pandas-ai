@@ -9,7 +9,7 @@ from pandasai.smart_datalake import SmartDatalake
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
-from .dataset_loader import DatasetLoader
+from .dataframe.loader import DatasetLoader
 
 # Global variable to store the current agent
 _current_agent = None

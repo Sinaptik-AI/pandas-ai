@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-sql"
-version = "0.1.1"
+version = "0.1.2"
 description = "SQL connectors integration for PandasAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
@@ -10,9 +10,9 @@ python = ">=3.9,<4.0"
 pandasai = "^3.0.0"
 sqlalchemy = ">=1.4,<3"
 pymysql = "^1.1.0"
+sqlite3 = "^3.43.0"
 psycopg2-binary = "^2.9.7"
 sqlalchemy-cockroachdb = "^2.0.2"
-cx-Oracle = "^8.3.0"
 
 [build-system]
 requires = ["poetry-core"]

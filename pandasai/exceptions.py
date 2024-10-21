@@ -244,3 +244,9 @@ class InvalidSchemaJson(Exception):
     Args:
         Exception (Exception): Invalid json schema
     """
+
+
+class LazyLoadError(Exception):
+    """Raised when trying to access data that hasn't been loaded in lazy load mode."""
+
+    pass
