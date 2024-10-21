@@ -4,7 +4,7 @@ from pandasai.ee.helpers.query_builder import QueryBuilder
 from tests.unit_tests.ee.helpers.schema import MULTI_JOIN_SCHEMA, VIZ_QUERY_SCHEMA
 
 
-class TestQueryBuilder(unittest.TestCase):
+class TestSemanticAgentQueryBuilder(unittest.TestCase):
     def test_constructor(self):
         query_builder = QueryBuilder(VIZ_QUERY_SCHEMA)
         assert query_builder.schema == VIZ_QUERY_SCHEMA

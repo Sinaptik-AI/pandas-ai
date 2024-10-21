@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch, mock_open
 import pandas as pd
-from pandasai.dataframe.loader import DatasetLoader
 from pandasai.dataframe.base import DataFrame
+from pandasai.dataframe.loader import DatasetLoader
 from datetime import datetime, timedelta
 
 
@@ -74,12 +74,6 @@ class TestDatasetLoader:
             assert isinstance(result, DataFrame)
             assert "email" in result.columns
             mock_read_cache.assert_called_once()
-
-    def test_generate_query(self, sample_schema):
-        loader = DatasetLoader()
-        query = loader._generate_query(sample_schema)
-        expected_query = "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC LIMIT 100"
-        assert query == expected_query
 
     def test_anonymize_method(self):
         loader = DatasetLoader()

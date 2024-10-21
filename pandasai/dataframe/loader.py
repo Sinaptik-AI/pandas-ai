@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import hashlib
 from .base import DataFrame
 import importlib
-from typing import Dict, Any
+from typing import Any
+from .query_builder import QueryBuilder
 
 
 class DatasetLoader:
@@ -89,7 +90,8 @@ class DatasetLoader:
     def _load_from_source(self) -> pd.DataFrame:
         source_type = self.schema["source"]["type"]
         connection_info = self.schema["source"].get("connection", {})
-        query = self._generate_query(self.schema)
+        query_builder = QueryBuilder(self.schema)
+        query = query_builder.build_query()
 
         try:
             module_name = self.SUPPORTED_SOURCES[source_type]
@@ -115,26 +117,6 @@ class DatasetLoader:
                 f"{source_type.capitalize()} connector not found. "
                 f"Please install the {module_name} library."
             ) from e
-
-    def _generate_query(self, schema: Dict[str, Any] = None) -> str:
-        if schema is None:
-            schema = self.schema
-
-        columns = ", ".join([col["name"] for col in schema["columns"]])
-        table_name = schema["source"]["table"]
-        query = f"SELECT {columns} FROM {table_name}"
-
-        if "order_by" in schema:
-            order_by = schema["order_by"]
-            order_by_clause = (
-                ", ".join(order_by) if isinstance(order_by, list) else order_by
-            )
-            query += f" ORDER BY {order_by_clause}"
-
-        if "limit" in schema:
-            query += f" LIMIT {schema['limit']}"
-
-        return query
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
         for transform in self.schema.get("transformations", []):
