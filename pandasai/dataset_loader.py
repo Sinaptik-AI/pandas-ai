@@ -12,7 +12,7 @@ class DatasetLoader:
     SUPPORTED_SOURCES = {
         "mysql": "pandasai_sql",
         "postgres": "pandasai_sql",
-        "yahoo_finance": "pandasai.connectors.yahoo_finance",
+        "yahoo_finance": "pandasai.connectors.yfinance",
         "bigquery": "pandasai.ee.connectors.bigquery",
         "snowflake": "pandasai.ee.connectors.snowflake",
         "databricks": "pandasai.ee.connectors.databricks",

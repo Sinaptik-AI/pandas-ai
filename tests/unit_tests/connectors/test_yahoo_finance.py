@@ -1,10 +1,11 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 import pytest
 import yfinance as yf
 
-from pandasai.connectors.yahoo_finance import YahooFinanceConnector
+from extensions.connectors.yfinance.pandasai_yfinance.yahoo_finance import YahooFinanceConnector
+from extensions.connectors.yfinance.pandasai_yfinance import load_from_yahoo_finance
 
 
 @pytest.fixture
@@ -87,3 +88,58 @@ def test_columns_count(yahoo_finance_connector):
 
 def test_fallback_name(yahoo_finance_connector, stock_ticker):
     assert yahoo_finance_connector.fallback_name == stock_ticker
+        
+def test_load_from_yahoo_finance_default_period():
+    # Arrange
+    connection_info = {"ticker": "AAPL"}
+    mock_ticker = Mock()
+    mock_history = pd.DataFrame({"Close": [100, 101, 102]})
+    mock_ticker.history.return_value = mock_history
+
+    # Act
+    with patch("yfinance.Ticker", return_value=mock_ticker) as mock_yf_ticker:
+        result = load_from_yahoo_finance(connection_info, None)
+
+    # Assert
+    mock_yf_ticker.assert_called_once_with("AAPL")
+    mock_ticker.history.assert_called_once_with(period="1mo")
+    assert isinstance(result, str)
+    assert "Close" in result
+    assert "100" in result and "101" in result and "102" in result
+
+def test_load_from_yahoo_finance_custom_period():
+    # Arrange
+    connection_info = {"ticker": "GOOGL", "period": "3mo"}
+    mock_ticker = Mock()
+    mock_history = pd.DataFrame({"Close": [200, 201, 202]})
+    mock_ticker.history.return_value = mock_history
+
+    # Act
+    with patch("yfinance.Ticker", return_value=mock_ticker) as mock_yf_ticker:
+        result = load_from_yahoo_finance(connection_info, None)
+
+    # Assert
+    mock_yf_ticker.assert_called_once_with("GOOGL")
+    mock_ticker.history.assert_called_once_with(period="3mo")
+    assert isinstance(result, str)
+    assert "Close" in result
+    assert "200" in result and "201" in result and "202" in result
+
+def test_load_from_yahoo_finance_query_ignored():
+    # Arrange
+    connection_info = {"ticker": "MSFT"}
+    query = "This query should be ignored"
+    mock_ticker = Mock()
+    mock_history = pd.DataFrame({"Close": [300, 301, 302]})
+    mock_ticker.history.return_value = mock_history
+
+    # Act
+    with patch("yfinance.Ticker", return_value=mock_ticker) as mock_yf_ticker:
+        result = load_from_yahoo_finance(connection_info, query)
+
+    # Assert
+    mock_yf_ticker.assert_called_once_with("MSFT")
+    mock_ticker.history.assert_called_once_with(period="1mo")
+    assert isinstance(result, str)
+    assert "Close" in result
+    assert "300" in result and "301" in result and "302" in result

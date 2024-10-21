@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "pandasai-yfinance"
+version = "0.1.0"
+description = "Yahoo Finance connectors integration for PandasAI"
+authors = ["Gabriele Venturi"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+pandasai = "^3.0.0"
+yfinance = "^0.2.29"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"

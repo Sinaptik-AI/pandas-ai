@@ -29,7 +29,6 @@ numpy = {version = "^1.17", optional = true}
 scipy = {version = "^1.9.0", optional = true}
 streamlit = {version = "^1.23.1", optional = true}
 openpyxl = { version = "^3.0.7", optional = true }
-yfinance = { version = "^0.2.28", optional = true }
 flask = { version = "^3.0.2", optional = true }
 sqlglot = {extras = ["rs"], version = "^25.0.3"}
 transformers = "^4.45.2"
