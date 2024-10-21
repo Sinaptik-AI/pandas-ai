@@ -180,7 +180,3 @@ class SmartDatalake:
     @property
     def memory(self):
         return self._agent.context.memory
-
-    @property
-    def last_query_log_id(self):
-        return self._agent.last_query_log_id

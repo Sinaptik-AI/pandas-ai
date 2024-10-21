@@ -401,7 +401,3 @@ class BaseAgent:
     @property
     def last_error(self):
         raise NotImplementedError
-
-    @property
-    def last_query_log_id(self):
-        raise NotImplementedError

@@ -191,10 +191,6 @@ class SmartDataframe:
         data = StringIO(self._custom_head)
         return pd.read_csv(data)
 
-    @property
-    def last_query_log_id(self):
-        return self._agent.last_query_log_id
-
     def __len__(self):
         return len(self.dataframe)
 

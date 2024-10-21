@@ -54,7 +54,3 @@ class Agent(BaseAgent):
     @property
     def last_error(self):
         return self.pipeline.last_error
-
-    @property
-    def last_query_log_id(self):
-        return self.pipeline.get_last_track_log_id()

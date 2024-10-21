@@ -17,7 +17,6 @@ from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from extensions.llms.langchain.pandasai_langchain.langchain import is_langchain_llm
-from pandasai.pipelines.chat.code_cleaning import CodeCleaning
 from pandasai.prompts.base import BasePrompt
 
 
@@ -402,33 +401,6 @@ What is expected Salary Increase?
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)
-
-    @patch.object(
-        CodeCleaning,
-        "execute",
-        return_value={
-            "type": "string",
-            "value": "There are 10 countries in the dataframe.",
-        },
-    )
-    @patch("pandasai.helpers.query_exec_tracker.QueryExecTracker.publish")
-    @patch(
-        "pandasai.helpers.query_exec_tracker.QueryExecTracker.last_log_id",
-        return_value="1234",
-    )
-    def test_query_tracker_last_log_id_property_called(
-        self,
-        mock_query_tracker_log_id,
-        mock_query_tracker_publish,
-        _mocked_method,
-        agent: Agent,
-    ):
-        _mocked_method.__name__ = "execute_code"
-
-        agent.chat("How many countries are in the dataframe?")
-        agent.last_query_log_id()
-        mock_query_tracker_publish.assert_called()
-        mock_query_tracker_log_id.assert_called()
 
     def test_(self, sample_df, config):
         agent = Agent(sample_df, config, memory_size=10)

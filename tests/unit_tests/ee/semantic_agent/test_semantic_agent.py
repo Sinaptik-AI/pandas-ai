@@ -18,7 +18,6 @@ from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from tests.unit_tests.ee.helpers.schema import (
     VIZ_QUERY_SCHEMA,
-    VIZ_QUERY_SCHEMA_OBJ,
     VIZ_QUERY_SCHEMA_STR,
 )
 
@@ -243,12 +242,6 @@ class TestSemanticAgent:
         llm = MockBambooLLM()
         BaseAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
-    def test_base_agent_log_id_implement(self, sample_df):
-        llm = MockBambooLLM()
-        agent = BaseAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
-        with pytest.raises(Exception):
-            agent.last_query_log_id
-
     def test_base_agent_log_id_register_agent(self, sample_df):
         llm = MockBambooLLM()
         llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
@@ -274,25 +267,11 @@ class TestSemanticAgent:
         )
         assert agent._schema == VIZ_QUERY_SCHEMA
 
-    def test_last_log_id(self, sample_df):
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
-        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
-        assert agent.last_query_log_id is None
-
     def test_last_error(self, sample_df):
         llm = MockBambooLLM()
         llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
         agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
         assert agent.last_error is None
-
-    def test_return_is_object(self, sample_df):
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_OBJ)
-        agent = SemanticAgent(
-            sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
-        )
-        assert agent.last_query_log_id is None
 
     @patch("pandasai.helpers.cache.Cache.get")
     def test_cache_of_schema(self, mock_cache_get, sample_df):

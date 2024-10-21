@@ -61,7 +61,6 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self.code_generation_pipeline = Pipeline(
             context=context,
             logger=logger,
-            query_exec_tracker=self.query_exec_tracker,
             steps=[
                 ValidatePipelineInput(),
                 CacheLookup(),
@@ -76,7 +75,6 @@ class SemanticChatPipeline(GenerateChatPipeline):
                 ),
                 CodeCleaning(
                     skip_if=self.no_code,
-                    on_failure=self.on_code_cleaning_failure,
                     on_retry=self.on_code_retry,
                 ),
             ],
@@ -85,11 +83,9 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self.code_execution_pipeline = Pipeline(
             context=context,
             logger=logger,
-            query_exec_tracker=self.query_exec_tracker,
             steps=[
                 CodeExecution(
                     before_execution=before_code_execution,
-                    on_failure=self.on_code_execution_failure,
                     on_retry=self.on_code_retry,
                 ),
                 ResultValidation(),
@@ -102,7 +98,6 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self.code_exec_error_pipeline = ErrorCorrectionPipeline(
             context=context,
             logger=logger,
-            query_exec_tracker=self.query_exec_tracker,
             on_code_generation=on_code_generation,
             on_prompt_generation=on_prompt_generation,
         )
@@ -110,7 +105,6 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self.fix_semantic_json_pipeline = FixSemanticJsonPipeline(
             context=context,
             logger=logger,
-            query_exec_tracker=self.query_exec_tracker,
             on_code_generation=on_code_generation,
             on_prompt_generation=on_prompt_generation,
         )
@@ -120,18 +114,5 @@ class SemanticChatPipeline(GenerateChatPipeline):
         self.last_error = None
 
     def on_wrong_semantic_json(self, code, errors):
-        self.query_exec_tracker.add_step(
-            {
-                "type": "CodeGenerator",
-                "success": False,
-                "message": "Failed to validate json",
-                "execution_time": None,
-                "data": {
-                    "content_type": "code",
-                    "value": code,
-                    "exception": errors,
-                },
-            }
-        )
         correction_input = ErrorCorrectionPipelineInput(code, errors)
         return self.fix_semantic_json_pipeline.run(correction_input)

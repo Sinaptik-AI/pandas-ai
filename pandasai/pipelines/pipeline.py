@@ -1,11 +1,9 @@
 import logging
-import time
 from typing import Any, List, Optional, Union
 
 from pandasai.config import load_config_from_json
 from pandasai.exceptions import PipelineConcatenationError, UnSupportedLogicUnit
 from pandasai.helpers.logger import Logger
-from pandasai.helpers.query_exec_tracker import QueryExecTracker
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -23,13 +21,11 @@ class Pipeline(AbstractPipeline):
     _context: PipelineContext
     _logger: Logger
     _steps: List[BaseLogicUnit]
-    _query_exec_tracker: Optional[QueryExecTracker]
 
     def __init__(
         self,
         context: Union[List[BaseConnector], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
-        query_exec_tracker: Optional[QueryExecTracker] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,
     ):
@@ -56,9 +52,6 @@ class Pipeline(AbstractPipeline):
 
         self._context = context
         self._steps = steps or []
-        self._query_exec_tracker = query_exec_tracker or (
-            context and QueryExecTracker(server_config=self._context.config.log_server)
-        )
 
     def add_step(self, logic: BaseLogicUnit):
         """
@@ -95,8 +88,6 @@ class Pipeline(AbstractPipeline):
                     self._logger.log(f"Executing Step {index}: Skipping...")
                     continue
 
-                start_time = time.time()
-
                 # Execute the logic unit
                 step_output = logic.execute(
                     data,
@@ -105,25 +96,8 @@ class Pipeline(AbstractPipeline):
                     context=self._context,
                 )
 
-                execution_time = time.time() - start_time
-
                 # Track the execution step of pipeline
                 if isinstance(step_output, LogicUnitOutput):
-                    self._query_exec_tracker.add_step(
-                        {
-                            "type": logic.__class__.__name__,
-                            "success": step_output.success,
-                            "message": step_output.message,
-                            "execution_time": execution_time,
-                            "data": step_output.metadata,
-                        }
-                    )
-
-                    if step_output.final_track_output:
-                        self._query_exec_tracker.set_final_response(
-                            step_output.metadata
-                        )
-
                     data = step_output.output
                 else:
                     data = step_output
@@ -157,7 +131,6 @@ class Pipeline(AbstractPipeline):
         combined_pipeline = Pipeline(
             context=self._context,
             logger=self._logger,
-            query_exec_tracker=self._query_exec_tracker,
         )
 
         for step in self._steps:
@@ -183,11 +156,3 @@ class Pipeline(AbstractPipeline):
     @logger.setter
     def logger(self, logger: Logger):
         self._logger = logger
-
-    @property
-    def query_exec_tracker(self):
-        return self._query_exec_tracker
-
-    @query_exec_tracker.setter
-    def query_exec_tracker(self, query_exec_tracker: QueryExecTracker):
-        self._query_exec_tracker = query_exec_tracker
