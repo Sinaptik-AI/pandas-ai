@@ -3,7 +3,7 @@ from enum import Enum
 
 import yaml
 
-import pandasai.pandas as pd
+import pandas as pd
 
 
 class DataframeSerializerType(Enum):

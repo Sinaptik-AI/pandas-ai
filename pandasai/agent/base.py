@@ -3,8 +3,10 @@ import re
 import uuid
 from typing import List, Optional, Union
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.agent.base_security import BaseSecurity
+from pandasai.connectors.base import BaseConnector
+from pandasai.connectors.pandas import PandasConnector
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
@@ -13,14 +15,12 @@ from pandasai.pipelines.chat.code_execution_pipeline_input import (
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import load_config_from_json
-from ..connectors import BaseConnector, PandasConnector
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import (
     InvalidLLMOutputType,
     MaliciousQueryError,
     MissingVectorStoreError,
 )
-from ..helpers.df_info import df_type
 from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
@@ -178,8 +178,6 @@ class BaseAgent:
             if isinstance(df, BaseConnector):
                 connectors.append(df)
             elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
-                connectors.append(PandasConnector({"original_df": df}))
-            elif df_type(df) == "modin":
                 connectors.append(PandasConnector({"original_df": df}))
             elif isinstance(df, SmartDataframe) and isinstance(
                 df.dataframe, BaseConnector

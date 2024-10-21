@@ -1,12 +1,18 @@
 import pytest
 import pandas as pd
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from pandasai.agent.base import BaseAgent
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.connectors import PandasConnector
 
 
 class TestBaseAgent:
+    @pytest.fixture(autouse=True)
+    def mock_bamboo_llm(self):
+        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
+            mock.return_value = Mock(type="bamboo")
+            yield mock
+
     @pytest.fixture
     def mock_agent(self):
         # Create a mock DataFrame
@@ -17,13 +23,11 @@ class TestBaseAgent:
 
         # Create the BaseAgent with the mock connector
         with patch("pandasai.agent.base.PandasConnector", return_value=mock_connector):
-            agent = BaseAgent([mock_df])
-
-        agent.pipeline = Mock()
-        agent.context = Mock()
-        agent.context.config.llm.type = "test_llm"
-        agent.logger = Mock()
-        return agent
+            with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
+                mock.return_value = Mock(type="bamboo")
+                agent = BaseAgent([mock_df])
+                agent.pipeline = MagicMock()  # Mock the pipeline
+                return agent
 
     def test_chat_starts_new_conversation(self, mock_agent):
         with patch.object(mock_agent, "start_new_conversation") as mock_start_new:

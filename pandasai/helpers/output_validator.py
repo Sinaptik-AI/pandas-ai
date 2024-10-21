@@ -3,7 +3,7 @@ from typing import Any, Iterable
 
 import numpy as np
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.exceptions import InvalidOutputValueMismatch
 
 

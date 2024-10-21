@@ -1,4 +1,4 @@
-import pandasai.pandas as pd
+import pandas as pd
 
 from .from_google_sheets import from_google_sheets
 

@@ -13,7 +13,7 @@ except ImportError:
 import sqlglot
 from pydantic import BaseModel
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.exceptions import PandasConnectorTableNotFound
 
 from ..helpers.data_sampler import DataSampler

@@ -126,41 +126,6 @@ print(response)
 
 Remember that at the moment, you need to make sure that the Google Sheet is public.
 
-## Working with Modin dataframes
-
-Example of using PandasAI with a Modin DataFrame. In order to use Modin dataframes as a data source, you need to install the `pandasai[modin]` extra dependency.
-
-```console
-pip install pandasai[modin]
-```
-
-Then, you can use PandasAI with a Modin DataFrame as follows:
-
-```python
-import os
-import pandasai
-from pandasai import SmartDataframe
-import modin.pandas as pd
-
-# By default, unless you choose a different LLM, it will use BambooLLM.
-# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
-
-sales_by_country = pd.DataFrame({
-    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
-    "sales": [5000, 3200, 2900, 4100, 2300, 2100, 2500, 2600, 4500, 7000]
-})
-
-pandasai.set_pd_engine("modin")
-sdf = SmartDataframe(sales_by_country)
-response = sdf.chat('Which are the top 5 countries by sales?')
-print(response)
-# Output: China, United States, Japan, Germany, Australia
-
-# you can switch back to pandas using
-# pandasai.set_pd_engine("pandas")
-```
-
 ## Plotting
 
 Example of using PandasAI to plot a chart from a Pandas DataFrame

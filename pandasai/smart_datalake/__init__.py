@@ -1,17 +1,18 @@
 import uuid
-from typing import Any, List, Optional, Union
+import pandas as pd
+from typing import List, Optional, Union
 
 from pandasai.agent import Agent
 
 from ..helpers.cache import Cache
-from ..helpers.df_info import DataFrameType
 from ..schemas.df_config import Config
+from ..connectors.base import BaseConnector
 
 
 class SmartDatalake:
     def __init__(
         self,
-        dfs: List[Union[DataFrameType, Any]],
+        dfs: List[Union[pd.DataFrame, BaseConnector]],
         config: Optional[Union[Config, dict]] = None,
     ):
         print("\n" + "*" * 80)

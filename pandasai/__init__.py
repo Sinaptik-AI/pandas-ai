@@ -7,7 +7,6 @@ from typing import List
 from pandasai.smart_dataframe import SmartDataframe
 from pandasai.smart_datalake import SmartDatalake
 from .agent import Agent
-from .engine import set_pd_engine
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
 from .dataset_loader import DatasetLoader
@@ -81,7 +80,6 @@ def load(dataset_path: str) -> DataFrame:
 __all__ = [
     "Agent",
     "clear_cache",
-    "set_pd_engine",
     "pandas",
     "SmartDataframe",
     "SmartDatalake",

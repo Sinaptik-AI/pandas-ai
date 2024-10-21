@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-snowflake"
-version = "0.1.0"
+version = "0.1.1"
 description = "Snowflake connector integration for PandasAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"

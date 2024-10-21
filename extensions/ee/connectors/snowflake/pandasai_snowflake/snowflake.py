@@ -3,7 +3,7 @@ from typing import Union
 
 from sqlalchemy import create_engine
 
-import pandasai.pandas as pd
+import pandas as pd
 
 from pandasai.connectors.base import BaseConnectorConfig
 from pandasai_sql.sql import SQLBaseConnectorConfig, SQLConnector

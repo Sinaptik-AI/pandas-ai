@@ -1,7 +1,6 @@
 import os
-import sys
 from typing import Optional
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
@@ -19,8 +18,6 @@ from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from extensions.llms.langchain.pandasai_langchain.langchain import is_langchain_llm
 from pandasai.pipelines.chat.code_cleaning import CodeCleaning
-
-# from pandasai.pipelines.chat.code_cleaning import CodeManager
 from pandasai.prompts.base import BasePrompt
 
 
@@ -119,6 +116,12 @@ class TestAgent:
 
         # Create an instance of SQLConnector
         return PostgreSQLConnector(self.config)
+
+    @pytest.fixture(autouse=True)
+    def mock_bamboo_llm(self):
+        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
+            mock.return_value = Mock(type="bamboo")
+            yield mock
 
     def test_constructor(self, sample_df, config):
         agent_1 = Agent(sample_df, config)
@@ -292,127 +295,10 @@ What is expected Salary Increase?
         assert config.llm.langchain_llm == langchain_llm
 
     def test_load_llm_none(self, agent: Agent, llm):
-        config = agent.get_config({"llm": None})
+        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
+            mock.return_value = Mock(type="bamboo")
+            config = agent.get_config({"llm": None})
         assert isinstance(config.llm, BambooLLM)
-
-    @pytest.mark.skip(reason="Removed CodeManager class")
-    @patch(
-        "pandasai.pipelines.chat.code_execution.CodeManager.last_code_executed",
-        new_callable=PropertyMock,
-    )
-    def test_last_code_executed(self, _mocked_property, agent: Agent):
-        expected_code = "result = {'type': 'string', 'value': 'There are 10 countries in the dataframe.'}"
-        _mocked_property.return_value = expected_code
-        agent.chat("How many countries are in the dataframe?")
-        assert agent.last_code_executed == expected_code
-
-    @pytest.mark.skip(reason="Removed CodeManager class")
-    # @patch.object(
-    #     CodeManager,
-    #     "execute_code",
-    #     return_value={
-    #         "type": "string",
-    #         "value": "There are 10 countries in the dataframe.",
-    #     },
-    # )
-    def test_last_result_is_saved(self, _mocked_method, agent: Agent):
-        assert agent.last_result is None
-
-        _mocked_method.__name__ = "execute_code"
-
-        agent.chat("How many countries are in the dataframe?")
-        assert agent.last_result == {
-            "type": "string",
-            "value": "There are 10 countries in the dataframe.",
-        }
-
-    @pytest.mark.skip(reason="Removed CodeManager class")
-    # @patch.object(
-    #     CodeManager,
-    #     "execute_code",
-    #     return_value={
-    #         "type": "string",
-    #         "value": "There are 10 countries in the dataframe.",
-    #     },
-    # )
-    @patch("pandasai.helpers.query_exec_tracker.QueryExecTracker.publish")
-    def test_query_tracker_publish_called_in_chat_method(
-        self, mock_query_tracker_publish, _mocked_method, agent: Agent
-    ):
-        assert agent.last_result is None
-
-        _mocked_method.__name__ = "execute_code"
-
-        agent.chat("How many countries are in the dataframe?")
-        mock_query_tracker_publish.assert_called()
-
-    @pytest.mark.skip(reason="Removed CodeManager class")
-    @patch(
-        "pandasai.pipelines.chat.code_execution.CodeManager.execute_code",
-        autospec=True,
-    )
-    @patch(
-        "pandasai.pipelines.chat.code_generator.CodeGenerator.execute",
-        autospec=True,
-    )
-    @patch(
-        "pandasai.pipelines.chat.code_execution.traceback.format_exc",
-        autospec=True,
-    )
-    def test_retry_on_error_with_single_df(
-        self,
-        mock_traceback,
-        mock_generate,
-        mock_execute,
-        agent: Agent,
-    ):
-        mock_traceback.return_value = "Test error"
-        mock_generate.return_value = (
-            "result = {'type': 'string', 'value': 'Hello World'}"
-        )
-        mock_execute.side_effect = [
-            Exception("Test error"),
-            {"type": "string", "value": "Hello World"},
-        ]
-
-        agent.context.dfs[0].to_csv = Mock(
-            return_value="""country,gdp,happiness_index
-China,654881226,6.66
-Japan,9009692259,7.16
-Spain,8446903488,6.38
-"""
-        )
-
-        agent.chat("Hello world")
-
-        last_prompt = agent.last_prompt
-        if sys.platform.startswith("win"):
-            last_prompt = last_prompt.replace("\r\n", "\n")
-
-        print(last_prompt)
-
-        assert (
-            last_prompt
-            == """<dataframe>
-dfs[0]:10x3
-country,gdp,happiness_index
-China,654881226,6.66
-Japan,9009692259,7.16
-Spain,8446903488,6.38
-</dataframe>
-
-The user asked the following question:
-### QUERY
- Hello world
-
-You generated this python code:
-result = {'type': 'string', 'value': 'Hello World'}
-
-It fails with the following error:
-Test error
-
-Fix the python code above and return the new python code:"""  # noqa: E501
-        )
 
     @patch("os.makedirs")
     def test_load_config_with_cache(self, mock_makedirs, agent):

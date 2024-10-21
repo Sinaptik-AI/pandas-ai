@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pandas.util.version import Version
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.constants import WHITELISTED_BUILTINS
 
 if TYPE_CHECKING:

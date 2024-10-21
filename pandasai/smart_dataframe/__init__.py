@@ -3,12 +3,11 @@ from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.agent import Agent
 from pandasai.connectors.pandas import PandasConnector
 
 from ..connectors.base import BaseConnector
-from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
 
@@ -21,7 +20,7 @@ class SmartDataframe:
 
     def __init__(
         self,
-        df: Union[DataFrameType, BaseConnector],
+        df: Union[pd.DataFrame, BaseConnector],
         name: str = None,
         description: str = None,
         custom_head: pd.DataFrame = None,
@@ -68,7 +67,7 @@ class SmartDataframe:
                     * number - specifies that user expects to get a number
                         as a response object
                     * dataframe - specifies that user expects to get
-                        pandas/modin dataframe as a response object
+                        pandas dataframe as a response object
                     * plot - specifies that user expects LLM to build
                         a plot
                     * string - specifies that user expects to get text
@@ -85,7 +84,7 @@ class SmartDataframe:
         Get the head of the dataframe as a dataframe.
 
         Returns:
-            DataFrameType: Pandas or Modin dataframe
+            pd.DataFrame: Pandas dataframe
         """
         return self.dataframe.get_head()
 
@@ -216,13 +215,13 @@ class SmartDataframe:
 
 
 def load_smartdataframes(
-    dfs: List[Union[DataFrameType, Any]], config: Config
+    dfs: List[Union[pd.DataFrame, Any]], config: Config
 ) -> List[SmartDataframe]:
     """
     Load all the dataframes to be used in the smart datalake.
 
     Args:
-        dfs (List[Union[DataFrameType, Any]]): List of dataframes to be used
+        dfs (List[Union[pd.DataFrame, Any]]): List of dataframes to be used
     """
 
     smart_dfs = []

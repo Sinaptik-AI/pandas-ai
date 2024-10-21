@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import TYPE_CHECKING, List, Optional, Union
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,

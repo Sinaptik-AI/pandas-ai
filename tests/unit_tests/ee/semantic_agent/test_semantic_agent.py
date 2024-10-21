@@ -25,8 +25,17 @@ from tests.unit_tests.ee.helpers.schema import (
 
 class MockBambooLLM(BambooLLM):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+        # Bypass the API key check and Session initialization
+        self._session = MagicMock()
+        self._type = "bamboo"  # Use a private attribute instead of the property
+
+    @property
+    def type(self):
+        return self._type
+
+    def call(self, prompt):
+        # Mock the call method
+        return VIZ_QUERY_SCHEMA_STR
 
 
 class TestSemanticAgent:
@@ -228,8 +237,7 @@ class TestSemanticAgent:
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame) -> Agent:
         llm = MockBambooLLM()
-        config = {"llm": llm}
-        return SemanticAgent(sample_df, config, vectorstore=MagicMock())
+        return SemanticAgent(sample_df, config={"llm": llm}, vectorstore=MagicMock())
 
     def test_base_agent_contruct(self, sample_df):
         llm = MockBambooLLM()

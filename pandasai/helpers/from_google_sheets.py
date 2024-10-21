@@ -2,7 +2,7 @@ import re
 
 import requests
 
-import pandasai.pandas as pd
+import pandas as pd
 
 
 def get_google_sheet(src) -> list:

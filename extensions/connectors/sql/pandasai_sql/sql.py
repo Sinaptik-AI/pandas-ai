@@ -13,7 +13,7 @@ import sqlglot
 from sqlalchemy import asc, create_engine, select, text
 from sqlalchemy.engine import Connection
 
-import pandasai.pandas as pd
+import pandas as pd
 from pandasai.exceptions import MaliciousQueryError
 from pandasai.helpers.path import find_project_root
 

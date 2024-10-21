@@ -11,7 +11,7 @@ import random
 
 import numpy as np
 
-import pandasai.pandas as pd
+import pandas as pd
 
 from .anonymizer import Anonymizer
 
