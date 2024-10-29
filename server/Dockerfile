@@ -21,6 +21,8 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 # Add Poetry to PATH
 ENV PATH="/root/.local/bin:$PATH"
 
+ENV PYTHONPATH=/app
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
