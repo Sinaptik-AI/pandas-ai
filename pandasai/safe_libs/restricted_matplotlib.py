@@ -1,6 +1,7 @@
-import matplotlib.pyplot as plt
-import matplotlib.figure as figure
 import matplotlib.axes as axes
+import matplotlib.figure as figure
+import matplotlib.pyplot as plt
+
 from .base_restricted_module import BaseRestrictedModule
 
 
