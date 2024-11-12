@@ -15,7 +15,7 @@ from pandasai.helpers.sql import extract_table_names
 
 from ...connectors import BaseConnector
 from ...connectors.sql import SQLConnector
-from ...constants import RESTRICTED_LIBS, WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
+from ...constants import RESTRICTED_LIBS, WHITELISTED_LIBRARIES
 from ...exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
@@ -209,7 +209,7 @@ Code running:
                         "Restricted library import detected in 'from ... import ...'"
                     )
 
-            # Check attribute access for restricted libraries (e.g., scipy.sparse._sputils.sys)
+            # Check attribute access for restricted libraries
             elif isinstance(node, (ast.Attribute, ast.Subscript)):
                 check_restricted_access(node)
 
@@ -637,5 +637,9 @@ Code running:
                 )
             return
 
-        if library not in WHITELISTED_BUILTINS:
-            raise BadImportError(library)
+        if library not in WHITELISTED_LIBRARIES:
+            raise BadImportError(
+                f"The library '{library}' is not in the list of whitelisted libraries. "
+                "To learn how to whitelist custom dependencies, visit: "
+                "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )

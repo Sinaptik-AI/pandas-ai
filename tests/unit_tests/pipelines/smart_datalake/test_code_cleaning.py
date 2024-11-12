@@ -188,23 +188,17 @@ class TestCodeCleaning:
         with pytest.raises(Exception):
             code_cleaning.execute("1 +", context=context, logger=logger)
 
-    def test_clean_code_remove_builtins(
+    def test_clean_code_raise_not_whitelisted_lib(
         self,
         code_cleaning: CodeCleaning,
         context: PipelineContext,
         logger: Logger,
     ):
-        builtins_code = """import set
+        builtins_code = """import scipy
 result = {'type': 'number', 'value': set([1, 2, 3])}"""
 
-        output = code_cleaning.execute(builtins_code, context=context, logger=logger)
-
-        assert (
-            output.output == """result = {'type': 'number', 'value': set([1, 2, 3])}"""
-        )
-        assert isinstance(output, LogicUnitOutput)
-        assert output.success
-        assert output.message == "Code Cleaned Successfully"
+        with pytest.raises(BadImportError):
+            code_cleaning.execute(builtins_code, context=context, logger=logger)
 
     def test_clean_code_removes_jailbreak_code(
         self,
