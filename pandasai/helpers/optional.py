@@ -77,8 +77,6 @@ def get_environment(additional_deps: List[dict]) -> dict:
     env["pd"] = RestrictedPandas()
     env["plt"] = RestrictedMatplotlib()
     env["np"] = RestrictedNumpy()
-    if any(lib["name"] == "seaborn" for lib in additional_deps):
-        env["sns"] = RestrictedSeaborn()
 
     for lib in additional_deps:
         if lib["name"] == "seaborn":
