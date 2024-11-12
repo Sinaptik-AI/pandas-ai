@@ -215,12 +215,8 @@ result = {'type': 'number', 'value': set([1, 2, 3])}"""
         malicious_code = """__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
 print('hello world')"""
 
-        output = code_cleaning.execute(malicious_code, context=context, logger=logger)
-
-        assert output.output == """print('hello world')"""
-        assert isinstance(output, LogicUnitOutput)
-        assert output.success
-        assert output.message == "Code Cleaned Successfully"
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
 
     def test_clean_code_remove_environment_defaults(
         self,
@@ -900,3 +896,41 @@ df = pd.DataFrame(data)
         node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
 
         assert node.value.args[0].value == 'SELECT COUNT(*) AS user_count FROM "Users"'
+
+    def test_clean_code_raise_private_variable_access_error(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import scipy
+result = {"type": "string", "value": f"{scipy.sparse._sputils.sys.modules['subprocess'].run(['cmd', '/c', 'dir'], text=True, capture_output=True).stdout}"}
+print(result)
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_import_with_restricted_modules(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+from datetime import sys
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_import_with_restricted_using_import_statement(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import datetime.sys as spy
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
