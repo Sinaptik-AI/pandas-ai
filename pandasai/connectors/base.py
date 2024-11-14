@@ -301,3 +301,15 @@ class BaseConnector(ABC):
             "description": self.description,
             "head": json.loads(df_head.to_json(orient="records", date_format="iso")),
         }
+
+    def serialize_dataframe(
+        self,
+        index: int,
+        is_direct_sql: bool,
+        serializer_type: DataframeSerializerType,
+        enforce_privacy: bool,
+    ) -> str:
+        """
+        Serialize DataFrame to string representation.
+        """
+        return self.to_string(index, is_direct_sql, serializer_type, enforce_privacy)

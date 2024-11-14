@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import Mock, patch
 from pandasai.dataframe.base import DataFrame
-from pandasai import Agent
+from pandasai.agent.agent import Agent
 import pandasai
 
 
@@ -42,12 +42,11 @@ class TestDataFrame:
         assert list(sample_df.columns) == ["Name", "Age", "City", "Salary"]
         assert sample_df["Salary"].mean() == 76800
 
-    @patch("pandasai.Agent")
+    @patch("pandasai.agent.agent.Agent")
     def test_chat_creates_agent(self, mock_agent, sample_df):
         assert sample_df._agent is None
         sample_df.chat("Test query")
-        assert sample_df._agent is not None
-        assert isinstance(sample_df._agent, Agent)
+        mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
 
     @patch("pandasai.Agent")
     def test_chat_reuses_existing_agent(self, sample_df):
@@ -82,10 +81,12 @@ class TestDataFrame:
 
     def test_chat_with_config(self, sample_df):
         config = {"max_retries": 100}
-        mock_agent = Mock(spec=Agent)
-        sample_df._agent = mock_agent
+        with patch("pandasai.agent.agent.Agent") as mock_agent:
+            sample_df.chat("Test query", config=config)
+            mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
+        assert sample_df.config.max_retries == 100
 
-        sample_df.chat("Test query", config=config)
-
-        assert mock_agent.chat.call_count == 1
-        assert sample_df._config.max_retries == 100
+    def test_column_hash(self, sample_df):
+        assert hasattr(sample_df, "column_hash")
+        assert isinstance(sample_df.column_hash, str)
+        assert len(sample_df.column_hash) == 32  # MD5 hash length

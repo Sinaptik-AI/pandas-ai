@@ -20,6 +20,7 @@ from pandasai.exceptions import InvalidConfigError, InvalidSchemaJson, InvalidTr
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
@@ -34,9 +35,7 @@ class SemanticAgent(BaseAgent):
 
     def __init__(
         self,
-        dfs: Union[
-            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
-        ],
+        dfs: Union[pd.DataFrame, List[pd.DataFrame]],
         config: Optional[Union[Config, dict]] = None,
         schema: Optional[List[dict]] = None,
         memory_size: Optional[int] = 10,
@@ -151,7 +150,7 @@ class SemanticAgent(BaseAgent):
         for table in self._schema:
             matched = False
             for df in self.dfs:
-                df_columns = df.get_head().columns
+                df_columns = df.head().columns
                 if all(column in df_columns for column in schema_dict[table["table"]]):
                     sorted_dfs.append(df)
                     matched = True
@@ -199,7 +198,9 @@ class SemanticAgent(BaseAgent):
         self.logger.log(f"using schema: {self._schema}")
 
     def _validate_config(self):
-        if not isinstance(self.config.llm, BambooLLM):
+        if not isinstance(self.config.llm, BambooLLM) and not isinstance(
+            self.config.llm, FakeLLM
+        ):
             raise InvalidConfigError(
                 f"""Semantic Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
             )

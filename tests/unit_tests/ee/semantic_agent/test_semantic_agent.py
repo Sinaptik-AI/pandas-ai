@@ -1,40 +1,19 @@
-from typing import Optional
 from unittest.mock import MagicMock, patch
 
+import pandasai as pai
 import pandas as pd
 import pytest
 
 from pandasai.agent import Agent
 from pandasai.agent.base import BaseAgent
-from extensions.connectors.sql.pandasai_sql.sql import (
-    PostgreSQLConnector,
-    SQLConnector,
-    SQLConnectorConfig,
-)
 from pandasai.ee.agents.semantic_agent import SemanticAgent
 from pandasai.exceptions import InvalidTrainJson
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.llm.fake import FakeLLM
 from tests.unit_tests.ee.helpers.schema import (
     VIZ_QUERY_SCHEMA,
     VIZ_QUERY_SCHEMA_STR,
 )
-
-
-class MockBambooLLM(BambooLLM):
-    def __init__(self, *args, **kwargs):
-        # Bypass the API key check and Session initialization
-        self._session = MagicMock()
-        self._type = "bamboo"  # Use a private attribute instead of the property
-
-    @property
-    def type(self):
-        return self._type
-
-    def call(self, prompt):
-        # Mock the call method
-        return VIZ_QUERY_SCHEMA_STR
+from pandasai.dataframe.base import DataFrame
 
 
 class TestSemanticAgent:
@@ -42,209 +21,52 @@ class TestSemanticAgent:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        df = pai.DataFrame(
             {
-                "order_id": [
-                    10248,
-                    10249,
-                    10250,
-                    10251,
-                    10252,
-                    10253,
-                    10254,
-                    10255,
-                    10256,
-                    10257,
-                ],
-                "customer_id": [
-                    "VINET",
-                    "TOMSP",
-                    "HANAR",
-                    "VICTE",
-                    "SUPRD",
-                    "HANAR",
-                    "CHOPS",
-                    "RICSU",
-                    "WELLI",
-                    "HILAA",
-                ],
-                "employee_id": [5, 6, 4, 3, 4, 3, 4, 7, 3, 4],
+                "order_id": [10248, 10249, 10250],
+                "customer_id": ["VINET", "TOMSP", "HANAR"],
+                "employee_id": [5, 6, 4],
                 "order_date": pd.to_datetime(
-                    [
-                        "1996-07-04",
-                        "1996-07-05",
-                        "1996-07-08",
-                        "1996-07-08",
-                        "1996-07-09",
-                        "1996-07-10",
-                        "1996-07-11",
-                        "1996-07-12",
-                        "1996-07-15",
-                        "1996-07-16",
-                    ]
+                    ["1996-07-04", "1996-07-05", "1996-07-08"]
                 ),
                 "required_date": pd.to_datetime(
-                    [
-                        "1996-08-01",
-                        "1996-08-16",
-                        "1996-08-05",
-                        "1996-08-05",
-                        "1996-08-06",
-                        "1996-08-07",
-                        "1996-08-08",
-                        "1996-08-09",
-                        "1996-08-12",
-                        "1996-08-13",
-                    ]
+                    ["1996-08-01", "1996-08-16", "1996-08-05"]
                 ),
                 "shipped_date": pd.to_datetime(
-                    [
-                        "1996-07-16",
-                        "1996-07-10",
-                        "1996-07-12",
-                        "1996-07-15",
-                        "1996-07-11",
-                        "1996-07-16",
-                        "1996-07-23",
-                        "1996-07-26",
-                        "1996-07-17",
-                        "1996-07-22",
-                    ]
+                    ["1996-07-16", "1996-07-10", "1996-07-12"]
                 ),
-                "ship_via": [3, 1, 2, 1, 2, 2, 2, 3, 2, 1],
+                "ship_via": [3, 1, 2],
+                "freight": [32.38, 11.61, 65.83],
                 "ship_name": [
                     "Vins et alcools Chevalier",
                     "Toms Spezialitäten",
                     "Hanari Carnes",
-                    "Victuailles en stock",
-                    "Suprêmes délices",
-                    "Hanari Carnes",
-                    "Chop-suey Chinese",
-                    "Richter Supermarkt",
-                    "Wellington Importadora",
-                    "HILARION-Abastos",
                 ],
                 "ship_address": [
                     "59 rue de l'Abbaye",
                     "Luisenstr. 48",
                     "Rua do Paço, 67",
-                    "2, rue du Commerce",
-                    "Boulevard Tirou, 255",
-                    "Rua do Paço, 67",
-                    "Hauptstr. 31",
-                    "Starenweg 5",
-                    "Rua do Mercado, 12",
-                    "Carrera 22 con Ave. Carlos Soublette #8-35",
                 ],
-                "ship_city": [
-                    "Reims",
-                    "Münster",
-                    "Rio de Janeiro",
-                    "Lyon",
-                    "Charleroi",
-                    "Rio de Janeiro",
-                    "Bern",
-                    "Genève",
-                    "Resende",
-                    "San Cristóbal",
-                ],
-                "ship_region": [
-                    "CJ",
-                    None,
-                    "RJ",
-                    "RH",
-                    None,
-                    "RJ",
-                    None,
-                    None,
-                    "SP",
-                    "Táchira",
-                ],
-                "ship_postal_code": [
-                    "51100",
-                    "44087",
-                    "05454-876",
-                    "69004",
-                    "B-6000",
-                    "05454-876",
-                    "3012",
-                    "1204",
-                    "08737-363",
-                    "5022",
-                ],
-                "ship_country": [
-                    "France",
-                    "Germany",
-                    "Brazil",
-                    "France",
-                    "Belgium",
-                    "Brazil",
-                    "Switzerland",
-                    "Switzerland",
-                    "Brazil",
-                    "Venezuela",
-                ],
+                "ship_city": ["Reims", "Münster", "Rio de Janeiro"],
+                "ship_region": ["CJ", None, "RJ"],
+                "ship_postal_code": ["51100", "44087", "05454-876"],
+                "ship_country": ["France", "Germany", "Brazil"],
             }
         )
+        return DataFrame(df)
 
     @pytest.fixture
-    def llm(self, output: Optional[str] = None) -> FakeLLM:
-        return FakeLLM(output=output)
+    def llm(self) -> FakeLLM:
+        return FakeLLM(output=VIZ_QUERY_SCHEMA_STR)
 
     @pytest.fixture
-    def config(self, llm: FakeLLM) -> dict:
-        return {"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV}
-
-    @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def sql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return SQLConnector(self.config)
-
-    @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def pgsql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config)
-
-    @pytest.fixture
-    def agent(self, sample_df: pd.DataFrame) -> Agent:
-        llm = MockBambooLLM()
+    def agent(self, sample_df: DataFrame, llm: FakeLLM) -> Agent:
         return SemanticAgent(sample_df, config={"llm": llm}, vectorstore=MagicMock())
 
-    def test_base_agent_contruct(self, sample_df):
-        llm = MockBambooLLM()
+    def test_base_agent_construct(self, sample_df, llm):
         BaseAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
-    def test_base_agent_log_id_register_agent(self, sample_df):
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+    def test_base_agent_log_id_register_agent(self, sample_df, llm):
         agent = SemanticAgent(
             sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
         )
@@ -253,35 +75,32 @@ class TestSemanticAgent:
         except Exception:
             pytest.fail("InvalidConfigError was raised unexpectedly.")
 
-    def test_constructor_with_no_bamboo(self, llm, sample_df):
+    def test_constructor_with_no_bamboo(self, sample_df):
+        non_bamboo_llm = FakeLLM(output=VIZ_QUERY_SCHEMA_STR, type="fake")
         with pytest.raises(Exception):
             SemanticAgent(
-                sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
+                sample_df,
+                {"llm": non_bamboo_llm, "enable_cache": False},
+                vectorstore=MagicMock(),
             )
 
-    def test_constructor(self, sample_df):
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+    def test_constructor(self, sample_df, llm):
         agent = SemanticAgent(
             sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
         )
         assert agent._schema == VIZ_QUERY_SCHEMA
 
-    def test_last_error(self, sample_df):
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
+    def test_last_error(self, sample_df, llm):
         agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
         assert agent.last_error is None
 
     @patch("pandasai.helpers.cache.Cache.get")
-    def test_cache_of_schema(self, mock_cache_get, sample_df):
+    def test_cache_of_schema(self, mock_cache_get, sample_df, llm):
         mock_cache_get.return_value = VIZ_QUERY_SCHEMA_STR
-        llm = MockBambooLLM()
-        llm.call = MagicMock(return_value=VIZ_QUERY_SCHEMA_STR)
 
         agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
-        assert not llm.call.called
+        assert not llm.called
         assert agent._schema == VIZ_QUERY_SCHEMA
 
     def test_train_method_with_qa(self, agent):

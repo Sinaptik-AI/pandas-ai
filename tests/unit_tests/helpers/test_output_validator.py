@@ -1,7 +1,6 @@
 import unittest
 
 import pandas as pd
-from plotly.basedatatypes import BaseFigure
 
 from pandasai.helpers.output_validator import OutputValidator
 
@@ -38,10 +37,6 @@ class TestValidateResult(unittest.TestCase):
 
     def test_valid_plot_result(self):
         result = {"type": "plot", "value": "/path/to/plot.png"}
-        self.assertTrue(self.output_validator.validate_result(result))
-
-    def test_valid_plot_plotly_result(self):
-        result = {"type": "plot", "value": BaseFigure()}
         self.assertTrue(self.output_validator.validate_result(result))
 
     def test_valid_plot_dict_result(self):

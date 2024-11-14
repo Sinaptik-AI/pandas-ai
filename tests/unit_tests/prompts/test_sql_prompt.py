@@ -3,7 +3,7 @@
 import os
 import sys
 
-import pandas as pd
+import pandasai as pai
 import pytest
 
 from pandasai import Agent
@@ -52,7 +52,7 @@ class TestGeneratePythonCodeWithSQLPrompt:
 
         llm = FakeLLM()
         agent = Agent(
-            pd.DataFrame(),
+            pai.DataFrame(),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.YML},
         )
         prompt = GeneratePythonCodeWithSQLPrompt(

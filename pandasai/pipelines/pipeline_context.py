@@ -1,11 +1,10 @@
+import pandas as pd
 from typing import Any, List, Optional, Union
 
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.memory import Memory
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
-
-from ..connectors import BaseConnector
 
 
 class PipelineContext:
@@ -15,7 +14,7 @@ class PipelineContext:
 
     def __init__(
         self,
-        dfs: List[BaseConnector],
+        dfs: List[pd.DataFrame],
         config: Optional[Union[Config, dict]] = None,
         memory: Optional[Memory] = None,
         cache: Optional[Cache] = None,

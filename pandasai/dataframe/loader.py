@@ -7,21 +7,10 @@ from .base import DataFrame
 import importlib
 from typing import Any
 from .query_builder import QueryBuilder
+from ..constants import SUPPORTED_SOURCES
 
 
 class DatasetLoader:
-    SUPPORTED_SOURCES = {
-        "mysql": "pandasai_sql",
-        "postgres": "pandasai_sql",
-        "cockroachdb": "pandasai_sql",
-        "sqlite": "pandasai_sql",
-        "yahoo_finance": "pandasai_yfinance",
-        "bigquery": "pandasai_bigquery",
-        "snowflake": "pandasai_snowflake",
-        "databricks": "pandasai_databricks",
-        "oracle": "pandasai_oracle",
-    }
-
     def __init__(self):
         self.schema = None
         self.dataset_path = None
@@ -40,7 +29,7 @@ class DatasetLoader:
         df = self._apply_transformations(df)
         self._cache_data(df, cache_file)
 
-        return DataFrame(df)
+        return DataFrame(df, schema=self.schema)
 
     def _load_schema(self):
         schema_path = os.path.join("datasets", self.dataset_path, "schema.yaml")
@@ -52,7 +41,7 @@ class DatasetLoader:
 
     def _validate_source_type(self):
         source_type = self.schema["source"]["type"]
-        if source_type not in self.SUPPORTED_SOURCES:
+        if source_type not in SUPPORTED_SOURCES:
             raise ValueError(f"Unsupported database type: {source_type}")
 
     def _get_cache_file_path(self) -> str:
@@ -94,7 +83,7 @@ class DatasetLoader:
         query = query_builder.build_query()
 
         try:
-            module_name = self.SUPPORTED_SOURCES[source_type]
+            module_name = SUPPORTED_SOURCES[source_type]
             module = importlib.import_module(module_name)
 
             if source_type in [

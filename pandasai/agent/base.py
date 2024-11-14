@@ -5,8 +5,6 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from pandasai.agent.base_security import BaseSecurity
-from pandasai.connectors.base import BaseConnector
-from pandasai.connectors.pandas import PandasConnector
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
@@ -39,9 +37,7 @@ class BaseAgent:
 
     def __init__(
         self,
-        dfs: Union[
-            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
-        ],
+        dfs: Union[pd.DataFrame, List[pd.DataFrame]],
         config: Optional[Union[Config, dict]] = None,
         memory_size: Optional[int] = 10,
         vectorstore: Optional[VectorStore] = None,
@@ -63,7 +59,7 @@ class BaseAgent:
 
         self.conversation_id = uuid.uuid4()
 
-        self.dfs = self.get_dfs(dfs)
+        self.dfs = dfs if isinstance(dfs, list) else [dfs]
 
         # Instantiate the context
         self.config = self.get_config(config)
@@ -153,41 +149,6 @@ class BaseAgent:
                 llm = LangchainLLM(llm)
 
         return llm
-
-    def get_dfs(
-        self,
-        dfs: Union[
-            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
-        ],
-    ):
-        """
-        Load all the dataframes to be used in the agent.
-
-        Args:
-            dfs (List[Union[pd.DataFrame, Any]]): Pandas dataframe
-        """
-        # Inline import to avoid circular import
-        from pandasai.smart_dataframe import SmartDataframe
-
-        # If only one dataframe is passed, convert it to a list
-        if not isinstance(dfs, list):
-            dfs = [dfs]
-
-        connectors = []
-        for df in dfs:
-            if isinstance(df, BaseConnector):
-                connectors.append(df)
-            elif isinstance(df, (pd.DataFrame, pd.Series, list, dict, str)):
-                connectors.append(PandasConnector({"original_df": df}))
-            elif isinstance(df, SmartDataframe) and isinstance(
-                df.dataframe, BaseConnector
-            ):
-                connectors.append(df.dataframe)
-            else:
-                raise ValueError(
-                    "Invalid input data. We cannot convert it to a dataframe."
-                )
-        return connectors
 
     def call_llm_with_prompt(self, prompt: BasePrompt):
         """

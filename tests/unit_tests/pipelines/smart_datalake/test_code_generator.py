@@ -89,7 +89,7 @@ class TestCodeGenerator:
             if key == "output_type":
                 return ""
             elif key == "viz_lib_helper":
-                return "plotly"
+                return "matplotlib"
             elif key == "get_prompt":
                 return mock_get_promt
 

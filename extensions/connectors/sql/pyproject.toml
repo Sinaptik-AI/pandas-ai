@@ -6,11 +6,11 @@ authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-pandasai = "^3.0.0"
+python = ">=3.9,<3.12"
+pandasai = ">=3.0.0"
+scipy = "1.10.1"
 sqlalchemy = ">=1.4,<3"
 pymysql = "^1.1.0"
-sqlite3 = "^3.43.0"
 psycopg2-binary = "^2.9.7"
 sqlalchemy-cockroachdb = "^2.0.2"
 

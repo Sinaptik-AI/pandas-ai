@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from unittest.mock import MagicMock, Mock, patch
 
-import pandas as pd
+import pandasai as pai
 import pytest
 
 from pandasai.agent import Agent
@@ -25,7 +25,7 @@ class TestCodeExecution:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        return pai.DataFrame(
             {
                 "country": [
                     "United States",

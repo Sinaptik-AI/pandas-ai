@@ -23,13 +23,7 @@ if TYPE_CHECKING:
 # Minimum version required for each optional dependency
 
 VERSIONS = {
-    "sklearn": "1.2.2",
-    "statsmodels": "0.14.0",
     "seaborn": "0.12.2",
-    "plotly": "5.14.1",
-    "ggplot": "0.11.5",
-    "scipy": "1.9.0",
-    "streamlit": "1.23.1",
 }
 
 # A mapping from import name to package name (on PyPI) for packages where

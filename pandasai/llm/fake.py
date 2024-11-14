@@ -12,15 +12,21 @@ class FakeLLM(LLM):
     """Fake LLM"""
 
     _output: str = """result = { 'type': 'string', 'value': "Hello World" }"""
+    _type: str = "fake"
 
-    def __init__(self, output: Optional[str] = None):
+    def __init__(self, output: Optional[str] = None, type: str = "fake"):
         if output is not None:
             self._output = output
+        self._type = type
+        self.called = False
+        self.last_prompt = None
+        self.response = "Mocked response"
 
     def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+        self.called = True
         self.last_prompt = instruction.to_string()
-        return self._output
+        return self.response
 
     @property
     def type(self) -> str:
-        return "fake"
+        return self._type

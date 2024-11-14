@@ -85,20 +85,13 @@ WHITELISTED_BUILTINS = [
 
 # List of Python packages that are whitelisted for import in generated code
 WHITELISTED_LIBRARIES = [
-    "sklearn",
-    "statsmodels",
     "seaborn",
-    "plotly",
-    "ggplot",
     "matplotlib",
     "numpy",
     "datetime",
     "json",
     "io",
     "base64",
-    "scipy",
-    "streamlit",
-    "scikit-learn",
 ]
 
 PANDASBI_SETUP_MESSAGE = (
@@ -108,3 +101,15 @@ PANDASBI_SETUP_MESSAGE = (
     "2. From settings go to API keys and copy\n"
     "3. Set environment variable like os.environ['PANDASAI_API_KEY'] = '$2a$10$flb7....'"
 )
+
+SUPPORTED_SOURCES = {
+    "mysql": "pandasai_sql",
+    "postgres": "pandasai_sql",
+    "cockroachdb": "pandasai_sql",
+    "sqlite": "pandasai_sql",
+    "yahoo_finance": "pandasai_yfinance",
+    "bigquery": "pandasai_bigquery",
+    "snowflake": "pandasai_snowflake",
+    "databricks": "pandasai_databricks",
+    "oracle": "pandasai_oracle",
+}

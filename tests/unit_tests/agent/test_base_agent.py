@@ -1,3 +1,4 @@
+from pandasai.llm.fake import FakeLLM
 import pytest
 import pandas as pd
 from unittest.mock import Mock, patch, MagicMock
@@ -17,17 +18,10 @@ class TestBaseAgent:
     def mock_agent(self):
         # Create a mock DataFrame
         mock_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-
-        # Create a PandasConnector with the mock DataFrame
-        mock_connector = PandasConnector({"original_df": mock_df})
-
-        # Create the BaseAgent with the mock connector
-        with patch("pandasai.agent.base.PandasConnector", return_value=mock_connector):
-            with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
-                mock.return_value = Mock(type="bamboo")
-                agent = BaseAgent([mock_df])
-                agent.pipeline = MagicMock()  # Mock the pipeline
-                return agent
+        fake_llm = FakeLLM()
+        agent = BaseAgent([mock_df], config={"llm": fake_llm})
+        agent.pipeline = MagicMock()
+        return agent
 
     def test_chat_starts_new_conversation(self, mock_agent):
         with patch.object(mock_agent, "start_new_conversation") as mock_start_new:
