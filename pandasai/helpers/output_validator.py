@@ -56,7 +56,7 @@ class OutputValidator:
         elif expected_type == "string":
             return isinstance(self, str)
         elif expected_type == "dataframe":
-            return isinstance(self, (pd.DataFrame, pd.Series))
+            return isinstance(self, (pd.DataFrame, pd.Series, dict))
         elif expected_type == "plot":
             if not isinstance(self, (str, dict)):
                 return False
@@ -82,7 +82,7 @@ class OutputValidator:
         elif result["type"] == "string":
             return isinstance(result["value"], str)
         elif result["type"] == "dataframe":
-            return isinstance(result["value"], (pd.DataFrame, pd.Series))
+            return isinstance(result["value"], (pd.DataFrame, pd.Series, dict))
         elif result["type"] == "plot":
             if "plotly" in repr(type(result["value"])):
                 return True
