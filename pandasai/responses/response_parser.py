@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from PIL import Image
 import pandas as pd
+from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
 
