@@ -1,8 +1,7 @@
-import uuid
-from typing import Callable, Iterable, List, Optional, Union, Any
+from typing import Any, Callable, Iterable, List, Optional, Union
 
 import pinecone
-
+import uuid
 from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
 
@@ -37,24 +36,44 @@ class Pinecone(VectorStore):
 
         self._embedding_function = embedding_function
 
-        self._pinecone = pinecone.Pinecone(api_key=api_key, pool_threads=pool_threads)
+        # Initialize these as None first
+        self._pinecone = None
+        self._index = None
 
-        if isinstance(index, str):
-            if index not in self._pinecone.list_indexes().names():
-                self._index = self._pinecone.create_index(
-                    name=index,
-                    dimension=dimensions,
-                    metric=metric,
-                    spec=specs
-                    or pinecone.ServerlessSpec(cloud="aws", region="us-east-1"),
-                )
+        try:
+            self._pinecone = pinecone.Pinecone(
+                api_key=api_key, pool_threads=pool_threads
+            )
 
-            self._index = self._pinecone.Index(name=index)
+            if isinstance(index, str):
+                if index not in self._pinecone.list_indexes().names():
+                    self._index = self._pinecone.create_index(
+                        name=index,
+                        dimension=dimensions,
+                        metric=metric,
+                        spec=specs
+                        or pinecone.ServerlessSpec(cloud="aws", region="us-east-1"),
+                    )
 
-        else:
-            self._index = index
+                self._index = self._pinecone.Index(name=index)
+            else:
+                self._index = index
 
-        self._logger.log("Successfully initialized index")
+            self._logger.log("Successfully initialized index")
+        except Exception as e:
+            self.cleanup()
+            raise e
+
+    def cleanup(self):
+        """Clean up Pinecone resources"""
+        if hasattr(self, "_index") and self._index is not None:
+            self._index = None
+        if hasattr(self, "_pinecone") and self._pinecone is not None:
+            self._pinecone = None
+
+    def __del__(self):
+        """Destructor to ensure cleanup when object is deleted"""
+        self.cleanup()
 
     def add_question_answer(
         self,
@@ -230,3 +249,7 @@ class Pinecone(VectorStore):
             key: [[data[i] for data in filtered_data]]
             for i, key in enumerate(["documents", "distances", "metadata", "ids"])
         }
+
+    def _format_qa(self, query: str, code: str) -> str:
+        """Format question and answer for storage"""
+        return f"Q: {query}\nA: {code}"

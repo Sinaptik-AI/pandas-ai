@@ -3,13 +3,13 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from extensions.connectors.sql.pandasai_sql import (
+from pandasai_sql import (
     SQLConnector,
     SQLConnectorConfig,
     load_from_mysql,
     load_from_postgres,
 )
-from extensions.connectors.sql.pandasai_sql.sql import (
+from pandasai_sql.sql import (
     PostgreSQLConnector,
     MySQLConnector,
 )
@@ -17,7 +17,7 @@ from pandasai.exceptions import MaliciousQueryError
 
 
 class TestSQLConnector(unittest.TestCase):
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
+    @patch("pandasai_sql.sql.create_engine", autospec=True)
     def setUp(self, mock_create_engine):
         # Create a mock engine and connection
         self.mock_engine = Mock()
@@ -41,10 +41,8 @@ class TestSQLConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = SQLConnector(self.config)
 
-    @patch(
-        "extensions.connectors.sql.pandasai_sql.sql.SQLConnector._load_connector_config"
-    )
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._load_connector_config")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -76,7 +74,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         self.assertEqual(str(query), expected_query)
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
+    @patch("pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data
@@ -128,7 +126,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         result = self.connector._is_sql_query_safe(malicious_query)
         assert result is False
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
+    @patch("pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_execute_direct_sql_query_safe_query(self, mock_sql):
         safe_query = "SELECT * FROM users WHERE username = 'John'"
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
@@ -144,7 +142,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
         except MaliciousQueryError:
             pass
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_equals_identical_configs(self, mock_init_connection):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
@@ -164,10 +162,8 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         assert self.connector.equals(connector_2)
 
-    @patch(
-        "extensions.connectors.sql.pandasai_sql.sql.SQLConnector._load_connector_config"
-    )
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._load_connector_config")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_equals_different_configs(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -189,7 +185,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         assert not self.connector.equals(connector_2)
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_equals_different_connector(self, mock_init_connection):
         # Define your ConnectorConfig instance here
         self.config = SQLConnectorConfig(
@@ -209,7 +205,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         assert not self.connector.equals(connector_2)
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_equals_connector_type(self, mock_init_connection):
         # Define your ConnectorConfig instance here
         config = {
@@ -227,7 +223,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         assert connector_2.type == "postgresql"
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
     def test_equals_sql_connector_type(self, mock_init_connection):
         # Define your ConnectorConfig instance here
 
@@ -246,7 +242,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
 
         assert connector_2.type == "mysql"
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
+    @patch("pandasai_sql.sql.create_engine", autospec=True)
     def test_connector_constructor_with_ssl_settings(self, create_engine_mock):
         config = SQLConnectorConfig(
             dialect="mysql",
@@ -266,7 +262,7 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
             connect_args={"sslmode": "require", "sslrootcert": None},
         )
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
+    @patch("pandasai_sql.sql.create_engine", autospec=True)
     def test_connector_constructor_with_no_ssl_settings(self, create_engine_mock):
         config = SQLConnectorConfig(
             dialect="mysql",
@@ -285,8 +281,8 @@ WHERE column_name = :value_0 ORDER BY RAND() ASC
             connect_args={},
         )
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.SQLConnector._init_connection")
-    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql")
+    @patch("pandasai_sql.sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.sql.pd.read_sql")
     def test_equals_connector_execute_direct_sql(
         self, mock_read_sql, mock_init_connection
     ):
@@ -320,7 +316,7 @@ class TestSQLLoaders(unittest.TestCase):
         }
         self.query = "SELECT * FROM test_table"
 
-    @patch("extensions.connectors.sql.pandasai_sql.pd.read_sql")
+    @patch("pandasai_sql.pd.read_sql")
     def test_load_from_mysql(self, mock_read_sql):
         mock_pymysql = Mock()
         mock_connection = Mock()
@@ -342,7 +338,7 @@ class TestSQLLoaders(unittest.TestCase):
         mock_read_sql.assert_called_once_with(self.query, mock_connection)
         pd.testing.assert_frame_equal(result, expected_df)
 
-    @patch("extensions.connectors.sql.pandasai_sql.pd.read_sql")
+    @patch("pandasai_sql.pd.read_sql")
     def test_load_from_postgres(self, mock_read_sql):
         mock_psycopg2 = Mock()
         mock_connection = Mock()

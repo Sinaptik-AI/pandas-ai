@@ -1,16 +1,25 @@
 [tool.poetry]
 name = "pandasai-milvus"
-version = "0.1.0"
+version = "0.1.1"
 description = "Milvus integration for PandasAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-pandasai = "^3.0.0"
-pymilvus = "^2.4.0"
-milvus-model = "^0.2.7"
+python = ">=3.9,<4.0"
+pandasai = ">=3.0.0a0"
+pymilvus = {version = "^2.3.6", extras = ["model"]}
+numpy = "1.23.2"
+sentence-transformers = "^2.2.2"
+onnxruntime = "1.15.1"
 
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

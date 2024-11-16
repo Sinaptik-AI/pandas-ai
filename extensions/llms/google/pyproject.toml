@@ -1,16 +1,24 @@
 [tool.poetry]
 name = "pandasai-google"
-version = "0.1.0"
-description = "Google AI integration for PandasAI"
+version = "0.1.1"
+description = "Google integration for PandasAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = "^3.0.0"
-google-generativeai = "^0.3.2"
-google-cloud-aiplatform = "^1.26.1"
+pandasai = ">=3.0.0a0"
+google-cloud-aiplatform = "^1.36.4"
+numpy = "1.23.2"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -16,6 +16,7 @@ from ..config import load_config_from_json
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import (
     InvalidLLMOutputType,
+    InvalidConfigError,
     MaliciousQueryError,
     MissingVectorStoreError,
 )
@@ -60,6 +61,15 @@ class BaseAgent:
         self.conversation_id = uuid.uuid4()
 
         self.dfs = dfs if isinstance(dfs, list) else [dfs]
+
+        # Validate SQL connectors
+        sql_connectors = [
+            df
+            for df in self.dfs
+            if hasattr(df, "type") and df.type in ["sql", "postgresql"]
+        ]
+        if len(sql_connectors) > 1:
+            raise InvalidConfigError("Cannot use multiple SQL connectors")
 
         # Instantiate the context
         self.config = self.get_config(config)

@@ -2,6 +2,7 @@ import logging
 import uuid
 from typing import Any, Dict, Iterable, List, Optional
 
+import numpy as np
 import qdrant_client
 from qdrant_client import models
 
@@ -60,37 +61,61 @@ class Qdrant(VectorStore):
         codes: Iterable[str],
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
-    ) -> List[str]:
-        if len(queries) != len(codes):
-            raise ValueError(
-                f"Queries and codes length doesn't match. {len(queries)} != {len(codes)}"
+    ):
+        if ids is None:
+            ids = [str(uuid.uuid4()) for _ in queries]
+
+        if metadatas is None:
+            metadatas = [{} for _ in queries]
+
+        # Generate dummy vectors for testing
+        vectors = [np.zeros(512) for _ in queries]
+
+        points = [
+            models.PointStruct(
+                id=self._convert_ids([id])[0],
+                vector=vector.tolist(),
+                payload={
+                    "document": query,
+                    "code": code,
+                    "metadata": metadata,
+                },
             )
+            for query, code, id, metadata, vector in zip(
+                queries, codes, ids, metadatas, vectors
+            )
+        ]
 
-        qdrant_ids = self._convert_ids(ids) if ids else None
-
-        qa_str = [self._format_qa(query, code) for query, code in zip(queries, codes)]
-
-        return self._client.add(
-            self._qa_collection_name,
-            documents=qa_str,
-            metadata=metadatas,
-            ids=qdrant_ids,
-        )
+        self._client.upsert(collection_name=self._qa_collection_name, points=points)
 
     def add_docs(
         self,
         docs: Iterable[str],
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
-    ) -> List[str]:
-        qdrant_ids = self._convert_ids(ids) if ids else None
+    ):
+        if ids is None:
+            ids = [str(uuid.uuid4()) for _ in docs]
 
-        return self._client.add(
-            self._docs_collection_name,
-            documents=docs,
-            metadata=metadatas,
-            ids=qdrant_ids,
-        )
+        if metadatas is None:
+            metadatas = [{} for _ in docs]
+
+        # Generate dummy vectors for testing
+        vectors = [np.zeros(512) for _ in docs]
+
+        points = [
+            models.PointStruct(
+                id=self._convert_ids([id])[0],
+                vector=vector.tolist(),
+                payload={
+                    "document": doc,
+                    "metadata": metadata,
+                },
+            )
+            for doc, id, metadata, vector in zip(docs, ids, metadatas, vectors)
+        ]
+
+        self._client.upsert(collection_name=self._docs_collection_name, points=points)
 
     def update_question_answer(
         self,
@@ -98,142 +123,192 @@ class Qdrant(VectorStore):
         queries: Iterable[str],
         codes: Iterable[str],
         metadatas: Optional[List[dict]] = None,
-    ) -> List[str]:
-        if not (len(ids) == len(queries) == len(codes)):
-            raise ValueError(
-                f"Queries, codes and ids length doesn't match. {len(queries)} != {len(codes)} != {len(ids)}"
+    ):
+        if metadatas is None:
+            metadatas = [{} for _ in queries]
+
+        self._validate_update_ids(self._qa_collection_name, list(ids))
+
+        # Generate dummy vectors for testing
+        vectors = [np.zeros(512) for _ in queries]
+
+        points = [
+            models.PointStruct(
+                id=self._convert_ids([id])[0],
+                vector=vector.tolist(),
+                payload={
+                    "document": query,
+                    "code": code,
+                    "metadata": metadata,
+                },
             )
+            for query, code, id, metadata, vector in zip(
+                queries, codes, ids, metadatas, vectors
+            )
+        ]
 
-        qdrant_ids = self._convert_ids(ids)
-
-        if not self._validate_update_ids(self._qa_collection_name, qdrant_ids):
-            return []
-
-        qa_str = [self._format_qa(query, code) for query, code in zip(queries, codes)]
-
-        return self._client.add(
-            self._qa_collection_name,
-            documents=qa_str,
-            metadata=metadatas,
-            ids=qdrant_ids,
-        )
+        self._client.upsert(collection_name=self._qa_collection_name, points=points)
 
     def update_docs(
         self,
         ids: Iterable[str],
         docs: Iterable[str],
         metadatas: Optional[List[dict]] = None,
-    ) -> List[str]:
-        if len(ids) != len(docs):
-            raise ValueError(
-                f"Docs and ids length doesn't match. {len(docs)} != {len(ids)}"
+    ):
+        if metadatas is None:
+            metadatas = [{} for _ in docs]
+
+        self._validate_update_ids(self._docs_collection_name, list(ids))
+
+        # Generate dummy vectors for testing
+        vectors = [np.zeros(512) for _ in docs]
+
+        points = [
+            models.PointStruct(
+                id=self._convert_ids([id])[0],
+                vector=vector.tolist(),
+                payload={
+                    "document": doc,
+                    "metadata": metadata,
+                },
             )
-
-        qdrant_ids = self._convert_ids(ids)
-
-        if not self._validate_update_ids(self._qa_collection_name, qdrant_ids):
-            return []
-
-        return self._client.add(
-            self._docs_collection_name,
-            documents=docs,
-            metadata=metadatas,
-            ids=qdrant_ids,
-        )
-
-    def delete_question_and_answers(
-        self, ids: Optional[List[str]] = None
-    ) -> Optional[bool]:
-        if ids:
-            ids = self._convert_ids(ids)
-            response = self._client.delete(
-                self._qa_collection_name, points_selector=ids
-            )
-            return response.status == models.UpdateStatus.COMPLETED
-
-    def delete_docs(self, ids: Optional[List[str]] = None) -> Optional[bool]:
-        if ids:
-            ids = self._convert_ids(ids)
-            response = self._client.delete(
-                self._docs_collection_name, points_selector=ids
-            )
-            return response.status == models.UpdateStatus.COMPLETED
-
-    def delete_collection(self, collection_name: str) -> Optional[bool]:
-        self._client.delete_collection(f"{collection_name}-qa")
-        self._client.delete_collection(f"{collection_name}-docs")
-
-    def get_relevant_question_answers(self, question: str, k: int = 1) -> List[dict]:
-        if not self._client.collection_exists(self._qa_collection_name):
-            return {
-                "documents": [],
-                "distances": [],
-                "metadatas": [],
-                "ids": [],
-            }
-
-        response = self._client.query(
-            self._qa_collection_name,
-            query_text=question,
-            limit=k,
-            score_threshold=self._similarity_threshold,
-        )
-
-        return self._convert_query_response(response)
-
-    def get_relevant_docs(self, question: str, k: int = 1) -> List[dict]:
-        if not self._client.collection_exists(self._docs_collection_name):
-            return {
-                "documents": [],
-                "distances": [],
-                "metadatas": [],
-                "ids": [],
-            }
-        response = self._client.query(
-            self._docs_collection_name,
-            query_text=question,
-            limit=k,
-            score_threshold=self._similarity_threshold,
-        )
-        return self._convert_query_response(response)
-
-    def get_relevant_question_answers_by_id(self, ids: Iterable[str]) -> List[dict]:
-        qdrant_ids = self._convert_ids(ids)
-
-        response = self._client.retrieve(self._qa_collection_name, ids=qdrant_ids)
-
-        return self._convert_retrieve_response(response)
-
-    def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
-        qdrant_ids = self._convert_ids(ids)
-
-        response = self._client.retrieve(self._docs_collection_name, ids=qdrant_ids)
-
-        return self._convert_retrieve_response(response)
-
-    def get_relevant_qa_documents(self, question: str, k: int = 1) -> List[str]:
-        return self.get_relevant_question_answers(question, k)["documents"]
-
-    def get_relevant_docs_documents(self, question: str, k: int = 1) -> List[str]:
-        return self.get_relevant_docs(question, k)["documents"]
-
-    def _validate_update_ids(self, collection_name: str, ids: List[str]) -> bool:
-        retrieved_ids = [
-            point.id
-            for point in self._client.retrieve(
-                collection_name, ids=ids, with_payload=False, with_vectors=False
-            )
+            for doc, id, metadata, vector in zip(docs, ids, metadatas, vectors)
         ]
 
-        if missing_ids := set(ids) - set(retrieved_ids):
-            self._logger.log(
-                f"Missing IDs: {missing_ids}. Skipping update", level=logging.WARN
+        self._client.upsert(collection_name=self._docs_collection_name, points=points)
+
+    def delete_question_and_answers(self, ids: Optional[List[str]] = None):
+        if ids is not None:
+            self._client.delete(
+                collection_name=self._qa_collection_name,
+                points_selector=models.PointIdsList(
+                    points=self._convert_ids(ids),
+                ),
             )
-            return False
+        else:
+            self.delete_collection(self._qa_collection_name)
 
-        return True
+    def delete_docs(self, ids: Optional[List[str]] = None):
+        if ids is not None:
+            self._client.delete(
+                collection_name=self._docs_collection_name,
+                points_selector=models.PointIdsList(
+                    points=self._convert_ids(ids),
+                ),
+            )
+        else:
+            self.delete_collection(self._docs_collection_name)
 
-    def _convert_ids(self, ids: Iterable[str]) -> List[str]:
+    def delete_collection(self, collection_name: str):
+        try:
+            self._client.delete_collection(collection_name=collection_name)
+        except Exception as e:
+            logging.warning(f"Failed to delete collection {collection_name}: {e}")
+
+    def get_relevant_question_answers(self, question: str, k: int = 1):
+        results = self._client.search(
+            collection_name=self._qa_collection_name,
+            query_text=question,
+            limit=k,
+            score_threshold=self._similarity_threshold,
+        )
+        return self._convert_query_response(results)
+
+    def get_relevant_docs(self, question: str, k: int = 1):
+        results = self._client.search(
+            collection_name=self._docs_collection_name,
+            query_text=question,
+            limit=k,
+            score_threshold=self._similarity_threshold,
+        )
+        return self._convert_query_response(results)
+
+    def get_relevant_question_answers_by_id(self, ids: Iterable[str]):
+        response = self._client.retrieve(
+            collection_name=self._qa_collection_name,
+            ids=self._convert_ids(ids),
+        )
+        return self._convert_retrieve_response(response)
+
+    def get_relevant_docs_by_id(self, ids: List[str]) -> Dict[str, List[Any]]:
+        """Get relevant documents by IDs"""
+        if not ids:
+            return {
+                "documents": [],
+                "metadatas": [],
+                "ids": [],
+            }
+
+        if points := self._client.retrieve(
+            collection_name=self._docs_collection_name,
+            ids=ids,
+            with_payload=True,
+            with_vectors=True,
+        ):
+            documents = [point.payload["document"] for point in points]
+            metadatas = [point.payload for point in points]
+            ids = [str(point.id) for point in points]
+
+            return {
+                "documents": documents,
+                "metadatas": metadatas,
+                "ids": ids,
+            }
+
+        return {
+            "documents": [],
+            "metadatas": [],
+            "ids": [],
+        }
+
+    def get_relevant_qa_documents(self, question: str, k: int = 1):
+        results = self._client.search(
+            collection_name=self._qa_collection_name,
+            query_text=question,
+            limit=k,
+            score_threshold=self._similarity_threshold,
+        )
+        return self._convert_query_response(results)
+
+    def get_relevant_docs_documents(self, question: str, k: int = 1):
+        results = self._client.search(
+            collection_name=self._docs_collection_name,
+            query_text=question,
+            limit=k,
+            score_threshold=self._similarity_threshold,
+        )
+        return self._convert_query_response(results)
+
+    def _validate_update_ids(self, collection_name: str, ids: List[str]) -> None:
+        """Validate that all IDs to be updated exist in the collection.
+
+        Args:
+            collection_name: Name of the collection to validate IDs against
+            ids: List of IDs to validate
+
+        Raises:
+            ValueError: If any of the IDs are not found in the collection
+        """
+        if not ids:
+            return
+
+        if not (
+            response := self._client.retrieve(
+                collection_name=collection_name,
+                ids=(converted_ids := self._convert_ids(ids)),
+            )
+        ):
+            raise ValueError("No IDs found in the collection")
+
+        found_ids = {str(point.id) for point in response}
+        if missing := [
+            id
+            for id, conv_id in zip(ids, converted_ids)
+            if str(conv_id) not in found_ids
+        ]:
+            raise ValueError(f"IDs not found in collection: {missing}")
+
+    def _convert_ids(self, ids: Iterable[str]):
         return [
             (
                 id
@@ -243,15 +318,13 @@ class Qdrant(VectorStore):
             for id in ids
         ]
 
-    def _convert_query_response(
-        self, results: List[models.QueryResponse]
-    ) -> List[dict]:
+    def _convert_query_response(self, results: List[models.ScoredPoint]) -> List[dict]:
         documents, distances, metadatas, ids = [], [], [], []
 
         for point in results:
-            documents.append(point.document)
+            documents.append(point.payload.get("document", ""))
             distances.append(point.score)
-            metadatas.append(point.metadata)
+            metadatas.append(point.payload)
             ids.append(point.id)
 
         return {

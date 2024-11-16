@@ -1,19 +1,35 @@
 import unittest
 from unittest.mock import Mock, patch
-
 import pandas as pd
-
-from extensions.connectors.sql.pandasai_sql.sql import PostgreSQLConnector
-from extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query import (
+import base64
+import json
+from pandasai_sql.sql import PostgreSQLConnector
+from pandasai_bigquery.google_big_query import (
     GoogleBigQueryConnector,
     GoogleBigQueryConnectorConfig,
 )
-from extensions.ee.connectors.bigquery.pandasai_bigquery import load_from_bigquery
+from pandasai_bigquery import load_from_bigquery
+
+
+def get_mock_credentials_base64():
+    mock_service_account = {
+        "type": "service_account",
+        "project_id": "test",
+        "private_key_id": "test",
+        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC9QFi6I8lJ1GiX\n1JUoaXPE0UZlWl1nCtJ4kGmZOJ7JrxFyB7O+Qw9G+2KFGe8FVqmvX4RX8Y0IPWSM\nrKqJ6B9H8PIxGZPKjH7t8qMUDGXkuXS7dWCHgKBqPnY+1V4yLwfwB3UC2HgoYtM8\n1YhZdV5ExHYc3nqHGxHqFu1YgIBVLHMA4hJ0tS6SGzEBR6mP8nqxw6O7M0zZ6Xpe\nMp7hCZ+YDqrHp/uBt1IgXlktYPKQJ/Z6WY4Jv9KQIE1B1h96mY0QyO7c0CJYzHPP\nM2mHmX9wXtfmE9NbRFRHzL9Xt4tXGQHdmzJ4fkRt3UUYv2uH1ZEIhtQwM+peH2Nt\nkXeK1vYnAgMBAAECggEABD19YhqDhOHjPEX8wqpqBmdGhcKB0jHrxXWW7YtB6iq5\n1h1xJuYHUVAhytbpLWpAI1ZG5r7Vz3Z+MXn+RFTEyPo8GxrYxXzjxHR9XyHEVzgd\nxjuWEZBFxR3Qnl3TFB4f5YHXmoN7K+HjrNrwz9+thJA9p9VMFS0ePxgWVLQNQm4U\nXvmyJVbXhkYwMDgkv6i7U9RhNGJbBKx/VR3Enz8hQhZRHGPqYJiHXHQSQH4/kh4M\n5A7BxqY7W1n1Ot1jX3kCQYu0Qs5Ky6iQKRos3VMQGqZAstA7QYPEwCbXb/3AXheY\nGZBb/1ZXU5Q0tb5Qz7njfqOqnN0DVCK7UxDGDjpSYQKBgQD4u2yx3ux3QqHf8Zl5\nLhbRyHto0LL4Rn+I3hXEUL4s/qJxzXAM5KNxv7H96hgCXZWXnzuKr4JSwHGj8qO5\nS8YUgxjwrVTv0jscY0Rk7xcKGRJGH/+1+9qh4qoN2/PC8m7jv5YEfqPR77T4h1yQ\nJGE7YkeHnxPjwHDhphTPmmGsYQKBgQDCwXxUVs7yL7d0cP6u0gULm/HBc5ERQvwB\nO7ywXxFw7EvGhxh6YEF3MDFVh0yjZOYj0qB3OKXuAEzIYYQGc+oVm/6TUJRjqX8b\nG7HTXUy8WQr0XKYE4xHVPYZT7KD5mKOgGkPTjX5GzG5oQHJfVx5k6R0YvXb/mpIj\nEUF2qQ+thwKBgBXQR6Q6VFgqGWUzEA6ZS3hEL5mc4QZDhH4qK4HAs3TCXH9qphY1\n/0W8GH5GWbfPGQ0qHsz1y+6QYGb6R2tV4F+lrGE0D3Y7iI6aCkS5qjz+Qj3YHrVD\nFGb6I+xv2k0PQtXxjudT1ydx1QmLxB9QQxJz8seBLPuSx0+Jk5jv2ZchAoGAam0/\n8jE4zQzjYMzQDEhZPUPFv6O6MOLQaQZ3aGRMeHGj6PUV1R2541ARqTw0Z8oXx1yd\nW1JxUwx3yL1ivI3LEHZYJh0pm4UJk+UZwwE5C8tdDw+7jO0PZ1N8K4Rt3CP9eZy8\n9DLghfwJlBjFVzv0QNJx+BtLRpmhQwV3K8PSTk8CgYEAjq5EX5LX7gKhPBZkjqHp\nE7Jc54+13HRJZvPmWkFj7ZiAAmx7+QnEHCpVzKDRk7U+yhZwzWqyHNHHvhPQQyfG\nZZZQVLEv6p2Bs2BXnQZvjRKB8K7Bpq5GCZVXPSn8YTVVHNBCnvqYR3oGrQhQ0eGH\nL/dA50N6oYMMPkwX0JyRUHo=\n-----END PRIVATE KEY-----\n",
+        "client_email": "test@test.iam.gserviceaccount.com",
+        "client_id": "test",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40test.iam.gserviceaccount.com",
+    }
+    return base64.b64encode(json.dumps(mock_service_account).encode()).decode()
 
 
 class TestGoogleBigQueryConnector(unittest.TestCase):
     @patch(
-        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        "pandasai_bigquery.google_big_query.create_engine",
         autospec=True,
     )
     def setUp(self, mock_create_engine) -> None:
@@ -26,17 +42,17 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database",
             table="yourtable",
-            credentials_path="keyfile.json",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 
         self.connector = GoogleBigQueryConnector(self.config)
 
     @patch(
-        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.GoogleBigQueryConnector._load_connector_config"
+        "pandasai_bigquery.google_big_query.GoogleBigQueryConnector._load_connector_config"
     )
     @patch(
-        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.GoogleBigQueryConnector._init_connection"
+        "pandasai_bigquery.google_big_query.GoogleBigQueryConnector._init_connection"
     )
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
@@ -51,7 +67,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         mock_init_connection.assert_called()
 
     @patch(
-        "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
+        "pandasai_bigquery.google_big_query.create_engine",
         autospec=True,
     )
     def test_constructor_and_properties_with_base64_string(self, mock_create_engine):
@@ -64,13 +80,14 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database",
             table="yourtable",
-            credentials_base64="base64_str",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 
         self.connector = GoogleBigQueryConnector(self.config)
         mock_create_engine.assert_called_with(
-            "bigquery://project_id/database?credentials_base64=base64_str"
+            "bigquery://project_id/database?credentials_base64="
+            + get_mock_credentials_base64()
         )
 
     def test_repr_method(self):
@@ -81,7 +98,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         )
         self.assertEqual(repr(self.connector), expected_repr)
 
-    @patch("extensions.connectors.sql.pandasai_sql.sql.pd.read_sql", autospec=True)
+    @patch("pandasai_sql.sql.pd.read_sql", autospec=True)
     def test_head_method(self, mock_read_sql):
         expected_data = pd.DataFrame({"Column1": [1, 2, 3], "Column2": [4, 5, 6]})
         mock_read_sql.return_value = expected_data
@@ -137,7 +154,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database",
             table="yourtable",
-            credentials_base64="base64_str",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 
@@ -160,7 +177,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database",
             table="yourtable",
-            credentials_base64="base64_str",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 
@@ -168,7 +185,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database2",
             table="yourtable",
-            credentials_base64="base64_str",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 
@@ -181,7 +198,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
         "extensions.ee.connectors.bigquery.pandasai_bigquery.google_big_query.create_engine",
         autospec=True,
     )
-    @patch("extensions.connectors.sql.pandasai_sql.SQLConnector._init_connection")
+    @patch("pandasai_sql.SQLConnector._init_connection")
     def test_constructor_and_properties_different_type(
         self, mock_connection, mock_create_engine
     ):
@@ -194,7 +211,7 @@ class TestGoogleBigQueryConnector(unittest.TestCase):
             dialect="bigquery",
             database="database",
             table="yourtable",
-            credentials_base64="base64_str",
+            credentials_base64=get_mock_credentials_base64(),  # base64 encoded mock service account with PEM key
             projectID="project_id",
         ).dict()
 

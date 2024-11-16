@@ -199,7 +199,8 @@ class TestDatasetLoader:
         assert not any(result["email"].isin(["user1@example.com", "user2@example.com"]))
 
         # Check timezone conversion
-        assert all(ts.tzinfo.zone == "UTC" for ts in result["timestamp"])
+        assert all(ts.tzinfo is not None for ts in result["timestamp"])
+        assert all(ts.tzname() == "UTC" for ts in result["timestamp"])
 
     def test_cache_data(self, sample_schema):
         loader = DatasetLoader()

@@ -3,7 +3,7 @@
 import pytest
 
 from pandasai.exceptions import UnsupportedModelError
-from extensions.llms.google.pandasai_google.google_vertexai import GoogleVertexAI
+from pandasai_google.google_vertexai import GoogleVertexAI
 
 
 class MockedCompletion:

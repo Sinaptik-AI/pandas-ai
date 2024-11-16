@@ -1,1 +1,1 @@
-{{ df.to_string(index-1, context.config.direct_sql, context.config.dataframe_serializer, context.config.enforce_privacy) }}
+{{ df.to_string(index=index-1, serializer=context.config.dataframe_serializer, enforce_privacy=context.config.enforce_privacy) }}

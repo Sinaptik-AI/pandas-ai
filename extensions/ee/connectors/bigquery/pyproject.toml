@@ -1,15 +1,24 @@
 [tool.poetry]
 name = "pandasai-bigquery"
-version = "0.1.0"
+version = "0.1.1"
 description = "Google BigQuery connector integration for PandasAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.12"
 pandasai = "^3.0.0"
 pandasai-sql = "^0.1.0"
 sqlalchemy-bigquery = "^1.8.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
+pandasai-sql = { path = "../../../connectors/sql", develop = true }
 
 [build-system]
 requires = ["poetry-core"]

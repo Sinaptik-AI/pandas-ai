@@ -1,4 +1,4 @@
-.PHONY: all format format_diff spell_check spell_fix tests integration docs help
+.PHONY: all format format_diff spell_check spell_fix tests tests-coverage integration docs help install_extension_deps test_extensions test_all install_deps test_core setup_python
 
 all: help  ## default target executed when no arguments are given to make
 
@@ -9,15 +9,76 @@ all: help  ## default target executed when no arguments are given to make
 UNIT_TESTS_DIR ?= tests/unit_tests/
 INTEGRATION_TESTS_DIR ?= tests/integration_tests/
 
-tests:  ## run unit tests
+setup_python:  ## ensure we're using Python 3.10
+	@echo "Setting up Python 3.10..."
+	poetry env use python3.10
+
+install_deps: setup_python  ## install core dependencies
+	@echo "Installing core dependencies..."
+	poetry install --all-extras --with dev
+
+test_core: install_deps  ## run core tests only
+	@echo "Running core tests..."
 	poetry run pytest $(UNIT_TESTS_DIR)
+
+install_extension_deps: setup_python  ## install all extension dependencies
+	@echo "Installing LLM extension dependencies..."
+	@for dir in extensions/llms/*/; do \
+		if [ -f "$$dir/pyproject.toml" ]; then \
+			echo "Installing dependencies for $$dir"; \
+			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+		fi \
+	done
+
+	@echo "Installing connector extension dependencies..."
+	@for dir in extensions/connectors/*/; do \
+		if [ -f "$$dir/pyproject.toml" ]; then \
+			echo "Installing dependencies for $$dir"; \
+			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+		fi \
+	done
+
+	@echo "Installing enterprise extension dependencies..."
+	@for dir in extensions/ee/*/*/; do \
+		if [ -f "$$dir/pyproject.toml" ]; then \
+			echo "Installing dependencies for $$dir"; \
+			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+		fi \
+	done
+
+test_extensions: install_extension_deps  ## run all extension tests
+	@echo "Running LLM extension tests..."
+	@for dir in extensions/llms/*/; do \
+		if [ -d "$$dir/tests" ]; then \
+			echo "Running tests for $$dir"; \
+			cd "$$dir" && poetry run pytest tests/ && cd - || exit 1; \
+		fi \
+	done
+
+	@echo "Running connector extension tests..."
+	@for dir in extensions/connectors/*/; do \
+		if [ -d "$$dir/tests" ]; then \
+			echo "Running tests for $$dir"; \
+			cd "$$dir" && poetry run pytest tests/ && cd - || exit 1; \
+		fi \
+	done
+
+	@echo "Running enterprise extension tests..."
+	@for dir in extensions/ee/*/*/; do \
+		if [ -d "$$dir/tests" ]; then \
+			echo "Running tests for $$dir"; \
+			cd "$$dir" && poetry run pytest tests/ && cd - || exit 1; \
+		fi \
+	done
+
+test_all: test_core test_extensions  ## run all tests (core and extensions)
+
+tests-coverage: install_deps  ## run unit tests and generate coverage report
+	poetry run coverage run --source=pandasai -m pytest $(UNIT_TESTS_DIR)
+	poetry run coverage xml
 
 integration:  ## run integration tests
 	poetry run pytest $(INTEGRATION_TESTS_DIR)
-
-coverage:  ## run unit tests and generate coverage report
-	poetry run coverage run --source=pandasai -m pytest $(UNIT_TESTS_DIR)
-	poetry run coverage xml
 
 ###########################
 # SPELLCHECK AND FORMATTING
@@ -50,9 +111,5 @@ docs:  ## run docs serving
 # HELP
 ######################
 
-help:  ## show this help message for each Makefile recipe
-ifeq ($(OS),Windows_NT)
-	@findstr /R /C:"^[a-zA-Z0-9 -]\+:.*##" $(MAKEFILE_LIST) | awk -F ':.*##' '{printf "\033[1;32m%-15s\033[0m %s\n", $$1, $$2}' | sort
-else
-	@awk -F ':.*##' '/^[^ ]+:[^:]+##/ {printf "\033[1;32m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
-endif
+help:  ## Show this help message.
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

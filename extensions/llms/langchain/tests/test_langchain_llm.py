@@ -10,7 +10,7 @@ from langchain_core.outputs import (
     LLMResult,
 )
 
-from extensions.llms.langchain.pandasai_langchain.langchain import LangchainLLM
+from pandasai_langchain.langchain import LangchainLLM
 from pandasai.prompts import BasePrompt
 
 
@@ -66,3 +66,20 @@ class TestLangchainLLM:
         assert (
             langchain_wrapper.call(instruction=prompt, suffix="!") == "Custom response"
         )
+
+    def test_agent_integration(self):
+        from pandasai.agent import Agent
+        from unittest.mock import MagicMock, PropertyMock
+
+        mock_langchain_llm = MagicMock()
+        type_property = PropertyMock(return_value="openai")
+        type(mock_langchain_llm)._llm_type = type_property
+        mock_langchain_llm.openai_api_key = "fake_key"
+        mock_langchain_llm.call = lambda instruction, suffix: "Custom response"
+
+        agent = Agent(
+            [MagicMock()],
+            {"llm": mock_langchain_llm},
+            vectorstore=MagicMock(),
+        )
+        assert agent.context.config.llm.type == "langchain_openai"

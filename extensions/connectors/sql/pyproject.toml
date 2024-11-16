@@ -1,18 +1,24 @@
 [tool.poetry]
 name = "pandasai-sql"
-version = "0.1.2"
-description = "SQL connectors integration for PandasAI"
+version = "0.1.1"
+description = "SQL integration for PandasAI"
 authors = ["Gabriele Venturi"]
+license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-pandasai = ">=3.0.0"
-scipy = "1.10.1"
-sqlalchemy = ">=1.4,<3"
-pymysql = "^1.1.0"
-psycopg2-binary = "^2.9.7"
-sqlalchemy-cockroachdb = "^2.0.2"
+python = ">=3.9,<4.0"
+pandasai = ">=3.0.0a0"
+sqlalchemy = "^2.0.0"
+numpy = ">=1.23.2,<2.0.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

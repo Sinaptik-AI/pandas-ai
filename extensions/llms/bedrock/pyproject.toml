@@ -1,15 +1,24 @@
 [tool.poetry]
 name = "pandasai-bedrock"
-version = "0.1.0"
-description = "Amazon bedrock integration for PandasAI"
+version = "0.1.1"
+description = "AWS Bedrock integration for PandasAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = "^3.0.0"
-boto3 = "^1.34.59"
+pandasai = ">=3.0.0a0"
+boto3 = "^1.34.0"
+numpy = "1.23.2"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

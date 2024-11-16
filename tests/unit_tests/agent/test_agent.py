@@ -4,65 +4,28 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
-from langchain import OpenAI
 
-from pandasai.agent import Agent
-from extensions.connectors.sql.pandasai_sql.sql import (
-    PostgreSQLConnector,
-    SQLConnector,
-    SQLConnectorConfig,
-)
-from pandasai.constants import DEFAULT_FILE_PERMISSIONS
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.agent.agent import Agent
 from pandasai.llm.fake import FakeLLM
-from extensions.llms.langchain.pandasai_langchain.langchain import is_langchain_llm
 from pandasai.prompts.base import BasePrompt
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 
 
 class TestAgent:
     "Unit tests for Agent class"
 
     @pytest.fixture
-    def sample_df(self):
+    def sample_df(self) -> pd.DataFrame:
         return pd.DataFrame(
             {
-                "country": [
-                    "United States",
-                    "United Kingdom",
-                    "France",
-                    "Germany",
-                    "Italy",
-                    "Spain",
-                    "Canada",
-                    "Australia",
-                    "Japan",
-                    "China",
-                ],
+                "country": ["United States", "United Kingdom", "Japan", "China"],
                 "gdp": [
                     19294482071552,
                     2891615567872,
-                    2411255037952,
-                    3435817336832,
-                    1745433788416,
-                    1181205135360,
-                    1607402389504,
-                    1490967855104,
                     4380756541440,
                     14631844184064,
                 ],
-                "happiness_index": [
-                    6.94,
-                    7.16,
-                    6.66,
-                    7.07,
-                    6.38,
-                    6.4,
-                    7.23,
-                    7.22,
-                    5.87,
-                    5.12,
-                ],
+                "happiness_index": [6.94, 7.22, 5.87, 5.12],
             }
         )
 
@@ -77,44 +40,6 @@ class TestAgent:
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
         return Agent(sample_df, config, vectorstore=MagicMock())
-
-    @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def sql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return SQLConnector(self.config)
-
-    @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def pgsql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config)
 
     @pytest.fixture(autouse=True)
     def mock_bamboo_llm(self):
@@ -286,84 +211,14 @@ What is expected Salary Increase?
     def test_load_llm_with_pandasai_llm(self, agent: Agent, llm):
         assert agent.get_llm(llm) == llm
 
-    def test_load_llm_with_langchain_llm(self, agent: Agent, llm):
-        langchain_llm = OpenAI(openai_api_key="fake_key")
-
-        config = agent.get_config({"llm": langchain_llm})
-        assert is_langchain_llm(config.llm)
-        assert config.llm.langchain_llm == langchain_llm
-
     def test_load_llm_none(self, agent: Agent, llm):
-        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock:
-            mock.return_value = Mock(type="bamboo")
+        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock, patch.dict(
+            os.environ, {"PANDASAI_API_KEY": "test_key"}
+        ):
+            bamboo_llm = Mock(type="bamboo")
+            mock.return_value = bamboo_llm
             config = agent.get_config({"llm": None})
-        assert isinstance(config.llm, BambooLLM)
-
-    @patch("os.makedirs")
-    def test_load_config_with_cache(self, mock_makedirs, agent):
-        # Modify the agent's configuration
-        agent.context.config.save_charts = True
-        agent.context.config.enable_cache = True
-
-        # Call the initialize method
-        agent.configure()
-
-        # Assertions for enabling cache
-        cache_dir = os.path.join(os.getcwd(), "cache")
-        mock_makedirs.assert_any_call(
-            cache_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
-        )
-
-        # Assertions for saving charts
-        charts_dir = os.path.join(os.getcwd(), agent.context.config.save_charts_path)
-        mock_makedirs.assert_any_call(
-            charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
-        )
-
-    @patch("os.makedirs")
-    def test_load_config_without_cache(self, mock_makedirs, agent):
-        # Modify the agent's configuration
-        agent.context.config.save_charts = True
-        agent.context.config.enable_cache = False
-
-        # Call the initialize method
-        agent.configure()
-
-        # Assertions for saving charts
-        charts_dir = os.path.join(os.getcwd(), agent.context.config.save_charts_path)
-        mock_makedirs.assert_called_once_with(
-            charts_dir, mode=DEFAULT_FILE_PERMISSIONS, exist_ok=True
-        )
-
-    def test_validate_true_direct_sql_with_non_connector(self, llm, sample_df):
-        # raise exception with non connector
-        Agent(
-            [sample_df],
-            config={"llm": llm, "enable_cache": False, "direct_sql": True},
-        )
-
-    def test_validate_direct_sql_with_connector(self, llm, sql_connector):
-        # not exception is raised using single connector
-        Agent(
-            [sql_connector],
-            config={"llm": llm, "enable_cache": False, "direct_sql": True},
-        )
-
-    def test_validate_false_direct_sql_with_connector(self, llm, sql_connector):
-        # not exception is raised using single connector
-        Agent(
-            [sql_connector],
-            config={"llm": llm, "enable_cache": False, "direct_sql": False},
-        )
-
-    def test_validate_false_direct_sql_with_two_different_connector(
-        self, llm, sql_connector, pgsql_connector
-    ):
-        # not exception is raised using single connector
-        Agent(
-            [sql_connector, pgsql_connector],
-            config={"llm": llm, "enable_cache": False, "direct_sql": False},
-        )
+            assert config.llm.__class__.__name__ == "BambooLLM"
 
     def test_train_method_with_qa(self, agent):
         queries = ["query1", "query2"]

@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
@@ -37,26 +37,126 @@ jobs:
         run: pip wheel --use-pep517 "future==0.18.3"
       - name: Install dependencies
         run: poetry install --all-extras --with dev --verbose
+      - name: Install extension dependencies
+        run: |
+          # Install LLM extension dependencies
+          for dir in extensions/llms/*/; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              cd "$dir"
+              poetry install --all-extras --with dev
+              cd -
+            fi
+          done
+
+          # Install connector extension dependencies
+          for dir in extensions/connectors/*/; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              cd "$dir"
+              poetry install --all-extras --with dev
+              cd -
+            fi
+          done
+
+          # Install enterprise extension dependencies
+          for dir in extensions/ee/*/*/; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              cd "$dir"
+              poetry install --all-extras --with dev
+              cd -
+            fi
+          done
+      - name: Install extension dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # Install LLM extension dependencies
+          Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
+            $projFile = Join-Path $_.FullName "pyproject.toml"
+            if (Test-Path $projFile) {
+              Write-Host "Installing dependencies for $_"
+              Push-Location $_.FullName
+              poetry install --all-extras --with dev
+              Pop-Location
+            }
+          }
+
+          # Install connector extension dependencies
+          Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
+            $projFile = Join-Path $_.FullName "pyproject.toml"
+            if (Test-Path $projFile) {
+              Write-Host "Installing dependencies for $_"
+              Push-Location $_.FullName
+              poetry install --all-extras --with dev
+              Pop-Location
+            }
+          }
+
+          # Install enterprise extension dependencies
+          Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
+            $projFile = Join-Path $_.FullName "pyproject.toml"
+            if (Test-Path $projFile) {
+              Write-Host "Installing dependencies for $_"
+              Push-Location $_.FullName
+              poetry install --all-extras --with dev
+              Pop-Location
+            }
+          }
       - name: Lint with ruff
         run: make format_diff
       - name: Spellcheck
         run: make spell_check
-      - name: Run tests
-        run: poetry run pytest tests --ignore=tests/integration_tests
+      - name: Run core tests
+        run: make test_core
+      - name: Run extension tests
+        if: matrix.os != 'windows-latest'
+        run: make test_extensions
+      - name: Run extension tests (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # Run LLM extension tests
+          Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
+            $testDir = Join-Path $_.FullName "tests"
+            if (Test-Path $testDir) {
+              Write-Host "Running tests for $_"
+              Push-Location $_.FullName
+              poetry run pytest tests/
+              Pop-Location
+            }
+          }
+
+          # Run connector extension tests
+          Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
+            $testDir = Join-Path $_.FullName "tests"
+            if (Test-Path $testDir) {
+              Write-Host "Running tests for $_"
+              Push-Location $_.FullName
+              poetry run pytest tests/
+              Pop-Location
+            }
+          }
+
+          # Run enterprise extension tests
+          Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
+            $testDir = Join-Path $_.FullName "tests"
+            if (Test-Path $testDir) {
+              Write-Host "Running tests for $_"
+              Push-Location $_.FullName
+              poetry run pytest tests/
+              Pop-Location
+            }
+          }
       - name: Run code coverage
         continue-on-error: true
         run: |
-          poetry run coverage run --source=pandasai -m pytest tests --ignore=tests/integration_tests
+          poetry run coverage run --source=pandasai,extensions -m pytest tests extensions/*/tests extensions/ee/*/tests --ignore=tests/integration_tests
           poetry run coverage xml
       - name: Report coverage
-        continue-on-error: true
-        run: poetry run coverage report
-      - name: Upload coverage reports to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-        continue-on-error: true
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
           fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

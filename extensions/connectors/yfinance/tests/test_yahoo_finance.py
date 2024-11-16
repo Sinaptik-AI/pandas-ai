@@ -1,11 +1,11 @@
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
 import yfinance as yf
 
-from extensions.connectors.yfinance.pandasai_yfinance.yahoo_finance import YahooFinanceConnector
-from extensions.connectors.yfinance.pandasai_yfinance import load_from_yahoo_finance
+from pandasai_yfinance.yahoo_finance import YahooFinanceConnector
+from pandasai_yfinance import load_from_yahoo_finance
 
 
 @pytest.fixture
@@ -88,7 +88,8 @@ def test_columns_count(yahoo_finance_connector):
 
 def test_fallback_name(yahoo_finance_connector, stock_ticker):
     assert yahoo_finance_connector.fallback_name == stock_ticker
-        
+
+
 def test_load_from_yahoo_finance_default_period():
     # Arrange
     connection_info = {"ticker": "AAPL"}
@@ -107,6 +108,7 @@ def test_load_from_yahoo_finance_default_period():
     assert "Close" in result
     assert "100" in result and "101" in result and "102" in result
 
+
 def test_load_from_yahoo_finance_custom_period():
     # Arrange
     connection_info = {"ticker": "GOOGL", "period": "3mo"}
@@ -124,6 +126,7 @@ def test_load_from_yahoo_finance_custom_period():
     assert isinstance(result, str)
     assert "Close" in result
     assert "200" in result and "201" in result and "202" in result
+
 
 def test_load_from_yahoo_finance_query_ignored():
     # Arrange

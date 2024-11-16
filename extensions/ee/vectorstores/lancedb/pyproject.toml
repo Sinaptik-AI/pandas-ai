@@ -7,12 +7,18 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = "^3.0.0"
-lancedb = "^0.11.0"
-sentence-transformers = {version = "^2.2.2", optional = true}
+pandasai = ">=3.0.0a0"
+lancedb = "^0.5.0"
+numpy = "1.23.2"
+sentence-transformers = "^2.2.2"
 
-[tool.poetry.extras]
-sentence-transformers = ["sentence-transformers"]
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

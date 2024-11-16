@@ -5,7 +5,6 @@ import pandas as pd
 
 from pandasai.agent.base import BaseAgent
 from pandasai.agent.base_judge import BaseJudge
-from pandasai.connectors.base import BaseConnector
 from pandasai.connectors.pandas import PandasConnector
 from pandasai.constants import PANDASBI_SETUP_MESSAGE
 from pandasai.ee.agents.semantic_agent.pipeline.code_generator import CodeGenerator
@@ -49,13 +48,14 @@ class SemanticAgent(BaseAgent):
         self._validate_config()
 
         self._schema_cache = Cache("schema")
-        self._schema = schema or None
+        self._schema = schema or []
 
-        self._create_schema()
+        if not self._schema:
+            self._create_schema()
 
-        self._sort_dfs_according_to_schema()
-
-        self.init_duckdb_instance()
+        if self._schema:
+            self._sort_dfs_according_to_schema()
+            self.init_duckdb_instance()
 
         # semantic agent works only with direct sql true
         self.config.direct_sql = True
@@ -141,6 +141,9 @@ class SemanticAgent(BaseAgent):
                 df.pandas_df[column] = pd.to_datetime(df.pandas_df[column])
 
     def _sort_dfs_according_to_schema(self):
+        if not self._schema:
+            return
+
         schema_dict = {
             table["table"]: [dim["sql"] for dim in table["dimensions"]]
             for table in self._schema
@@ -185,14 +188,14 @@ class SemanticAgent(BaseAgent):
             f"""Initializing Schema:  {result}
             """
         )
-        self._schema = result.replace("# SAMPLE SCHEMA", "")
-        schema_data = extract_json_from_json_str(result.replace("# SAMPLE SCHEMA", ""))
+        schema_str = result.replace("# SAMPLE SCHEMA", "")
+        schema_data = extract_json_from_json_str(schema_str)
         if isinstance(schema_data, dict):
             schema_data = [schema_data]
 
-        self._schema = schema_data
+        self._schema = schema_data or []
         # save schema in the cache
-        if self.config.enable_cache:
+        if self.config.enable_cache and self._schema:
             self._schema_cache.set(key, json.dumps(self._schema))
 
         self.logger.log(f"using schema: {self._schema}")
@@ -201,18 +204,12 @@ class SemanticAgent(BaseAgent):
         if not isinstance(self.config.llm, BambooLLM) and not isinstance(
             self.config.llm, FakeLLM
         ):
-            raise InvalidConfigError(
-                f"""Semantic Agent works only with BambooLLM follow instructions for setup:\n {PANDASBI_SETUP_MESSAGE}"""
-            )
+            raise InvalidConfigError(PANDASBI_SETUP_MESSAGE)
 
     def _get_schema_cache_key(self):
         """
-        Generate schema key
-        Returns:
-            str: key of schema stored in db
+        Get the cache key for the schema
         """
-        return "".join(str(df.column_hash) for df in self.context.dfs)
-
-    @property
-    def last_error(self):
-        return self.pipeline.last_error
+        return "schema_" + "_".join(
+            [str(df.head().columns.tolist()) for df in self.dfs]
+        )

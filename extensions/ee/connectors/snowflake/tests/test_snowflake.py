@@ -3,16 +3,16 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake import (
+from pandasai_snowflake.snowflake import (
     SnowflakeConnector,
     SnowflakeConnectorConfig,
 )
-from extensions.ee.connectors.snowflake.pandasai_snowflake import load_from_snowflake
+from pandasai_snowflake import load_from_snowflake
 
 
 class TestSQLConnector(unittest.TestCase):
     @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.create_engine",
+        "pandasai_snowflake.snowflake.create_engine",
         autospec=True,
     )
     def setUp(self, mock_create_engine):
@@ -38,12 +38,8 @@ class TestSQLConnector(unittest.TestCase):
         # Create an instance of SQLConnector
         self.connector = SnowflakeConnector(self.config)
 
-    @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowflakeConnector._load_connector_config"
-    )
-    @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.SnowflakeConnector._init_connection"
-    )
+    @patch("pandasai_snowflake.snowflake.SnowflakeConnector._load_connector_config")
+    @patch("pandasai_snowflake.snowflake.SnowflakeConnector._init_connection")
     def test_constructor_and_properties(
         self, mock_load_connector_config, mock_init_connection
     ):
@@ -76,7 +72,7 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
         self.assertEqual(str(query), expected_query)
 
     @patch(
-        "extensions.ee.connectors.snowflake.pandasai_snowflake.snowflake.pd.read_sql",
+        "pandasai_snowflake.snowflake.pd.read_sql",
         autospec=True,
     )
     def test_head_method(self, mock_read_sql):
@@ -122,8 +118,8 @@ WHERE column_name = :value_0 ORDER BY RANDOM() ASC
 
 
 class TestLoadFromSnowflake(unittest.TestCase):
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    @patch("pandasai_snowflake.connector.connect")
+    @patch("pandasai_snowflake.pd.read_sql")
     def test_load_from_snowflake(self, mock_read_sql, mock_connect):
         # Mock the connection info
         connection_info = {
@@ -167,8 +163,8 @@ class TestLoadFromSnowflake(unittest.TestCase):
         # Assert that the result is the expected DataFrame
         pd.testing.assert_frame_equal(result, expected_df)
 
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    @patch("pandasai_snowflake.connector.connect")
+    @patch("pandasai_snowflake.pd.read_sql")
     def test_load_from_snowflake_empty_result(self, mock_read_sql, mock_connect):
         connection_info = {
             "account": "test_account",
@@ -205,8 +201,8 @@ class TestLoadFromSnowflake(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_df)
 
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.connector.connect")
-    @patch("extensions.ee.connectors.snowflake.pandasai_snowflake.pd.read_sql")
+    @patch("pandasai_snowflake.connector.connect")
+    @patch("pandasai_snowflake.pd.read_sql")
     def test_load_from_snowflake_without_optional_params(
         self, mock_read_sql, mock_connect
     ):

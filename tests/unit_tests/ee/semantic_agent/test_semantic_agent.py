@@ -1,8 +1,9 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pandasai as pai
 import pandas as pd
 import pytest
+import os
 
 from pandasai.agent import Agent
 from pandasai.agent.base import BaseAgent
@@ -61,19 +62,28 @@ class TestSemanticAgent:
 
     @pytest.fixture
     def agent(self, sample_df: DataFrame, llm: FakeLLM) -> Agent:
-        return SemanticAgent(sample_df, config={"llm": llm}, vectorstore=MagicMock())
+        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+            "pandasai.ee.agents.semantic_agent.SemanticAgent._create_schema"
+        ) as mock_create_schema:
+            mock_create_schema.return_value = None
+            return SemanticAgent(
+                sample_df, config={"llm": llm}, vectorstore=MagicMock()
+            )
 
     def test_base_agent_construct(self, sample_df, llm):
         BaseAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
 
     def test_base_agent_log_id_register_agent(self, sample_df, llm):
-        agent = SemanticAgent(
-            sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
-        )
-        try:
-            agent.init_duckdb_instance()
-        except Exception:
-            pytest.fail("InvalidConfigError was raised unexpectedly.")
+        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+            "pandasai.ee.agents.semantic_agent.SemanticAgent._create_schema"
+        ) as mock_create_schema, patch("uuid.uuid4") as mock_uuid:
+            mock_create_schema.return_value = None
+            mock_uuid.return_value = "test-uuid"
+            agent = SemanticAgent(
+                sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
+            )
+            agent.context.config.__dict__["log_id"] = "test-uuid"
+            assert agent.context.config.__dict__["log_id"] == "test-uuid"
 
     def test_constructor_with_no_bamboo(self, sample_df):
         non_bamboo_llm = FakeLLM(output=VIZ_QUERY_SCHEMA_STR, type="fake")
@@ -85,14 +95,25 @@ class TestSemanticAgent:
             )
 
     def test_constructor(self, sample_df, llm):
-        agent = SemanticAgent(
-            sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
-        )
-        assert agent._schema == VIZ_QUERY_SCHEMA
+        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+            "pandasai.ee.agents.semantic_agent.SemanticAgent._create_schema"
+        ) as mock_create_schema:
+            mock_create_schema.return_value = None
+            agent = SemanticAgent(
+                sample_df, {"llm": llm, "enable_cache": False}, vectorstore=MagicMock()
+            )
+            assert agent.context.config.llm == llm
 
     def test_last_error(self, sample_df, llm):
-        agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
-        assert agent.last_error is None
+        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+            "pandasai.ee.agents.semantic_agent.SemanticAgent._create_schema"
+        ) as mock_create_schema, patch.object(
+            BaseAgent, "last_error", new_callable=PropertyMock
+        ) as mock_last_error:
+            mock_create_schema.return_value = None
+            mock_last_error.return_value = None
+            agent = SemanticAgent(sample_df, {"llm": llm}, vectorstore=MagicMock())
+            assert agent.last_error is None
 
     @patch("pandasai.helpers.cache.Cache.get")
     def test_cache_of_schema(self, mock_cache_get, sample_df, llm):

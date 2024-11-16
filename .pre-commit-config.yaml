@@ -8,12 +8,21 @@ repos:
         name: ruff-format
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
-        entry: poetry run pytest tests --ignore=tests/integration_tests
+      - id: install-deps
+        name: install-deps
+        entry: make install_deps install_extension_deps
         language: system
         pass_filenames: false
         always_run: true
+        stages: [commit]
+
+      - id: pytest-check
+        name: pytest-check
+        entry: make test_all
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
 
   - repo: https://github.com/sourcery-ai/sourcery
     rev: v1.11.0
