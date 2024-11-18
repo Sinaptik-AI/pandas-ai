@@ -388,19 +388,26 @@ Code running:
         """
         original_dfs = []
         for df in dfs:
+            # TODO - Check why this None check is there
             if df is None:
                 original_dfs.append(None)
                 continue
-
-            df.execute()
-
-            original_dfs.append(df.pandas_df)
+            original_dfs.append(df.head())
 
         return original_dfs
 
     def _extract_fix_dataframe_redeclarations(
         self, node: ast.AST, code_lines: list[str]
     ) -> ast.AST:
+        """
+        Checks if dataframe reclaration in the code like pd.DataFrame({...})
+        Args:
+            node (ast.AST): Code Node
+            code_lines (list[str]): List of code str line by line
+
+        Returns:
+            ast.AST: Updated Ast Node fixing redeclaration
+        """
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
 

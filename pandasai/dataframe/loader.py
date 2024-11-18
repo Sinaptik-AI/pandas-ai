@@ -15,7 +15,7 @@ class DatasetLoader:
         self.schema = None
         self.dataset_path = None
 
-    def load(self, dataset_path: str) -> DataFrame:
+    def load(self, dataset_path: str, lazy=False) -> DataFrame:
         self.dataset_path = dataset_path
         self._load_schema()
         self._validate_source_type()
