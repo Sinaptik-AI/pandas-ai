@@ -441,7 +441,7 @@ class SQLConnector(BaseConnector):
         if not self._is_sql_query_safe(sql_query):
             raise MaliciousQueryError("Malicious query is generated in code")
 
-        return pd.read_sql(sql_query, self._connection)
+        return pd.read_sql(text(sql_query), self._connection)
 
     @property
     def cs_table_name(self):

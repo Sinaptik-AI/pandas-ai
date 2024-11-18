@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+import pandas as pd
 from PIL import Image
 
 from pandasai.exceptions import MethodNotImplementedError
@@ -51,8 +52,19 @@ class ResponseParser(IResponseParser):
 
         if result["type"] == "plot":
             return self.format_plot(result)
+        elif result["type"] == "dataframe":
+            return self.format_dataframe(result)
         else:
             return result["value"]
+
+    def format_dataframe(self, result: dict) -> Any:
+        if isinstance(result["value"], dict):
+            print("Df conversiont")
+            df = pd.Dataframe(result["value"])
+            print("Df conversiont Done")
+            result["value"] = df
+
+        return result["value"]
 
     def format_plot(self, result: dict) -> Any:
         """
