@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
-from pandasai.connectors import BaseConnector, PandasConnector
+from pandasai.dataframe.base import DataFrame
 from pandasai.ee.agents.judge_agent import JudgeAgent
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
@@ -70,7 +70,7 @@ class TestPipeline:
 
     @pytest.fixture
     def dataframe(self, sample_df):
-        return PandasConnector({"original_df": sample_df})
+        return DataFrame(sample_df)
 
     @pytest.fixture
     def config(self, llm):
@@ -97,14 +97,14 @@ class TestPipeline:
         pipeline = Pipeline([dataframe], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
-        assert isinstance(pipeline._context.dfs[0], BaseConnector)
+        assert isinstance(pipeline._context.dfs[0], DataFrame)
 
     def test_init_with_dfs(self, dataframe, config):
         # Test the initialization of the Pipeline
         pipeline = Pipeline([dataframe], config=config)
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline._context.dfs) == 1
-        assert isinstance(pipeline._context.dfs[0], BaseConnector)
+        assert isinstance(pipeline._context.dfs[0], DataFrame)
 
     def test_add_step(self, context, config):
         # Test the add_step method

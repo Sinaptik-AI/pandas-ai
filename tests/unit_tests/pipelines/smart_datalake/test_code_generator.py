@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import Mock, patch
 
-import pandas as pd
 import pytest
 
+from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.code_generator import CodeGenerator
@@ -20,7 +20,7 @@ class TestCodeGenerator:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        return DataFrame(
             {
                 "country": [
                     "United States",

@@ -1,11 +1,13 @@
-from typing import Any, List
-
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any, List
 from pandasai.exceptions import InvalidConfigError
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 
-from ...connectors import BaseConnector
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
+
+if TYPE_CHECKING:
+    from pandasai.dataframe.base import DataFrame
 
 
 class ValidatePipelineInput(BaseLogicUnit):
@@ -15,7 +17,7 @@ class ValidatePipelineInput(BaseLogicUnit):
 
     pass
 
-    def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
+    def _validate_direct_sql(self, dfs: List[DataFrame]) -> bool:
         """
         Validates that all connectors are SQL connectors and belong to the same datasource
         when direct_sql is True.

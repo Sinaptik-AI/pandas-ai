@@ -16,7 +16,10 @@ class QueryBuilder:
         return query
 
     def _get_columns(self) -> str:
-        return ", ".join([col["name"] for col in self.schema["columns"]])
+        if "columns" in self.schema:
+            return ", ".join([col["name"] for col in self.schema["columns"]])
+        else:
+            return "*"
 
     def _add_order_by(self) -> str:
         if "order_by" not in self.schema:

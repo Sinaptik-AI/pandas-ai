@@ -4,12 +4,10 @@ import os
 import sys
 from unittest.mock import patch
 
-import pandas as pd
 import pytest
 
 from pandasai import Agent
-from pandasai.connectors import PandasConnector
-from pandasai.ee.connectors.relations import PrimaryKey
+from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import GeneratePythonCodePrompt
@@ -61,7 +59,7 @@ class TestGeneratePythonCodePrompt:
 
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = GeneratePythonCodePrompt(
@@ -150,7 +148,7 @@ Generate python code and return full updated code:"""  # noqa E501
         chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         agent.train(["query1"], ["code1"])
@@ -245,8 +243,9 @@ Generate python code and return full updated code:"""  # noqa E501
         chromadb_instance.get_relevant_docs_documents.return_value = [["query1"]]
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
+            vectorstore=chromadb_instance,
         )
         agent.train(docs=["document1"])
         prompt = GeneratePythonCodePrompt(
@@ -344,8 +343,9 @@ Generate python code and return full updated code:"""  # noqa E501
         chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm},
+            vectorstore=chromadb_instance,
         )
         agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
         prompt = GeneratePythonCodePrompt(
@@ -412,8 +412,9 @@ Generate python code and return full updated code:"""  # noqa E501
         chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector({"original_df": pd.DataFrame({"a": [1], "b": [4]})}),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm},
+            vectorstore=chromadb_instance,
         )
         agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
         prompt = GeneratePythonCodePrompt(
@@ -424,9 +425,7 @@ Generate python code and return full updated code:"""  # noqa E501
             prompt_json["prompt"] = prompt_json["prompt"].replace("\r\n", "\n")
 
         assert prompt_json == {
-            "datasets": [
-                {"name": None, "description": None, "head": [{"a": 1, "b": 4}]}
-            ],
+            "datasets": ['{"a":{"0":1},"b":{"0":4}}'],
             "conversation": [],
             "system_prompt": None,
             "prompt": '<dataframe>\ndfs[0]:1x2\na,b\n1,4\n</dataframe>\n\n\n\nUpdate this initial code:\n```python\n# TODO: import the required dependencies\nimport pandas as pd\n\n# Write code here\n\n# Declare result var: \ntype (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }\n\n```\n\n\nYou can utilize these examples as a reference for generating code.\n\n[\'query1\']\n\nHere are additional documents for reference. Feel free to use them to answer.\n[\'documents1\']\n\n\n\nVariable `dfs: list[pd.DataFrame]` is already declared.\n\nAt the end, declare "result" variable as a dictionary of type and value.\n\n\nGenerate python code and return full updated code:',
@@ -479,11 +478,9 @@ Generate python code and return full updated code:"""  # noqa E501
         chromadb_instance.get_relevant_qa_documents.return_value = [["query1"]]
         llm = FakeLLM()
         agent = Agent(
-            PandasConnector(
-                {"original_df": pd.DataFrame({"a": [1], "b": [4]})},
-                connector_relations=[PrimaryKey("a")],
-            ),
+            DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
+            vectorstore=chromadb_instance,
         )
         agent.train(["query1"], ["code1"])
         prompt = GeneratePythonCodePrompt(
@@ -491,23 +488,11 @@ Generate python code and return full updated code:"""  # noqa E501
             output_type=output_type,
         )
 
-        expected_prompt_content = f"""dfs[0]:
-  name: null
-  description: null
-  type: pd.DataFrame
-  rows: 1
-  columns: 2
-  schema:
-    fields:
-    - name: a
-      type: int64
-      samples:
-      - 1
-      constraints: PRIMARY KEY (a)
-    - name: b
-      type: int64
-      samples:
-      - 4
+        expected_prompt_content = f"""<dataframe>
+dfs[0]:1x2
+a,b
+1,4
+</dataframe>
 
 
 
@@ -539,9 +524,8 @@ At the end, declare "result" variable as a dictionary of type and value.
 
 Generate python code and return full updated code:"""  # noqa E501
         actual_prompt_content = prompt.to_string()
+
         if sys.platform.startswith("win"):
             actual_prompt_content = actual_prompt_content.replace("\r\n", "\n")
-
-        print(actual_prompt_content)
 
         assert actual_prompt_content == expected_prompt_content

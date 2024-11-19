@@ -4,8 +4,6 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 
 from typing import List
-from pandasai.smart_dataframe import SmartDataframe
-from pandasai.smart_datalake import SmartDatalake
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
@@ -81,8 +79,6 @@ __all__ = [
     "Agent",
     "clear_cache",
     "pandas",
-    "SmartDataframe",
-    "SmartDatalake",
     "DataFrame",
     "chat",
     "follow_up",

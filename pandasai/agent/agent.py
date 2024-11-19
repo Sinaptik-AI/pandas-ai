@@ -1,22 +1,22 @@
-from typing import List, Optional, Type, Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 
-import pandas as pd
 
 from pandasai.agent.base import BaseAgent
 from pandasai.agent.base_judge import BaseJudge
 from pandasai.agent.base_security import BaseSecurity
-from pandasai.connectors.base import BaseConnector
 from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.schemas.df_config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
+
+if TYPE_CHECKING:
+    from pandasai.dataframe import DataFrame
 
 
 class Agent(BaseAgent):
     def __init__(
         self,
-        dfs: Union[
-            pd.DataFrame, BaseConnector, List[Union[pd.DataFrame, BaseConnector]]
-        ],
+        dfs: Union[DataFrame, List[DataFrame]],
         config: Optional[Union[Config, dict]] = None,
         memory_size: Optional[int] = 10,
         pipeline: Optional[Type[GenerateChatPipeline]] = None,

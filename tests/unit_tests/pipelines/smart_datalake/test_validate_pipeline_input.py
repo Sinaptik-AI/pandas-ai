@@ -1,14 +1,9 @@
 from typing import Optional
-from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
-from extensions.connectors.sql.pandasai_sql.sql import (
-    PostgreSQLConnector,
-    SQLConnector,
-    SQLConnectorConfig,
-)
+from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
@@ -70,42 +65,90 @@ class TestValidatePipelineInput:
         )
 
     @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def sql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return SQLConnector(self.config)
+    def sql_connector(self):
+        return DataFrame(
+            {
+                "country": [
+                    "United States",
+                    "United Kingdom",
+                    "France",
+                    "Germany",
+                    "Italy",
+                    "Spain",
+                    "Canada",
+                    "Australia",
+                    "Japan",
+                    "China",
+                ],
+                "gdp": [
+                    19294482071552,
+                    2891615567872,
+                    2411255037952,
+                    3435817336832,
+                    1745433788416,
+                    1181205135360,
+                    1607402389504,
+                    1490967855104,
+                    4380756541440,
+                    14631844184064,
+                ],
+                "happiness_index": [
+                    6.94,
+                    7.16,
+                    6.66,
+                    7.07,
+                    6.38,
+                    6.4,
+                    7.23,
+                    7.22,
+                    5.87,
+                    5.12,
+                ],
+            }
+        )
 
     @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
-    def pgsql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="pgsql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config)
+    def pgsql_connector(self):
+        return DataFrame(
+            {
+                "country": [
+                    "United States",
+                    "United Kingdom",
+                    "France",
+                    "Germany",
+                    "Italy",
+                    "Spain",
+                    "Canada",
+                    "Australia",
+                    "Japan",
+                    "China",
+                ],
+                "gdp": [
+                    19294482071552,
+                    2891615567872,
+                    2411255037952,
+                    3435817336832,
+                    1745433788416,
+                    1181205135360,
+                    1607402389504,
+                    1490967855104,
+                    4380756541440,
+                    14631844184064,
+                ],
+                "happiness_index": [
+                    6.94,
+                    7.16,
+                    6.66,
+                    7.07,
+                    6.38,
+                    6.4,
+                    7.23,
+                    7.22,
+                    5.87,
+                    5.12,
+                ],
+            }
+        )
 
     @pytest.fixture
     def config(self, llm):

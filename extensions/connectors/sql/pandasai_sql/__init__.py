@@ -1,4 +1,3 @@
-from .sql import SQLConnector, SqliteConnector, SQLConnectorConfig
 import pandas as pd
 
 

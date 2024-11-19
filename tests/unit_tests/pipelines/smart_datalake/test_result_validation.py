@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import Mock
 
-import pandas as pd
 import pytest
 
+from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.result_validation import ResultValidation
@@ -21,7 +21,7 @@ class TestResultValidation:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        return DataFrame(
             {
                 "country": [
                     "United States",

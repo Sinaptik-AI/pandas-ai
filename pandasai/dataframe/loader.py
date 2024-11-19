@@ -3,6 +3,8 @@ import yaml
 import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
+
+from pandasai.helpers.path import find_project_root
 from .base import DataFrame
 import importlib
 from typing import Any
@@ -32,7 +34,10 @@ class DatasetLoader:
         return DataFrame(df, schema=self.schema)
 
     def _load_schema(self):
-        schema_path = os.path.join("datasets", self.dataset_path, "schema.yaml")
+        schema_path = os.path.join(
+            find_project_root(), "datasets", self.dataset_path, "schema.yaml"
+        )
+        print(schema_path)
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 

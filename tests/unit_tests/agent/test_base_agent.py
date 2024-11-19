@@ -1,10 +1,9 @@
+from pandasai.dataframe.base import DataFrame
 from pandasai.llm.fake import FakeLLM
 import pytest
-import pandas as pd
 from unittest.mock import Mock, patch, MagicMock
 from pandasai.agent.base import BaseAgent
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
-from pandasai.connectors import PandasConnector
 
 
 class TestBaseAgent:
@@ -17,7 +16,7 @@ class TestBaseAgent:
     @pytest.fixture
     def mock_agent(self):
         # Create a mock DataFrame
-        mock_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        mock_df = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
         fake_llm = FakeLLM()
         agent = BaseAgent([mock_df], config={"llm": fake_llm})
         agent.pipeline = MagicMock()
