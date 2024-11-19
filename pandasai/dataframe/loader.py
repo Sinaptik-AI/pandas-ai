@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
 
+from pandasai.exceptions import InvalidDataSourceType
 from pandasai.helpers.path import find_project_root
 from .base import DataFrame
 import importlib
@@ -101,11 +102,8 @@ class DatasetLoader:
                 load_function = getattr(module, f"load_from_{source_type}")
                 return load_function(connection_info, query)
             else:
-                connector_class = getattr(
-                    module, f"{source_type.capitalize()}Connector"
-                )
-                connector = connector_class(config=connection_info)
-                return connector.execute_query(query)
+                raise InvalidDataSourceType("Invalid data source type")
+
         except ImportError as e:
             raise ImportError(
                 f"{source_type.capitalize()} connector not found. "
