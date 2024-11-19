@@ -113,6 +113,7 @@ RESTRICTED_LIBS = [
     "pickle",  # Unsafe object serialization
     "ctypes",  # C-level interaction with memory
     "psutil",  # System and process utilities
+    "io",
 ]
 
 PANDASBI_SETUP_MESSAGE = (
