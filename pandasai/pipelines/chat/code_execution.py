@@ -15,7 +15,6 @@ from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from .code_cleaning import CodeExecutionContext
-import pandas as pd
 
 
 class CodeExecution(BaseLogicUnit):
@@ -151,12 +150,12 @@ class CodeExecution(BaseLogicUnit):
         # if the code does not need them
         dfs = self._required_dfs(code)
         environment: dict = get_environment(self._additional_dependencies)
-        environment["dfs"] = self._get_originals(dfs)
+        environment["dfs"] = dfs
         if len(environment["dfs"]) == 1:
             environment["df"] = environment["dfs"][0]
 
         if self._config.direct_sql:
-            environment["execute_sql_query"] = self._dfs[0].execute_direct_sql_query
+            environment["execute_sql_query"] = self._dfs[0].execute_sql_query
 
         # Execute the code
         exec(code, environment)
@@ -193,31 +192,31 @@ class CodeExecution(BaseLogicUnit):
                 required_dfs.append(None)
         return required_dfs or self._dfs
 
-    def _get_originals(self, dfs):
-        """
-        Get original dfs
+    # def _get_originals(self, dfs):
+    #     """
+    #     Get original dfs
 
-        Args:
-            dfs (list): List of dfs
+    #     Args:
+    #         dfs (list): List of dfs
 
-        Returns:
-            list: List of dfs
-        """
-        original_dfs = []
-        for df in dfs:
-            # TODO - Check why this None check is there
-            if df is None:
-                original_dfs.append(None)
-                continue
+    #     Returns:
+    #         list: List of dfs
+    #     """
+    #     original_dfs = []
+    #     for df in dfs:
+    #         # TODO - Check why this None check is there
+    #         if df is None:
+    #             original_dfs.append(None)
+    #             continue
 
-            if isinstance(df, pd.DataFrame):
-                original_dfs.append(df)
-            else:
-                # Execute to fetch only if not dataframe
-                df.execute()
-                original_dfs.append(df.pandas_df)
+    #         if isinstance(df, pd.DataFrame):
+    #             original_dfs.append(df)
+    #         else:
+    #             # Execute to fetch only if not dataframe
+    #             df.execute()
+    #             original_dfs.append(df.pandas_df)
 
-        return original_dfs
+    #     return original_dfs
 
     def _retry_run_code(
         self,

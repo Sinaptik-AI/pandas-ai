@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, mock_open
 import pandas as pd
 from pandasai.dataframe.base import DataFrame
-from pandasai.dataframe.loader import DatasetLoader
+from pandasai.data_loader.loader import DatasetLoader
 from datetime import datetime, timedelta
 
 

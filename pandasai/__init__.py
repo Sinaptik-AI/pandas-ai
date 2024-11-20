@@ -7,7 +7,7 @@ from typing import List
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
-from .dataframe.loader import DatasetLoader
+from .data_loader.loader import DatasetLoader
 
 # Global variable to store the current agent
 _current_agent = None
@@ -61,7 +61,7 @@ def follow_up(query: str):
 _dataset_loader = DatasetLoader()
 
 
-def load(dataset_path: str) -> DataFrame:
+def load(dataset_path: str, virtualized=False) -> DataFrame:
     """
     Load data based on the provided dataset path.
 
@@ -72,7 +72,7 @@ def load(dataset_path: str) -> DataFrame:
         DataFrame: A new PandasAI DataFrame instance with loaded data.
     """
     global _dataset_loader
-    return _dataset_loader.load(dataset_path)
+    return _dataset_loader.load(dataset_path, virtualized)
 
 
 __all__ = [

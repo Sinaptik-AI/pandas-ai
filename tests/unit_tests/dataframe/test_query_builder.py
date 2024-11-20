@@ -1,5 +1,5 @@
 import pytest
-from pandasai.dataframe.query_builder import QueryBuilder
+from pandasai.data_loader.query_builder import QueryBuilder
 
 
 class TestQueryBuilder:

@@ -5,7 +5,6 @@ import uuid
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
-import pandas as pd
 import pytest
 
 from pandasai import Agent
@@ -43,7 +42,7 @@ class TestCodeCleaning:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        return DataFrame(
             {
                 "country": [
                     "United States",
