@@ -250,3 +250,9 @@ class LazyLoadError(Exception):
     """Raised when trying to access data that hasn't been loaded in lazy load mode."""
 
     pass
+
+
+class InvalidDataSourceType(Exception):
+    """Raised error with invalid data source provided"""
+
+    pass

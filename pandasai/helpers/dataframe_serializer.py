@@ -55,7 +55,7 @@ class DataframeSerializer:
         dataframe_info += ">"
 
         # Add dataframe details
-        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.to_csv()}"
+        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.to_csv(index=False)}"
 
         # Close the dataframe tag
         dataframe_info += "</dataframe>\n"
@@ -96,7 +96,7 @@ class DataframeSerializer:
         # Create a dictionary representing the data structure
         df_info = {
             "name": df.name,
-            "description": df.description,
+            "description": None,
             "type": (
                 df.type
                 if "is_direct_sql" in extras and extras["is_direct_sql"]
@@ -122,20 +122,21 @@ class DataframeSerializer:
                 col_info["samples"] = df_head[col_name].head().tolist()
 
             # Add column description if available
-            if df.field_descriptions and isinstance(df.field_descriptions, dict):
-                if col_description := df.field_descriptions.get(col_name, None):
-                    col_info["description"] = col_description
+            # TODO - Fix or remove this later!
+            # if df.field_descriptions and isinstance(df.field_descriptions, dict):
+            #     if col_description := df.field_descriptions.get(col_name, None):
+            #         col_info["description"] = col_description
 
-            if df.connector_relations:
-                for relation in df.connector_relations:
-                    from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
+            # if df.connector_relations:
+            #     for relation in df.connector_relations:
+            #         from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
 
-                    if (
-                        isinstance(relation, PrimaryKey) and relation.name == col_name
-                    ) or (
-                        isinstance(relation, ForeignKey) and relation.field == col_name
-                    ):
-                        col_info["constraints"] = relation.to_string()
+            #         if (
+            #             isinstance(relation, PrimaryKey) and relation.name == col_name
+            #         ) or (
+            #             isinstance(relation, ForeignKey) and relation.field == col_name
+            #         ):
+            #             col_info["constraints"] = relation.to_string()
 
             data["schema"]["fields"].append(col_info)
 

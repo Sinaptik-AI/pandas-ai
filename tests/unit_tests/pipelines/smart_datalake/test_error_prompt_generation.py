@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 
+from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import InvalidLLMOutputType
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.error_correction_pipeline.error_prompt_generation import (
@@ -25,7 +25,7 @@ class TestErrorPromptGeneration:
 
     @pytest.fixture
     def sample_df(self):
-        return pd.DataFrame(
+        return DataFrame(
             {
                 "country": [
                     "United States",

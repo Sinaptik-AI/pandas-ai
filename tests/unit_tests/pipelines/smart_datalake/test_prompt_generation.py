@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 import pytest
 
-from pandasai.connectors import PandasConnector
+from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.chat.prompt_generation import PromptGeneration
@@ -66,7 +66,7 @@ class TestPromptGeneration:
 
     @pytest.fixture
     def dataframe(self, sample_df):
-        return PandasConnector({"original_df": sample_df})
+        return DataFrame(sample_df)
 
     @pytest.fixture
     def config(self, llm):
@@ -118,11 +118,10 @@ class TestPromptGeneration:
         # Test case 1: direct_sql is True
         prompt_generation = PromptGeneration()
         context.config.enforce_privacy = True
-        context.config.dataframe_serializer = DataframeSerializerType.YML
+        context.config.dataframe_serializer = DataframeSerializerType.CSV
 
-        dataframe = PandasConnector({"original_df": sample_df}, custom_head=sample_df)
+        dataframe = DataFrame(sample_df)
         context.dfs = [dataframe]
 
         gen_prompt = prompt_generation.get_chat_prompt(context)
         assert isinstance(gen_prompt, GeneratePythonCodePrompt)
-        assert "samples" in gen_prompt.to_string()

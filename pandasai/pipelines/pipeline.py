@@ -1,16 +1,20 @@
+from __future__ import annotations
 import logging
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from pandasai.config import load_config_from_json
+
 from pandasai.exceptions import PipelineConcatenationError, UnSupportedLogicUnit
 from pandasai.helpers.logger import Logger
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
 from pandasai.pipelines.logic_unit_output import LogicUnitOutput
 from pandasai.pipelines.pipeline_context import PipelineContext
 
-from ..connectors import BaseConnector
 from ..schemas.df_config import Config
 from .abstract_pipeline import AbstractPipeline
+
+if TYPE_CHECKING:
+    from pandasai.dataframe.base import DataFrame
 
 
 class Pipeline(AbstractPipeline):
@@ -24,7 +28,7 @@ class Pipeline(AbstractPipeline):
 
     def __init__(
         self,
-        context: Union[List[BaseConnector], PipelineContext],
+        context: Union[List[DataFrame], PipelineContext],
         config: Optional[Union[Config, dict]] = None,
         steps: Optional[List] = None,
         logger: Optional[Logger] = None,

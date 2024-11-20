@@ -1,7 +1,6 @@
 import ast
 import logging
 import traceback
-from collections import defaultdict
 from typing import Any, Callable, Generator, List, Union
 
 from pandasai.exceptions import InvalidLLMOutputType, InvalidOutputValueMismatch
@@ -10,13 +9,13 @@ from pandasai.responses.response_serializer import ResponseSerializer
 
 from ...exceptions import NoResultFoundError
 from ...helpers.logger import Logger
-from ...helpers.node_visitors import AssignmentVisitor, CallVisitor
 from ...helpers.optional import get_environment
 from ...helpers.output_validator import OutputValidator
 from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
 from ..pipeline_context import PipelineContext
 from .code_cleaning import CodeExecutionContext
+import pandas as pd
 
 
 class CodeExecution(BaseLogicUnit):
@@ -205,115 +204,20 @@ class CodeExecution(BaseLogicUnit):
             list: List of dfs
         """
         original_dfs = []
-        for index, df in enumerate(dfs):
+        for df in dfs:
+            # TODO - Check why this None check is there
             if df is None:
                 original_dfs.append(None)
                 continue
 
-            extracted_filters = self._extract_filters(self._current_code_executed)
-            filters = extracted_filters.get(f"dfs[{index}]", [])
-            df.set_additional_filters(filters)
-
-            df.execute()
-            # df.load_connector(partial=len(filters) > 0)
-
-            original_dfs.append(df.pandas_df)
+            if isinstance(df, pd.DataFrame):
+                original_dfs.append(df)
+            else:
+                # Execute to fetch only if not dataframe
+                df.execute()
+                original_dfs.append(df.pandas_df)
 
         return original_dfs
-
-    def _extract_filters(self, code) -> dict[str, list]:
-        """
-        Extract filters to be applied to the dataframe from passed code.
-
-        Args:
-            code (str): A snippet of code to be parsed.
-
-        Returns:
-            dict: The dictionary containing all filters parsed from
-                the passed code. The dictionary has the following structure:
-                {
-                    "<df_number>": [
-                        ("<left_operand>", "<operator>", "<right_operand>")
-                    ]
-                }
-
-        Raises:
-            SyntaxError: If the code is unable to be parsed by `ast.parse()`.
-            Exception: If any exception is raised during working with nodes
-                of the code tree.
-        """
-        try:
-            parsed_tree = ast.parse(code)
-        except SyntaxError:
-            self.logger.log(
-                "Invalid code passed for extracting filters", level=logging.ERROR
-            )
-            self.logger.log(f"{traceback.format_exc()}", level=logging.DEBUG)
-            raise
-
-        try:
-            filters = self._extract_comparisons(parsed_tree)
-        except Exception:
-            self.logger.log(
-                "Unable to extract filters for passed code", level=logging.ERROR
-            )
-            self.logger.log(f"Error: {traceback.format_exc()}", level=logging.DEBUG)
-            return {}
-
-        return filters
-
-    def _extract_comparisons(self, tree: ast.Module) -> dict[str, list]:
-        """
-        Process nodes from passed tree to extract filters.
-
-        Collects all assignments in the tree.
-        Collects all function calls in the tree.
-        Walk over the tree and handle each comparison node.
-        For each comparison node, defined what `df` is this node related to.
-        Parse constants values from the comparison node.
-        Add to the result dict.
-
-        Args:
-            tree (str): A snippet of code to be parsed.
-
-        Returns:
-            dict: The `defaultdict(list)` instance containing all filters
-                parsed from the passed instructions tree. The dictionary has
-                the following structure:
-                {
-                    "<df_number>": [
-                        ("<left_operand>", "<operator>", "<right_operand>")
-                    ]
-                }
-        """
-        comparisons = defaultdict(list)
-        current_df = "dfs[0]"
-
-        visitor = AssignmentVisitor()
-        visitor.visit(tree)
-        assignments = visitor.assignment_nodes
-
-        call_visitor = CallVisitor()
-        call_visitor.visit(tree)
-
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Compare) and isinstance(node.left, ast.Subscript):
-                name, *slices = self._tokenize_operand(node.left)
-                current_df = (
-                    self._get_df_id_by_nearest_assignment(
-                        node.lineno, assignments, name
-                    )
-                    or current_df
-                )
-                left_str = slices[-1] if slices else name
-
-                for op, right in zip(node.ops, node.comparators):
-                    op_str = self._ast_comparator_map.get(type(op), "Unknown")
-                    name, *slices = self._tokenize_operand(right)
-                    right_str = slices[-1] if slices else name
-
-                    comparisons[current_df].append((left_str, op_str, right_str))
-        return comparisons
 
     def _retry_run_code(
         self,

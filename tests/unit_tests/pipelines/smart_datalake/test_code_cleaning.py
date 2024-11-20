@@ -9,12 +9,7 @@ import pandas as pd
 import pytest
 
 from pandasai import Agent
-from pandasai.connectors.pandas import PandasConnector
-from extensions.connectors.sql.pandasai_sql.sql import (
-    PostgreSQLConnector,
-    SQLConnector,
-    SQLConnectorConfig,
-)
+from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import (
     BadImportError,
     InvalidConfigError,
@@ -114,7 +109,7 @@ class TestCodeCleaning:
         return Agent([sample_df], config={"llm": llm, "enable_cache": False})
 
     @pytest.fixture
-    def agent_with_connector(self, llm, pgsql_connector: PostgreSQLConnector):
+    def agent_with_connector(self, llm, pgsql_connector: DataFrame):
         return Agent(
             [pgsql_connector],
             config={"llm": llm, "enable_cache": False, "direct_sql": True},
@@ -131,40 +126,12 @@ class TestCodeCleaning:
     @pytest.fixture
     @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def sql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return SQLConnector(self.config)
+        return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
     @pytest.fixture
     @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
     def pgsql_connector(self, create_engine):
-        # Define your ConnectorConfig instance here
-        self.config = SQLConnectorConfig(
-            dialect="mysql",
-            driver="pymysql",
-            username="your_username",
-            password="your_password",
-            host="your_host",
-            port=443,
-            database="your_database",
-            table="your_table",
-            where=[["column_name", "=", "value"]],
-        ).dict()
-
-        # Create an instance of SQLConnector
-        return PostgreSQLConnector(self.config, name="your_table")
+        return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
     def test_run_code_for_calculations(
         self,
@@ -513,7 +480,7 @@ np.array()"""
 
     def test_clean_code_using_correct_sql_table(
         self,
-        pgsql_connector: PostgreSQLConnector,
+        pgsql_connector: DataFrame,
         context: PipelineContext,
         logger: Logger,
     ):
@@ -536,7 +503,7 @@ np.array()"""
 
     def test_clean_code_with_no_execute_sql_query_usage_script(
         self,
-        pgsql_connector: PostgreSQLConnector,
+        pgsql_connector: DataFrame,
         context: PipelineContext,
         logger: Logger,
     ):
@@ -554,7 +521,7 @@ np.array()"""
 
     def test_clean_code_using_incorrect_sql_table(
         self,
-        pgsql_connector: PostgreSQLConnector,
+        pgsql_connector: DataFrame,
         context: PipelineContext,
         logger,
     ):
@@ -571,7 +538,7 @@ np.array()"""
 
     def test_clean_code_using_multi_incorrect_sql_table(
         self,
-        pgsql_connector: PostgreSQLConnector,
+        pgsql_connector: DataFrame,
         context: PipelineContext,
         logger: Logger,
     ):
@@ -585,11 +552,8 @@ np.array()"""
 
         assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations(self, mock_head, context: PipelineContext):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
@@ -608,13 +572,10 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
         assert isinstance(output, ast.Assign)
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_multiline_redeclarations(
         self, mock_head, context: PipelineContext
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
@@ -642,11 +603,8 @@ print(df1)
         assert isinstance(outputs[1], ast.Assign)
         assert outputs[2] is None
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_no_redeclarations(self, mock_head, context: PipelineContext):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
@@ -665,13 +623,10 @@ df1 = dfs[0]
 
         assert output is None
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_with_subscript(
         self, mock_head, context: PipelineContext
     ):
-        df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
@@ -690,7 +645,6 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
         assert isinstance(output, ast.Assign)
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_with_subscript_and_data_variable(
         self, mock_head, context: PipelineContext
     ):
@@ -698,9 +652,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
             "sales": [8000, 6000, 4000, 3500, 3000],
         }
-        df = pd.DataFrame(data)
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame(data)
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
@@ -724,7 +676,6 @@ dfs[0] = pd.DataFrame(data)
 
         assert isinstance(output, ast.Assign)
 
-    @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_and_data_variable(
         self, mock_head, context: PipelineContext
     ):
@@ -732,9 +683,7 @@ dfs[0] = pd.DataFrame(data)
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
             "sales": [8000, 6000, 4000, 3500, 3000],
         }
-        df = pd.DataFrame(data)
-        mock_head.return_value = df
-        pandas_connector = PandasConnector({"original_df": df})
+        pandas_connector = DataFrame(data)
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]

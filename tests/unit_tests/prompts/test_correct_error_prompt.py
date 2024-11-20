@@ -2,10 +2,8 @@
 
 import sys
 
-import pandas as pd
-
 from pandasai import Agent
-from pandasai.connectors import PandasConnector
+from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 from pandasai.prompts import CorrectErrorPrompt
@@ -19,7 +17,7 @@ class TestCorrectErrorPrompt:
 
         llm = FakeLLM()
         agent = Agent(
-            dfs=[PandasConnector({"original_df": pd.DataFrame()})],
+            dfs=[DataFrame()],
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = CorrectErrorPrompt(
@@ -54,7 +52,7 @@ Fix the python code above and return the new python code:"""  # noqa: E501
 
         llm = FakeLLM()
         agent = Agent(
-            dfs=[PandasConnector({"original_df": pd.DataFrame()})],
+            dfs=[DataFrame()],
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = CorrectErrorPrompt(
@@ -62,7 +60,7 @@ Fix the python code above and return the new python code:"""  # noqa: E501
         )
 
         assert prompt.to_json() == {
-            "datasets": [{"name": None, "description": None, "head": []}],
+            "datasets": ["{}"],
             "conversation": [],
             "system_prompt": None,
             "error": {

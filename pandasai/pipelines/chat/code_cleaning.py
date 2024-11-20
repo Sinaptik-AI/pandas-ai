@@ -1,23 +1,20 @@
+from __future__ import annotations
 import ast
 import copy
 import re
 import traceback
 import uuid
-from typing import Any, List, Union
+from typing import TYPE_CHECKING, Any, List, Union
 
 import astor
-
-from pandasai.connectors.pandas import PandasConnector
 from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
 
-from ...connectors import BaseConnector
 from ...constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
 from ...exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
-    InvalidConfigError,
     MaliciousQueryError,
 )
 from ...helpers.logger import Logger
@@ -26,6 +23,9 @@ from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
 from ..logic_unit_output import LogicUnitOutput
 from ..pipeline_context import PipelineContext
+
+if TYPE_CHECKING:
+    from pandasai.dataframe.base import DataFrame
 
 
 class CodeExecutionContext:
@@ -240,34 +240,39 @@ Code running:
             and node.name == "execute_sql_query"
         )
 
-    def _validate_direct_sql(self, dfs: List[BaseConnector]) -> bool:
+    def _validate_direct_sql(self, dfs: List[DataFrame]) -> bool:
         """
         Raises error if they don't belong sqlconnector or have different credentials
         Args:
-            dfs (List[BaseConnector]): list of BaseConnectors
+            dfs (List[DataFrame]): list of DataFrames
 
         Raises:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
 
-        if self._config.direct_sql:
-            if all(
-                (
-                    hasattr(df, "is_sql_connector")
-                    and df.is_sql_connector
-                    and df.equals(dfs[0])
-                )
-                for df in dfs
-            ) or all(
-                (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
-            ):
-                return True
-            else:
-                raise InvalidConfigError(
-                    "Direct SQL requires all connectors to be SQL connectors and they must belong to the same datasource "
-                    "and have the same credentials"
-                )
-        return False
+        return self._config.direct_sql
+        # if self._config.direct_sql:
+        #     return True
+        # else:
+        #     return
+        # TODO - while working on direct sql
+        # if all(
+        #     (
+        #         hasattr(df, "is_sql_connector")
+        #         and df.is_sql_connector
+        #         and df.equals(dfs[0])
+        #     )
+        #     for df in dfs
+        # ) or all(
+        #     (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
+        # ):
+        #     return True
+        # else:
+        #     raise InvalidConfigError(
+        #         "Direct SQL requires all connectors to be SQL connectors and they must belong to the same datasource "
+        #         "and have the same credentials"
+        #     )
+        # return False
 
     def _replace_table_names(
         self, sql_query: str, table_names: list, allowed_table_names: list
@@ -388,19 +393,26 @@ Code running:
         """
         original_dfs = []
         for df in dfs:
+            # TODO - Check why this None check is there
             if df is None:
                 original_dfs.append(None)
                 continue
-
-            df.execute()
-
-            original_dfs.append(df.pandas_df)
+            original_dfs.append(df.head())
 
         return original_dfs
 
     def _extract_fix_dataframe_redeclarations(
         self, node: ast.AST, code_lines: list[str]
     ) -> ast.AST:
+        """
+        Checks if dataframe reclaration in the code like pd.DataFrame({...})
+        Args:
+            node (ast.AST): Code Node
+            code_lines (list[str]): List of code str line by line
+
+        Returns:
+            ast.AST: Updated Ast Node fixing redeclaration
+        """
         if isinstance(node, ast.Assign):
             target_names, is_slice, target = self._get_target_names(node.targets)
 

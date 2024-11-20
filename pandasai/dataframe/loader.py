@@ -3,6 +3,9 @@ import yaml
 import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
+
+from pandasai.exceptions import InvalidDataSourceType
+from pandasai.helpers.path import find_project_root
 from .base import DataFrame
 import importlib
 from typing import Any
@@ -15,7 +18,7 @@ class DatasetLoader:
         self.schema = None
         self.dataset_path = None
 
-    def load(self, dataset_path: str) -> DataFrame:
+    def load(self, dataset_path: str, lazy=False) -> DataFrame:
         self.dataset_path = dataset_path
         self._load_schema()
         self._validate_source_type()
@@ -32,7 +35,10 @@ class DatasetLoader:
         return DataFrame(df, schema=self.schema)
 
     def _load_schema(self):
-        schema_path = os.path.join("datasets", self.dataset_path, "schema.yaml")
+        schema_path = os.path.join(
+            find_project_root(), "datasets", self.dataset_path, "schema.yaml"
+        )
+        print(schema_path)
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
@@ -96,11 +102,8 @@ class DatasetLoader:
                 load_function = getattr(module, f"load_from_{source_type}")
                 return load_function(connection_info, query)
             else:
-                connector_class = getattr(
-                    module, f"{source_type.capitalize()}Connector"
-                )
-                connector = connector_class(config=connection_info)
-                return connector.execute_query(query)
+                raise InvalidDataSourceType("Invalid data source type")
+
         except ImportError as e:
             raise ImportError(
                 f"{source_type.capitalize()} connector not found. "
