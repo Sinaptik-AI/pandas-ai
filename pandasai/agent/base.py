@@ -5,6 +5,8 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from pandasai.agent.base_security import BaseSecurity
+
+from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.pipelines.chat.chat_pipeline_input import ChatPipelineInput
 from pandasai.pipelines.chat.code_execution_pipeline_input import (
@@ -62,17 +64,13 @@ class BaseAgent:
 
         self.dfs = dfs if isinstance(dfs, list) else [dfs]
 
-        # Validate SQL connectors
-        sql_connectors = [
-            df
-            for df in self.dfs
-            if hasattr(df, "type") and df.type in ["sql", "postgresql"]
-        ]
-        if len(sql_connectors) > 1:
-            raise InvalidConfigError("Cannot use multiple SQL connectors")
-
         # Instantiate the context
         self.config = self.get_config(config)
+
+        # Validate df input with configurations
+        self.validate_input()
+
+        # Initialize the context
         self.context = PipelineContext(
             dfs=self.dfs,
             config=self.config,
@@ -105,6 +103,39 @@ class BaseAgent:
 
         self.pipeline = None
         self.security = security
+
+    def validate_input(self):
+        from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
+
+        # Check if all DataFrames are VirtualDataFrame, and set direct_sql accordingly
+        all_virtual = all(isinstance(df, VirtualDataFrame) for df in self.dfs)
+        if all_virtual:
+            self.config.direct_sql = True
+
+        # Validate the configurations based on direct_sql flag all have same source
+        if self.config.direct_sql and all_virtual:
+            base_schema_source = self.dfs[0].schema
+            for df in self.dfs[1:]:
+                # Ensure all DataFrames have the same source in direct_sql mode
+
+                if not is_schema_source_same(base_schema_source, df.schema):
+                    raise InvalidConfigError(
+                        "Direct SQL requires all connectors to be of the same type, "
+                        "belong to the same datasource, and have the same credentials."
+                    )
+        else:
+            # If not using direct_sql, ensure all DataFrames have the same source
+            if any(isinstance(df, VirtualDataFrame) for df in self.dfs):
+                base_schema_source = self.dfs[0].schema
+                for df in self.dfs[1:]:
+                    if not is_schema_source_same(base_schema_source, df.schema):
+                        raise InvalidConfigError(
+                            "All DataFrames must belong to the same source."
+                        )
+                self.config.direct_sql = True
+            else:
+                # Means all are none virtual
+                self.config.direct_sql = False
 
     def configure(self):
         # Add project root path if save_charts_path is default

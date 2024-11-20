@@ -1,12 +1,14 @@
+import copy
 import os
 import yaml
 import pandas as pd
 from datetime import datetime, timedelta
 import hashlib
 
+from pandasai.dataframe.base import DataFrame
+from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.exceptions import InvalidDataSourceType
 from pandasai.helpers.path import find_project_root
-from .base import DataFrame
 import importlib
 from typing import Any
 from .query_builder import QueryBuilder
@@ -18,27 +20,35 @@ class DatasetLoader:
         self.schema = None
         self.dataset_path = None
 
-    def load(self, dataset_path: str, lazy=False) -> DataFrame:
+    def load(self, dataset_path: str, virtualized=False) -> DataFrame:
         self.dataset_path = dataset_path
         self._load_schema()
         self._validate_source_type()
+        if not virtualized:
+            cache_file = self._get_cache_file_path()
 
-        cache_file = self._get_cache_file_path()
+            if self._is_cache_valid(cache_file):
+                return self._read_cache(cache_file)
 
-        if self._is_cache_valid(cache_file):
-            return self._read_cache(cache_file)
+            df = self._load_from_source()
+            df = self._apply_transformations(df)
+            self._cache_data(df, cache_file)
 
-        df = self._load_from_source()
-        df = self._apply_transformations(df)
-        self._cache_data(df, cache_file)
+            table_name = self.schema["source"]["table"]
 
-        return DataFrame(df, schema=self.schema)
+            return DataFrame(df, schema=self.schema, name=table_name)
+        else:
+            # Initialize new dataset loader for virtualization
+            data_loader = self.copy()
+            table_name = self.schema["source"]["table"]
+            return VirtualDataFrame(
+                schema=self.schema, data_loader=data_loader, name=table_name
+            )
 
     def _load_schema(self):
         schema_path = os.path.join(
             find_project_root(), "datasets", self.dataset_path, "schema.yaml"
         )
-        print(schema_path)
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
@@ -82,32 +92,67 @@ class DatasetLoader:
         else:
             raise ValueError(f"Unsupported cache format: {cache_format}")
 
-    def _load_from_source(self) -> pd.DataFrame:
-        source_type = self.schema["source"]["type"]
-        connection_info = self.schema["source"].get("connection", {})
-        query_builder = QueryBuilder(self.schema)
-        query = query_builder.build_query()
-
+    def _get_loader_function(self, source_type: str):
+        """
+        Get the loader function for a specified data source type.
+        """
         try:
             module_name = SUPPORTED_SOURCES[source_type]
             module = importlib.import_module(module_name)
 
-            if source_type in [
+            if source_type not in {
                 "mysql",
                 "postgres",
                 "cockroach",
                 "sqlite",
                 "cockroachdb",
-            ]:
-                load_function = getattr(module, f"load_from_{source_type}")
-                return load_function(connection_info, query)
-            else:
-                raise InvalidDataSourceType("Invalid data source type")
+            }:
+                raise InvalidDataSourceType(
+                    f"Unsupported data source type: {source_type}"
+                )
+
+            return getattr(module, f"load_from_{source_type}")
+
+        except KeyError:
+            raise InvalidDataSourceType(f"Unsupported data source type: {source_type}")
 
         except ImportError as e:
             raise ImportError(
                 f"{source_type.capitalize()} connector not found. "
-                f"Please install the {module_name} library."
+                f"Please install the {SUPPORTED_SOURCES[source_type]} library."
+            ) from e
+
+    def _load_from_source(self) -> pd.DataFrame:
+        query_builder = QueryBuilder(self.schema)
+        query = query_builder.build_query()
+        return self.execute_query(query)
+
+    def load_head(self) -> pd.DataFrame:
+        query_builder = QueryBuilder(self.schema)
+        query = query_builder.get_head_query()
+        return self.execute_query(query)
+
+    def get_row_count(self) -> int:
+        query_builder = QueryBuilder(self.schema)
+        query = query_builder.get_row_count()
+        result = self.execute_query(query)
+        return result.iloc[0, 0]
+
+    def execute_query(self, query: str) -> pd.DataFrame:
+        source = self.schema.get("source", {})
+        source_type = source.get("type")
+        connection_info = source.get("connection", {})
+
+        if not source_type:
+            raise ValueError("Source type is missing in the schema.")
+
+        load_function = self._get_loader_function(source_type)
+
+        try:
+            return load_function(connection_info, query)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to execute query for source type '{source_type}' with query: {query}"
             ) from e
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -140,3 +185,15 @@ class DatasetLoader:
             df.to_csv(cache_file, index=False)
         else:
             raise ValueError(f"Unsupported cache format: {cache_format}")
+
+    def copy(self) -> "DatasetLoader":
+        """
+        Create a new independent copy of the current DatasetLoader instance.
+
+        Returns:
+            DatasetLoader: A new instance with the same state.
+        """
+        new_loader = DatasetLoader()
+        new_loader.schema = copy.deepcopy(self.schema)
+        new_loader.dataset_path = self.dataset_path
+        return new_loader

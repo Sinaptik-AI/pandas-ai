@@ -1,10 +1,9 @@
-from __future__ import annotations
 import ast
 import copy
 import re
 import traceback
 import uuid
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import Any, List, Union
 
 import astor
 from pandasai.helpers.optional import get_environment
@@ -23,9 +22,6 @@ from ...schemas.df_config import Config
 from ..base_logic_unit import BaseLogicUnit
 from ..logic_unit_output import LogicUnitOutput
 from ..pipeline_context import PipelineContext
-
-if TYPE_CHECKING:
-    from pandasai.dataframe.base import DataFrame
 
 
 class CodeExecutionContext:
@@ -235,44 +231,10 @@ Code running:
 
     def check_direct_sql_func_def_exists(self, node: ast.AST):
         return (
-            self._validate_direct_sql(self._dfs)
+            self._config.direct_sql
             and isinstance(node, ast.FunctionDef)
             and node.name == "execute_sql_query"
         )
-
-    def _validate_direct_sql(self, dfs: List[DataFrame]) -> bool:
-        """
-        Raises error if they don't belong sqlconnector or have different credentials
-        Args:
-            dfs (List[DataFrame]): list of DataFrames
-
-        Raises:
-            InvalidConfigError: Raise Error in case of config is set but criteria is not met
-        """
-
-        return self._config.direct_sql
-        # if self._config.direct_sql:
-        #     return True
-        # else:
-        #     return
-        # TODO - while working on direct sql
-        # if all(
-        #     (
-        #         hasattr(df, "is_sql_connector")
-        #         and df.is_sql_connector
-        #         and df.equals(dfs[0])
-        #     )
-        #     for df in dfs
-        # ) or all(
-        #     (isinstance(df, PandasConnector) and df.sql_enabled) for df in dfs
-        # ):
-        #     return True
-        # else:
-        #     raise InvalidConfigError(
-        #         "Direct SQL requires all connectors to be SQL connectors and they must belong to the same datasource "
-        #         "and have the same credentials"
-        #     )
-        # return False
 
     def _replace_table_names(
         self, sql_query: str, table_names: list, allowed_table_names: list
@@ -303,9 +265,10 @@ Code running:
         """
         sql_query = sql_query.rstrip(";")
         table_names = extract_table_names(sql_query)
-        allowed_table_names = {df.name: df.cs_table_name for df in self._dfs} | {
-            f'"{df.name}"': df.cs_table_name for df in self._dfs
+        allowed_table_names = {df.name: df.name for df in self._dfs} | {
+            f'"{df.name}"': df.name for df in self._dfs
         }
+        print(allowed_table_names)
         return self._replace_table_names(sql_query, table_names, allowed_table_names)
 
     def _validate_and_make_table_name_case_sensitive(self, node: ast.Assign):
@@ -499,7 +462,7 @@ Code running:
 
             # if generated code contain execute_sql_query usage
             if (
-                self._validate_direct_sql(self._dfs)
+                self._config.direct_sql
                 and "execute_sql_query" in self._function_call_visitor.function_calls
             ):
                 execute_sql_query_used = True

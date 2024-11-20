@@ -55,7 +55,7 @@ class DataframeSerializer:
         dataframe_info += ">"
 
         # Add dataframe details
-        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.to_csv(index=False)}"
+        dataframe_info += f"\ndfs[{extras['index']}]:{df.rows_count}x{df.columns_count}\n{df.head().to_csv(index=False)}"
 
         # Close the dataframe tag
         dataframe_info += "</dataframe>\n"

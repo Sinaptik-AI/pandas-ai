@@ -5,11 +5,9 @@ import pandas as pd
 import pytest
 
 from pandasai.dataframe.base import DataFrame
-from pandasai.ee.agents.judge_agent import JudgeAgent
 from pandasai.helpers.logger import Logger
 from pandasai.llm.fake import FakeLLM
 from pandasai.pipelines.base_logic_unit import BaseLogicUnit
-from pandasai.pipelines.chat.generate_chat_pipeline import GenerateChatPipeline
 from pandasai.pipelines.pipeline import Pipeline
 from pandasai.pipelines.pipeline_context import PipelineContext
 from pandasai.schemas.df_config import Config
@@ -163,15 +161,3 @@ class TestPipeline:
 
         result = pipeline_2.run(5)
         assert result == 8
-
-    def test_pipeline_constructor_with_judge(self, context):
-        judge_agent = JudgeAgent()
-        pipeline = GenerateChatPipeline(context=context, judge=judge_agent)
-        assert pipeline.judge == judge_agent
-        assert isinstance(pipeline.context, PipelineContext)
-
-    def test_pipeline_constructor_with_no_judge(self, context):
-        judge_agent = JudgeAgent()
-        pipeline = GenerateChatPipeline(context=context, judge=judge_agent)
-        assert pipeline.judge == judge_agent
-        assert isinstance(pipeline.context, PipelineContext)
