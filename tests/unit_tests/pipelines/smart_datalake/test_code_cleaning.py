@@ -123,12 +123,12 @@ class TestCodeCleaning:
         return CodeExecutionContext(uuid.uuid4())
 
     @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql", autospec=True)
     def sql_connector(self, create_engine):
         return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
     @pytest.fixture
-    @patch("extensions.connectors.sql.pandasai_sql.sql.create_engine", autospec=True)
+    @patch("extensions.connectors.sql.pandasai_sql", autospec=True)
     def pgsql_connector(self, create_engine):
         return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
