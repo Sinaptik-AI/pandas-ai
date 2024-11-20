@@ -15,7 +15,7 @@ from pandasai.helpers.sql import extract_table_names
 
 from ...connectors import BaseConnector
 from ...connectors.sql import SQLConnector
-from ...constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
+from ...constants import RESTRICTED_LIBS, WHITELISTED_LIBRARIES
 from ...exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
@@ -161,6 +161,58 @@ Code running:
         return code_to_run
 
     def _is_malicious_code(self, code) -> bool:
+        tree = ast.parse(code)
+
+        # Check for private attributes and access of restricted libs
+        def check_restricted_access(node):
+            """Check if the node accesses restricted modules or private attributes."""
+            if isinstance(node, ast.Attribute):
+                attr_chain = []
+                while isinstance(node, ast.Attribute):
+                    if node.attr.startswith("_"):
+                        raise MaliciousQueryError(
+                            f"Access to private attribute '{node.attr}' is not allowed."
+                        )
+                    attr_chain.insert(0, node.attr)
+                    node = node.value
+                if isinstance(node, ast.Name):
+                    attr_chain.insert(0, node.id)
+                    if any(module in RESTRICTED_LIBS for module in attr_chain):
+                        raise MaliciousQueryError(
+                            f"Restricted access detected in attribute chain: {'.'.join(attr_chain)}"
+                        )
+
+            elif isinstance(node, ast.Subscript) and isinstance(
+                node.value, ast.Attribute
+            ):
+                check_restricted_access(node.value)
+
+        for node in ast.walk(tree):
+            # Check 'import ...' statements
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    sub_module_names = alias.name.split(".")
+                    if any(module in RESTRICTED_LIBS for module in sub_module_names):
+                        raise MaliciousQueryError(
+                            f"Restricted library import detected: {alias.name}"
+                        )
+
+            # Check 'from ... import ...' statements
+            elif isinstance(node, ast.ImportFrom):
+                sub_module_names = node.module.split(".")
+                if any(module in RESTRICTED_LIBS for module in sub_module_names):
+                    raise MaliciousQueryError(
+                        f"Restricted library import detected: {node.module}"
+                    )
+                if any(alias.name in RESTRICTED_LIBS for alias in node.names):
+                    raise MaliciousQueryError(
+                        "Restricted library import detected in 'from ... import ...'"
+                    )
+
+            # Check attribute access for restricted libraries
+            elif isinstance(node, (ast.Attribute, ast.Subscript)):
+                check_restricted_access(node)
+
         dangerous_modules = [
             " os",
             " io",
@@ -176,6 +228,7 @@ Code running:
             "(chr",
             "b64decode",
         ]
+
         return any(
             re.search(r"\b" + re.escape(module) + r"\b", code)
             for module in dangerous_modules
@@ -584,5 +637,9 @@ Code running:
                 )
             return
 
-        if library not in WHITELISTED_BUILTINS:
-            raise BadImportError(library)
+        if library not in WHITELISTED_LIBRARIES:
+            raise BadImportError(
+                f"The library '{library}' is not in the list of whitelisted libraries. "
+                "To learn how to whitelist custom dependencies, visit: "
+                "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )
