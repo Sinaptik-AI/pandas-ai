@@ -2,12 +2,30 @@
 title: "Custom whitelisted dependencies"
 ---
 
-By default, PandasAI only allows to run code that uses some whitelisted modules. This is to prevent malicious code from being executed on the server or locally. However, it is possible to add custom modules to the whitelist. This can be done by passing a list of modules to the `custom_whitelisted_dependencies` parameter when instantiating the `SmartDataframe` or `SmartDatalake` class.
+By default, PandasAI only allows to run code that uses some whitelisted modules. This is to prevent malicious code from being executed on the server or locally.
+
+The whitelisted modules are:
+
+- `pandas`
+- `numpy`
+- `matplotlib`
+- `seaborn`
+- `datetime`
+- `json`
+- `base64`
+
+These libraries are sandboxed for security reasons, so that malicious code cannot be executed on the server or locally.
+
+However, it is possible to add custom modules to the whitelist. This can be done by passing a list of modules to the `custom_whitelisted_dependencies` parameter when instantiating the `Agent` class.
+
+**Note**: PandasAI cannot sandbox arbitrary code execution for custom libraries that are whitelisted. If you add a custom library to the whitelist, arbitrary code execution will be possible for that library. Whitelisting a custom library means that the library is "trusted" and can be used without any limitations. **Only whitelist libraries that are under your control or that you trust**.
+
+For example, to add the `scikit-learn` module to the whitelist:
 
 ```python
-from pandasai import SmartDataframe
-df = SmartDataframe("data.csv", config={
-    "custom_whitelisted_dependencies": ["seaborn"]
+from pandasai import Agent
+agent = Agent("data.csv", config={
+    "custom_whitelisted_dependencies": ["scikit-learn"]
 })
 ```
 
