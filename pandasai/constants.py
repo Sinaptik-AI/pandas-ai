@@ -90,8 +90,29 @@ WHITELISTED_LIBRARIES = [
     "numpy",
     "datetime",
     "json",
-    "io",
     "base64",
+]
+
+# List of restricted libs
+RESTRICTED_LIBS = [
+    "os",  # OS-level operations (file handling, environment variables)
+    "sys",  # System-level access
+    "subprocess",  # Run system commands
+    "shutil",  # File operations, including delete
+    "multiprocessing",  # Spawn new processes
+    "threading",  # Thread-level operations
+    "socket",  # Network connections
+    "http",  # HTTP requests
+    "ftplib",  # FTP connections
+    "paramiko",  # SSH operations
+    "tempfile",  # Create temporary files
+    "pathlib",  # Filesystem path handling
+    "resource",  # Access resource usage limits (system-related)
+    "ssl",  # SSL socket connections
+    "pickle",  # Unsafe object serialization
+    "ctypes",  # C-level interaction with memory
+    "psutil",  # System and process utilities
+    "io",  # System io operations
 ]
 
 PANDASBI_SETUP_MESSAGE = (

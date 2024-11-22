@@ -3,14 +3,15 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
+from pandasai.chat.code_execution.environment import import_dependency
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.helpers import load_dotenv
-from pandasai.helpers.optional import import_dependency
-from pandasai.prompts.base import BasePrompt
+
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 load_dotenv()
@@ -131,7 +132,7 @@ class IBMwatsonx(LLM):
                     f"Parameter {key} is invalid. Accepted parameters: {[*valid_params]}"
                 )
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         prompt = instruction.to_string()
 
         memory = context.memory if context else None

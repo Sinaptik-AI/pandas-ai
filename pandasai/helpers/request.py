@@ -1,6 +1,7 @@
 import logging
 import os
 import traceback
+from typing import Optional
 from urllib.parse import urljoin
 
 import requests
@@ -15,7 +16,10 @@ class Session:
     _logger: Logger
 
     def __init__(
-        self, endpoint_url: str = None, api_key: str = None, logger: Logger = None
+        self,
+        endpoint_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        logger: Optional[Logger] = None,
     ) -> None:
         if api_key is None:
             api_key = os.environ.get("PANDASAI_API_KEY") or None

@@ -2,9 +2,9 @@
 
 from typing import Optional
 
-from pandasai.pipelines.pipeline_context import PipelineContext
+from pandasai.agent.state import AgentState
+from pandasai.chat.prompts.base import BasePrompt
 
-from ..prompts.base import BasePrompt
 from .base import LLM
 
 
@@ -22,7 +22,7 @@ class FakeLLM(LLM):
         self.last_prompt = None
         self.response = "Mocked response"
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         self.called = True
         self.last_prompt = instruction.to_string()
         return self.response

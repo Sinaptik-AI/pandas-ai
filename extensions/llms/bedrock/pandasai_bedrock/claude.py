@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.helpers import load_dotenv
-from pandasai.prompts.base import BasePrompt
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 load_dotenv()
@@ -78,7 +78,7 @@ class BedrockClaude(LLM):
             "stop_sequences": self.stop_sequences,
         }
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         prompt = instruction.to_string()
         memory = context.memory if context else None
 

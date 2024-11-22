@@ -1,9 +1,36 @@
 import json
-from typing import Optional, Union
 
-from . import llm
+import pandasai.llm as llm
+from pandasai.llm.base import LLM
+
 from .helpers.path import find_closest
-from .schemas.df_config import Config
+
+from typing import Any, List, Optional, Dict, Union
+from pydantic import BaseModel, Field, ConfigDict
+
+from pandasai.constants import DEFAULT_CHART_DIRECTORY
+
+
+class Config(BaseModel):
+    save_logs: bool = True
+    verbose: bool = False
+    enforce_privacy: bool = False
+    enable_cache: bool = True
+    use_error_correction_framework: bool = True
+    save_charts: bool = False
+    save_charts_path: str = DEFAULT_CHART_DIRECTORY
+    custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
+    max_retries: int = 3
+
+    llm: Optional[LLM] = None
+    data_viz_library: Optional[str] = None
+    direct_sql: bool = False
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @classmethod
+    def from_dict(cls, config: Dict[str, Any]) -> "Config":
+        return cls(**config)
 
 
 def load_config_from_json(

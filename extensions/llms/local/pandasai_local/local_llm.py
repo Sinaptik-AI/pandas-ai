@@ -4,12 +4,13 @@ from typing import TYPE_CHECKING
 
 from openai import OpenAI
 
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.helpers.memory import Memory
-from pandasai.prompts.base import BasePrompt
+
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 class LocalLLM(LLM):
@@ -37,7 +38,7 @@ class LocalLLM(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         self.last_prompt = instruction.to_string()
 
         memory = context.memory if context else None

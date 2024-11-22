@@ -3,17 +3,17 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Optional
 
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.helpers.memory import Memory
 
 from pandasai.exceptions import (
     MethodNotImplementedError,
 )
-from pandasai.prompts.base import BasePrompt
 from pandasai.llm.base import LLM
 
-if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
 
+if TYPE_CHECKING:
+    from pandasai.agent.state import AgentState
 
 
 class BaseGoogle(LLM):
@@ -78,13 +78,13 @@ class BaseGoogle(LLM):
         """
         raise MethodNotImplementedError("method has not been implemented")
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         """
         Call the Google LLM.
 
         Args:
             instruction (BasePrompt): Instruction to pass.
-            context (PipelineContext): Pass PipelineContext.
+            context (AgentState): Pass AgentState.
 
         Returns:
             str: LLM response.
