@@ -1,12 +1,17 @@
+from __future__ import annotations
 import pandas as pd
-from typing import Optional, Union, Dict, Any, ClassVar
-from pandasai.agent.agent import Agent
-from pandasai.schemas.df_config import Config
+from typing import TYPE_CHECKING, Optional, Union, Dict, Any, ClassVar
+
+from pandasai.config import Config
 import hashlib
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
+
+
+if TYPE_CHECKING:
+    from pandasai.agent.base import Agent
 
 
 class DataFrame(pd.DataFrame):
@@ -43,7 +48,7 @@ class DataFrame(pd.DataFrame):
         self._agent: Optional[Agent] = None
         self._column_hash = self._calculate_column_hash()
 
-    def _validate_schema(self, schema: Dict) -> None:
+    def _validate_schema(self, schema: Optional[Dict]) -> None:
         """Validates the provided schema format."""
         if not isinstance(schema, dict):
             raise ValueError("Schema must be a dictionary")
@@ -81,7 +86,7 @@ class DataFrame(pd.DataFrame):
             self.config = Config(**config) if isinstance(config, dict) else config
 
         if self._agent is None:
-            from pandasai.agent.agent import (
+            from pandasai.agent import (
                 Agent,
             )  # Import here to avoid circular import
 
@@ -124,7 +129,6 @@ class DataFrame(pd.DataFrame):
         self,
         index: int,
         is_direct_sql: bool,
-        serializer_type: DataframeSerializerType,
         enforce_privacy: bool,
     ) -> str:
         """
@@ -148,7 +152,7 @@ class DataFrame(pd.DataFrame):
                 "is_direct_sql": is_direct_sql,
                 "enforce_privacy": enforce_privacy,
             },
-            type_=serializer_type,
+            type_=DataframeSerializerType.CSV,
         )
 
     def get_head(self):

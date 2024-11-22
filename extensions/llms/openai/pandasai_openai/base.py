@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Tuple, Union
 
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.helpers.memory import Memory
-from pandasai.prompts.base import BasePrompt
+
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 class BaseOpenAI(LLM):
@@ -166,13 +167,13 @@ class BaseOpenAI(LLM):
 
         return response.choices[0].message.content
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None):
+    def call(self, instruction: BasePrompt, context: AgentState = None):
         """
         Call the OpenAI LLM.
 
         Args:
             instruction (BasePrompt): A prompt object with instruction for LLM.
-            context (PipelineContext): context to pass.
+            context (AgentState): context to pass.
 
         Raises:
             UnsupportedModelError: Unsupported model

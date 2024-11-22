@@ -256,3 +256,11 @@ class InvalidDataSourceType(Exception):
     """Raised error with invalid data source provided"""
 
     pass
+
+
+class MaliciousCodeGenerated(Exception):
+    """
+    Raise error if malicious code is generated
+    Args:
+        Exception (Exception): MaliciousCodeGenerated
+    """

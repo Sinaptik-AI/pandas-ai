@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+
+from pandasai.chat.prompts.base import BasePrompt
 from pandasai.helpers import load_dotenv
-from pandasai.prompts.base import BasePrompt
+
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 load_dotenv()
@@ -81,7 +83,7 @@ class HuggingFaceTextGen(LLM):
             "seed": self.seed,
         }
 
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         prompt = instruction.to_string()
 
         memory = context.memory if context else None

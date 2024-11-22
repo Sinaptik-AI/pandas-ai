@@ -5,18 +5,18 @@ import re
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Optional
 
+from pandasai.chat.prompts.base import BasePrompt
+from pandasai.chat.prompts.generate_system_message import GenerateSystemMessagePrompt
 from pandasai.helpers.memory import Memory
-from pandasai.prompts.generate_system_message import GenerateSystemMessagePrompt
 
 from ..exceptions import (
     APIKeyNotFoundError,
     MethodNotImplementedError,
     NoCodeFoundError,
 )
-from ..prompts.base import BasePrompt
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 
 class LLM:
@@ -135,13 +135,13 @@ class LLM:
         return memory.get_previous_conversation()
 
     @abstractmethod
-    def call(self, instruction: BasePrompt, context: PipelineContext = None) -> str:
+    def call(self, instruction: BasePrompt, context: AgentState = None) -> str:
         """
         Execute the LLM with given prompt.
 
         Args:
             instruction (BasePrompt): A prompt object with instruction for LLM.
-            context (PipelineContext, optional): PipelineContext. Defaults to None.
+            context (AgentState, optional): AgentState. Defaults to None.
 
         Raises:
             MethodNotImplementedError: Call method has not been implemented
@@ -149,7 +149,7 @@ class LLM:
         """
         raise MethodNotImplementedError("Call method has not been implemented")
 
-    def generate_code(self, instruction: BasePrompt, context: PipelineContext) -> str:
+    def generate_code(self, instruction: BasePrompt, context: AgentState) -> str:
         """
         Generate the code based on the instruction and the given prompt.
 

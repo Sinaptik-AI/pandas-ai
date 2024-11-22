@@ -1,3 +1,4 @@
+import logging
 from typing import Iterable, List, Optional, Union
 
 from pandasai.helpers.logger import Logger
@@ -60,7 +61,7 @@ class BambooVectorStore(VectorStore):
             )
             return docs["docs"]
         except Exception:
-            self._logger.log("Querying without using training data.")
+            self._logger.log("Querying without using training data.", logging.ERROR)
             return []
 
     def get_relevant_docs_documents(
@@ -79,5 +80,5 @@ class BambooVectorStore(VectorStore):
             )
             return docs["docs"]
         except Exception:
-            self._logger.log("Querying without using training docs.")
+            self._logger.log("Querying without using training docs.", logging.ERROR)
             return []

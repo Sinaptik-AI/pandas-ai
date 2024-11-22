@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pandasai.chat.prompts.base import BasePrompt
+
 try:
     from langchain_core.language_models import BaseLanguageModel
     from langchain_core.language_models.chat_models import BaseChatModel
@@ -12,12 +14,11 @@ except ImportError:
 
 from typing import TYPE_CHECKING
 
-from pandasai.prompts.base import BasePrompt
 
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:
-    from pandasai.pipelines.pipeline_context import PipelineContext
+    from pandasai.agent.state import AgentState
 
 """Langchain LLM 
 
@@ -39,13 +40,13 @@ class LangchainLLM(LLM):
     with LangChain.
     """
 
-    langchain_llm: BaseLanguageModel
+    langchain_llm: BaseLanguageModel  # type: ignore
 
-    def __init__(self, langchain_llm: BaseLanguageModel):
+    def __init__(self, langchain_llm: BaseLanguageModel):  # type: ignore
         self.langchain_llm = langchain_llm
 
     def call(
-        self, instruction: BasePrompt, context: PipelineContext = None, suffix: str = ""
+        self, instruction: BasePrompt, context: AgentState = None, suffix: str = ""
     ) -> str:
         prompt = instruction.to_string() + suffix
         memory = context.memory if context else None
