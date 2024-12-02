@@ -1,6 +1,10 @@
 from __future__ import annotations
+import os
+import shutil
 import pandas as pd
 from typing import TYPE_CHECKING, Optional, Union, Dict, Any, ClassVar
+
+import yaml
 
 from pandasai.config import Config
 import hashlib
@@ -8,6 +12,8 @@ from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
+from pandasai.helpers.path import find_project_root
+from pandasai.helpers.utils import create_slug
 
 
 if TYPE_CHECKING:
@@ -28,6 +34,7 @@ class DataFrame(pd.DataFrame):
     _metadata: ClassVar[list] = [
         "name",
         "description",
+        "filepath",
         "schema",
         "config",
         "_agent",
@@ -37,6 +44,7 @@ class DataFrame(pd.DataFrame):
     def __init__(self, *args, **kwargs):
         self.name: Optional[str] = kwargs.pop("name", None)
         self.description: Optional[str] = kwargs.pop("description", None)
+        self.filepath: Optional[str] = kwargs.pop("filepath", None)
         schema: Optional[Dict] = kwargs.pop("schema", None)
 
         super().__init__(*args, **kwargs)
@@ -157,3 +165,54 @@ class DataFrame(pd.DataFrame):
 
     def get_head(self):
         return self.head()
+
+    def _create_yml_template(self, name, description, output_yml_path: str):
+        """
+        Generate a .yml file with a simplified metadata template from a pandas DataFrame.
+
+        Args:
+            dataframe (pd.DataFrame): The DataFrame to document.
+            filepath (str): The path to the original data source file.
+            output_yml_path (str): The file path where the .yml file will be saved.
+            table_name (str): Name of the table or dataset.
+        """
+        # Metadata template
+        metadata = {
+            "name": name,
+            "description": description,
+            "columns": [
+                {"name": column, "type": str(self[column].dtype)}
+                for column in self.columns
+            ],
+            "source": {
+                "type": "csv",
+                "path": (
+                    "data.csv" if self.filepath.endswith(".csv") else "data.parquet"
+                ),
+            },
+        }
+
+        # Save metadata to a .yml file
+        with open(output_yml_path, "w") as yml_file:
+            yaml.dump(metadata, yml_file, sort_keys=False)
+
+        print(f"YML file created at: {output_yml_path}")
+
+    def save(self, name: str, description: str = None):
+        self.name = name
+        self.description = description
+        dataset_slug_name = create_slug(name)
+        dataset_directory = os.path.join(
+            find_project_root(), "datasets", dataset_slug_name
+        )
+
+        os.makedirs(dataset_directory, exist_ok=True)
+
+        # save csv file
+        new_file_path = os.path.join(dataset_directory, "data.csv")
+        shutil.copy(self.filepath, new_file_path)
+
+        # create schema yaml file
+        schema_path = os.path.join(dataset_directory, "schema.yaml")
+        self._create_yml_template(self.name, self.description, schema_path)
+        print(f"Dataset saved successfully to path: {dataset_directory}")

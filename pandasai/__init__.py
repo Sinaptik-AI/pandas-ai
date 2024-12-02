@@ -4,6 +4,8 @@ PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 
 from typing import List
+
+import pandas as pd
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
@@ -73,6 +75,11 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
     """
     global _dataset_loader
     return _dataset_loader.load(dataset_path, virtualized)
+
+
+def read_csv(filepath: str) -> DataFrame:
+    data = pd.read_csv(filepath)
+    return DataFrame(data, filepath=filepath)
 
 
 __all__ = [
