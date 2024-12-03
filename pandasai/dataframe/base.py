@@ -13,7 +13,6 @@ from pandasai.helpers.dataframe_serializer import (
     DataframeSerializerType,
 )
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.utils import create_slug
 
 
 if TYPE_CHECKING:
@@ -198,12 +197,28 @@ class DataFrame(pd.DataFrame):
 
         print(f"YML file created at: {output_yml_path}")
 
-    def save(self, name: str, description: str = None):
+    def save(self, path: str, name: str, description: str = None):
         self.name = name
         self.description = description
-        dataset_slug_name = create_slug(name)
+
+        # Validate path format
+        path_parts = path.split("/")
+        if len(path_parts) != 2:
+            raise ValueError("Path must be in format 'organization/dataset'")
+
+        org_name, dataset_name = path_parts
+        if not org_name or not dataset_name:
+            raise ValueError("Both organization and dataset names are required")
+
+        # Validate dataset name format
+        if not dataset_name.islower() or " " in dataset_name:
+            raise ValueError(
+                "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
+            )
+
+        # Create full path with slugified dataset name
         dataset_directory = os.path.join(
-            find_project_root(), "datasets", dataset_slug_name
+            find_project_root(), "datasets", org_name, dataset_name
         )
 
         os.makedirs(dataset_directory, exist_ok=True)
