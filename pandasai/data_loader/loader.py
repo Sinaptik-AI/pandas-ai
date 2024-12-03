@@ -36,13 +36,16 @@ class DatasetLoader:
 
             table_name = self.schema["source"]["table"]
 
-            return DataFrame(df, schema=self.schema, name=table_name)
+            return DataFrame(df, schema=self.schema, name=table_name, path=dataset_path)
         else:
             # Initialize new dataset loader for virtualization
             data_loader = self.copy()
             table_name = self.schema["source"]["table"]
             return VirtualDataFrame(
-                schema=self.schema, data_loader=data_loader, name=table_name
+                schema=self.schema,
+                data_loader=data_loader,
+                name=table_name,
+                path=dataset_path,
             )
 
     def _load_schema(self):
