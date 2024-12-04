@@ -1,18 +1,21 @@
 from __future__ import annotations
 import os
-import shutil
+import re
 import pandas as pd
-from typing import TYPE_CHECKING, Optional, Union, Dict, Any, ClassVar
+from typing import TYPE_CHECKING, List, Optional, Union, Dict, ClassVar
 
 import yaml
 
+
 from pandasai.config import Config
 import hashlib
+from pandasai.exceptions import PandasAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
 from pandasai.helpers.path import find_project_root
+from pandasai.helpers.request import Session
 
 
 if TYPE_CHECKING:
@@ -35,6 +38,7 @@ class DataFrame(pd.DataFrame):
         "description",
         "filepath",
         "schema",
+        "path",
         "config",
         "_agent",
         "_column_hash",
@@ -43,7 +47,7 @@ class DataFrame(pd.DataFrame):
     def __init__(self, *args, **kwargs):
         self.name: Optional[str] = kwargs.pop("name", None)
         self.description: Optional[str] = kwargs.pop("description", None)
-        self.filepath: Optional[str] = kwargs.pop("filepath", None)
+        self.path: Optional[str] = kwargs.pop("path", None)
         schema: Optional[Dict] = kwargs.pop("schema", None)
 
         super().__init__(*args, **kwargs)
@@ -108,22 +112,6 @@ class DataFrame(pd.DataFrame):
             )
         return self._agent.follow_up(query, output_type)
 
-    @classmethod
-    def from_pandas(
-        cls, df: pd.DataFrame, schema: Optional[Dict[str, Any]] = None
-    ) -> "DataFrame":
-        """
-        Create a PandasAI DataFrame from a pandas DataFrame.
-
-        Args:
-            df (pd.DataFrame): The pandas DataFrame to convert.
-            schema (Optional[Dict[str, Any]]): The schema of the DataFrame.
-
-        Returns:
-            DataFrame: A new PandasAI DataFrame instance.
-        """
-        return cls(df, schema=schema)
-
     @property
     def rows_count(self) -> int:
         return len(self)
@@ -165,13 +153,13 @@ class DataFrame(pd.DataFrame):
     def get_head(self):
         return self.head()
 
-    def _create_yml_template(self, name, description, output_yml_path: str):
+    def _create_yml_template(self, name, description, columns: List[dict]):
         """
         Generate a .yml file with a simplified metadata template from a pandas DataFrame.
 
         Args:
             dataframe (pd.DataFrame): The DataFrame to document.
-            filepath (str): The path to the original data source file.
+            description: dataset description
             output_yml_path (str): The file path where the .yml file will be saved.
             table_name (str): Name of the table or dataset.
         """
@@ -179,25 +167,15 @@ class DataFrame(pd.DataFrame):
         metadata = {
             "name": name,
             "description": description,
-            "columns": [
-                {"name": column, "type": str(self[column].dtype)}
-                for column in self.columns
-            ],
-            "source": {
-                "type": "csv",
-                "path": (
-                    "data.csv" if self.filepath.endswith(".csv") else "data.parquet"
-                ),
-            },
+            "columns": columns,
+            "source": {"type": "parquet", "path": "data.parquet"},
         }
 
-        # Save metadata to a .yml file
-        with open(output_yml_path, "w") as yml_file:
-            yaml.dump(metadata, yml_file, sort_keys=False)
+        return metadata
 
-        print(f"YML file created at: {output_yml_path}")
-
-    def save(self, path: str, name: str, description: str = None):
+    def save(
+        self, path: str, name: str, description: str = None, columns: List[dict] = []
+    ):
         self.name = name
         self.description = description
 
@@ -210,11 +188,18 @@ class DataFrame(pd.DataFrame):
         if not org_name or not dataset_name:
             raise ValueError("Both organization and dataset names are required")
 
-        # Validate dataset name format
-        if not dataset_name.islower() or " " in dataset_name:
+        # Validate organization and dataset name format
+        if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
+            raise ValueError(
+                "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
+            )
+
+        if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
             raise ValueError(
                 "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
             )
+
+        self.path = path
 
         # Create full path with slugified dataset name
         dataset_directory = os.path.join(
@@ -223,11 +208,50 @@ class DataFrame(pd.DataFrame):
 
         os.makedirs(dataset_directory, exist_ok=True)
 
-        # save csv file
-        new_file_path = os.path.join(dataset_directory, "data.csv")
-        shutil.copy(self.filepath, new_file_path)
+        self.to_parquet(os.path.join(dataset_directory, "data.parquet"))
 
         # create schema yaml file
         schema_path = os.path.join(dataset_directory, "schema.yaml")
-        self._create_yml_template(self.name, self.description, schema_path)
+        self.schema = self._create_yml_template(self.name, self.description, columns)
+        # Save metadata to a .yml file
+        with open(schema_path, "w") as yml_file:
+            yaml.dump(self.schema, yml_file, sort_keys=False)
+
         print(f"Dataset saved successfully to path: {dataset_directory}")
+
+    def push(self):
+        api_url = os.environ.get("PANDAAI_API_URL", None)
+        api_key = os.environ.get("PANDAAI_API_KEY", None)
+        if not api_url or not api_key:
+            raise PandasAIApiKeyError(
+                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+            )
+
+        request_session = Session(endpoint_url=api_url, api_key=api_key)
+
+        params = {
+            "path": self.path,
+            "description": self.description,
+        }
+
+        dataset_directory = os.path.join(find_project_root(), "datasets", self.path)
+
+        headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
+
+        with open(
+            os.path.join(dataset_directory, "schema.yaml"), "rb"
+        ) as schema_file, open(
+            os.path.join(dataset_directory, "data.parquet"), "rb"
+        ) as data_file:
+            files = [
+                ("files", ("schema.yaml", schema_file, "application/x-yaml")),
+                ("files", ("data.parquet", data_file, "application/octet-stream")),
+            ]
+
+            # Send the POST request
+            return request_session.post(
+                "/datasets/push",
+                files=files,
+                params=params,
+                headers=headers,
+            )

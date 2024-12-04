@@ -79,7 +79,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    return DataFrame(data, filepath=filepath)
+    return DataFrame(data)
 
 
 __all__ = [
