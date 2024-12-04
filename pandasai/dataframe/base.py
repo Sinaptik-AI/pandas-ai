@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Union, Dict, ClassVar
 
 import yaml
 
+
 from pandasai.config import Config
 import hashlib
 from pandasai.exceptions import PandasAIApiKeyError
@@ -35,6 +36,7 @@ class DataFrame(pd.DataFrame):
     _metadata: ClassVar[list] = [
         "name",
         "description",
+        "filepath",
         "schema",
         "path",
         "config",
