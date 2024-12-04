@@ -209,8 +209,9 @@ class PandasAIApiKeyError(Exception):
         Exception (Exception): PandasAIApiKeyError
     """
 
-    def __init__(self):
-        message = PANDASBI_SETUP_MESSAGE
+    def __init__(self, message: str = None):
+        if not message:
+            message = PANDASBI_SETUP_MESSAGE
         super().__init__(message)
 
 
@@ -263,4 +264,12 @@ class MaliciousCodeGenerated(Exception):
     Raise error if malicious code is generated
     Args:
         Exception (Exception): MaliciousCodeGenerated
+    """
+
+
+class DatasetNotFound(Exception):
+    """
+    Raise error if dataset not found
+    Args:
+        Exception (Exception): DatasetNotFound
     """

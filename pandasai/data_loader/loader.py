@@ -89,9 +89,9 @@ class DatasetLoader:
     def _read_cache(self, cache_file: str) -> DataFrame:
         cache_format = self.schema["destination"]["format"]
         if cache_format == "parquet":
-            return DataFrame(pd.read_parquet(cache_file))
+            return DataFrame(pd.read_parquet(cache_file), path=self.dataset_path)
         elif cache_format == "csv":
-            return DataFrame(pd.read_csv(cache_file))
+            return DataFrame(pd.read_csv(cache_file), path=self.dataset_path)
         else:
             raise ValueError(f"Unsupported cache format: {cache_format}")
 

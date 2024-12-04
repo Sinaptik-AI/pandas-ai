@@ -3,9 +3,16 @@
 PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 
+from io import BytesIO
+import os
 from typing import List
+from zipfile import ZipFile
 
 import pandas as pd
+import requests
+
+from pandasai.exceptions import DatasetNotFound
+from pandasai.helpers.path import find_project_root
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
@@ -74,6 +81,21 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
         DataFrame: A new PandasAI DataFrame instance with loaded data.
     """
     global _dataset_loader
+    dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
+    if not os.path.exists(dataset_full_path):
+        api_key = os.environ.get("PANDAAI_API_KEY", None)
+        api_url = os.environ.get("PANDAAI_API_URL", None)
+        headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
+
+        file_data = requests.get(
+            f"{api_url}/datasets/pull", headers=headers, params={"path": dataset_path}
+        )
+        if file_data.status_code != 200:
+            raise DatasetNotFound("Dataset not found!")
+
+        with ZipFile(BytesIO(file_data.content)) as zip_file:
+            zip_file.extractall(dataset_full_path)
+
     return _dataset_loader.load(dataset_path, virtualized)
 
 

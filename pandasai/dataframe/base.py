@@ -1,21 +1,23 @@
 from __future__ import annotations
+from io import BytesIO
 import os
 import re
+from zipfile import ZipFile
 import pandas as pd
 from typing import TYPE_CHECKING, List, Optional, Union, Dict, ClassVar
 
+import requests
 import yaml
-
 
 from pandasai.config import Config
 import hashlib
-from pandasai.exceptions import PandasAIApiKeyError
+from pandasai.exceptions import DatasetNotFound
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.request import Session
+from pandasai.helpers.request import get_pandaai_session
 
 
 if TYPE_CHECKING:
@@ -220,14 +222,9 @@ class DataFrame(pd.DataFrame):
         print(f"Dataset saved successfully to path: {dataset_directory}")
 
     def push(self):
-        api_url = os.environ.get("PANDAAI_API_URL", None)
         api_key = os.environ.get("PANDAAI_API_KEY", None)
-        if not api_url or not api_key:
-            raise PandasAIApiKeyError(
-                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
-            )
 
-        request_session = Session(endpoint_url=api_url, api_key=api_key)
+        request_session = get_pandaai_session()
 
         params = {
             "path": self.path,
@@ -255,3 +252,34 @@ class DataFrame(pd.DataFrame):
                 params=params,
                 headers=headers,
             )
+
+    def pull(self):
+        api_key = os.environ.get("PANDAAI_API_KEY", None)
+        api_url = os.environ.get("PANDAAI_API_URL", None)
+        headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
+
+        file_data = requests.get(
+            f"{api_url}/datasets/pull", headers=headers, params={"path": self.path}
+        )
+        if file_data.status_code != 200:
+            raise DatasetNotFound("Remote dataset not found to pull!")
+
+        with ZipFile(BytesIO(file_data.content)) as zip_file:
+            for file_name in zip_file.namelist():
+                target_path = os.path.join(self.path, file_name)
+
+                # Check if the file already exists
+                if os.path.exists(target_path):
+                    print(f"Replacing existing file: {target_path}")
+
+                # Ensure target directory exists
+                os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+                # Extract the file
+                with open(target_path, "wb") as f:
+                    f.write(zip_file.read(file_name))
+
+        # reloads the Dataframe
+        from pandasai import load
+
+        self = load(self.path, virtualized=not isinstance(self, DataFrame))
