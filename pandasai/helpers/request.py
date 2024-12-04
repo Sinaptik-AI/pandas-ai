@@ -50,7 +50,15 @@ class Session:
         return self.make_request("DELETE", path, **kwargs)
 
     def make_request(
-        self, method, path, headers=None, params=None, data=None, json=None, timeout=300
+        self,
+        method,
+        path,
+        headers=None,
+        params=None,
+        data=None,
+        json=None,
+        timeout=300,
+        **kwargs,
     ):
         try:
             url = urljoin(self._endpoint_url, self._version_path + path)
@@ -68,11 +76,15 @@ class Session:
                 data=data,
                 json=json,
                 timeout=timeout,
+                **kwargs,
             )
 
             data = response.json()
             if response.status_code not in [200, 201]:
-                raise PandasAIApiCallError(data["message"])
+                if "message" in data:
+                    raise PandasAIApiCallError(data["message"])
+                elif "detail" in data:
+                    raise PandasAIApiCallError(data["detail"])
 
             return data
 

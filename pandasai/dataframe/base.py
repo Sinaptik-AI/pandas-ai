@@ -8,11 +8,13 @@ import yaml
 
 from pandasai.config import Config
 import hashlib
+from pandasai.exceptions import PandasAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
 )
 from pandasai.helpers.path import find_project_root
+from pandasai.helpers.request import Session
 
 
 if TYPE_CHECKING:
@@ -214,3 +216,40 @@ class DataFrame(pd.DataFrame):
             yaml.dump(self.schema, yml_file, sort_keys=False)
 
         print(f"Dataset saved successfully to path: {dataset_directory}")
+
+    def push(self):
+        api_url = os.environ.get("PANDAAI_API_URL", None)
+        api_key = os.environ.get("PANDAAI_API_KEY", None)
+        if not api_url or not api_key:
+            raise PandasAIApiKeyError(
+                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+            )
+
+        request_session = Session(endpoint_url=api_url, api_key=api_key)
+
+        params = {
+            "path": self.path,
+            "description": self.description,
+        }
+
+        dataset_directory = os.path.join(find_project_root(), "datasets", self.path)
+
+        headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
+
+        with open(
+            os.path.join(dataset_directory, "schema.yaml"), "rb"
+        ) as schema_file, open(
+            os.path.join(dataset_directory, "data.parquet"), "rb"
+        ) as data_file:
+            files = [
+                ("files", ("schema.yaml", schema_file, "application/x-yaml")),
+                ("files", ("data.parquet", data_file, "application/octet-stream")),
+            ]
+
+            # Send the POST request
+            return request_session.post(
+                "/datasets/push",
+                files=files,
+                params=params,
+                headers=headers,
+            )
