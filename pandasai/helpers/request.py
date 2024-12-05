@@ -35,7 +35,7 @@ class Session:
         self._logger = logger or Logger()
 
     def get(self, path=None, **kwargs):
-        return self.make_request("GET", path, **kwargs)["data"]
+        return self.make_request("GET", path, **kwargs)
 
     def post(self, path=None, **kwargs):
         return self.make_request("POST", path, **kwargs)
@@ -79,7 +79,12 @@ class Session:
                 **kwargs,
             )
 
-            data = response.json()
+            try:
+                data = response.json()
+            except ValueError:
+                if response.status_code == 200:
+                    return response
+
             if response.status_code not in [200, 201]:
                 if "message" in data:
                     raise PandasAIApiCallError(data["message"])
@@ -91,3 +96,14 @@ class Session:
         except requests.exceptions.RequestException as e:
             self._logger.log(f"Request failed: {traceback.format_exc()}", logging.ERROR)
             raise PandasAIApiCallError(f"Request failed: {e}") from e
+
+
+def get_pandaai_session():
+    api_url = os.environ.get("PANDAAI_API_URL", None)
+    api_key = os.environ.get("PANDAAI_API_KEY", None)
+    if not api_url or not api_key:
+        raise PandasAIApiKeyError(
+            "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push/pull dataset to the remote server"
+        )
+
+    return Session(endpoint_url=api_url, api_key=api_key)

@@ -35,16 +35,25 @@ class DatasetLoader:
             self._cache_data(df, cache_file)
 
             table_name = self.schema["source"]["table"]
+            table_description = self.schema.get("description", None)
 
-            return DataFrame(df, schema=self.schema, name=table_name, path=dataset_path)
+            return DataFrame(
+                df,
+                schema=self.schema,
+                name=table_name,
+                description=table_description,
+                path=dataset_path,
+            )
         else:
             # Initialize new dataset loader for virtualization
             data_loader = self.copy()
             table_name = self.schema["source"]["table"]
+            table_description = self.schema.get("description", None)
             return VirtualDataFrame(
                 schema=self.schema,
                 data_loader=data_loader,
                 name=table_name,
+                description=table_description,
                 path=dataset_path,
             )
 
@@ -88,10 +97,24 @@ class DatasetLoader:
 
     def _read_cache(self, cache_file: str) -> DataFrame:
         cache_format = self.schema["destination"]["format"]
+        table_name = self.schema["source"]["table"]
+        table_description = self.schema.get("description", None)
         if cache_format == "parquet":
-            return DataFrame(pd.read_parquet(cache_file))
+            return DataFrame(
+                pd.read_parquet(cache_file),
+                schema=self.schema,
+                path=self.dataset_path,
+                name=table_name,
+                description=table_description,
+            )
         elif cache_format == "csv":
-            return DataFrame(pd.read_csv(cache_file))
+            return DataFrame(
+                pd.read_csv(cache_file),
+                schema=self.schema,
+                path=self.dataset_path,
+                name=table_name,
+                description=table_description,
+            )
         else:
             raise ValueError(f"Unsupported cache format: {cache_format}")
 
