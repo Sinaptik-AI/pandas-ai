@@ -103,7 +103,7 @@ def get_pandaai_session():
     api_key = os.environ.get("PANDAAI_API_KEY", None)
     if not api_url or not api_key:
         raise PandasAIApiKeyError(
-            "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+            "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push/pull dataset to the remote server"
         )
 
     return Session(endpoint_url=api_url, api_key=api_key)

@@ -258,7 +258,7 @@ class DataFrame(pd.DataFrame):
 
         if not api_key:
             raise PandasAIApiKeyError(
-                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to pull dataset to the remote server"
             )
 
         request_session = get_pandaai_session()
