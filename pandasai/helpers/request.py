@@ -35,7 +35,7 @@ class Session:
         self._logger = logger or Logger()
 
     def get(self, path=None, **kwargs):
-        return self.make_request("GET", path, **kwargs)["data"]
+        return self.make_request("GET", path, **kwargs)
 
     def post(self, path=None, **kwargs):
         return self.make_request("POST", path, **kwargs)
@@ -79,7 +79,12 @@ class Session:
                 **kwargs,
             )
 
-            data = response.json()
+            try:
+                data = response.json()
+            except ValueError:
+                if response.status_code == 200:
+                    return response
+
             if response.status_code not in [200, 201]:
                 if "message" in data:
                     raise PandasAIApiCallError(data["message"])

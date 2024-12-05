@@ -6,13 +6,12 @@ from zipfile import ZipFile
 import pandas as pd
 from typing import TYPE_CHECKING, List, Optional, Union, Dict, ClassVar
 
-import requests
 import yaml
 
 
 from pandasai.config import Config
 import hashlib
-from pandasai.exceptions import DatasetNotFound
+from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -256,18 +255,27 @@ class DataFrame(pd.DataFrame):
 
     def pull(self):
         api_key = os.environ.get("PANDAAI_API_KEY", None)
-        api_url = os.environ.get("PANDAAI_API_URL", None)
+
+        if not api_key:
+            raise PandasAIApiKeyError(
+                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+            )
+
+        request_session = get_pandaai_session()
+
         headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
 
-        file_data = requests.get(
-            f"{api_url}/datasets/pull", headers=headers, params={"path": self.path}
+        file_data = request_session.get(
+            "/datasets/pull", headers=headers, params={"path": self.path}
         )
         if file_data.status_code != 200:
             raise DatasetNotFound("Remote dataset not found to pull!")
 
         with ZipFile(BytesIO(file_data.content)) as zip_file:
             for file_name in zip_file.namelist():
-                target_path = os.path.join(self.path, file_name)
+                target_path = os.path.join(
+                    find_project_root(), "datasets", self.path, file_name
+                )
 
                 # Check if the file already exists
                 if os.path.exists(target_path):
@@ -281,6 +289,10 @@ class DataFrame(pd.DataFrame):
                     f.write(zip_file.read(file_name))
 
         # reloads the Dataframe
-        from pandasai import load
+        from pandasai import DatasetLoader
 
-        self = load(self.path, virtualized=not isinstance(self, DataFrame))
+        dataset_loader = DatasetLoader()
+        df = dataset_loader.load(self.path, virtualized=not isinstance(self, DataFrame))
+        self.__init__(
+            df, schema=df.schema, name=df.name, description=df.description, path=df.path
+        )

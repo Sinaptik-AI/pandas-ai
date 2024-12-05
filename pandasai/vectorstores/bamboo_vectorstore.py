@@ -58,7 +58,7 @@ class BambooVectorStore(VectorStore):
         try:
             docs = self._session.get(
                 "/training-data/qa/relevant-qa", params={"query": question, "count": k}
-            )
+            )["data"]
             return docs["docs"]
         except Exception:
             self._logger.log("Querying without using training data.", logging.ERROR)
@@ -77,7 +77,7 @@ class BambooVectorStore(VectorStore):
             docs = self._session.get(
                 "/training-docs/docs/relevant-docs",
                 params={"query": question, "count": k},
-            )
+            )["data"]
             return docs["docs"]
         except Exception:
             self._logger.log("Querying without using training docs.", logging.ERROR)

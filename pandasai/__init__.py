@@ -9,10 +9,10 @@ from typing import List
 from zipfile import ZipFile
 
 import pandas as pd
-import requests
 
-from pandasai.exceptions import DatasetNotFound
+from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.path import find_project_root
+from pandasai.helpers.request import get_pandaai_session
 from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
@@ -85,10 +85,17 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
     if not os.path.exists(dataset_full_path):
         api_key = os.environ.get("PANDAAI_API_KEY", None)
         api_url = os.environ.get("PANDAAI_API_URL", None)
+        if not api_url or not api_key:
+            raise PandasAIApiKeyError(
+                "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push dataset to the remote server"
+            )
+
+        request_session = get_pandaai_session()
+
         headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
 
-        file_data = requests.get(
-            f"{api_url}/datasets/pull", headers=headers, params={"path": dataset_path}
+        file_data = request_session.get(
+            "/datasets/pull", headers=headers, params={"path": dataset_path}
         )
         if file_data.status_code != 200:
             raise DatasetNotFound("Dataset not found!")
