@@ -166,14 +166,17 @@ class DataFrame(pd.DataFrame):
             table_name (str): Name of the table or dataset.
         """
         # Metadata template
-        metadata = {
+        return {
             "name": name,
             "description": description,
             "columns": columns,
             "source": {"type": "parquet", "path": "data.parquet"},
+            "destination": {
+                "type": "local",
+                "format": "parquet",
+                "path": "data.parquet",
+            },
         }
-
-        return metadata
 
     def save(
         self, path: str, name: str, description: str = None, columns: List[dict] = []
