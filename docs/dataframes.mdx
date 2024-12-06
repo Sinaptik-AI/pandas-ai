@@ -1,0 +1,35 @@
+---
+title: 'Semantic Dataframes'
+description: 'Working with semantic dataframes in PandaAI'
+---
+
+Once you have turned raw data into semantic enhanced dataframes with the [semantic layer](/semantic-layer), you can load them locally as either materialized or virtualized dataframes. 
+Using the `.chat` method, you can ask questions and get responses and charts. 
+Both materialized and virtualized dataframes can be [shared with your team](/share-dataframes) by pushing them to our [data platform](/ai-dashboards).
+
+## Materialized Dataframes
+
+Materialized dataframes load the entire dataset into memory, providing:
+- Fast access to all data
+- Full in-memory operations
+- Ideal for small to medium datasets
+
+```python
+from pandasai import load
+
+# Load as materialized dataframe (default)
+df = load("organization/dataset-name")
+```
+
+## Virtualized Dataframes
+
+Virtualized dataframes are ideal for large datasets as they:
+- Minimize memory usage
+- Load data on-demand rather than all at once
+- Support the same operations as materialized dataframes
+
+```python
+from pandasai import load
+
+# Load as virtualized dataframe
+df = load("organization/dataset-name", virtualized=True)

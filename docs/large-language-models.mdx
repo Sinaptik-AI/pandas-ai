@@ -1,0 +1,328 @@
+---
+title: 'Set up LLM'
+description: 'Set up Large Language Model in PandaAI'
+---
+
+PandaAI supports multiple LLMs.
+To make the library lightweight, the default LLM is BambooLLM, developed by PandaAI team themselves. 
+To use other LLMs, you need to install the corresponding llm extension. Once a LLM extension is installed, you can configure it simply using `pai.config.set()`.
+Then, everytime you use the `.chat()` method, it will use the configured LLM.
+
+
+## BambooLLM
+
+BambooLLM is the default LLM for PandaAI, fine-tuned for data analysis.
+You can get your free API key by signing up at [pandabi.ai](https://pandabi.ai).
+
+```python
+import pandasai as pai
+
+# set up BambooLLM
+# replace "YOUR_API_KEY" with your API key from https://pandabi.ai
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+```
+
+## OpenAI models
+
+Install the pandasai-openai extension:
+```bash
+# Using poetry
+poetry add pandasai-openai
+
+# Using pip
+pip install pandasai-openai
+```
+In order to use OpenAI models, you need to have an OpenAI API key. You can get one here.
+Once you have an API key, you can use it to instantiate an OpenAI object:
+
+Configure OpenAI:
+```python
+import pandasai as pai
+from pandasai-openai import OpenAI
+
+llm = OpenAI(api_token="my-openai-api-key")
+
+# Set your OpenAI API key
+pai.config.set({"llm": llm})
+```
+### Azure OpenAI models
+
+Install the pandasai-openai extension:
+```bash
+# Using poetry
+poetry add pandasai-openai
+
+# Using pip
+pip install pandasai-openai
+```
+
+In order to use Azure OpenAI models, you need to have an Azure OpenAI API key. You can get one here.
+Once you have an API key, you can use it to instantiate an Azure OpenAI object:
+
+Configure Azure OpenAI:
+```python
+import pandasai as pai
+from pandasai-openai import AzureOpenAI
+
+llm = AzureOpenAI(api_base="https://<your-endpoint>.openai.azure.com/",
+    api_key="my-azure-openai-api-key",
+    deployment_name="text-davinci-003")  # The name of your deployed model
+
+pai.config.set({"llm": llm})
+```
+
+
+## Google models
+
+Install the extension:
+```bash
+# Using poetry
+poetry add pandasai-google
+
+# Using pip
+pip install pandasai-google
+```
+
+### Google Gemini
+In order to use Google PaLM models, you need to have a Google Cloud API key. You can get one here.
+Once you have an API key, you can use it to instantiate a Google PaLM object:
+
+```python
+import pandasai as pai
+from pandasai-google import GoogleGemini
+
+llm = GoogleGemini(api_key="my-google-cloud-api-key")
+
+pai.config.set({"llm": llm})
+```
+
+### Google VertexAI
+In order to use Google models through Vertexai api, you need to have
+
+    Google Cloud Project
+    Region of Project Set up
+    Install optional dependency google-cloud-aiplatform
+    Authentication of gcloud
+
+Once you have basic setup, you can use it to instantiate a Google PaLM through vertex ai:
+```python
+import pandasai as pai
+from pandasai-google import GoogleVertexAI
+
+llm = GoogleVertexAI(project_id="generative-ai-training",
+                     location="us-central1",
+                     model="text-bison@001")
+
+pai.config.set({"llm": llm})
+```
+
+## HuggingFace models
+
+In order to use HuggingFace models via text-generation, you need to first serve a supported large language model (LLM). Read text-generation docs for more on how to setup an inference server.
+This can be used, for example, to use models like LLaMa2, CodeLLaMa, etc. You can find more information about text-generation here.
+
+
+Install the extension:
+```bash
+# Using poetry
+poetry add pandasai-huggingface
+
+# Using pip
+pip install pandasai-huggingface
+```
+
+The inference_server_url is the only required parameter to instantiate an HuggingFaceTextGen model.
+```python
+import pandasai as pai
+from pandasai-huggingface import HuggingFaceTextGen
+
+llm = HuggingFaceTextGen(inference_server_url="http://127.0.0.1:8080")
+
+pai.config.set({"llm": llm})
+```
+
+## LangChain models 
+
+Install the extension:
+```bash
+# Using poetry
+poetry add pandasai-langchain
+
+# Using pip
+pip install pandasai-langchain
+```
+
+Configure LangChain:
+```python
+import pandasai as pai
+from pandasai-langchain import LangchainLLM
+
+llm = LangchainLLM(openai_api_key="my-openai-api-key")
+
+pai.config.set({"llm": llm })
+```
+
+## Amazon Bedrock models
+
+In order to use Amazon Bedrock models, you need to have an AWS AKSK and gain the model access.
+
+Install the extension:
+```bash
+# Using poetry
+poetry add pandasai-bedrock
+
+# Using pip
+pip install pandasai-bedrock
+```
+
+Configure AWS Bedrock:
+```python
+import pandasai as pai
+from pandasai-bedrock import BedrockClaude
+
+
+ACCESS_KEY = "YOUR_AWS_ACCESS_KEY_ID"
+SECRET_KEY = "YOUR_AWS_SECRET_ACCESS_KEY"
+
+bedrock_runtime_client = boto3.client(
+
+    'bedrock-runtime',
+
+    aws_access_key_id=ACCESS_KEY,
+
+    aws_secret_access_key=SECRET_KEY
+
+)
+
+llm = BedrockClaude(bedrock_runtime_client)
+
+
+pai.config.set({"llm": llm })
+```
+## IBM models
+In order to use IBM watsonx.ai models, you need to have
+
+    IBM Cloud api key
+    Watson Studio project in IBM Cloud
+    The service URL associated with the project’s region
+
+The api key can be created in IBM Cloud. The project ID can determined after a Watson Studio service is provisioned in IBM Cloud. The ID can then be found in the project’s Manage tab (Project -> Manage -> General -> Details). The service url depends on the region of the provisioned service instance and can be found here.
+
+Install the extension:
+```bash
+# Using poetry
+poetry add pandasai-ibm
+
+# Using pip
+pip install pandasai-ibm
+```
+
+Configure IBM Watson:
+```python
+import pandasai as pai
+from pandasai-ibm import IBMwatsonx
+
+llm = IBMwatsonx(
+    model="ibm/granite-13b-chat-v2",
+    api_key=API_KEY,
+    watsonx_url=WATSONX_URL,
+    watsonx_project_id=PROJECT_ID,
+)
+pai.config.set({"llm": lm_studio_llm })
+```
+
+## Local models
+
+Install the pandasai-local extension
+
+```bash
+# Using poetry
+poetry add pandasai-local
+
+# Using pip
+pip install pandasai-local
+```
+### Ollama
+
+Ollama’s compatibility is experimental (see docs).
+With an Ollama server, you can instantiate an LLM object by specifying the model name:
+from pandasai import SmartDataframe
+
+```python
+import pandasai as pai
+from pandasai-local import LocalLLM
+
+ollama_llm = LocalLLM(api_base="http://localhost:11434/v1", model="codellama")
+
+pai.config.set({"llm": ollama_llm})
+```
+
+### LM Studio
+
+An LM Studio server only hosts one model, so you can instantiate an LLM object without specifying the model name:
+
+```python
+import pandasai as pai
+from pandasai-local import LocalLLM
+
+lm_studio_llm = LocalLLM(api_base="http://localhost:1234/v1")
+
+pai.config.set({"llm": lm_studio_llm })
+```
+
+## Determinism
+
+Determinism in language models refers to the ability to produce the same output consistently given the same input under identical conditions. This characteristic is vital for:
+
+- Reproducibility: Ensuring the same results can be obtained across different runs, which is crucial for debugging and iterative development.
+- Consistency: Maintaining uniformity in responses, particularly important in scenarios like automated customer support, where varied responses to the same query might be undesirable.
+- Testing: Facilitating the evaluation and comparison of models or algorithms by providing a stable ground for testing.
+
+### The Role of temperature=0
+
+The temperature parameter in language models controls the randomness of the output. A higher temperature increases diversity and creativity in responses, while a lower temperature makes the model more predictable and conservative. Setting `temperature=0` essentially turns off randomness, leading the model to choose the most likely next word at each step. This is critical for achieving determinism as it minimizes variance in the model's output.
+
+### Implications of temperature=0
+
+- Predictable Responses: The model will consistently choose the most probable path, leading to high predictability in outputs.
+- Creativity: The trade-off for predictability is reduced creativity and variation in responses, as the model won't explore less likely options.
+
+### Utilizing seed for Enhanced Control
+
+The seed parameter is another tool to enhance determinism. It sets the initial state for the random number generator used in the model, ensuring that the same sequence of "random" numbers is used for each run. This parameter, when combined with `temperature=0`, offers an even higher degree of predictability.
+
+### Example:
+
+```python
+import pandasai as pai
+
+# Sample DataFrame
+df = pai.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
+    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+})
+
+# Configure the LLM
+pai.config.set("temperature", 0)
+pai.config.set("seed", 26)
+
+df.chat('Which are the 5 happiest countries?') # answer should me (mostly) consistent across devices.
+```
+
+### Current Limitation:
+
+#### AzureOpenAI Instance
+
+While the seed parameter is effective with the OpenAI instance in our library, it's important to note that this functionality is not yet available for AzureOpenAI. Users working with AzureOpenAI can still use `temperature=0` to reduce randomness but without the added predictability that seed offers.
+
+#### System fingerprint
+
+As mentioned in the documentation ([OpenAI Seed](https://platform.openai.com/docs/guides/text-generation/reproducible-outputs)) :
+
+> Sometimes, determinism may be impacted due to necessary changes OpenAI makes to model configurations on our end. To help you keep track of these changes, we expose the system_fingerprint field. If this value is different, you may see different outputs due to changes we've made on our systems.
+
+### Workarounds and Future Updates
+
+For AzureOpenAI Users: Rely on `temperature=0` for reducing randomness. Stay tuned for future updates as we work towards integrating seed functionality with AzureOpenAI.
+For OpenAI Users: Utilize both `temperature=0` and seed for maximum determinism.

@@ -1,0 +1,63 @@
+---
+title: 'Quickstart'
+description: 'Quick start guide to begin using PandaAI'
+---
+
+## Installation
+You can install PandaAI using either `pip` or `poetry` (recommended). Python version `3.8+` and `<3.12` is required.
+
+```console
+poetry add pandasai
+```
+> Before installation, we recommend you create a virtual environment using your preferred choice of environment manager (e.g: [Poetry](https://python-poetry.org/), [Pipenv](https://pipenv.pypa.io/en/latest/), [Conda](https://docs.conda.io/en/latest/), [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Venv](https://docs.python.org/3/library/venv.html) etc.)
+
+```console
+pip install pandasai
+```
+
+## Chat with your data
+
+In order to use PandasAI, you need a large language model (LLM). While you can use any LLM, for the purpose of this guide, we are using BambooLLM. 
+
+You can get your free API key signing up at [pandabi.ai](https://pandabi.ai). 
+
+```python
+import pandasai as pai
+
+# set up BambooLLM
+# replace "YOUR_API_KEY" with your API key from https://pandabi.ai
+os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+```
+
+### Chat with csv
+
+```python
+# read csv
+# replace "filepath" with your file path
+df = pai.read_csv("filepath")
+
+# ask questions
+# replace "Which are the top 5 countries by sales?" with your question
+df.chat('Which are the top 5 countries by sales?')
+```
+
+### Chat with multiple dataframes
+
+PandaAI allows you to perform conversational data analysis on multiple datasets. To use this feature, you need to load the dataframes using the `load` method.
+
+```python
+import pandasai as pai
+
+df_customers = pai.load("company/customers")
+df_orders = pai.load("company/orders")
+df_products = pai.load("company/products")
+
+response = pai.chat('Who are our top 5 customers and what products do they buy most frequently?', df_customers, df_orders, df_products)
+```
+
+## Share with your team
+
+## Advances features
+
+- Explore the [Semantic Layer](/semantic-layer) to learn how to configure, save and dataframes
+- Learn more about the [Natural Language Layer](/overview-nl)

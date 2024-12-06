@@ -1,0 +1,24 @@
+---
+title: 'Share Dataframes'
+description: 'Learn how to push and pull dataframes to/from the PandaAI Data Platform'
+---
+
+Once you have turned raw data into dataframes using the [semantic layer](/semantic-layer), you can push them to our data platform with one line of code.
+In a similar way, you can pull dataframes your team-mates have pushed to the platform.
+
+## Pushing Dataframes
+
+```python
+import pandasai as pai
+
+df_customers = pai.load("company/customers")
+
+df.push()
+```
+
+## Pulling Dataframes
+
+```python
+
+df_customers = pai.pull("company/customers")
+```

@@ -1,0 +1,620 @@
+---
+title: 'Add Data Sources'
+description: 'Learn how to ingest data from various sources in PandaAI'
+---
+
+## What type of data does PandaAI support?
+PandaAI mission is to make data analysis and manipulation more efficient and accessible to everyone. You can work with data in various ways:
+
+- **CSV and Excel Files**: Load data directly from files using simple Python functions
+- **SQL Databases**: Connect to various SQL databases using our extensions
+- **Cloud Data**: Work with enterprise-scale data using our specialized extensions (requires Enterprise License)
+
+Let's start with the basics of loading CSV files, and then we'll explore the different extensions available.
+
+
+## How to work with CSV files in PandaAI?
+
+Loading data from CSV files is straightforward with PandaAI:
+
+```python
+import pandasai as pai
+
+# Basic CSV loading
+df = pai.read_csv("data.csv")
+
+# Use the semantic layer on CSV
+df.save(
+    name="sales_data",
+    description="Sales data from our retail stores",
+    columns={
+        "transaction_id": {"type": "string", "description": "Unique identifier for each sale"},
+        "sale_date": {"type": "datetime", "description": "Date and time of the sale"},
+        "product_id": {"type": "string", "description": "Product identifier"},
+        "quantity": {"type": "integer", "description": "Number of units sold"},
+        "price": {"type": "float", "description": "Price per unit"}
+    },
+)
+
+# Chat with the dataframe
+response = df.chat("Which product has the highest sales?")
+
+```
+
+## How to work with SQL in PandaAI?
+
+PandaAI provides a sql extension for you to work with SQL, PostgreSQL, MySQL, SQLite databases.
+To make the library lightweight and easy to use, the basic installation of the library does not include this extension.
+It can be easily installed using either `poetry` or `pip`.
+
+```bash
+poetry add pandasai-sql
+```
+
+```bash
+pip install pandasai-sql
+```
+
+Once you have installed the extension, you can use it to connect to SQL databases.
+
+### PostgreSQL
+
+```yaml
+name: sales_data
+
+source:
+  type: postgres
+  connection:
+    host: db.example.com
+    port: 5432
+    database: analytics
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+  table: sales_data
+
+destination:
+  type: local
+  format: parquet
+  path: company/sales-data
+
+columns:
+  - name: transaction_id
+    type: string
+    description: Unique identifier for each sale
+  - name: sale_date
+    type: datetime
+    description: Date and time of the sale
+  - name: product_id
+    type: string
+    description: Product identifier
+  - name: quantity
+    type: integer
+    description: Number of units sold
+  - name: price
+    type: float
+    description: Price per unit
+
+transformations:
+  - type: convert_timezone
+    params:
+      column: sale_date
+      from: UTC
+      to: America/New_York
+  - type: calculate
+    params:
+      column: total_amount
+      formula: quantity * price
+
+update_frequency: daily
+
+order_by:
+  - sale_date DESC
+
+limit: 100000
+```
+
+### MySQL
+
+```yaml
+name: customer_data
+
+source:
+  type: mysql
+  connection:
+    host: db.example.com
+    port: 3306
+    database: analytics
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+  table: customers
+
+destination:
+  type: local
+  format: parquet
+  path: company/customer-data
+
+columns:
+  - name: customer_id
+    type: string
+    description: Unique identifier for each customer
+  - name: name
+    type: string
+    description: Customer's full name
+  - name: email
+    type: string
+    description: Customer's email address
+  - name: join_date
+    type: datetime
+    description: Date when customer joined
+  - name: total_purchases
+    type: integer
+    description: Total number of purchases made
+
+transformations:
+  - type: anonymize
+    params:
+      column: email
+  - type: split
+    params:
+      column: name
+      into: [first_name, last_name]
+      separator: " "
+
+update_frequency: daily
+
+order_by:
+  - join_date DESC
+
+limit: 100000
+```
+
+### SQLite 
+
+```yaml
+name: inventory_data
+
+source:
+  type: sqlite
+  connection:
+    database: path/to/database.db
+  table: inventory
+
+destination:
+  type: local
+  format: parquet
+  path: company/inventory-data
+
+columns:
+  - name: product_id
+    type: string
+    description: Unique identifier for each product
+  - name: product_name
+    type: string
+    description: Name of the product
+  - name: category
+    type: string
+    description: Product category
+  - name: stock_level
+    type: integer
+    description: Current quantity in stock
+  - name: last_updated
+    type: datetime
+    description: Last inventory update timestamp
+
+transformations:
+  - type: categorize
+    params:
+      column: stock_level
+      bins: [0, 10, 50, 100, 500]
+      labels: ["Critical", "Low", "Medium", "High"]
+  - type: convert_timezone
+    params:
+      column: last_updated
+      from: UTC
+      to: America/Los_Angeles
+
+update_frequency: hourly
+
+order_by:
+  - last_updated DESC
+
+limit: 50000
+```
+
+## How to work with Enterprise Cloud Data in PandaAI?
+
+PandaAI provides Enterprise Edition extensions for connecting to cloud data. These extensions require an Enterprise License or [Data Platform](/ai-dashboards) team plan.
+Once you have installed a enterprise cloud data extension, you can use it to connect to your cloud data.
+
+### Snowflake extension (ee)
+
+First, install the extension:
+```bash
+poetry add pandasai-snowflake
+# or
+pip install pandasai-snowflake
+```
+
+Then use it:
+```yaml
+name: sales_data
+
+source:
+  type: snowflake
+  connection:
+    account: your-account
+    warehouse: your-warehouse
+    database: your-database
+    schema: your-schema
+    user: ${SNOWFLAKE_USER}
+    password: ${SNOWFLAKE_PASSWORD}
+  table: sales_data
+
+destination:
+  type: local
+  format: parquet
+  path: company/snowflake-sales
+
+columns:
+  - name: transaction_id
+    type: string
+    description: Unique identifier for each sale
+  - name: sale_date
+    type: datetime
+    description: Date and time of the sale
+  - name: product_id
+    type: string
+    description: Product identifier
+  - name: quantity
+    type: integer
+    description: Number of units sold
+  - name: price
+    type: float
+    description: Price per unit
+
+transformations:
+  - type: convert_timezone
+    params:
+      column: sale_date
+      from: UTC
+      to: America/Chicago
+  - type: calculate
+    params:
+      column: revenue
+      formula: quantity * price
+  - type: round
+    params:
+      column: revenue
+      decimals: 2
+
+update_frequency: daily
+
+order_by:
+  - sale_date DESC
+
+limit: 100000
+```
+
+### Databricks extension (ee)
+
+First, install the extension:
+```bash
+poetry add pandasai-databricks
+# or
+pip install pandasai-databricks
+```
+
+Then use it:
+```yaml
+name: customer_data
+
+source:
+  type: databricks
+  connection:
+    host: your-workspace-url
+    token: ${DATABRICKS_TOKEN}
+  table: customers
+
+destination:
+  type: local
+  format: parquet
+  path: company/databricks-customers
+
+columns:
+  - name: customer_id
+    type: string
+    description: Unique identifier for each customer
+  - name: name
+    type: string
+    description: Customer's full name
+  - name: email
+    type: string
+    description: Customer's email address
+  - name: join_date
+    type: datetime
+    description: Date when customer joined
+  - name: total_purchases
+    type: integer
+    description: Total number of purchases made
+
+transformations:
+  - type: anonymize
+    params:
+      columns: [email, name]
+  - type: convert_timezone
+    params:
+      column: join_date
+      from: UTC
+      to: Europe/London
+  - type: calculate
+    params:
+      column: customer_tier
+      formula: "CASE WHEN total_purchases > 100 THEN 'Gold' WHEN total_purchases > 50 THEN 'Silver' ELSE 'Bronze' END"
+
+update_frequency: daily
+
+order_by:
+  - join_date DESC
+
+limit: 100000
+```
+
+### BigQuery extension (ee)
+
+First, install the extension:
+```bash
+poetry add pandasai-bigquery
+# or
+pip install pandasai-bigquery
+```
+
+Then use it:
+```yaml
+name: inventory_data
+
+source:
+  type: bigquery
+  connection:
+    project_id: your-project-id
+    credentials: ${GOOGLE_APPLICATION_CREDENTIALS}
+  table: inventory
+
+destination:
+  type: local
+  format: parquet
+  path: company/bigquery-inventory
+
+columns:
+  - name: product_id
+    type: string
+    description: Unique identifier for each product
+  - name: product_name
+    type: string
+    description: Name of the product
+  - name: category
+    type: string
+    description: Product category
+  - name: stock_level
+    type: integer
+    description: Current quantity in stock
+  - name: last_updated
+    type: datetime
+    description: Last inventory update timestamp
+
+transformations:
+  - type: categorize
+    params:
+      column: stock_level
+      bins: [0, 20, 100, 500]
+      labels: ["Low", "Medium", "High"]
+  - type: extract
+    params:
+      column: product_name
+      pattern: "(.*?)\\s*-\\s*(.*)"
+      into: [brand, model]
+  - type: convert_timezone
+    params:
+      column: last_updated
+      from: UTC
+      to: Asia/Tokyo
+
+update_frequency: hourly
+
+order_by:
+  - last_updated DESC
+
+limit: 50000
+```
+
+### Oracle extension (ee)
+
+First, install the extension:
+```bash
+poetry add pandasai-oracle
+# or
+pip install pandasai-oracle
+```
+
+Then use it:
+```yaml
+name: sales_data
+
+source:
+  type: oracle
+  connection:
+    host: your-host
+    port: 1521
+    service_name: your-service
+    user: ${ORACLE_USER}
+    password: ${ORACLE_PASSWORD}
+  table: sales_data
+
+destination:
+  type: local
+  format: parquet
+  path: company/oracle-sales
+
+columns:
+  - name: transaction_id
+    type: string
+    description: Unique identifier for each sale
+  - name: sale_date
+    type: datetime
+    description: Date and time of the sale
+  - name: product_id
+    type: string
+    description: Product identifier
+  - name: quantity
+    type: integer
+    description: Number of units sold
+  - name: price
+    type: float
+    description: Price per unit
+
+transformations:
+  - type: convert_timezone
+    params:
+      column: sale_date
+      from: UTC
+      to: Australia/Sydney
+  - type: calculate
+    params:
+      column: total_amount
+      formula: quantity * price
+  - type: round
+    params:
+      column: total_amount
+      decimals: 2
+  - type: calculate
+    params:
+      column: discount
+      formula: "CASE WHEN quantity > 10 THEN 0.1 WHEN quantity > 5 THEN 0.05 ELSE 0 END"
+
+update_frequency: daily
+
+order_by:
+  - sale_date DESC
+
+limit: 100000
+```
+
+### Yahoo Finance extension
+
+First, install the extension:
+```bash
+poetry add pandasai-yfinance
+# or
+pip install pandasai-yfinance
+```
+
+Then use it:
+```yaml
+name: stock_data
+
+source:
+  type: yahoo_finance
+  symbols: 
+    - GOOG
+    - MSFT
+    - AAPL
+  start_date: 2023-01-01
+  end_date: 2023-12-31
+
+destination:
+  type: local
+  format: parquet
+  path: company/market-data
+
+columns:
+  - name: date
+    type: datetime
+    description: Date of the trading day
+  - name: open
+    type: float
+    description: Opening price of the stock
+  - name: high
+    type: float
+    description: Highest price of the stock during the day
+  - name: low
+    type: float
+    description: Lowest price of the stock during the day
+  - name: close
+    type: float
+    description: Closing price of the stock
+  - name: volume
+    type: integer
+    description: Number of shares traded during the day
+
+transformations:
+  - type: calculate
+    params:
+      column: daily_return
+      formula: (close - open) / open * 100
+  - type: calculate
+    params:
+      column: price_range
+      formula: high - low
+  - type: round
+    params:
+      columns: [daily_return, price_range]
+      decimals: 2
+  - type: convert_timezone
+    params:
+      column: date
+      from: UTC
+      to: America/New_York
+
+update_frequency: daily
+
+order_by:
+  - date DESC
+
+limit: 100000
+```
+
+## All data extensions
+
+  <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #ccc' }}>
+<tr>
+  <th style={{ border: '1px solid #ccc', padding: '8px 16px', textAlign: 'left' }}>extension</th>
+  <th style={{ border: '1px solid #ccc', padding: '8px 16px', textAlign: 'left' }}>install with poetry</th>
+  <th style={{ border: '1px solid #ccc', padding: '8px 16px', textAlign: 'left' }}>install with pip</th>
+  <th style={{ border: '1px solid #ccc', padding: '8px 16px', textAlign: 'left' }}>need ee license?</th>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_sql</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-sql</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-sql</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>No</td>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_yfinance</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-yfinance</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-yfinance</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>No</td>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_snowflake</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-snowflake</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-snowflake</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>Yes</td>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_databricks</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-databricks</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-databricks</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>Yes</td>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_bigquery</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-bigquery</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-bigquery</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>Yes</td>
+</tr>
+<tr>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_oracle</td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-oracle</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-oracle</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>Yes</td>
+</tr>
+</table>

@@ -9,43 +9,59 @@
   "colors": {
     "primary": "#1d4ed8",
     "light": "#55D799",
-    "dark": "#117866"
+    "dark": "#117866",
+    "anchors": {
+      "from": "#1d4ed8",
+      "to": "#55D799"
+    }
   },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/Sinaptik-AI/pandas-ai"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://github.com/sinaptik-ai/pandas-ai"
+  },
+  "anchors": [
+    {
+      "name": "Website",
+      "icon": "link",
+      "url": "https://pandas-ai.com"
+    },
+    {
+      "name": "Discord",
+      "icon": "discord",
+      "url": "https://discord.gg/kF7FqH2FwS"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/sinaptik-ai/pandas-ai"
+    }
+  ],
   "navigation": [
     {
-      "group": "Get Started",
-      "pages": ["intro", "getting-started"]
+      "group": "Overview",
+      "pages": ["introduction", "getting-started"]
     },
     {
-      "group": "Platform",
-      "pages": ["platform"]
+      "group": "Data",
+      "pages": ["data-layer", "semantic-layer", "data-ingestion", "dataframes"]
     },
     {
-      "group": "Library",
-      "pages": [
-        "library",
-        "connectors",
-        "llms",
-        "pipelines",
-        "advanced-usage",
-        "examples"
-      ]
+      "group": "Natural Language",
+      "pages": ["overview-nl", "large-language-models", "chat-and-cache", "privacy-and-security"]
     },
     {
-      "group": "Advanced agents",
-      "pages": ["semantic-agent", "judge-agent", "advanced-security-agent"]
+      "group": "Data Platform",
+      "pages": ["ai-dashboards", "share-dataframes", "permission-management"]
     },
     {
-      "group": "Advanced usage",
-      "pages": [
-        "cache",
-        "custom-head",
-        "fields-description",
-        "train",
-        "custom-response",
-        "custom-whitelisted-dependencies",
-        "determinism"
-      ]
+      "group": "Backwards Compatibility",
+      "pages": ["agent", "smart-dataframes", "smart-datalakes"]
     },
     {
       "group": "About",
@@ -66,26 +82,5 @@
     "suggestEdit": true,
     "raiseIssue": true,
     "thumbsRating": true
-  },
-  "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "https://github.com/sinaptik-ai/pandas-ai"
-  },
-  "anchors": [
-    {
-      "name": "Join our Discord",
-      "icon": "discord",
-      "url": "https://discord.gg/kF7FqH2FwS"
-    },
-    {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/sinaptik-ai/pandas-ai"
-    },
-    {
-      "name": "Website",
-      "icon": "link",
-      "url": "https://pandas-ai.com"
-    }
-  ]
+  }
 }
