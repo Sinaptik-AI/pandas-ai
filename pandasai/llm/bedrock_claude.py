@@ -46,11 +46,13 @@ class BedrockClaude(LLM):
 
     max_tokens: int = 1024
     model: str = "anthropic.claude-3-sonnet-20240229-v1:0"
+    inference_profile_prefix: Optional[str] = None
     temperature: Optional[float] = None
     top_p: Optional[float] = None
     top_k: Optional[float] = None
     stop_sequences: Optional[str] = None
     client: Any
+    
 
     def __init__(self, bedrock_runtime_client, **kwargs):
         for key, val in kwargs.items():
@@ -59,7 +61,7 @@ class BedrockClaude(LLM):
 
         self.client = bedrock_runtime_client
 
-        if self.model not in self._supported__models:
+        if self.model not in self.inference_profile_prefix + self._supported__models:
             raise UnsupportedModelError(self.model)
 
         invoke_model = getattr(self.client, "invoke_model", None)
