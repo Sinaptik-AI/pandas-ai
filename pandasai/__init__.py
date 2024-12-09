@@ -87,7 +87,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
         api_url = os.environ.get("PANDASAI_API_URL", None)
         if not api_url or not api_key:
             raise PandasAIApiKeyError(
-                "Set PANDASAI_API_URL and PANDAAI_API_KEY in environment to pull dataset from the remote server"
+                "Set PANDASAI_API_URL and PANDASAI_API_KEY in environment to pull dataset from the remote server"
             )
 
         request_session = get_pandaai_session()
