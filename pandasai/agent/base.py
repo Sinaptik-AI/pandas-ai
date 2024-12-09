@@ -1,4 +1,3 @@
-import os
 import traceback
 import uuid
 from typing import Any, List, Optional, Tuple, Union
@@ -86,17 +85,6 @@ class Agent:
         self._state.logger = Logger(
             save_logs=self._state.config.save_logs, verbose=self._state.config.verbose
         )
-
-        # Initiate VectorStore
-        if vectorstore is None and os.environ.get("PANDASAI_API_KEY"):
-            try:
-                from pandasai.vectorstores.bamboo_vectorstore import BambooVectorStore
-            except ImportError as e:
-                raise ImportError(
-                    "Could not import BambooVectorStore. Please install the required dependencies."
-                ) from e
-
-            self._state.vectorstore = BambooVectorStore(logger=self._state.logger)
 
         # Initialize Cache
         self._state.cache = Cache() if self._state.config.enable_cache else None
