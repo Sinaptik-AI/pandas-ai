@@ -86,6 +86,9 @@ class Agent:
             save_logs=self._state.config.save_logs, verbose=self._state.config.verbose
         )
 
+        # Initiate VectorStore
+        self._state.vectorstore = vectorstore
+
         # Initialize Cache
         self._state.cache = Cache() if self._state.config.enable_cache else None
 
