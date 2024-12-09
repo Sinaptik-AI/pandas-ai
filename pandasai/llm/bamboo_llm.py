@@ -21,7 +21,6 @@ class BambooLLM(LLM):
         response = self._session.post(
             "/query", json={"prompt": instruction.to_string()}
         )
-        print(response)
         return response["answer"]
 
     @property
