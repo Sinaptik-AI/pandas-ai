@@ -18,9 +18,11 @@ class BambooLLM(LLM):
         self._session = Session(endpoint_url=endpoint_url, api_key=api_key)
 
     def call(self, instruction: BasePrompt, _context=None) -> str:
-        data = instruction.to_json()
-        response = self._session.post("/llm/chat", json=data)
-        return response["data"]
+        response = self._session.post(
+            "/query", json={"prompt": instruction.to_string()}
+        )
+        print(response)
+        return response["answer"]
 
     @property
     def type(self) -> str:

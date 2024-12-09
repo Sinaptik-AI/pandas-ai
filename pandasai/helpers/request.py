@@ -64,7 +64,7 @@ class Session:
             url = urljoin(self._endpoint_url, self._version_path + path)
             if headers is None:
                 headers = {
-                    "Authorization": f"Bearer {self._api_key}",
+                    "x-authorization": f"Bearer {self._api_key}",
                     "Content-Type": "application/json",  # or any other headers you need
                 }
 
@@ -99,11 +99,11 @@ class Session:
 
 
 def get_pandaai_session():
-    api_url = os.environ.get("PANDAAI_API_URL", None)
-    api_key = os.environ.get("PANDAAI_API_KEY", None)
+    api_url = os.environ.get("PANDASAI_API_URL", None)
+    api_key = os.environ.get("PANDASAI_API_KEY", None)
     if not api_url or not api_key:
         raise PandasAIApiKeyError(
-            "Set PANDAAI_API_URL and PANDAAI_API_KEY in environment to push/pull dataset to the remote server"
+            "Set PANDASAI_API_URL and PANDASAI_API_KEY in environment to push/pull dataset to the remote server"
         )
 
     return Session(endpoint_url=api_url, api_key=api_key)
