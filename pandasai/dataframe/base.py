@@ -225,7 +225,7 @@ class DataFrame(pd.DataFrame):
         print(f"Dataset saved successfully to path: {dataset_directory}")
 
     def push(self):
-        api_key = os.environ.get("PANDAAI_API_KEY", None)
+        api_key = os.environ.get("PANDASAI_API_KEY", None)
 
         request_session = get_pandaai_session()
 
