@@ -10,6 +10,7 @@ from zipfile import ZipFile
 
 import pandas as pd
 
+from pandasai.config import ConfigManager
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
@@ -17,9 +18,14 @@ from .agent import Agent
 from .helpers.cache import Cache
 from .dataframe.base import DataFrame
 from .data_loader.loader import DatasetLoader
+from .smart_dataframe import SmartDataframe
+from .smart_datalake import SmartDatalake
 
 # Global variable to store the current agent
 _current_agent = None
+
+
+config = ConfigManager()
 
 
 def clear_cache(filename: str = None):
@@ -119,4 +125,6 @@ __all__ = [
     "chat",
     "follow_up",
     "load",
+    "SmartDataframe",
+    "SmartDatalake",
 ]

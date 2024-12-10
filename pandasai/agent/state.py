@@ -12,7 +12,6 @@ from pandasai.vectorstores.vectorstore import VectorStore
 if TYPE_CHECKING:
     from pandasai.dataframe import DataFrame
     from pandasai.dataframe import VirtualDataFrame
-    from pandasai.llm.base import LLM
 
 
 @dataclass
@@ -22,10 +21,9 @@ class AgentState:
     """
 
     dfs: List[Union[DataFrame, VirtualDataFrame]] = field(default_factory=list)
-    config: Union[Config, dict] = field(default_factory=dict)
+    _config: Union[Config, dict] = field(default_factory=dict)
     memory: Memory = field(default_factory=Memory)
     cache: Optional[Cache] = None
-    llm: LLM = None
     vectorstore: Optional[VectorStore] = None
     intermediate_values: Dict[str, Any] = field(default_factory=dict)
     logger: Optional[Logger] = None
@@ -58,3 +56,22 @@ class AgentState:
     def get(self, key: str, default: Any = "") -> Any:
         """Fetches a value from intermediate values or returns a default."""
         return self.intermediate_values.get(key, default)
+
+    @property
+    def config(self):
+        """
+        Returns the local config if set, otherwise fetches the global config.
+        """
+        if self._config is not None:
+            return self._config
+
+        import pandasai as pai
+
+        return pai.config.get()
+
+    @config.setter
+    def config(self, value: Union[Config, dict, None]):
+        """
+        Allows setting a new config value.
+        """
+        self._config = Config(**value) if isinstance(value, dict) else value
