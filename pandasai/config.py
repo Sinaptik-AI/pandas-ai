@@ -34,41 +34,6 @@ class Config(BaseModel):
     def from_dict(cls, config: Dict[str, Any]) -> "Config":
         return cls(**config)
 
-    # @model_validator(mode="before")
-    # def on_llm_change(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-    #     """
-    #     This method is triggered when the model is being validated.
-    #     If 'llm' is passed, it ensures it's correctly set.
-    #     """
-    #     if "llm" in values or cls.llm == None:
-    #         llm_value = values.get("llm")
-    #         if llm_value is None:
-    #             # If no LLM is provided, initialize based on environment variable
-    #             llm_value = cls.run_on_llm_change(llm_value)
-    #         values["llm"] = (
-    #             llm_value  # Update the values dictionary with the final LLM value
-    #         )
-    #     return values
-
-    # @staticmethod
-    # def run_on_llm_change(llm_value: Optional[LLM] = None) -> Optional[LLM]:
-    #     """
-    #     Initializes a default LLM if not provided.
-    #     """
-    #     if llm_value is None and os.environ.get("PANDASAI_API_KEY"):
-    #         from pandasai.llm.bamboo_llm import BambooLLM
-
-    #         return BambooLLM()
-
-    #     # Check if pandasai_langchain is installed
-    #     if find_spec("pandasai_langchain") is not None:
-    #         from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
-
-    #         if is_langchain_llm(llm_value):
-    #             return LangchainLLM(llm_value)
-
-    #     return llm_value
-
 
 class ConfigManager:
     """A singleton class to manage the global configuration."""
