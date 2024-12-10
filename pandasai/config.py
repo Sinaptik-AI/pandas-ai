@@ -1,4 +1,6 @@
+from importlib.util import find_spec
 import json
+import os
 
 import pandasai.llm as llm
 from pandasai.llm.base import LLM
@@ -31,6 +33,88 @@ class Config(BaseModel):
     @classmethod
     def from_dict(cls, config: Dict[str, Any]) -> "Config":
         return cls(**config)
+
+    # @model_validator(mode="before")
+    # def on_llm_change(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    #     """
+    #     This method is triggered when the model is being validated.
+    #     If 'llm' is passed, it ensures it's correctly set.
+    #     """
+    #     if "llm" in values or cls.llm == None:
+    #         llm_value = values.get("llm")
+    #         if llm_value is None:
+    #             # If no LLM is provided, initialize based on environment variable
+    #             llm_value = cls.run_on_llm_change(llm_value)
+    #         values["llm"] = (
+    #             llm_value  # Update the values dictionary with the final LLM value
+    #         )
+    #     return values
+
+    # @staticmethod
+    # def run_on_llm_change(llm_value: Optional[LLM] = None) -> Optional[LLM]:
+    #     """
+    #     Initializes a default LLM if not provided.
+    #     """
+    #     if llm_value is None and os.environ.get("PANDASAI_API_KEY"):
+    #         from pandasai.llm.bamboo_llm import BambooLLM
+
+    #         return BambooLLM()
+
+    #     # Check if pandasai_langchain is installed
+    #     if find_spec("pandasai_langchain") is not None:
+    #         from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
+
+    #         if is_langchain_llm(llm_value):
+    #             return LangchainLLM(llm_value)
+
+    #     return llm_value
+
+
+class ConfigManager:
+    """A singleton class to manage the global configuration."""
+
+    _config: Config = Config()
+
+    @classmethod
+    def set(cls, config_dict: Dict[str, Any]) -> None:
+        """Set the global configuration."""
+        cls._config = Config.from_dict(config_dict)
+        cls.validate_llm()
+
+    @classmethod
+    def get(cls) -> Config:
+        """Get the global configuration."""
+        if cls._config.llm is None and os.environ.get("PANDASAI_API_KEY"):
+            from pandasai.llm.bamboo_llm import BambooLLM
+
+            cls._config.llm = BambooLLM()
+
+        return cls._config
+
+    @classmethod
+    def update(cls, config_dict: Dict[str, Any]) -> None:
+        """Update the existing configuration with new values."""
+        current_config = cls._config.model_dump()
+        current_config.update(config_dict)
+        cls._config = Config.from_dict(current_config)
+
+    @classmethod
+    def validate_llm(cls):
+        """
+        Initializes a default LLM if not provided.
+        """
+        if cls._config.llm is None and os.environ.get("PANDASAI_API_KEY"):
+            from pandasai.llm.bamboo_llm import BambooLLM
+
+            cls._config.llm = BambooLLM()
+            return
+
+        # Check if pandasai_langchain is installed
+        if find_spec("pandasai_langchain") is not None:
+            from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
+
+            if is_langchain_llm(cls._config.llm):
+                cls._config.llm = LangchainLLM(cls._config.llm)
 
 
 def load_config_from_json(

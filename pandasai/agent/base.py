@@ -36,6 +36,7 @@ from ..helpers.memory import Memory
 from ..llm.base import LLM
 from importlib.util import find_spec
 from ..config import Config
+import warnings
 
 
 class Agent:
@@ -59,6 +60,13 @@ class Agent:
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.
         """
+        if config is not None:
+            warnings.warn(
+                "The 'config' parameter is deprecated and will be removed in a future version. "
+                "Please use the global configuration instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         self._state = AgentState()
 
@@ -72,9 +80,6 @@ class Agent:
         # Instantiate the config
         self._state.config = self._get_config(config)
 
-        # Set llm in state
-        self._state.llm = self._get_llm(self._state.config.llm)
-
         # Validate df input with configurations
         self._validate_input()
 
@@ -85,6 +90,10 @@ class Agent:
         self._state.logger = Logger(
             save_logs=self._state.config.save_logs, verbose=self._state.config.verbose
         )
+
+        # If user provided config but not llm but have setup the env for BambooLLM, will be deprecated in future
+        if config:
+            self._state.config.llm = self._get_llm(self._state.config.llm)
 
         # Initiate VectorStore
         self._state.vectorstore = vectorstore
@@ -298,6 +307,10 @@ class Agent:
         try:
             self._assign_prompt_id()
 
+            # To ensure the cache is set properly if config is changed in between
+            if self._state.config.enable_cache and self._state.cache is None:
+                self._state.cache = Cache()
+
             # Generate code
             code, additional_dependencies = self.generate_code(query)
 
@@ -354,7 +367,7 @@ class Agent:
         """
 
         config = load_config_from_json(config)
-        return Config(**config)
+        return Config(**config) if config else None
 
     def _get_llm(self, llm: Optional[LLM] = None) -> LLM:
         """
