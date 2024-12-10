@@ -29,7 +29,7 @@ class SmartDataframe:
             + "*" * 80
             + "\n"
             + "\033[1;33mDEPRECATION WARNING:\033[0m\n"
-            SmartDataframe will soon be deprecated. Please use df.chat() instead.
+            + "SmartDataframe will soon be deprecated. Please use df.chat() instead.\n"
             + "*" * 80
             + "\n",
             DeprecationWarning,
