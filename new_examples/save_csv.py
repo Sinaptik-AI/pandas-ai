@@ -60,7 +60,7 @@ df.save(
         {
             "name": "education",
             "type": "string",
-            "description": "Education level of the borrower (High School or Below, Bechalor, college, Master or Above)"
+            "description": "Education level of the borrower (High School or Below, Bachelor, college, Master or Above)"
         },
         {
             "name": "Gender",
