@@ -6,7 +6,7 @@ Source: Taken from pandas/compat/_optional.py
 import importlib
 import sys
 import warnings
-from typing import List
+from typing import List, Union
 
 from pandas.util.version import Version
 
@@ -92,7 +92,7 @@ def import_dependency(
     name: str,
     extra: str = "",
     errors: str = "raise",
-    min_version: str | None = None,
+    min_version: Union[str, None] = None,
 ):
     """
     Import an optional dependency.

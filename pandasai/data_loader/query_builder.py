@@ -21,6 +21,16 @@ class QueryBuilder:
         else:
             return "*"
 
+    def _get_table_name(self):
+        table_name = self.schema["source"].get("table", None) or self.schema["name"]
+
+        if not table_name:
+            raise ValueError("Table name not found in schema!")
+
+        table_name = table_name.lower()
+
+        return table_name
+
     def _add_order_by(self) -> str:
         if "order_by" not in self.schema:
             return ""
@@ -40,16 +50,14 @@ class QueryBuilder:
         source = self.schema.get("source", {})
         source_type = source.get("type")
 
-        table_name = self.schema["source"]["table"]
+        table_name = self._get_table_name()
 
         columns = self._get_columns()
 
-        order_by = "RAND()"
-        if source_type in {"sqlite", "postgres"}:
-            order_by = "RANDOM()"
+        order_by = "RANDOM()" if source_type in {"sqlite", "postgres"} else "RAND()"
 
         return f"SELECT {columns} FROM {table_name} ORDER BY {order_by} LIMIT {n}"
 
     def get_row_count(self):
-        table_name = self.schema["source"]["table"]
+        table_name = self._get_table_name()
         return f"SELECT COUNT(*) FROM {table_name}"
