@@ -47,6 +47,13 @@ class DatasetLoader:
             )
         else:
             # Initialize new dataset loader for virtualization
+            source_type = self.schema["source"]["type"]
+
+            if source_type in ["csv", "parquet"]:
+                raise ValueError(
+                    "Virtualization is not supported for CSV and Parquet files."
+                )
+
             data_loader = self.copy()
             table_name = self.schema["source"].get("table", None) or self.schema["name"]
             table_description = self.schema.get("description", None)
@@ -58,10 +65,11 @@ class DatasetLoader:
                 path=dataset_path,
             )
 
+    def _get_abs_dataset_path(self):
+        return os.path.join(find_project_root(), "datasets", self.dataset_path)
+
     def _load_schema(self):
-        schema_path = os.path.join(
-            find_project_root(), "datasets", self.dataset_path, "schema.yaml"
-        )
+        schema_path = os.path.join(self._get_abs_dataset_path(), "schema.yaml")
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
@@ -79,13 +87,13 @@ class DatasetLoader:
     def _get_cache_file_path(self) -> str:
         if "path" in self.schema["destination"]:
             return os.path.join(
-                "datasets", self.dataset_path, self.schema["destination"]["path"]
+                self._get_abs_dataset_path(), self.schema["destination"]["path"]
             )
 
         file_extension = (
             "parquet" if self.schema["destination"]["format"] == "parquet" else "csv"
         )
-        return os.path.join("datasets", self.dataset_path, f"data.{file_extension}")
+        return os.path.join(self._get_abs_dataset_path(), f"data.{file_extension}")
 
     def _is_cache_valid(self, cache_file: str) -> bool:
         if not os.path.exists(cache_file):
@@ -154,10 +162,11 @@ class DatasetLoader:
     def _load_from_source(self) -> pd.DataFrame:
         source_type = self.schema["source"]["type"]
         if source_type in ["csv", "parquet"]:
-            filpath = os.path.join(
-                "datasets", self.dataset_path, self.schema["source"]["path"]
+            filepath = os.path.join(
+                self._get_abs_dataset_path(),
+                self.schema["source"]["path"],
             )
-            return self._read_csv_or_parquet(filpath, source_type)
+            return self._read_csv_or_parquet(filepath, source_type)
 
         query_builder = QueryBuilder(self.schema)
         query = query_builder.build_query()
