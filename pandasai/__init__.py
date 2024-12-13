@@ -88,7 +88,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
     """
     path_parts = dataset_path.split("/")
     if len(path_parts) != 2:
-        raise ValueError("Path must be in format 'organization/dataset'")
+        raise ValueError("The path must be in the format 'organization/dataset'.")
 
     global _dataset_loader
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
