@@ -11,6 +11,7 @@ packages = [{include = "pandasai"}]
 python = ">=3.8,<3.9.7 || >3.9.7,<3.12"
 python-dotenv = "^1.0.0"
 pandas = "^2.0.3"
+pyarrow = "^14.0.1"
 scipy = "1.10.1"
 astor = "^0.8.1"
 matplotlib = "^3.7.1"
