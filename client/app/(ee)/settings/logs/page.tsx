@@ -14,5 +14,4 @@ export default async function Logs() {
     </div>
   );
 }
-export const dynamic='force-dynamic';
 
