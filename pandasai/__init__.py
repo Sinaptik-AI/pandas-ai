@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 import pandas as pd
 
-from pandasai.config import ConfigManager
+from pandasai.config import ConfigManager, APIKeyManager
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
@@ -26,6 +26,8 @@ _current_agent = None
 
 
 config = ConfigManager()
+
+api_key = APIKeyManager()
 
 
 def clear_cache(filename: str = None):

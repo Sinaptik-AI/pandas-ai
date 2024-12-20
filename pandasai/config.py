@@ -82,6 +82,19 @@ class ConfigManager:
                 cls._config.llm = LangchainLLM(cls._config.llm)
 
 
+class APIKeyManager:
+    _api_key: Optional[str] = None
+
+    @classmethod
+    def set(cls, api_key: str):
+        os.environ["PANDASAI_API_KEY"] = api_key
+        cls._api_key = api_key
+
+    @classmethod
+    def get(cls) -> Optional[str]:
+        return cls._api_key
+
+
 def load_config_from_json(
     override_config: Optional[Union[Config, dict]] = None,
 ):
