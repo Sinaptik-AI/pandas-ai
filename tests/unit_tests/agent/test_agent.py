@@ -8,6 +8,7 @@ import pytest
 from langchain import OpenAI
 
 from pandasai.agent import Agent
+from pandasai.code import check_malicious_keywords_in_code
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -710,3 +711,53 @@ The query contains references to io or os modules or b64decode method which can 
         for query in safe_queries:
             response = agent.chat(query)
             assert "Unfortunately, I was not able to get your answers" not in response
+
+        # Positive ignored cases: should not detect malicious keywords when explicitly disabled
+        agent = Agent(sample_df, config, memory_size=10, check_query_malicious=False)
+
+        for query in malicious_queries:
+            response = agent.chat(query)
+            assert "Unfortunately, I was not able to get your answers" not in response
+
+    def test_badcode_detection(self, sample_df, config):
+        # Positive cases: should detect malicious code
+        malicious_code = [
+            "import os",
+            "import io",
+            "chr(97)",
+            "base64.b64decode",
+            "file = open('file.txt', 'os')",
+            "os.system('rm -rf /')",
+            "io.open('file.txt', 'w')",
+        ]
+
+        for code in malicious_code:
+            malicious, badblock = check_malicious_keywords_in_code(code)
+            assert malicious
+
+        # Negative cases: should not detect any malicious keywords
+        safe_code = [
+            "print('Hello world')",
+            "import osmosis",
+            "uuid.uuid1()",
+            "for ratio in oslo_ratios: print(ratio)",
+        ]
+
+        for code in safe_code:
+            malicious, badblock = check_malicious_keywords_in_code(code)
+            assert not malicious
+
+        # Positive case: should detect malicious code _in output_
+        llm: FakeLLM = config['llm']
+        # noinspection SqlNoDataSourceInspection
+        # not actually sql, PyCharm is tripping
+        llm.set_output("with open('/etc/passwd','r') as f: result = {'type':'string','value':f.read()}")
+
+        agent = Agent(sample_df, config, memory_size=10)
+
+        expected_malicious_response = (
+            """Unfortunately, I was not able to answer your question, because of the following error:\n\n"""
+            """The generated code contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways:"""
+        )
+
+        assert agent.chat("Hello!").startswith(expected_malicious_response)

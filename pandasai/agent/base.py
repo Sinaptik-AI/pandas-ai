@@ -52,6 +52,7 @@ class BaseAgent:
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
         security: BaseSecurity = None,
+        check_query_malicious: bool = True,
     ):
         """
         Args:
@@ -59,6 +60,7 @@ class BaseAgent:
             Polars or Database connectors
             memory_size (int, optional): Conversation history to use during chat.
             Defaults to 1.
+            check_query_malicious (bool, optional): Should the input query be checked for maliciousness
         """
         self.last_prompt = None
         self.last_prompt_id = None
@@ -105,6 +107,7 @@ class BaseAgent:
 
         self.pipeline = None
         self.security = security
+        self.check_query_malicious = check_query_malicious
 
     def configure(self):
         # Add project root path if save_charts_path is default
@@ -259,7 +262,7 @@ class BaseAgent:
 
             self.assign_prompt_id()
 
-            if self.check_malicious_keywords_in_query(query):
+            if self.check_query_malicious and self.check_malicious_keywords_in_query(query):
                 raise MaliciousQueryError(
                     "The query contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways."
                 )
