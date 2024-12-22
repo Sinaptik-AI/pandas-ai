@@ -748,10 +748,12 @@ The query contains references to io or os modules or b64decode method which can 
             assert not malicious
 
         # Positive case: should detect malicious code _in output_
-        llm: FakeLLM = config['llm']
+        llm: FakeLLM = config["llm"]
         # noinspection SqlNoDataSourceInspection
         # not actually sql, PyCharm is tripping
-        llm.set_output("with open('/etc/passwd','r') as f: result = {'type':'string','value':f.read()}")
+        llm.set_output(
+            "with open('/etc/passwd','r') as f: result = {'type':'string','value':f.read()}"
+        )
 
         agent = Agent(sample_df, config, memory_size=10)
 

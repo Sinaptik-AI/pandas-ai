@@ -24,10 +24,16 @@ class Agent(BaseAgent):
         description: str = None,
         judge: BaseJudge = None,
         security: BaseSecurity = None,
-        check_query_malicious=True
+        check_query_malicious: bool = True,
     ):
         super().__init__(
-            dfs, config, memory_size, vectorstore, description, security=security, check_query_malicious=check_query_malicious
+            dfs,
+            config,
+            memory_size,
+            vectorstore,
+            description,
+            security=security,
+            check_query_malicious=check_query_malicious,
         )
 
         self.pipeline = (

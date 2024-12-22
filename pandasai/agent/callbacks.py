@@ -37,7 +37,8 @@ class Callbacks:
         malicious, badblock = check_malicious_keywords_in_code(code)
         if malicious:
             raise MaliciousCodeError(
-                "The generated code contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways: " + ast.unparse(badblock)
+                "The generated code contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways: "
+                + ast.unparse(badblock)
             )
 
         self.agent.last_code_executed = code
