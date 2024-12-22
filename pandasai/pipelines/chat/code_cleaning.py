@@ -75,11 +75,12 @@ class CodeCleaning(BaseLogicUnit):
     _additional_dependencies: List[dict] = []
     _current_code_executed: str = None
 
-    def __init__(self, on_failure=None, on_retry=None, **kwargs):
+    def __init__(self, on_failure=None, on_retry=None, do_regex_search=True, **kwargs):
         super().__init__(**kwargs)
         self._function_call_visitor = FunctionCallVisitor()
         self.on_failure = on_failure
         self.on_retry = on_retry
+        self.do_regex_search = do_regex_search
 
     def execute(self, input: Any, **kwargs) -> LogicUnitOutput:
         context: PipelineContext = kwargs.get("context")
@@ -212,7 +213,8 @@ Code running:
             # Check attribute access for restricted libraries
             elif isinstance(node, (ast.Attribute, ast.Subscript)):
                 check_restricted_access(node)
-
+        if not self.do_regex_search:
+            return True
         dangerous_modules = [
             " os",
             " io",

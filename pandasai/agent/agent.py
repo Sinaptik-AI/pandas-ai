@@ -25,6 +25,7 @@ class Agent(BaseAgent):
         judge: BaseJudge = None,
         security: BaseSecurity = None,
         check_query_malicious: bool = True,
+        do_regex_search_code_cleaning: bool = True,
     ):
         super().__init__(
             dfs,
@@ -54,6 +55,7 @@ class Agent(BaseAgent):
                 on_code_generation=self._callbacks.on_code_generation,
                 before_code_execution=self._callbacks.before_code_execution,
                 on_result=self._callbacks.on_result,
+                do_regex_search_code_cleaning=do_regex_search_code_cleaning,
                 judge=judge,
             )
         )

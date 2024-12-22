@@ -1,7 +1,3 @@
-import ast
-
-from ..code import check_malicious_keywords_in_code
-from ..exceptions import MaliciousCodeError
 from ..prompts import BasePrompt
 
 
@@ -34,13 +30,6 @@ class Callbacks:
         Args:
             code (str): A python code
         """
-        malicious, badblock = check_malicious_keywords_in_code(code)
-        if malicious:
-            raise MaliciousCodeError(
-                "The generated code contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways: "
-                + ast.unparse(badblock)
-            )
-
         self.agent.last_code_executed = code
 
     def on_result(self, result):

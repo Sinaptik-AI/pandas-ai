@@ -180,14 +180,6 @@ class MaliciousQueryError(Exception):
     """
 
 
-class MaliciousCodeError(Exception):
-    """
-    Raise error if malicious code is generated
-    Args:
-        Exception (Exception): MaliciousCodeError
-    """
-
-
 class InvalidLLMOutputType(Exception):
     """
     Raise error if the output type is invalid
