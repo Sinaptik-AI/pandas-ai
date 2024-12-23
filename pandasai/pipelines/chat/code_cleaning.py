@@ -214,7 +214,7 @@ Code running:
             elif isinstance(node, (ast.Attribute, ast.Subscript)):
                 check_restricted_access(node)
         if not self.do_regex_search:
-            return True
+            return False
         dangerous_modules = [
             " os",
             " io",
