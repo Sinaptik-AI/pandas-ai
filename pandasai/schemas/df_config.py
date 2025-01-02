@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, TypedDict, Literal
+from typing import Any, List, Literal, Optional, TypedDict
 
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
