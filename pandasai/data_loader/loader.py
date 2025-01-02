@@ -33,13 +33,16 @@ class DatasetLoader:
 
             df = self._load_from_source()
             df = self._apply_transformations(df)
+
+            # Convert to pandas DataFrame while preserving internal data
+            df = pd.DataFrame(df._data)
             self._cache_data(df, cache_file)
 
             table_name = self.schema["source"].get("table", None) or self.schema["name"]
             table_description = self.schema.get("description", None)
 
             return DataFrame(
-                df,
+                df._data,
                 schema=self.schema,
                 name=table_name,
                 description=table_description,

@@ -120,7 +120,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    return DataFrame(data)
+    return DataFrame(data._data)
 
 
 __all__ = [

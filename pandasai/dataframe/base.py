@@ -213,7 +213,9 @@ class DataFrame(pd.DataFrame):
 
         os.makedirs(dataset_directory, exist_ok=True)
 
-        self.to_parquet(os.path.join(dataset_directory, "data.parquet"))
+        # Convert to pandas DataFrame while preserving all data
+        df = pd.DataFrame(self._data)
+        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
 
         # create schema yaml file
         schema_path = os.path.join(dataset_directory, "schema.yaml")

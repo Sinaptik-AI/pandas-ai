@@ -8,6 +8,9 @@ import requests
 
 from pandasai.exceptions import PandasAIApiCallError, PandasAIApiKeyError
 from pandasai.helpers.logger import Logger
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Session:
@@ -28,7 +31,7 @@ class Session:
         self._api_key = api_key
 
         if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.domer.ai")
+            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.pandabi.ai")
 
         self._endpoint_url = endpoint_url
         self._version_path = "/api"
