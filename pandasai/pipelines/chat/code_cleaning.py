@@ -145,11 +145,15 @@ class CodeCleaning(BaseLogicUnit):
                 save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
 
+        # If plt.show is in the code, remove that line
+        code = re.sub(r"plt.show\(\)", "", code)
+
         # Reset used skills
         context.skills_manager.used_skills = []
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code, context)
+
         self._logger.log(
             f"""
 Code running:

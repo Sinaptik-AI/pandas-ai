@@ -928,3 +928,21 @@ import datetime.sys as spy
 """
         with pytest.raises(MaliciousQueryError):
             code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_with_pltshow_in_code(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import matplotlib.pyplot as plt
+print('test plt.show is removed')
+plt.show()
+"""
+        code = code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+        assert code.output == """print('test plt.show is removed')"""
+        assert isinstance(code, LogicUnitOutput)
+        assert code.success is True
+        assert code.message == "Code Cleaned Successfully"
