@@ -581,13 +581,16 @@ np.array()"""
         assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
-    def test_fix_dataframe_redeclarations(self, mock_head, context: PipelineContext):
+    def test_fix_dataframe_redeclarations(
+        self, mock_head, context: PipelineContext, config: dict
+    ):
         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
         mock_head.return_value = df
         pandas_connector = PandasConnector({"original_df": df})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -605,7 +608,7 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_multiline_redeclarations(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
         mock_head.return_value = df
@@ -613,6 +616,7 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -664,7 +668,7 @@ df1 = dfs[0]
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_with_subscript(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
         mock_head.return_value = df
@@ -672,6 +676,7 @@ df1 = dfs[0]
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -689,7 +694,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_with_subscript_and_data_variable(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         data = {
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
@@ -701,6 +706,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -723,7 +729,7 @@ dfs[0] = pd.DataFrame(data)
 
     @patch("pandasai.connectors.pandas.PandasConnector.head")
     def test_fix_dataframe_redeclarations_and_data_variable(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: Config
     ):
         data = {
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
@@ -735,6 +741,7 @@ dfs[0] = pd.DataFrame(data)
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -932,6 +939,19 @@ import datetime.sys as spy
 """
         with pytest.raises(MaliciousQueryError):
             code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_not_whitelisted_lib_with_none_security(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        builtins_code = """import scipy
+result = {'type': 'number', 'value': set([1, 2, 3])}"""
+
+        context.config.security = "none"
+        with pytest.raises(BadImportError):
+            code_cleaning.execute(builtins_code, context=context, logger=logger)
 
     def test_clean_code_with_pltshow_in_code(
         self,

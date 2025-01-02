@@ -51,7 +51,7 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
-def get_environment(additional_deps: List[dict]) -> dict:
+def get_environment(additional_deps: List[dict], secure: bool = True) -> dict:
     """
     Returns the environment for the code to be executed.
 
@@ -73,24 +73,43 @@ def get_environment(additional_deps: List[dict]) -> dict:
         },
     }
 
-    env["pd"] = RestrictedPandas()
-    env["plt"] = RestrictedMatplotlib()
-    env["np"] = RestrictedNumpy()
+    if secure:
+        env["pd"] = RestrictedPandas()
+        env["plt"] = RestrictedMatplotlib()
+        env["np"] = RestrictedNumpy()
 
-    for lib in additional_deps:
-        if lib["name"] == "seaborn":
-            from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
+        for lib in additional_deps:
+            if lib["name"] == "seaborn":
+                from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
 
-            env["sns"] = RestrictedSeaborn()
+                env["sns"] = RestrictedSeaborn()
 
-        if lib["name"] == "datetime":
-            env["datetime"] = RestrictedDatetime()
+            if lib["name"] == "datetime":
+                env["datetime"] = RestrictedDatetime()
 
-        if lib["name"] == "json":
-            env["json"] = RestrictedJson()
+            if lib["name"] == "json":
+                env["json"] = RestrictedJson()
 
-        if lib["name"] == "base64":
-            env["base64"] = RestrictedBase64()
+            if lib["name"] == "base64":
+                env["base64"] = RestrictedBase64()
+
+    else:
+        env["pd"] = import_dependency("pandas")
+        env["plt"] = import_dependency("matplotlib.pyplot")
+        env["np"] = import_dependency("numpy")
+
+        for lib in additional_deps:
+            if lib["name"] == "seaborn":
+                env["sns"] = import_dependency("seaborn")
+
+            if lib["name"] == "datetime":
+                env["datetime"] = import_dependency("datetime")
+
+            if lib["name"] == "json":
+                env["json"] = import_dependency("json")
+
+            if lib["name"] == "base64":
+                env["base64"] = import_dependency("base64")
 
     return env
 

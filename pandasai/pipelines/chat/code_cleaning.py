@@ -121,10 +121,14 @@ class CodeCleaning(BaseLogicUnit):
         return re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
 
     def get_code_to_run(self, code: str, context: CodeExecutionContext) -> Any:
-        if self._is_malicious_code(code):
+        if self._config.security in [
+            "standard",
+            "advanced",
+        ] and self._is_malicious_code(code):
             raise MaliciousQueryError(
                 "Code shouldn't use 'os', 'io' or 'chr', 'b64decode' functions as this could lead to malicious code execution."
             )
+
         code = self._replace_plot_png(code)
         self._current_code_executed = code
 
@@ -475,7 +479,10 @@ Code running:
             if target_names and self._check_is_df_declaration(node):
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
-                env = get_environment(self._additional_dependencies)
+                env = get_environment(
+                    self._additional_dependencies,
+                    secure=self._config.security in ["standard", "advanced"],
+                )
                 env["dfs"] = copy.deepcopy(self._get_originals(self._dfs))
                 if context.skills_manager.used_skills:
                     for skill_func_name in context.skills_manager.used_skills:

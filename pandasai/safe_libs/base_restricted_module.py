@@ -4,7 +4,7 @@ class BaseRestrictedModule:
             # Check for any suspicious arguments that might be used for importing
             for arg in args + tuple(kwargs.values()):
                 if isinstance(arg, str) and any(
-                    module in arg.lower()
+                    module == arg.lower()
                     for module in ["io", "os", "subprocess", "sys", "importlib"]
                 ):
                     raise SecurityError(
