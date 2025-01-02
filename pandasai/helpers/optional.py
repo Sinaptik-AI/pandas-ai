@@ -20,7 +20,6 @@ from pandasai.safe_libs.restricted_matplotlib import RestrictedMatplotlib
 from pandasai.safe_libs.restricted_numpy import RestrictedNumpy
 from pandasai.safe_libs.restricted_pandas import RestrictedPandas
 
-
 if TYPE_CHECKING:
     import types
 
