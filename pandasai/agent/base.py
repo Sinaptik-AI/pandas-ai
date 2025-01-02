@@ -259,7 +259,10 @@ class BaseAgent:
 
             self.assign_prompt_id()
 
-            if self.check_malicious_keywords_in_query(query):
+            if self.config.security in [
+                "standard",
+                "advanced",
+            ] and self.check_malicious_keywords_in_query(query):
                 raise MaliciousQueryError(
                     "The query contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways."
                 )
