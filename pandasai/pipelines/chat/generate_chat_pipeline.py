@@ -47,6 +47,7 @@ class GenerateChatPipeline:
         on_code_generation=None,
         before_code_execution=None,
         on_result=None,
+        do_regex_search_code_cleaning: bool = True,
     ):
         self.query_exec_tracker = QueryExecTracker(
             server_config=context.config.log_server
@@ -72,6 +73,7 @@ class GenerateChatPipeline:
                     skip_if=self.no_code,
                     on_failure=self.on_code_cleaning_failure,
                     on_retry=self.on_code_retry,
+                    do_regex_search=do_regex_search_code_cleaning,
                 ),
             ],
         )

@@ -8,6 +8,7 @@ import pytest
 from langchain import OpenAI
 
 from pandasai.agent import Agent
+from pandasai.code import check_malicious_keywords_in_code
 from pandasai.connectors.sql import (
     PostgreSQLConnector,
     SQLConnector,
@@ -708,5 +709,12 @@ The query contains references to io or os modules or b64decode method which can 
         ]
 
         for query in safe_queries:
+            response = agent.chat(query)
+            assert "Unfortunately, I was not able to get your answers" not in response
+
+        # Positive ignored cases: should not detect malicious keywords when explicitly disabled
+        agent = Agent(sample_df, config, memory_size=10, check_query_malicious=False)
+
+        for query in malicious_queries:
             response = agent.chat(query)
             assert "Unfortunately, I was not able to get your answers" not in response
