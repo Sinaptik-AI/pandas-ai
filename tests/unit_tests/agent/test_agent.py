@@ -715,7 +715,6 @@ The query contains references to io or os modules or b64decode method which can 
         config["security"] = "none"
         agent = Agent(sample_df, config, memory_size=10)
 
-        # Positive cases: should detect malicious keywords
         malicious_queries = [
             "import os",
             "import io",
@@ -735,7 +734,6 @@ The query contains references to io or os modules or b64decode method which can 
             response = agent.chat(query)
             assert response != expected_malicious_response
 
-        # Negative cases: should not detect any malicious keywords
         safe_queries = [
             "print('Hello world')",
             "through osmosis",
