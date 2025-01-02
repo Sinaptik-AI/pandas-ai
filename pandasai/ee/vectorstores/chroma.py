@@ -1,16 +1,11 @@
 import os
 import uuid
-from typing import (
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Union,
-)
+from typing import Callable, Iterable, List, Optional, Union
 
 import chromadb
 from chromadb import config
 from chromadb.utils import embedding_functions
+
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.path import find_project_root
 from pandasai.vectorstores.vectorstore import VectorStore
