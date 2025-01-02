@@ -309,7 +309,11 @@ my_custom_library.do_something()
         code_cleaning._config.custom_whitelisted_dependencies = ["my_custom_library"]
         output = code_cleaning.execute(code, context=context, logger=logger)
 
+        print(code_cleaning._additional_dependencies)
         assert output.output == "my_custom_library.do_something()"
+        assert (
+            code_cleaning._additional_dependencies[0]["module"] == "my_custom_library"
+        )
         assert isinstance(output, LogicUnitOutput)
         assert output.success
         assert output.message == "Code Cleaned Successfully"

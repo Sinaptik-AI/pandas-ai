@@ -623,23 +623,22 @@ Code running:
         if library == "pandas":
             return
 
-        if (
-            library
-            in WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
-        ):
-            for alias in node.names:
-                self._additional_dependencies.append(
-                    {
-                        "module": module,
-                        "name": alias.name,
-                        "alias": alias.asname or alias.name,
-                    }
-                )
-            return
+        whitelisted_libs = (
+            WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
+        )
 
-        if library not in WHITELISTED_LIBRARIES:
+        if library not in whitelisted_libs:
             raise BadImportError(
                 f"The library '{library}' is not in the list of whitelisted libraries. "
                 "To learn how to whitelist custom dependencies, visit: "
                 "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )
+
+        for alias in node.names:
+            self._additional_dependencies.append(
+                {
+                    "module": module,
+                    "name": alias.name,
+                    "alias": alias.asname or alias.name,
+                }
             )
