@@ -1,6 +1,12 @@
 import os
 import uuid
-from typing import Callable, Iterable, List, Optional, Union
+from typing import (
+    Callable,
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
 import chromadb
 from chromadb import config
