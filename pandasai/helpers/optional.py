@@ -19,7 +19,6 @@ from pandasai.safe_libs.restricted_json import RestrictedJson
 from pandasai.safe_libs.restricted_matplotlib import RestrictedMatplotlib
 from pandasai.safe_libs.restricted_numpy import RestrictedNumpy
 from pandasai.safe_libs.restricted_pandas import RestrictedPandas
-from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
 
 if TYPE_CHECKING:
     import types
@@ -81,6 +80,8 @@ def get_environment(additional_deps: List[dict], secure: bool = True) -> dict:
 
         for lib in additional_deps:
             if lib["name"] == "seaborn":
+                from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
+
                 env["sns"] = RestrictedSeaborn()
 
             if lib["name"] == "datetime":

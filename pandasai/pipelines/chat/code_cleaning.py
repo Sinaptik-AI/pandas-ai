@@ -149,11 +149,15 @@ class CodeCleaning(BaseLogicUnit):
                 save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
 
+        # If plt.show is in the code, remove that line
+        code = re.sub(r"plt.show\(\)", "", code)
+
         # Reset used skills
         context.skills_manager.used_skills = []
 
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code, context)
+
         self._logger.log(
             f"""
 Code running:
@@ -630,23 +634,22 @@ Code running:
         if library == "pandas":
             return
 
-        if (
-            library
-            in WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
-        ):
-            for alias in node.names:
-                self._additional_dependencies.append(
-                    {
-                        "module": module,
-                        "name": alias.name,
-                        "alias": alias.asname or alias.name,
-                    }
-                )
-            return
+        whitelisted_libs = (
+            WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
+        )
 
-        if library not in WHITELISTED_LIBRARIES:
+        if library not in whitelisted_libs:
             raise BadImportError(
                 f"The library '{library}' is not in the list of whitelisted libraries. "
                 "To learn how to whitelist custom dependencies, visit: "
                 "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )
+
+        for alias in node.names:
+            self._additional_dependencies.append(
+                {
+                    "module": module,
+                    "name": alias.name,
+                    "alias": alias.asname or alias.name,
+                }
             )
