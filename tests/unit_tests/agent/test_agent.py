@@ -710,3 +710,39 @@ The query contains references to io or os modules or b64decode method which can 
         for query in safe_queries:
             response = agent.chat(query)
             assert "Unfortunately, I was not able to get your answers" not in response
+
+    def test_query_detection_disable_security(self, sample_df, config):
+        config["security"] = "none"
+        agent = Agent(sample_df, config, memory_size=10)
+
+        # Positive cases: should detect malicious keywords
+        malicious_queries = [
+            "import os",
+            "import io",
+            "chr(97)",
+            "base64.b64decode",
+            "file = open('file.txt', 'os')",
+            "os.system('rm -rf /')",
+            "io.open('file.txt', 'w')",
+        ]
+
+        expected_malicious_response = (
+            """Unfortunately, I was not able to get your answers, because of the following error:\n\n"""
+            """The query contains references to io or os modules or b64decode method which can be used to execute or access system resources in unsafe ways.\n"""
+        )
+
+        for query in malicious_queries:
+            response = agent.chat(query)
+            assert response != expected_malicious_response
+
+        # Negative cases: should not detect any malicious keywords
+        safe_queries = [
+            "print('Hello world')",
+            "through osmosis",
+            "the ionosphere",
+            "the capital of Norway is Oslo",
+        ]
+
+        for query in safe_queries:
+            response = agent.chat(query)
+            assert "Unfortunately, I was not able to get your answers" not in response
