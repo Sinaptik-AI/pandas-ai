@@ -18,6 +18,7 @@ from pandasai.helpers.dataframe_serializer import (
 )
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
+import pandasai as pai
 
 
 if TYPE_CHECKING:
@@ -57,7 +58,7 @@ class DataFrame(pd.DataFrame):
         if schema is not None:
             self._validate_schema(schema)
         self.schema = schema
-        self.config = Config()
+        self.config = pai.config.get()
         self._agent: Optional[Agent] = None
         self._column_hash = self._calculate_column_hash()
 
