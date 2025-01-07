@@ -149,8 +149,11 @@ class CodeExecution(BaseLogicUnit):
         # List the required dfs, so we can avoid to run the connectors
         # if the code does not need them
         dfs = self._required_dfs(code)
-        environment: dict = get_environment(self._additional_dependencies)
-        environment["dfs"] = dfs
+        environment: dict = get_environment(
+            self._additional_dependencies,
+            secure=self._config.security in ["standard", "advanced"],
+        )
+        environment["dfs"] = self._get_originals(dfs)
         if len(environment["dfs"]) == 1:
             environment["df"] = environment["dfs"][0]
 

@@ -10,7 +10,7 @@ from pandasai.helpers.optional import get_environment
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
 
-from ...constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
+from ...constants import RESTRICTED_LIBS, WHITELISTED_LIBRARIES
 from ...exceptions import (
     BadImportError,
     ExecuteSQLQueryNotUsed,
@@ -110,10 +110,14 @@ class CodeCleaning(BaseLogicUnit):
         return re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
 
     def get_code_to_run(self, code: str, context: CodeExecutionContext) -> Any:
-        if self._is_malicious_code(code):
+        if self._config.security in [
+            "standard",
+            "advanced",
+        ] and self._is_malicious_code(code):
             raise MaliciousQueryError(
                 "Code shouldn't use 'os', 'io' or 'chr', 'b64decode' functions as this could lead to malicious code execution."
             )
+
         code = self._replace_plot_png(code)
         self._current_code_executed = code
 
@@ -134,8 +138,15 @@ class CodeCleaning(BaseLogicUnit):
                 save_charts_path_str=f"{find_project_root()}/exports/charts",
             )
 
+        # If plt.show is in the code, remove that line
+        code = re.sub(r"plt.show\(\)", "", code)
+
+        # Reset used skills
+        context.skills_manager.used_skills = []
+
         # Get the code to run removing unsafe imports and df overwrites
         code_to_run = self._clean_code(code, context)
+
         self._logger.log(
             f"""
 Code running:
@@ -147,6 +158,58 @@ Code running:
         return code_to_run
 
     def _is_malicious_code(self, code) -> bool:
+        tree = ast.parse(code)
+
+        # Check for private attributes and access of restricted libs
+        def check_restricted_access(node):
+            """Check if the node accesses restricted modules or private attributes."""
+            if isinstance(node, ast.Attribute):
+                attr_chain = []
+                while isinstance(node, ast.Attribute):
+                    if node.attr.startswith("_"):
+                        raise MaliciousQueryError(
+                            f"Access to private attribute '{node.attr}' is not allowed."
+                        )
+                    attr_chain.insert(0, node.attr)
+                    node = node.value
+                if isinstance(node, ast.Name):
+                    attr_chain.insert(0, node.id)
+                    if any(module in RESTRICTED_LIBS for module in attr_chain):
+                        raise MaliciousQueryError(
+                            f"Restricted access detected in attribute chain: {'.'.join(attr_chain)}"
+                        )
+
+            elif isinstance(node, ast.Subscript) and isinstance(
+                node.value, ast.Attribute
+            ):
+                check_restricted_access(node.value)
+
+        for node in ast.walk(tree):
+            # Check 'import ...' statements
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    sub_module_names = alias.name.split(".")
+                    if any(module in RESTRICTED_LIBS for module in sub_module_names):
+                        raise MaliciousQueryError(
+                            f"Restricted library import detected: {alias.name}"
+                        )
+
+            # Check 'from ... import ...' statements
+            elif isinstance(node, ast.ImportFrom):
+                sub_module_names = node.module.split(".")
+                if any(module in RESTRICTED_LIBS for module in sub_module_names):
+                    raise MaliciousQueryError(
+                        f"Restricted library import detected: {node.module}"
+                    )
+                if any(alias.name in RESTRICTED_LIBS for alias in node.names):
+                    raise MaliciousQueryError(
+                        "Restricted library import detected in 'from ... import ...'"
+                    )
+
+            # Check attribute access for restricted libraries
+            elif isinstance(node, (ast.Attribute, ast.Subscript)):
+                check_restricted_access(node)
+
         dangerous_modules = [
             " os",
             " io",
@@ -162,6 +225,7 @@ Code running:
             "(chr",
             "b64decode",
         ]
+
         return any(
             re.search(r"\b" + re.escape(module) + r"\b", code)
             for module in dangerous_modules
@@ -382,7 +446,10 @@ Code running:
             if target_names and self._check_is_df_declaration(node):
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
-                env = get_environment(self._additional_dependencies)
+                env = get_environment(
+                    self._additional_dependencies,
+                    secure=self._config.security in ["standard", "advanced"],
+                )
                 env["dfs"] = copy.deepcopy(self._get_originals(self._dfs))
                 exec(code, env)
 
@@ -523,19 +590,22 @@ Code running:
         if library == "pandas":
             return
 
-        if (
-            library
-            in WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
-        ):
-            for alias in node.names:
-                self._additional_dependencies.append(
-                    {
-                        "module": module,
-                        "name": alias.name,
-                        "alias": alias.asname or alias.name,
-                    }
-                )
-            return
+        whitelisted_libs = (
+            WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
+        )
 
-        if library not in WHITELISTED_BUILTINS:
-            raise BadImportError(library)
+        if library not in whitelisted_libs:
+            raise BadImportError(
+                f"The library '{library}' is not in the list of whitelisted libraries. "
+                "To learn how to whitelist custom dependencies, visit: "
+                "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )
+
+        for alias in node.names:
+            self._additional_dependencies.append(
+                {
+                    "module": module,
+                    "name": alias.name,
+                    "alias": alias.asname or alias.name,
+                }
+            )

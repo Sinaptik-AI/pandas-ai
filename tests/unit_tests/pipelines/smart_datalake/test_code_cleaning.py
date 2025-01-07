@@ -153,23 +153,17 @@ class TestCodeCleaning:
         with pytest.raises(Exception):
             code_cleaning.execute("1 +", context=context, logger=logger)
 
-    def test_clean_code_remove_builtins(
+    def test_clean_code_raise_not_whitelisted_lib(
         self,
         code_cleaning: CodeCleaning,
         context: PipelineContext,
         logger: Logger,
     ):
-        builtins_code = """import set
+        builtins_code = """import scipy
 result = {'type': 'number', 'value': set([1, 2, 3])}"""
 
-        output = code_cleaning.execute(builtins_code, context=context, logger=logger)
-
-        assert (
-            output.output == """result = {'type': 'number', 'value': set([1, 2, 3])}"""
-        )
-        assert isinstance(output, LogicUnitOutput)
-        assert output.success
-        assert output.message == "Code Cleaned Successfully"
+        with pytest.raises(BadImportError):
+            code_cleaning.execute(builtins_code, context=context, logger=logger)
 
     def test_clean_code_removes_jailbreak_code(
         self,
@@ -180,12 +174,8 @@ result = {'type': 'number', 'value': set([1, 2, 3])}"""
         malicious_code = """__builtins__['str'].__class__.__mro__[-1].__subclasses__()[140].__init__.__globals__['system']('ls')
 print('hello world')"""
 
-        output = code_cleaning.execute(malicious_code, context=context, logger=logger)
-
-        assert output.output == """print('hello world')"""
-        assert isinstance(output, LogicUnitOutput)
-        assert output.success
-        assert output.message == "Code Cleaned Successfully"
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
 
     def test_clean_code_remove_environment_defaults(
         self,
@@ -284,7 +274,11 @@ my_custom_library.do_something()
         code_cleaning._config.custom_whitelisted_dependencies = ["my_custom_library"]
         output = code_cleaning.execute(code, context=context, logger=logger)
 
+        print(code_cleaning._additional_dependencies)
         assert output.output == "my_custom_library.do_something()"
+        assert (
+            code_cleaning._additional_dependencies[0]["module"] == "my_custom_library"
+        )
         assert isinstance(output, LogicUnitOutput)
         assert output.success
         assert output.message == "Code Cleaned Successfully"
@@ -551,11 +545,14 @@ np.array()"""
 
         assert str(excinfo.value) == ("Query uses unauthorized table: table1.")
 
-    def test_fix_dataframe_redeclarations(self, mock_head, context: PipelineContext):
+    def test_fix_dataframe_redeclarations(
+        self, mock_head, context: PipelineContext, config: dict
+    ):
         pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -572,12 +569,13 @@ df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         assert isinstance(output, ast.Assign)
 
     def test_fix_dataframe_multiline_redeclarations(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -623,12 +621,13 @@ df1 = dfs[0]
         assert output is None
 
     def test_fix_dataframe_redeclarations_with_subscript(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         pandas_connector = DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -645,7 +644,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         assert isinstance(output, ast.Assign)
 
     def test_fix_dataframe_redeclarations_with_subscript_and_data_variable(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: dict
     ):
         data = {
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
@@ -655,6 +654,7 @@ dfs[0] = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -676,7 +676,7 @@ dfs[0] = pd.DataFrame(data)
         assert isinstance(output, ast.Assign)
 
     def test_fix_dataframe_redeclarations_and_data_variable(
-        self, mock_head, context: PipelineContext
+        self, mock_head, context: PipelineContext, config: Config
     ):
         data = {
             "country": ["China", "United States", "Japan", "Germany", "United Kingdom"],
@@ -686,6 +686,7 @@ dfs[0] = pd.DataFrame(data)
 
         code_cleaning = CodeCleaning()
         code_cleaning._dfs = [pandas_connector]
+        code_cleaning._config = Config(**config)
         context.dfs = [pandas_connector]
 
         python_code = """
@@ -845,3 +846,72 @@ df = pd.DataFrame(data)
         node = code_cleaning._validate_and_make_table_name_case_sensitive(mock_node)
 
         assert node.value.args[0].value == 'SELECT COUNT(*) AS user_count FROM "Users"'
+
+    def test_clean_code_raise_private_variable_access_error(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import scipy
+result = {"type": "string", "value": f"{scipy.sparse._sputils.sys.modules['subprocess'].run(['cmd', '/c', 'dir'], text=True, capture_output=True).stdout}"}
+print(result)
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_import_with_restricted_modules(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+from datetime import sys
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_import_with_restricted_using_import_statement(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import datetime.sys as spy
+"""
+        with pytest.raises(MaliciousQueryError):
+            code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+    def test_clean_code_raise_not_whitelisted_lib_with_none_security(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        builtins_code = """import scipy
+result = {'type': 'number', 'value': set([1, 2, 3])}"""
+
+        context.config.security = "none"
+        with pytest.raises(BadImportError):
+            code_cleaning.execute(builtins_code, context=context, logger=logger)
+
+    def test_clean_code_with_pltshow_in_code(
+        self,
+        code_cleaning: CodeCleaning,
+        context: PipelineContext,
+        logger: Logger,
+    ):
+        malicious_code = """
+import matplotlib.pyplot as plt
+print('test plt.show is removed')
+plt.show()
+"""
+        code = code_cleaning.execute(malicious_code, context=context, logger=logger)
+
+        assert code.output == """print('test plt.show is removed')"""
+        assert isinstance(code, LogicUnitOutput)
+        assert code.success is True
+        assert code.message == "Code Cleaned Successfully"

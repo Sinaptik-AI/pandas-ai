@@ -7,7 +7,7 @@ from pandasai.llm.base import LLM
 
 from .helpers.path import find_closest
 
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, List, Optional, Dict, Union, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
@@ -29,6 +29,8 @@ class Config(BaseModel):
     direct_sql: bool = False
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    security: Literal["standard", "none", "advanced"] = "standard"
 
     @classmethod
     def from_dict(cls, config: Dict[str, Any]) -> "Config":

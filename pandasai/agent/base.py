@@ -175,7 +175,7 @@ class Agent:
     ) -> dict:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
-        code_executor = CodeExecutor(additional_dependencies)
+        code_executor = CodeExecutor(self._state.config, additional_dependencies)
         code_executor.add_to_env("dfs", self._state.dfs)
 
         if self._state.config.direct_sql:

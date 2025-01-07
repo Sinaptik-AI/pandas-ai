@@ -1,5 +1,6 @@
 import ast
 from pandasai.chat.code_execution.environment import get_environment
+from pandasai.config import Config
 from pandasai.exceptions import NoResultFoundError
 
 from typing import Any, List
@@ -12,8 +13,13 @@ class CodeExecutor:
 
     _environment: dict
 
-    def __init__(self, additional_dependencies: List[dict] = []) -> None:
-        self._environment = get_environment(additional_dependencies)
+    def __init__(
+        self, config: Config, additional_dependencies: List[dict] = None
+    ) -> None:
+        self._environment = get_environment(
+            additional_dependencies or [],
+            secure=config.security in ["standard", "advanced"],
+        )
         self._plots = []
 
     def add_to_env(self, key: str, value: Any) -> None:

@@ -25,17 +25,16 @@ class CodeCleaner:
         """
         self.context = context
 
-    def _check_imports(
-        self, node: Union[ast.Import, ast.ImportFrom]
-    ) -> Union[dict, None]:
+    def _check_imports(self, node: Union[ast.Import, ast.ImportFrom]):
         """
-        Add whitelisted imports to additional dependencies.
+        Add whitelisted imports to _additional_dependencies.
 
         Args:
-            node (Union[ast.Import, ast.ImportFrom]): AST node for import statements.
+            node (object): ast.Import or ast.ImportFrom
 
         Raises:
-            BadImportError: If the import is not whitelisted.
+            BadImportError: If the import is not whitelisted
+
         """
         module = node.names[0].name if isinstance(node, ast.Import) else node.module
         library = module.split(".")[0]
@@ -43,23 +42,23 @@ class CodeCleaner:
         if library == "pandas":
             return
 
-        if (
-            library
-            in WHITELISTED_LIBRARIES
-            + self.context.config.custom_whitelisted_dependencies
-        ):
-            for alias in node.names:
-                return {
-                    "module": module,
-                    "name": alias.name,
-                    "alias": alias.asname or alias.name,
-                }
-
-        raise BadImportError(
-            f"The library '{library}' is not in the list of whitelisted libraries. "
-            "To learn how to whitelist custom dependencies, visit: "
-            "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+        whitelisted_libs = (
+            WHITELISTED_LIBRARIES + self._config.custom_whitelisted_dependencies
         )
+
+        if library not in whitelisted_libs:
+            raise BadImportError(
+                f"The library '{library}' is not in the list of whitelisted libraries. "
+                "To learn how to whitelist custom dependencies, visit: "
+                "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
+            )
+
+        for alias in node.names:
+            return {
+                "module": module,
+                "name": alias.name,
+                "alias": alias.asname or alias.name,
+            }
 
     def _check_is_df_declaration(self, node: ast.AST) -> bool:
         """
@@ -264,6 +263,10 @@ class CodeCleaner:
             tuple: Cleaned code as a string and a list of additional dependencies.
         """
         code = self._handle_charts(code)
+
+        # If plt.show is in the code, remove that line
+        code = re.sub(r"plt.show\(\)", "", code)
+
         additional_dependencies = []
         clean_code_lines = []
 

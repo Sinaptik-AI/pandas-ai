@@ -91,6 +91,7 @@ WHITELISTED_LIBRARIES = [
     "datetime",
     "json",
     "base64",
+    "pandas",
 ]
 
 # List of restricted libs
