@@ -9,6 +9,7 @@ from .huggingface_text_gen import HuggingFaceTextGen
 from .ibm_watsonx import IBMwatsonx
 from .langchain import LangchainLLM
 from .openai import OpenAI
+from .local_llm import LocalLLM
 
 __all__ = [
     "LLM",
@@ -22,4 +23,5 @@ __all__ = [
     "LangchainLLM",
     "BedrockClaude",
     "IBMwatsonx",
+    "LocalLLM",
 ]
