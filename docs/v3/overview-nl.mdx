@@ -31,13 +31,14 @@ pai.config.set({
    },
    "save_logs": True,
    "verbose": False,
-   "enforce_privacy": False,
    "save_charts": False,
    "save_charts_path": "exports/charts/",
    "open_charts": True,
    "enable_cache": True,
    "use_error_correction_framework": True,
    "max_retries": 3,
+   "enforce_privacy": False,
+   "security": "none",
    "custom_whitelisted_dependencies": {}
 })
 ```
@@ -56,11 +57,6 @@ pai.config.set({
 - **Type**: `bool`
 - **Default**: `False`
 - **Description**: Whether to print the logs in the console as PandasAI is executed.
-
-#### enforce_privacy
-- **Type**: `bool`
-- **Default**: `False`
-- **Description**: Whether to enforce privacy. If set to True, PandasAI will not send any data to the LLM, but only the metadata. By default, PandasAI will send 5 samples that are anonymized to improve the accuracy of the results. Learn more about [privacy settings](/privacy-and-security).
 
 #### save_charts
 - **Type**: `bool`
@@ -91,6 +87,16 @@ pai.config.set({
 - **Type**: `int`
 - **Default**: `3`
 - **Description**: The maximum number of retries to use when using the error correction framework. You can use this setting to override the default number of retries.
+
+#### enforce_privacy
+- **Type**: `bool`
+- **Default**: `False`
+- **Description**: Whether to enforce privacy. If set to True, PandasAI will not send any data to the LLM, but only the metadata. By default, PandasAI will send 5 samples that are anonymized to improve the accuracy of the results. Learn more about [privacy settings](/privacy-and-security).
+
+#### security
+- **Type**: `str`
+- **Default**: `"none"`
+- **Description**: The security level to use. You can use this setting to override the default security level. See [privacy settings](/privacy-and-security) for more information.
 
 #### custom_whitelisted_dependencies
 - **Type**: `dict`

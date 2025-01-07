@@ -1,86 +1,140 @@
 {
-  "name": "PandasAI",
-  "logo": {
-    "light": "/logo/logo.png",
-    "dark": "/logo/logo.png",
-    "href": "https://pandas-ai.com"
-  },
-  "favicon": "/favicon.svg",
-  "colors": {
-    "primary": "#1d4ed8",
-    "light": "#55D799",
-    "dark": "#117866",
-    "anchors": {
-      "from": "#1d4ed8",
-      "to": "#55D799"
-    }
-  },
-  "topbarLinks": [
-    {
-      "name": "GitHub",
-      "url": "https://github.com/Sinaptik-AI/pandas-ai"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "https://github.com/sinaptik-ai/pandas-ai"
-  },
-  "anchors": [
-    {
-      "name": "Website",
-      "icon": "link",
-      "url": "https://pandas-ai.com"
+    "name": "PandaAI",
+    "logo": {
+      "light": "/logo/logo.png",
+      "dark": "/logo/logo.png",
+      "href": "https://pandas-ai.com"
     },
-    {
-      "name": "Discord",
-      "icon": "discord",
-      "url": "https://discord.gg/kF7FqH2FwS"
+    "favicon": "/favicon.svg",
+    "colors": {
+      "primary": "#1d4ed8",
+      "light": "#55D799",
+      "dark": "#117866",
+      "anchors": {
+        "from": "#1d4ed8",
+        "to": "#55D799"
+      }
     },
-    {
-      "name": "GitHub",
-      "icon": "github",
+    "versions": [
+        {
+          "name": "v3",
+          "default": true
+        },
+        {
+          "name": "v2"
+        }
+    ],
+    "topbarLinks": [
+      {
+        "name": "GitHub",
+        "url": "https://github.com/Sinaptik-AI/pandas-ai"
+      }
+    ],
+    "topbarCtaButton": {
+      "name": "Get Started",
       "url": "https://github.com/sinaptik-ai/pandas-ai"
+    },
+    "anchors": [
+      {
+        "name": "Website",
+        "icon": "link",
+        "url": "https://pandas-ai.com"
+      },
+      {
+        "name": "Discord",
+        "icon": "discord",
+        "url": "https://discord.gg/kF7FqH2FwS"
+      },
+      {
+        "name": "GitHub",
+        "icon": "github",
+        "url": "https://github.com/sinaptik-ai/pandas-ai"
+      }
+    ],
+    "navigation": [
+      {
+        "group": "Overview",
+        "pages": ["v3/introduction", "v3/getting-started"],
+        "version": "v3"
+      },
+      {
+        "group": "Data",
+        "pages": ["v3/data-layer", "v3/semantic-layer", "v3/data-ingestion", "v3/dataframes"],
+        "version": "v3"
+      },
+      {
+        "group": "Natural Language",
+        "pages": ["v3/overview-nl", "v3/large-language-models", "v3/chat-and-cache", "v3/privacy-and-security"],
+        "version": "v3"
+      },
+      {
+        "group": "Data Platform",
+        "pages": ["v3/ai-dashboards", "v3/share-dataframes", "v3/permission-management"],
+        "version": "v3"
+      },
+      {
+        "group": "Backwards Compatibility",
+        "pages": ["v3/agent", "v3/smart-dataframes", "v3/smart-datalakes"],
+        "version": "v3"
+      },
+      {
+        "group": "About",
+        "pages": ["v3/contributing", "v3/license"],
+        "version": "v3"
+      },
+      {
+        "group": "Get Started",
+        "pages": ["v2/intro"],
+        "version": "v2"
+      },
+      {
+        "group": "Library",
+        "pages": [
+          "v2/library",
+          "v2/connectors",
+          "v2/llms",
+          "v2/examples"
+        ],
+        "version": "v2"
+      },
+      {
+        "group": "Advanced agents",
+        "pages": ["v2/semantic-agent", "v2/judge-agent", "v2/advanced-security-agent"],
+        "version": "v2"
+      },
+      {
+        "group": "Advanced usage",
+        "pages": [
+          "v2/cache",
+          "v2/custom-head",
+          "v2/fields-description",
+          "v2/train",
+          "v2/custom-response",
+          "v2/custom-whitelisted-dependencies",
+          "v2/skills",
+          "v2/determinism"
+        ],
+        "version": "v2"
+      },
+      {
+        "group": "About",
+        "pages": ["v2/contributing", "v2/license"],
+        "version": "v2"
+      }
+    ],
+    "footerSocials": {
+      "x": "https://x.com/ai_pandas",
+      "github": "https://github.com/sinaptik-ai/pandas-ai",
+      "linkedin": "https://linkedin.com/company/pandasai"
+    },
+    "analytics": {
+      "ga4": {
+        "measurementId": "G-2K7QMF59EN"
+      }
+    },
+    "feedback": {
+      "suggestEdit": true,
+      "raiseIssue": true,
+      "thumbsRating": true
     }
-  ],
-  "navigation": [
-    {
-      "group": "Overview",
-      "pages": ["introduction", "getting-started"]
-    },
-    {
-      "group": "Data",
-      "pages": ["data-layer", "semantic-layer", "data-ingestion", "dataframes"]
-    },
-    {
-      "group": "Natural Language",
-      "pages": ["overview-nl", "large-language-models", "chat-and-cache", "privacy-and-security"]
-    },
-    {
-      "group": "Data Platform",
-      "pages": ["ai-dashboards", "share-dataframes", "permission-management"]
-    },
-    {
-      "group": "Backwards Compatibility",
-      "pages": ["agent", "smart-dataframes", "smart-datalakes"]
-    },
-    {
-      "group": "About",
-      "pages": ["contributing", "license"]
-    }
-  ],
-  "footerSocials": {
-    "x": "https://x.com/ai_pandas",
-    "github": "https://github.com/sinaptik-ai/pandas-ai",
-    "linkedin": "https://linkedin.com/company/pandasai"
-  },
-  "analytics": {
-    "ga4": {
-      "measurementId": "G-2K7QMF59EN"
-    }
-  },
-  "feedback": {
-    "suggestEdit": true,
-    "raiseIssue": true,
-    "thumbsRating": true
-  }
 }
