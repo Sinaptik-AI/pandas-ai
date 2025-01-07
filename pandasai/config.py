@@ -32,12 +32,9 @@ def load_config_from_json(
         with open(find_closest("pandasai.json"), "r") as f:
             config = json.load(f)
 
-            # if config is a dict
-            if config.get("llm") and not override_config.get("llm"):
-                options = config.get("llm_options") or {}
-                config["llm"] = getattr(llm, config["llm"])(**options)
-            elif not config.get("llm") and not override_config.get("llm"):
+            if not config.get("llm") and not override_config.get("llm"):
                 config["llm"] = llm.BambooLLM()
+
     except FileNotFoundError:
         # Ignore the error if the file does not exist, will use the default config
         pass
