@@ -3,7 +3,7 @@ title: 'Data Layer'
 description: 'Understanding the core data management components of PandasAI'
 ---
 
-The Data Layer is built around a powerful [Semantic Layer](/semantic-layer) that handles data processing and representation, enhancing the comprehension of tabular data from various [data sources](/data-ingestion):
+The Data Layer is built around a powerful [Semantic Layer](/v3/semantic-layer) that handles data processing and representation, enhancing the comprehension of tabular data from various [data sources](/v3/data-ingestion):
 - CSV and Excel files
 - SQL databases (PostgreSQL, MySQL)
 - Cloud data warehouses (BigQuery, Databricks, Snowflake)
@@ -12,4 +12,4 @@ This semantic layer processes your data into one of two formats:
 - **Materialized DataFrames**: Complete datasets loaded into memory for direct manipulation and analysis
 - **Virtualized DataFrames**: Virtual representations of your data that maintain source connections
 
-Both virtualized and materialized dataframes have a `.chat()` method that allows to interact with them using natural language. The dataframes can also be [shared with your team](/share-dataframes) using our [Data Platform](/ai-dashboards).
+Both virtualized and materialized dataframes have a `.chat()` method that allows to interact with them using natural language. The dataframes can also be [shared with your team](/v3/share-dataframes) using our [Data Platform](/v3/ai-dashboards).

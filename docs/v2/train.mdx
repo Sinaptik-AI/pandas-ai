@@ -97,7 +97,7 @@ Also in this case, your training data is persisted, so you only need to train th
 
 If you want to train the model with a local vector store, you can use the local `ChromaDB`, `Qdrant` or `Pinecone` vector stores. Here's how to do it:
 An enterprise license is required for using the vector stores locally, ([check it out](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE)).
-If you plan to use it in production, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
+If you plan to use it in production, [contact us](https://pandas-ai.com/pricing).
 
 ```python
 from pandasai import Agent
@@ -158,4 +158,3 @@ vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
 
 # Instantiate the agent with the custom vector store
 agent = Agent(connector, config={...} vectorstore=vector_store)
-```
