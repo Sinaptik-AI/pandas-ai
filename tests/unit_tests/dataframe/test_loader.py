@@ -118,7 +118,10 @@ class TestDatasetLoader:
         loader.schema = sample_schema
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
-        assert cache_path.endswith("datasets/test/users/users.parquet")
+        if sys.platform.startswith("win"):
+            assert cache_path.endswith("datasets\\test\\users\\users.parquet")
+        else:
+            assert cache_path.endswith("datasets/test/users/users.parquet")
 
     def test_get_cache_file_path_without_destination_path(self, sample_schema):
         schema_without_path = sample_schema.copy()
@@ -127,7 +130,10 @@ class TestDatasetLoader:
         loader.schema = schema_without_path
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
-        assert cache_path.endswith("datasets/test/users/data.parquet")
+        if sys.platform.startswith("win"):
+            assert cache_path.endswith("datasets\\test\\users\\data.parquet")
+        else:
+            assert cache_path.endswith("datasets/test/users/data.parquet")
 
     def test_is_cache_valid(self, sample_schema):
         loader = DatasetLoader()
