@@ -20,13 +20,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Clean up space before job
-        run: |
-          echo "Cleaning up space"
-          sudo rm -rf /tmp/*
-          sudo rm -rf ~/.cache/pip
-          sudo rm -rf ~/actions-runner/_work/*
-
       - name: Install Poetry (Unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -45,62 +38,83 @@ jobs:
         run: pip wheel --use-pep517 "future==0.18.3"
       - name: Install dependencies
         run: poetry install --all-extras --with dev --verbose
-      - name: Install extension dependencies
-        if: matrix.os != 'windows-latest'
-        run: |
-          find extensions/ -mindepth 1 -type d \( \
-            -path "extensions/llms/*" -o \
-            -path "extensions/connectors/*" -o \
-            -path "extensions/ee/*/*" \) | while read -r dir; do
-              if [ -f "$dir/pyproject.toml" ]; then
-                echo "Installing dependencies for $dir"
-                (
-                  cd "$dir" || exit
-                  poetry install --all-extras
-                )
-              fi
-          done
-      - name: Install extension dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          # Install LLM extension dependencies
-          Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras
-              Pop-Location
-            }
-          }
-
-          # Install connector extension dependencies
-          Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras
-              Pop-Location
-            }
-          }
-
-          # Install enterprise extension dependencies
-          Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras
-              Pop-Location
-            }
-          }
       - name: Lint with ruff
         run: make format_diff
       - name: Spellcheck
         run: make spell_check
       - name: Run core tests
         run: make test_core
+
+      # Install dependencies, test, and remove for each extension
+      - name: Install and test LLM extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/llms -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+              echo "Cleaning up dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry env remove $(poetry env list --full-path | awk '{print $1}')
+              )
+            fi
+          done
+
+      - name: Install and test Connector extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/connectors -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+              echo "Cleaning up dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry env remove $(poetry env list --full-path | awk '{print $1}')
+              )
+            fi
+          done
+
+      - name: Install and test Enterprise extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/ee -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+              echo "Cleaning up dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry env remove $(poetry env list --full-path | awk '{print $1}')
+              )
+            fi
+          done
+
       - name: Run extension tests
         if: matrix.os != 'windows-latest'
         run: make test_extensions
@@ -152,9 +166,3 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-
-      - name: Clean up space after job
-        run: |
-          echo "Cleaning up space after job"
-          sudo rm -rf /tmp/*  # Clear temporary files
-          sudo df -h  # Check disk usage
