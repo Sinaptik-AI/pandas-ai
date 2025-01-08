@@ -681,7 +681,7 @@ files = []
 develop = true
 
 [package.dependencies]
-numpy = "1.23.2"
+numpy = ">=1.23.2,<2.0.0"
 pandasai = ">=3.0.0a0"
 sqlalchemy = "^2.0.0"
 
@@ -979,6 +979,31 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "sqlalchemy-bigquery"
+version = "1.12.0"
+description = "SQLAlchemy dialect for BigQuery"
+optional = false
+python-versions = "<3.13,>=3.8"
+files = [
+    {file = "sqlalchemy_bigquery-1.12.0-py2.py3-none-any.whl", hash = "sha256:5b2b77bdaefe9c0663db213d9475a5abbae88fa46108c352d19fa6fc51a47a1a"},
+    {file = "sqlalchemy_bigquery-1.12.0.tar.gz", hash = "sha256:12783ad83ffad34e8e6e14046cb14bb2f1a3e7fb52676f5a24e940ff5cdeb864"},
+]
+
+[package.dependencies]
+google-api-core = ">=1.31.5,<2.0.dev0 || >2.3.0,<3.0.0dev"
+google-auth = ">=1.25.0,<3.0.0dev"
+google-cloud-bigquery = ">=3.3.6,<4.0.0dev"
+packaging = "*"
+sqlalchemy = ">=1.4.16,<3.0.0dev"
+
+[package.extras]
+alembic = ["alembic"]
+all = ["GeoAlchemy2", "alembic", "google-cloud-bigquery-storage (>=2.0.0,<3.0.0dev)", "grpcio (>=1.47.0,<2.0dev)", "grpcio (>=1.49.1,<2.0dev)", "packaging", "pyarrow (>=3.0.0)", "pytz", "shapely"]
+bqstorage = ["google-cloud-bigquery-storage (>=2.0.0,<3.0.0dev)", "grpcio (>=1.47.0,<2.0dev)", "grpcio (>=1.49.1,<2.0dev)", "pyarrow (>=3.0.0)"]
+geography = ["GeoAlchemy2", "shapely"]
+tests = ["packaging", "pytz"]
+
+[[package]]
 name = "tomli"
 version = "2.1.0"
 description = "A lil' TOML parser"
@@ -1020,4 +1045,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "b8eb06ba9664f21506f299ef72a72ff505ad7feb5d36540b8c61b87c2a84504f"
+content-hash = "e7972cfc66fcbd6ec484ec17347ac40a2a0279847298b8a5303a02f78badbde1"
