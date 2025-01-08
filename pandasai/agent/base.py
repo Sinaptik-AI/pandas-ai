@@ -105,7 +105,7 @@ class Agent:
         # Initialize Code Generator
         self._code_generator = CodeGenerator(self._state)
 
-        # Initialze Response Generator
+        # Initialize Response Generator
         self._response_parser = ResponseParser()
 
     def chat(self, query: str, output_type: Optional[str] = None):
