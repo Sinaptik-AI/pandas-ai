@@ -103,7 +103,7 @@ jobs:
           Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
               poetry run pytest tests/
               Pop-Location
@@ -114,7 +114,7 @@ jobs:
           Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
               poetry run pytest tests/
               Pop-Location
@@ -125,7 +125,7 @@ jobs:
           Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
               poetry run pytest tests/
               Pop-Location
