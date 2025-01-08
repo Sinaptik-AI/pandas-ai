@@ -1,4 +1,3 @@
-from .databricks import DatabricksConnector
 import pandas as pd
 from databricks import sql
 
@@ -48,4 +47,4 @@ def load_from_databricks(config):
         connection.close()
 
 
-__all__ = ["DatabricksConnector", "load_from_databricks"]
+__all__ = ["load_from_databricks"]

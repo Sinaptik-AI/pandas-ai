@@ -20,6 +20,12 @@ pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.11.1"
 
+
+[tool.poetry.group.dev.dependencies]
+pymysql = "^1.1.1"
+psycopg2-binary = "^2.9.10"
+cockroachdb = "^0.3.5"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

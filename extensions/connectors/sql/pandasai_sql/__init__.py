@@ -35,9 +35,15 @@ def load_from_sqlite(connection_info, query):
 
 
 def load_from_cockroachdb(connection_info, query):
-    import cockroachdb
+    import psycopg2
 
-    conn = cockroachdb.connect(connection_info)
+    conn = psycopg2.connect(
+        host=connection_info["host"],
+        user=connection_info["user"],
+        password=connection_info["password"],
+        dbname=connection_info["database"],
+        port=connection_info["port"],
+    )
     return pd.read_sql(query, conn)
 
 

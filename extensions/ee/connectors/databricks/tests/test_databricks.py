@@ -1,80 +1,131 @@
 import unittest
-from unittest.mock import Mock, patch
-
-import pandas as pd
-
-from pandasai_databricks.databricks import (
-    DatabricksConnector,
-    DatabricksConnectorConfig,
+from unittest.mock import patch, MagicMock
+from pandasai_databricks import (
+    load_from_databricks,
 )
 
 
-class TestDataBricksConnector(unittest.TestCase):
-    @patch("pandasai_databricks.databricks.sql")
-    def setUp(self, mock_sql):
-        # Create mock connection and cursor
-        self.mock_cursor = Mock()
-        self.mock_connection = Mock()
-        self.mock_connection.cursor.return_value = self.mock_cursor
-        mock_sql.connect.return_value = self.mock_connection
+class TestDatabricksLoader(unittest.TestCase):
+    @patch("databricks.sql.connect")
+    def test_load_from_databricks_with_query(self, MockConnect):
+        # Mock the connection and cursor
+        mock_connection = MagicMock()
+        MockConnect.return_value = mock_connection
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
 
-        # Define your ConnectorConfig instance here
-        self.config = DatabricksConnectorConfig(
-            dialect="databricks",
-            host="ehxzojy-ue47135",
-            token="token",
-            database="DATABRICKS_SAMPLE_DATA",
-            http_path="/sql/1.0/warehouses/1241rsa32",
-            table="lineitem",
-            where=[["column_name", "=", "value"]],
-        ).dict()
+        # Sample data that would be returned by Databricks SQL
+        mock_cursor.fetchall.return_value = [
+            (1, "Alice", 100),
+            (2, "Bob", 200),
+        ]
+        mock_cursor.description = [("id",), ("name",), ("value",)]
 
-        # Create an instance of DatabricksConnector
-        self.connector = DatabricksConnector(self.config)
+        # Test config with a custom SQL query
+        config = {
+            "host": "databricks_host",
+            "http_path": "http_path",
+            "token": "access_token",
+            "query": "SELECT * FROM sample_table",
+        }
 
-    def test_constructor_and_properties(self):
-        self.assertEqual(self.connector.config.model_dump(), self.config)
-        self.assertEqual(self.connector._connection, self.mock_connection)
-        self.assertEqual(self.connector._cursor, self.mock_cursor)
-        self.assertEqual(self.connector._cache_interval, 600)
+        # Call the function under test
+        result = load_from_databricks(config)
 
-    def test_repr_method(self):
-        expected_repr = (
-            "<DatabricksConnector dialect=databricks "
-            "host=ehxzojy-ue47135 "
-            "database=DATABRICKS_SAMPLE_DATA http_path=/sql/1.0/warehouses/1241rsa32"
+        # Assertions
+        MockConnect.assert_called_once_with(
+            server_hostname="databricks_host",
+            http_path="http_path",
+            access_token="access_token",
         )
-        self.assertEqual(repr(self.connector), expected_repr)
+        mock_cursor.execute.assert_called_once_with("SELECT * FROM sample_table")
+        self.assertEqual(result.shape[0], 2)  # 2 rows
+        self.assertEqual(result.shape[1], 3)  # 3 columns
+        self.assertTrue("id" in result.columns)
+        self.assertTrue("name" in result.columns)
+        self.assertTrue("value" in result.columns)
 
-    def test_build_query_method(self):
-        query = self.connector._build_query(limit=5, order="RAND()")
-        expected_query = """SELECT * FROM DATABRICKS_SAMPLE_DATA.lineitem WHERE column_name = 'value' ORDER BY RAND() ASC LIMIT 5"""
-        self.assertEqual(query, expected_query)
+    @patch("databricks.sql.connect")
+    def test_load_from_databricks_with_table(self, MockConnect):
+        # Mock the connection and cursor
+        mock_connection = MagicMock()
+        MockConnect.return_value = mock_connection
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
 
-    def test_head_method(self):
-        # Mock cursor response
-        mock_data = [(1, 4), (2, 5), (3, 6)]
-        self.mock_cursor.fetchall.return_value = mock_data
-        self.mock_cursor.description = [("Column1", None), ("Column2", None)]
+        # Sample data returned by Databricks SQL
+        mock_cursor.fetchall.return_value = [
+            (1, "Alice", 100),
+            (2, "Bob", 200),
+        ]
+        mock_cursor.description = [("id",), ("name",), ("value",)]
 
-        expected_data = pd.DataFrame(mock_data, columns=["Column1", "Column2"])
-        head_data = self.connector.head()
-        pd.testing.assert_frame_equal(head_data, expected_data)
+        # Test config with a table name
+        config = {
+            "host": "databricks_host",
+            "http_path": "http_path",
+            "token": "access_token",
+            "database": "test_db",
+            "table": "sample_table",
+        }
 
-    def test_execute_query_with_params(self):
-        query = "SELECT * FROM table WHERE id = :id"
-        params = {"id": 123}
-        expected_query = "SELECT * FROM table WHERE id = 123"
+        # Call the function under test
+        result = load_from_databricks(config)
 
-        # Mock cursor response
-        mock_data = [(1, "test")]
-        self.mock_cursor.fetchall.return_value = mock_data
-        self.mock_cursor.description = [("id", None), ("name", None)]
+        # Assertions
+        query = "SELECT * FROM test_db.sample_table"
+        mock_cursor.execute.assert_called_once_with(query)
+        self.assertEqual(result.shape[0], 2)
+        self.assertEqual(result.shape[1], 3)
+        self.assertTrue("id" in result.columns)
+        self.assertTrue("name" in result.columns)
+        self.assertTrue("value" in result.columns)
 
-        self.connector._execute_query(query, params)
-        self.mock_cursor.execute.assert_called_with(expected_query)
+    @patch("databricks.sql.connect")
+    def test_load_from_databricks_no_query_or_table(self, MockConnect):
+        # Mock the connection and cursor
+        mock_connection = MagicMock()
+        MockConnect.return_value = mock_connection
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
 
-    def test_close_method(self):
-        self.connector.close()
-        self.mock_cursor.close.assert_called_once()
-        self.mock_connection.close.assert_called_once()
+        # Test config with neither query nor table
+        config = {
+            "host": "databricks_host",
+            "http_path": "http_path",
+            "token": "access_token",
+        }
+
+        # Call the function under test and assert that it raises a ValueError
+        with self.assertRaises(ValueError):
+            load_from_databricks(config)
+
+    @patch("databricks.sql.connect")
+    def test_load_from_databricks_empty_result(self, MockConnect):
+        # Mock the connection and cursor
+        mock_connection = MagicMock()
+        MockConnect.return_value = mock_connection
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
+
+        # Empty result set
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.description = [("id",), ("name",), ("value",)]
+
+        # Test config with a custom SQL query
+        config = {
+            "host": "databricks_host",
+            "http_path": "http_path",
+            "token": "access_token",
+            "query": "SELECT * FROM sample_table",
+        }
+
+        # Call the function under test
+        result = load_from_databricks(config)
+
+        # Assertions
+        self.assertTrue(result.empty)  # Result should be an empty DataFrame
+
+
+if __name__ == "__main__":
+    unittest.main()
