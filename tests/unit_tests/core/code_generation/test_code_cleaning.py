@@ -1,10 +1,11 @@
+import ast
 import unittest
 from unittest.mock import MagicMock
-import ast
-from pandasai.core.code_generation.code_cleaning import CodeCleaner
+
 from pandasai.agent.state import AgentState
-from pandasai.exceptions import BadImportError, MaliciousQueryError
+from pandasai.core.code_generation.code_cleaning import CodeCleaner
 from pandasai.dataframe.base import DataFrame
+from pandasai.exceptions import BadImportError, MaliciousQueryError
 
 
 class TestCodeCleaner(unittest.TestCase):

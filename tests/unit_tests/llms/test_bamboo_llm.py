@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import PandasAIApiCallError
 from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.core.prompts.base import BasePrompt
 
 
 class MockHttpResponse:

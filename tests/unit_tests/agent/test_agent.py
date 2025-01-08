@@ -7,10 +7,10 @@ import pytest
 
 from pandasai.agent.base import Agent
 from pandasai.core.prompts.base import BasePrompt
-from pandasai.llm.fake import FakeLLM
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MaliciousQueryError
+from pandasai.helpers.dataframe_serializer import DataframeSerializerType
+from pandasai.llm.fake import FakeLLM
 
 
 class TestAgent:

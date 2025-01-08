@@ -2,8 +2,8 @@ import re
 from typing import Any, Iterable
 
 import numpy as np
-
 import pandas as pd
+
 from pandasai.exceptions import InvalidOutputValueMismatch
 
 

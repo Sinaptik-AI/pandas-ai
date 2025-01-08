@@ -1,15 +1,18 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from pandasai.core.prompts.correct_execute_sql_query_usage_error_prompt import (
     CorrectExecuteSQLQueryUsageErrorPrompt,
 )
 from pandasai.core.prompts.correct_output_type_error_prompt import (
     CorrectOutputTypeErrorPrompt,
 )
-from .generate_python_code_with_sql import GeneratePythonCodeWithSQLPrompt
+
 from .base import BasePrompt
 from .correct_error_prompt import CorrectErrorPrompt
 from .generate_python_code import GeneratePythonCodePrompt
+from .generate_python_code_with_sql import GeneratePythonCodeWithSQLPrompt
 
 if TYPE_CHECKING:
     from pandasai.agent.state import AgentState

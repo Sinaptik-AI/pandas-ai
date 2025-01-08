@@ -1,9 +1,11 @@
-import pytest
-from unittest.mock import patch, mock_open
-import pandas as pd
-from pandasai.dataframe.base import DataFrame
-from pandasai.data_loader.loader import DatasetLoader
 from datetime import datetime, timedelta
+from unittest.mock import mock_open, patch
+
+import pandas as pd
+import pytest
+
+from pandasai.data_loader.loader import DatasetLoader
+from pandasai.dataframe.base import DataFrame
 
 
 class TestDatasetLoader:

@@ -3,15 +3,14 @@
 import os
 import sys
 
-import pandasai as pai
 import pytest
 
+import pandasai as pai
 from pandasai import Agent
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
-from pandasai.llm.fake import FakeLLM
 from pandasai.core.prompts.generate_python_code_with_sql import (
     GeneratePythonCodeWithSQLPrompt,
 )
+from pandasai.llm.fake import FakeLLM
 
 
 class TestGeneratePythonCodeWithSQLPrompt:

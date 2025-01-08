@@ -1,7 +1,9 @@
 import os
 
+from extensions.connectors.yfinance.pandasai_yfinance.yahoo_finance import (
+    YahooFinanceConnector,
+)
 from pandasai import Agent
-from extensions.connectors.yfinance.pandasai_yfinance.yahoo_finance import YahooFinanceConnector
 
 yahoo_connector = YahooFinanceConnector("MSFT")
 

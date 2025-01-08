@@ -7,10 +7,10 @@ from unittest.mock import patch
 import pytest
 
 from pandasai import Agent
+from pandasai.core.prompts.generate_python_code import GeneratePythonCodePrompt
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
-from pandasai.core.prompts.generate_python_code import GeneratePythonCodePrompt
 
 
 class TestGeneratePythonCodePrompt:

@@ -1,8 +1,9 @@
+import ast
 import unittest
 from unittest.mock import MagicMock
-import ast
-from pandasai.core.code_execution.code_executor import CodeExecutor
+
 from pandasai.config import Config
+from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.exceptions import NoResultFoundError
 
 

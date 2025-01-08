@@ -1,16 +1,17 @@
 from __future__ import annotations
-from io import BytesIO
+
+import hashlib
 import os
 import re
+from io import BytesIO
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
-import pandas as pd
-from typing import TYPE_CHECKING, List, Optional, Union, Dict, ClassVar
 
+import pandas as pd
 import yaml
 
-
+import pandasai as pai
 from pandasai.config import Config
-import hashlib
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
@@ -18,8 +19,6 @@ from pandasai.helpers.dataframe_serializer import (
 )
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
-import pandasai as pai
-
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent
@@ -102,7 +101,7 @@ class DataFrame(pd.DataFrame):
         if self._agent is None:
             from pandasai.agent import (
                 Agent,
-            )  # Import here to avoid circular import
+            )
 
             self._agent = Agent([self], config=self.config)
 

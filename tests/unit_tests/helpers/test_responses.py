@@ -1,8 +1,10 @@
 import unittest
-from pandasai.exceptions import InvalidOutputValueMismatch
+
+import pandas as pd
+
 from pandasai.core.response.base import ResponseParser
 from pandasai.core.response.response_types import Chart, DataFrame, Number, String
-import pandas as pd
+from pandasai.exceptions import InvalidOutputValueMismatch
 
 
 class TestResponseParser(unittest.TestCase):

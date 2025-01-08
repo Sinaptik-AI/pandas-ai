@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, ClassVar
+
 import pandas as pd
+
 from pandasai.dataframe.base import DataFrame
 
 if TYPE_CHECKING:

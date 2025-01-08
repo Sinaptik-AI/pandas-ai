@@ -1,4 +1,5 @@
 import re
+
 from pandasai.exceptions import MaliciousQueryError
 
 

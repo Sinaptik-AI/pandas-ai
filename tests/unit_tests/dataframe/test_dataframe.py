@@ -1,9 +1,11 @@
-import pytest
-import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.dataframe.base import DataFrame
-from pandasai.agent import Agent
+
+import pandas as pd
+import pytest
+
 import pandasai
+from pandasai.agent import Agent
+from pandasai.dataframe.base import DataFrame
 
 
 class TestDataFrame:

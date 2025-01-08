@@ -1,13 +1,16 @@
 import uuid
+import warnings
 from functools import cached_property
 from io import StringIO
 from typing import Any, List, Optional, Union
-import warnings
+
 import pandas as pd
+
 from pandasai.agent import Agent
 from pandasai.dataframe.base import DataFrame
-from ..helpers.logger import Logger
+
 from ..config import Config
+from ..helpers.logger import Logger
 
 
 class SmartDataframe:

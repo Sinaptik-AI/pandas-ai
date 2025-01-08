@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
-from pandasai.core.code_generation.code_security import CodeSecurityChecker
+
 from pandasai.agent.state import AgentState
+from pandasai.core.code_generation.code_security import CodeSecurityChecker
 from pandasai.exceptions import MaliciousCodeGenerated
 
 

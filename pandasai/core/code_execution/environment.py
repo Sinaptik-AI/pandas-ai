@@ -5,10 +5,13 @@ Source: Taken from pandas/compat/_optional.py
 
 import importlib
 import sys
+import types
 import warnings
 from typing import List, Union
 
 from pandas.util.version import Version
+
+from pandasai.constants import WHITELISTED_BUILTINS
 
 from .safe_libs.restricted_base64 import RestrictedBase64
 from .safe_libs.restricted_datetime import (
@@ -20,8 +23,6 @@ from .safe_libs.restricted_matplotlib import (
 )
 from .safe_libs.restricted_numpy import RestrictedNumpy
 from .safe_libs.restricted_pandas import RestrictedPandas
-from pandasai.constants import WHITELISTED_BUILTINS
-import types
 
 # Minimum version required for each optional dependency
 

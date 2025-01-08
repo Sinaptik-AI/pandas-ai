@@ -1,9 +1,9 @@
 import ast
-from pandasai.core.code_execution.environment import get_environment
-from pandasai.config import Config
-from pandasai.exceptions import NoResultFoundError
-
 from typing import Any, List
+
+from pandasai.config import Config
+from pandasai.core.code_execution.environment import get_environment
+from pandasai.exceptions import NoResultFoundError
 
 
 class CodeExecutor:

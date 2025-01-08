@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
+
+from pandasai.agent.state import AgentState
 from pandasai.core.prompts import (
     get_chat_prompt,
     get_chat_prompt_for_sql,
@@ -7,7 +9,6 @@ from pandasai.core.prompts import (
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
-from pandasai.agent.state import AgentState
 from pandasai.core.prompts.base import BasePrompt
 from pandasai.core.prompts.correct_error_prompt import CorrectErrorPrompt
 from pandasai.core.prompts.correct_execute_sql_query_usage_error_prompt import (

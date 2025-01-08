@@ -1,4 +1,5 @@
 import unittest
+
 from pandasai.core.code_execution.safe_libs.base_restricted_module import (
     BaseRestrictedModule,
     SecurityError,

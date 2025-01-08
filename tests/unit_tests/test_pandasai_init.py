@@ -1,6 +1,7 @@
-import pandas
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 import pandasai
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
@@ -99,7 +100,7 @@ class TestPandasAIInit:
 
         dataset_path = "org/dataset_name"
 
-        with pytest.raises(DatasetNotFound) as cm:
+        with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")

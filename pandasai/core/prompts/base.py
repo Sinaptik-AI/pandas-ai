@@ -4,11 +4,11 @@ In order to better handle the instructions, this prompt module is written.
 
 import os
 import re
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader
-from abc import ABC, abstractmethod
 
 
 class BasePrompt:

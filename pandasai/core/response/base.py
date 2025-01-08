@@ -1,8 +1,11 @@
 import re
+
 import numpy as np
 import pandas as pd
-from .response_types import Chart, DataFrame, Number, String
+
 from pandasai.exceptions import InvalidOutputValueMismatch
+
+from .response_types import Chart, DataFrame, Number, String
 
 
 class ResponseParser:

@@ -1,4 +1,5 @@
 import pytest
+
 from pandasai.data_loader.query_builder import QueryBuilder
 
 

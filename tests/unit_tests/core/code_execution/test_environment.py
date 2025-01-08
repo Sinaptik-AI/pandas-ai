@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from pandasai.core.code_execution.environment import (
     get_environment,
-    import_dependency,
     get_version,
+    import_dependency,
 )
 from pandasai.core.code_execution.safe_libs.restricted_pandas import RestrictedPandas
 

@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
-import ast
-from pandasai.core.code_generation.code_validation import CodeRequirementValidator
+
 from pandasai.agent.state import AgentState
+from pandasai.core.code_generation.code_validation import CodeRequirementValidator
 from pandasai.exceptions import ExecuteSQLQueryNotUsed
 
 

@@ -3,10 +3,10 @@
 import sys
 
 from pandasai import Agent
+from pandasai.core.prompts.correct_error_prompt import CorrectErrorPrompt
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
-from pandasai.core.prompts.correct_error_prompt import CorrectErrorPrompt
 
 
 class TestCorrectErrorPrompt:

@@ -1,5 +1,7 @@
 import traceback
 import uuid
+import warnings
+from importlib.util import find_spec
 from typing import Any, List, Optional, Tuple, Union
 
 from pandasai.core.cache import Cache
@@ -12,31 +14,27 @@ from pandasai.core.prompts import (
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.core.response.base import ResponseParser
 from pandasai.core.user_query import UserQuery
+from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
-
-from .state import AgentState
-from pandasai.core.prompts.base import BasePrompt
-from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.vectorstores.vectorstore import VectorStore
 
-from ..config import load_config_from_json
+from ..config import Config, load_config_from_json
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import (
-    InvalidLLMOutputType,
     InvalidConfigError,
+    InvalidLLMOutputType,
     MissingVectorStoreError,
 )
 from ..helpers.folder import Folder
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..llm.base import LLM
-from importlib.util import find_spec
-from ..config import Config
-import warnings
+from .state import AgentState
 
 
 class Agent:

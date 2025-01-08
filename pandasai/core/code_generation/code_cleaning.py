@@ -4,8 +4,8 @@ import re
 from typing import Union
 
 import astor
-from pandasai.agent.state import AgentState
 
+from pandasai.agent.state import AgentState
 from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
