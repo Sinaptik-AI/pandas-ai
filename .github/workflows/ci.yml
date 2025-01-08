@@ -20,6 +20,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Clean up space before job
+        run: |
+          echo "Cleaning up space"
+          rm -rf /tmp/*  # Clear temporary files
+          df -h  # Check disk usage
+
       - name: Install Poetry (Unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -145,3 +151,9 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+
+      - name: Clean up space after job
+        run: |
+          echo "Cleaning up space after job"
+          rm -rf /tmp/*  # Clear temporary files
+          df -h  # Check disk usage

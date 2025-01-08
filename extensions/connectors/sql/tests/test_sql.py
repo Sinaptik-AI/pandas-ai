@@ -110,10 +110,10 @@ class TestDatabaseLoader(unittest.TestCase):
 
     @patch("psycopg2.connect")
     @patch("pandas.read_sql")
-    def test_load_from_cockroachdb(self, mock_read_sql, mock_cockroachdb_connect):
+    def test_load_from_cockroachdb(self, mock_read_sql, mock_postgresql_connect):
         # Setup the mock return values
         mock_conn = MagicMock()
-        mock_cockroachdb_connect.return_value = mock_conn
+        mock_postgresql_connect.return_value = mock_conn
         mock_read_sql.return_value = pd.DataFrame(
             {"column1": [13, 14], "column2": [15, 16]}
         )
@@ -131,7 +131,7 @@ class TestDatabaseLoader(unittest.TestCase):
         result = load_from_cockroachdb(connection_info, query)
 
         # Assert that the connection is made and SQL query is executed
-        mock_cockroachdb_connect.assert_called_once_with(
+        mock_postgresql_connect.assert_called_once_with(
             host="localhost",
             user="root",
             password="password",
