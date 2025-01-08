@@ -109,9 +109,6 @@ jobs:
             fi
           done
 
-      - name: Run extension tests
-        if: matrix.os != 'windows-latest'
-        run: make test_extensions
       - name: Run extension tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
@@ -121,6 +118,10 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
+              poetry install --all-extras
+              poetry add pytest@7.4.0
+              poetry add pytest-mock@3.11.1
+              poetry add pytest-cov@4.1.0
               poetry run pytest tests/
               Pop-Location
             }
@@ -132,6 +133,10 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
+              poetry install --all-extras
+              poetry add pytest@7.4.0
+              poetry add pytest-mock@3.11.1
+              poetry add pytest-cov@4.1.0
               poetry run pytest tests/
               Pop-Location
             }
@@ -143,6 +148,10 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
+              poetry install --all-extras
+              poetry add pytest@7.4.0
+              poetry add pytest-mock@3.11.1
+              poetry add pytest-cov@4.1.0
               poetry run pytest tests/
               Pop-Location
             }
