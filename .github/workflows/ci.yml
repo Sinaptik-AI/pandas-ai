@@ -23,8 +23,9 @@ jobs:
       - name: Clean up space before job
         run: |
           echo "Cleaning up space"
-          rm -rf /tmp/*  # Clear temporary files
-          df -h  # Check disk usage
+          sudo rm -rf /tmp/*
+          sudo rm -rf ~/.cache/pip
+          sudo rm -rf ~/actions-runner/_work/*
 
       - name: Install Poetry (Unix)
         if: matrix.os != 'windows-latest'
@@ -155,5 +156,5 @@ jobs:
       - name: Clean up space after job
         run: |
           echo "Cleaning up space after job"
-          rm -rf /tmp/*  # Clear temporary files
-          df -h  # Check disk usage
+          sudo rm -rf /tmp/*  # Clear temporary files
+          sudo df -h  # Check disk usage
