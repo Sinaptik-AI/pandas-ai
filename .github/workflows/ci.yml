@@ -54,7 +54,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
+                poetry install --all-extras --with dev
               )
               echo "Running tests for $dir"
               (
@@ -65,7 +65,6 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
-                poetry add pytest
               )
             fi
           done
@@ -78,7 +77,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
+                poetry install --all-extras --with dev
               )
               echo "Running tests for $dir"
               (
@@ -102,7 +101,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
+                poetry install --all-extras --with dev
               )
               echo "Running tests for $dir"
               (
