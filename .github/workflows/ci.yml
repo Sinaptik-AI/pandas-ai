@@ -39,6 +39,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --all-extras --with dev --verbose
       - name: Install extension dependencies
+        if: matrix.os != 'windows-latest'
         run: |
           find extensions/ -mindepth 1 -type d \( \
             -path "extensions/llms/*" -o \
