@@ -252,12 +252,13 @@ class DataFrame(pd.DataFrame):
             ]
 
             # Send the POST request
-            return request_session.post(
+            data = request_session.post(
                 "/datasets/push",
                 files=files,
                 params=params,
                 headers=headers,
             )
+            print(data)
 
     def pull(self):
         api_key = os.environ.get("PANDASAI_API_KEY", None)
@@ -302,3 +303,5 @@ class DataFrame(pd.DataFrame):
         self.__init__(
             df, schema=df.schema, name=df.name, description=df.description, path=df.path
         )
+
+        print(f"Dataset pulled successfully from path: {self.path}")
