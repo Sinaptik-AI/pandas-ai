@@ -14,7 +14,6 @@ from pandasai.core.prompts import (
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
-from pandasai.core.prompts.base import BasePrompt
 from pandasai.core.response.base import ResponseParser
 from pandasai.core.user_query import UserQuery
 from pandasai.data_loader.schema_validator import is_schema_source_same
@@ -70,8 +69,6 @@ class Agent:
 
         self.agent_info = description
 
-        self.conversation_id = uuid.uuid4()
-
         # Instantiate dfs
         self._state.dfs = dfs if isinstance(dfs, list) else [dfs]
 
@@ -121,28 +118,6 @@ class Agent:
         Continue the existing chat interaction with the assistant on Dataframe.
         """
         return self._process_query(query, output_type)
-
-    def call_llm_with_prompt(self, prompt: BasePrompt):
-        """
-        Call LLM with prompt using error handling to retry based on config
-        Args:
-            prompt (BasePrompt): BasePrompt to pass to LLM's
-        """
-        retry_count = 0
-        while retry_count < self._state.config.max_retries:
-            try:
-                result: str = self._state.config.llm.call(prompt)
-                if prompt.validate(result):
-                    return result
-                else:
-                    raise InvalidLLMOutputType("Response validation failed!")
-            except Exception:
-                if (
-                    not self._state.config.use_error_correction_framework
-                    or retry_count >= self._state.config.max_retries - 1
-                ):
-                    raise
-                retry_count += 1
 
     def generate_code(
         self, query: Union[UserQuery, str]
@@ -245,7 +220,6 @@ class Agent:
         Clears the memory
         """
         self._state.memory.clear()
-        self.conversation_id = uuid.uuid4()
 
     def add_message(self, message, is_user=False):
         """

@@ -43,9 +43,7 @@ class CodeGenerator:
             error_message = f"An error occurred during code generation: {e}"
             stack_trace = traceback.format_exc()
 
-            self._context.logger.log(
-                error_message,
-            )
+            self._context.logger.log(error_message)
             self._context.logger.log(f"Stack Trace:\n{stack_trace}")
 
             raise e

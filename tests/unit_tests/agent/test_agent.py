@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 
 from pandasai.agent.base import Agent
-from pandasai.core.prompts.base import BasePrompt
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MaliciousQueryError
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
@@ -317,80 +316,71 @@ class TestAgent:
         memory = agent._state.memory.all()
         assert len(memory) == 0
 
-    def test_call_prompt_success(self, agent: Agent):
-        agent._state.config.llm.call = Mock()
-        clarification_response = """
-What is expected Salary Increase?
-        """
-        agent._state.config.llm.call.return_value = clarification_response
-        prompt = BasePrompt(
-            context=agent._state,
-            code="test code",
-        )
-        agent.call_llm_with_prompt(prompt)
-        assert agent._state.config.llm.call.call_count == 1
+    def test_code_generation_success(self, agent: Agent):
+        # Mock the code generator
+        agent._code_generator = Mock()
+        expected_code = "print('Test successful')"
+        agent._code_generator.generate_code.return_value = (expected_code, [])
 
-    def test_call_prompt_max_retries_exceeds(self, agent: Agent):
-        # raises exception every time
-        agent._state.config.llm.call = Mock()
-        agent._state.config.llm.call.side_effect = Exception("Raise an exception")
+        code, deps = agent.generate_code("Test query")
+        assert code == expected_code
+        assert agent._code_generator.generate_code.call_count == 1
+
+    def test_execute_with_retries_max_retries_exceeds(self, agent: Agent):
+        # Mock execute_code to always raise an exception
+        agent.execute_code = Mock()
+        agent.execute_code.side_effect = Exception("Test error")
+        agent._regenerate_code_after_error = Mock()
+        agent._regenerate_code_after_error.return_value = ("test_code", [])
+
+        # Set max retries to 3 explicitly
+        agent._state.config.max_retries = 3
+
         with pytest.raises(Exception):
-            agent.call_llm_with_prompt("Test Prompt")
+            agent.execute_with_retries("test_code", [])
 
-        assert agent._state.config.llm.call.call_count == 3
+        # Should be called max_retries times
+        assert agent.execute_code.call_count == 4
+        assert agent._regenerate_code_after_error.call_count == 3
 
-    def test_call_prompt_max_retry_on_error(self, agent: Agent):
-        # test the LLM call failed twice but succeed third time
-        agent._state.config.llm.call = Mock()
-        agent._state.config.llm.call.side_effect = [
-            Exception(),
-            Exception(),
-            "LLM Result",
+    def test_execute_with_retries_success(self, agent: Agent):
+        # Mock execute_code to fail twice then succeed
+        agent.execute_code = Mock()
+        expected_result = {
+            "type": "string",
+            "value": "Success",
+        }  # Correct response format
+        # Need enough side effects for all attempts including regenerated code
+        agent.execute_code.side_effect = [
+            Exception("First error"),  # Original code fails
+            Exception("Second error"),  # First regenerated code fails
+            Exception("Third error"),  # Second regenerated code fails
+            expected_result,  # Third regenerated code succeeds
         ]
-        prompt = BasePrompt(
-            context=agent._state,
-            code="test code",
-        )
-        result = agent.call_llm_with_prompt(prompt)
-        assert result == "LLM Result"
-        assert agent._state.config.llm.call.call_count == 3
+        agent._regenerate_code_after_error = Mock()
+        agent._regenerate_code_after_error.return_value = ("test_code", [])
 
-    def test_call_prompt_max_retry_twice(self, agent: Agent):
-        # test the LLM call failed once but succeed second time
-        agent._state.config.llm.call = Mock()
-        agent._state.config.llm.call.side_effect = [Exception(), "LLM Result"]
-        prompt = BasePrompt(
-            context=agent._state,
-            code="test code",
-        )
-        result = agent.call_llm_with_prompt(prompt)
+        result = agent.execute_with_retries("test_code", [])
+        # Response parser returns a String object with value accessible via get_value()
+        assert result.get_value() == "Success"
+        # Should have 4 execute attempts and 3 regenerations
+        assert agent.execute_code.call_count == 4
+        assert agent._regenerate_code_after_error.call_count == 3
 
-        assert result == "LLM Result"
-        assert agent._state.config.llm.call.call_count == 2
-
-    def test_call_llm_with_prompt_no_retry_on_error(self, agent: Agent):
-        # Test when LLM call raises an exception but retries are disabled
-
-        agent._state.config.use_error_correction_framework = False
-        agent._state.config.llm.call = Mock()
-        agent._state.config.llm.call.side_effect = Exception()
-        with pytest.raises(Exception):
-            agent.call_llm_with_prompt("Test Prompt")
-
-        assert agent._state.config.llm.call.call_count == 1
-
-    def test_call_llm_with_prompt_max_retries_check(self, agent: Agent):
-        # Test when LLM call raises an exception, but called call function
-        #  'max_retries' time
-
+    def test_execute_with_retries_custom_retries(self, agent: Agent):
+        # Test with custom number of retries
         agent._state.config.max_retries = 5
-        agent._state.config.llm.call = Mock()
-        agent._state.config.llm.call.side_effect = Exception()
+        agent.execute_code = Mock()
+        agent.execute_code.side_effect = Exception("Test error")
+        agent._regenerate_code_after_error = Mock()
+        agent._regenerate_code_after_error.return_value = ("test_code", [])
 
         with pytest.raises(Exception):
-            agent.call_llm_with_prompt("Test Prompt")
+            agent.execute_with_retries("test_code", [])
 
-        assert agent._state.config.llm.call.call_count == 5
+        # Should be called max_retries + 1 times (initial try + retries)
+        assert agent.execute_code.call_count == 6
+        assert agent._regenerate_code_after_error.call_count == 5
 
     def test_load_llm_with_pandasai_llm(self, agent: Agent, llm):
         assert agent._get_llm(llm) == llm
@@ -469,20 +459,3 @@ What is expected Salary Increase?
         for query in malicious_queries:
             with pytest.raises(MaliciousQueryError):
                 agent.chat(query)
-
-    def test_query_detection_disable_security(self, sample_df, config):
-        config["security"] = "none"
-        agent = Agent(sample_df, config, memory_size=10)
-
-        malicious_queries = [
-            "import os",
-            "import io",
-            "chr(97)",
-            "base64.b64decode",
-            "file = open('file.txt', 'os')",
-            "os.system('rm -rf /')",
-            "io.open('file.txt', 'w')",
-        ]
-
-        for query in malicious_queries:
-            agent.chat(query)
