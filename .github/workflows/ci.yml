@@ -54,10 +54,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
-                poetry add pytest@7.4.0
-                poetry add pytest-mock@3.11.1
-                poetry add pytest-cov@4.1.0
+                poetry install --all-extras --with test --verbose
               )
               echo "Running tests for $dir"
               (
@@ -75,10 +72,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
-                poetry add pytest@7.4.0
-                poetry add pytest-mock@3.11.1
-                poetry add pytest-cov@4.1.0
+                poetry install --all-extras --with test --verbose
               )
               echo "Running tests for $dir"
               (
@@ -96,10 +90,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras
-                poetry add pytest@7.4.0
-                poetry add pytest-mock@3.11.1
-                poetry add pytest-cov@4.1.0
+                poetry install --all-extras --with test --verbose
               )
               echo "Running tests for $dir"
               (
@@ -118,10 +109,7 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
-              poetry install --all-extras
-              poetry add pytest@7.4.0
-              poetry add pytest-mock@3.11.1
-              poetry add pytest-cov@4.1.0
+              poetry install --all-extras --with test --verbose
               poetry run pytest tests/
               Pop-Location
             }
@@ -133,10 +121,7 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
-              poetry install --all-extras
-              poetry add pytest@7.4.0
-              poetry add pytest-mock@3.11.1
-              poetry add pytest-cov@4.1.0
+              poetry install --all-extras --with test --verbose
               poetry run pytest tests/
               Pop-Location
             }
@@ -148,11 +133,7 @@ jobs:
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
-              poetry install --all-extras
-              poetry add pytest@7.4.0
-              poetry add pytest-mock@3.11.1
-              poetry add pytest-cov@4.1.0
-              poetry run pytest tests/
+              poetry install --all-extras --with test --verbose
               Pop-Location
             }
           }
