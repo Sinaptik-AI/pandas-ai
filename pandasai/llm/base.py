@@ -5,8 +5,8 @@ import re
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Optional
 
-from pandasai.chat.prompts.base import BasePrompt
-from pandasai.chat.prompts.generate_system_message import GenerateSystemMessagePrompt
+from pandasai.core.prompts.base import BasePrompt
+from pandasai.core.prompts.generate_system_message import GenerateSystemMessagePrompt
 from pandasai.helpers.memory import Memory
 
 from ..exceptions import (

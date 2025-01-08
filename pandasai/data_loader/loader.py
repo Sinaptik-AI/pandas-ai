@@ -1,18 +1,20 @@
 import copy
-import os
-import yaml
-import pandas as pd
-from datetime import datetime, timedelta
 import hashlib
+import importlib
+import os
+from datetime import datetime, timedelta
+from typing import Any
+
+import pandas as pd
+import yaml
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.exceptions import InvalidDataSourceType
 from pandasai.helpers.path import find_project_root
-import importlib
-from typing import Any
-from .query_builder import QueryBuilder
+
 from ..constants import SUPPORTED_SOURCES
+from .query_builder import QueryBuilder
 
 
 class DatasetLoader:

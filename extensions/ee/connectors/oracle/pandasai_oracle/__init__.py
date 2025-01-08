@@ -1,6 +1,5 @@
 import pandas as pd
 import cx_Oracle
-from .oracle import OracleConnector
 
 
 def load_from_oracle(connection_info, query):
@@ -16,4 +15,4 @@ def load_from_oracle(connection_info, query):
     return pd.read_sql(query, conn)
 
 
-__all__ = ["OracleConnector", "load_from_oracle"]
+__all__ = ["load_from_oracle"]

@@ -1,8 +1,9 @@
 import os
 
+from pandasai_openai import OpenAI
+
 from pandasai.agent.agent import Agent
 from pandasai.ee.agents.advanced_security_agent import AdvancedSecurityAgent
-from pandasai_openai import OpenAI
 
 os.environ["PANDASAI_API_KEY"] = "$2a****************************"
 

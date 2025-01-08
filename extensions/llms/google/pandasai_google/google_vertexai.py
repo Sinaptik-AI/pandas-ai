@@ -3,7 +3,7 @@ from typing import Optional
 from pandasai.helpers.memory import Memory
 
 from pandasai.exceptions import UnsupportedModelError
-from pandasai.helpers.optional import import_dependency
+from pandasai.core.code_execution.environment import import_dependency
 from .base import BaseGoogle
 
 

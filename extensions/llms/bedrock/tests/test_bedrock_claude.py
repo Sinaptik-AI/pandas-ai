@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from extensions.llms.bedrock.pandasai_bedrock.claude import BedrockClaude
 
@@ -68,7 +68,7 @@ class TestBedrockClaude:
         assert llm.top_k is None
         assert llm.max_tokens == 64
 
-    def test_call(self, mocker, prompt):
+    def test_call(self, prompt):
         llm = BedrockClaude(bedrock_runtime_client=MockBedrockRuntimeClient())
         expected_text = "This is the expected text."
         result = llm.call(instruction=prompt)

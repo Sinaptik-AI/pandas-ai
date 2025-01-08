@@ -1,17 +1,16 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
+from pandasai.config import Config
 from pandasai.helpers.cache import Cache
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
-
-from pandasai.config import Config
 from pandasai.vectorstores.vectorstore import VectorStore
 
 if TYPE_CHECKING:
-    from pandasai.dataframe import DataFrame
-    from pandasai.dataframe import VirtualDataFrame
+    from pandasai.dataframe import DataFrame, VirtualDataFrame
 
 
 @dataclass

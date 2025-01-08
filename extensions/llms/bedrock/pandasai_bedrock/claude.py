@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.helpers import load_dotenv
 from pandasai.llm.base import LLM

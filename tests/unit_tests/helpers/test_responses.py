@@ -1,59 +1,84 @@
 import unittest
 
-from PIL import Image
+import pandas as pd
 
-from pandasai.helpers.logger import Logger
-from pandasai.llm.fake import FakeLLM
-from pandasai.responses.context import Context
-from pandasai.responses.response_parser import ResponseParser
-from pandasai.schemas.df_config import Config
+from pandasai.core.response.base import ResponseParser
+from pandasai.core.response.response_types import Chart, DataFrame, Number, String
+from pandasai.exceptions import InvalidOutputValueMismatch
 
 
-class TestFormatPlot(unittest.TestCase):
+class TestResponseParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        llm = FakeLLM(output=None)
-        config = {"llm": llm, "enable_cache": True}
-        config = Config(**config)
-        context = Context(config=config, logger=Logger())
-        cls.response_parser = ResponseParser(context)
+        cls.response_parser = ResponseParser()
 
-    def test_display_plot_from_file(self):
+    def test_parse_valid_number(self):
+        result = {"type": "number", "value": 42}
+        response = self.response_parser.parse(result)
+        self.assertIsInstance(response, Number)
+
+    def test_parse_valid_string(self):
+        result = {"type": "string", "value": "test string"}
+        response = self.response_parser.parse(result)
+        self.assertIsInstance(response, String)
+
+    def test_parse_valid_dataframe(self):
+        result = {
+            "type": "dataframe",
+            "value": pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]}),
+        }
+
+        response = self.response_parser.parse(result)
+        self.assertIsInstance(response, DataFrame)
+
+    def test_parse_valid_plot(self):
         result = {"type": "plot", "value": "path/to/plot.png"}
-        with unittest.mock.patch(
-            "builtins.open", unittest.mock.mock_open(read_data=b"")
-        ):
-            with unittest.mock.patch(
-                "PIL.Image.open", return_value=Image.new("RGB", (100, 100))
-            ):
-                with unittest.mock.patch("PIL.Image.Image.show") as mock_show:
-                    self.assertEqual(
-                        self.response_parser.format_plot(result), "path/to/plot.png"
-                    )
-                    mock_show.assert_called_once()
+        response = self.response_parser.parse(result)
+        self.assertIsInstance(response, Chart)
 
-    def test_display_plot_from_bytes(self):
-        result = {"type": "plot", "value": b"data:image/png;base64 fake_image_data"}
-        with unittest.mock.patch(
-            "PIL.Image.open", return_value=Image.new("RGB", (100, 100))
-        ):
-            with unittest.mock.patch("PIL.Image.Image.show"):
-                self.assertEqual(
-                    self.response_parser.format_plot(result),
-                    b"data:image/png;base64 fake_image_data",
-                )
+    def test_parse_invalid_type(self):
+        result = {"type": "unknown", "value": "test"}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser.parse(result)
 
-    def test_return_value_without_display(self):
-        result = {"type": "plot", "value": "path/to/plot.png"}
-        with unittest.mock.patch(
-            "builtins.open", unittest.mock.mock_open(read_data=b"")
-        ):
-            with unittest.mock.patch(
-                "PIL.Image.open", return_value=Image.new("RGB", (100, 100))
-            ):
-                with unittest.mock.patch.object(
-                    self.response_parser._context.config, "open_charts", False
-                ):
-                    self.assertEqual(
-                        self.response_parser.format_plot(result), "path/to/plot.png"
-                    )
+    def test_parse_missing_type(self):
+        result = {"value": "test"}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser.parse(result)
+
+    def test_parse_missing_value(self):
+        result = {"type": "string"}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser.parse(result)
+
+    def test_validate_invalid_number_type(self):
+        result = {"type": "number", "value": "not a number"}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser._validate_response(result)
+
+    def test_validate_invalid_string_type(self):
+        result = {"type": "string", "value": 123}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser._validate_response(result)
+
+    def test_validate_invalid_dataframe_type(self):
+        result = {"type": "dataframe", "value": "not a dataframe"}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser._validate_response(result)
+
+    def test_validate_invalid_plot_type(self):
+        result = {"type": "plot", "value": 12345}
+        with self.assertRaises(InvalidOutputValueMismatch):
+            self.response_parser._validate_response(result)
+
+    def test_validate_plot_with_base64(self):
+        result = {"type": "plot", "value": "data:image/png;base64 fake_image_data"}
+        self.assertTrue(self.response_parser._validate_response(result))
+
+    def test_validate_valid_plot_path(self):
+        result = {"type": "plot", "value": "/valid/path/to/plot.png"}
+        self.assertTrue(self.response_parser._validate_response(result))
+
+
+if __name__ == "__main__":
+    unittest.main()

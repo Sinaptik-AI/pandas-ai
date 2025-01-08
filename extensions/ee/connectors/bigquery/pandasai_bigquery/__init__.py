@@ -1,6 +1,5 @@
 from google.cloud import bigquery
 import pandas as pd
-from .google_big_query import GoogleBigQueryConnector
 
 
 def load_from_bigquery(connection_info, query):
@@ -13,4 +12,4 @@ def load_from_bigquery(connection_info, query):
     return pd.DataFrame(query_job.result())
 
 
-__all__ = ["GoogleBigQueryConnector", "load_from_bigquery"]
+__all__ = ["load_from_bigquery"]

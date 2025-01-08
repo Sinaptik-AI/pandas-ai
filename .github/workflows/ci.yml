@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install Poetry (Unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -37,81 +38,68 @@ jobs:
         run: pip wheel --use-pep517 "future==0.18.3"
       - name: Install dependencies
         run: poetry install --all-extras --with dev --verbose
-      - name: Install extension dependencies
-        run: |
-          # Install LLM extension dependencies
-          for dir in extensions/llms/*/; do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras --with dev
-              cd -
-            fi
-          done
-
-          # Install connector extension dependencies
-          for dir in extensions/connectors/*/; do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras --with dev
-              cd -
-            fi
-          done
-
-          # Install enterprise extension dependencies
-          for dir in extensions/ee/*/*/; do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras --with dev
-              cd -
-            fi
-          done
-      - name: Install extension dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          # Install LLM extension dependencies
-          Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras --with dev
-              Pop-Location
-            }
-          }
-
-          # Install connector extension dependencies
-          Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras --with dev
-              Pop-Location
-            }
-          }
-
-          # Install enterprise extension dependencies
-          Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
-            $projFile = Join-Path $_.FullName "pyproject.toml"
-            if (Test-Path $projFile) {
-              Write-Host "Installing dependencies for $_"
-              Push-Location $_.FullName
-              poetry install --all-extras --with dev
-              Pop-Location
-            }
-          }
       - name: Lint with ruff
         run: make format_diff
       - name: Spellcheck
         run: make spell_check
       - name: Run core tests
         run: make test_core
-      - name: Run extension tests
+
+      # Install dependencies, test, and remove for each extension
+      - name: Install and test LLM extensions (Unix)
         if: matrix.os != 'windows-latest'
-        run: make test_extensions
+        run: |
+          find extensions/llms -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+            fi
+          done
+
+      - name: Install and test Connector extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/connectors -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+            fi
+          done
+
+      - name: Install and test Enterprise extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/ee -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+            fi
+          done
+
       - name: Run extension tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
@@ -119,8 +107,9 @@ jobs:
           Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
+              poetry install --all-extras --with test --verbose
               poetry run pytest tests/
               Pop-Location
             }
@@ -130,8 +119,9 @@ jobs:
           Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
+              poetry install --all-extras --with test --verbose
               poetry run pytest tests/
               Pop-Location
             }
@@ -141,9 +131,9 @@ jobs:
           Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
-              Write-Host "Running tests for $_"
+              Write-Host "Running tests for $($_.FullName)"
               Push-Location $_.FullName
-              poetry run pytest tests/
+              poetry install --all-extras --with test --verbose
               Pop-Location
             }
           }

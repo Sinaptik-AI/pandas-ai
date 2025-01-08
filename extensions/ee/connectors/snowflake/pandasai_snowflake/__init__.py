@@ -1,6 +1,5 @@
 import pandas as pd
 from snowflake import connector
-from .snowflake import SnowflakeConnector
 
 
 def load_from_snowflake(connection_info, query):
@@ -16,4 +15,4 @@ def load_from_snowflake(connection_info, query):
     return pd.read_sql(query, conn)
 
 
-__all__ = ["SnowflakeConnector", "load_from_snowflake"]
+__all__ = ["load_from_snowflake"]

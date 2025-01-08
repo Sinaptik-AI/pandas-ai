@@ -1,4 +1,5 @@
 import os
+
 import pandasai as pai
 
 # Create a sample pandas DataFrame

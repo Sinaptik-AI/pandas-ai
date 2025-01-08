@@ -3,21 +3,22 @@
 PandasAI is a wrapper around a LLM to make dataframes conversational
 """
 
-from io import BytesIO
 import os
+from io import BytesIO
 from typing import List
 from zipfile import ZipFile
 
 import pandas as pd
 
-from pandasai.config import ConfigManager, APIKeyManager
+from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
+
 from .agent import Agent
-from .helpers.cache import Cache
-from .dataframe.base import DataFrame
 from .data_loader.loader import DatasetLoader
+from .dataframe.base import DataFrame
+from .helpers.cache import Cache
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 

@@ -1,8 +1,9 @@
 """Unit tests for the HuggingFaceTextGen LLM class"""
+
 from pandasai_huggingface.huggingface_text_gen import (
     HuggingFaceTextGen,
 )
-from pandasai.prompts import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 
 
 class MockBasePrompt(BasePrompt):

@@ -1,4 +1,5 @@
 """Unit tests for the openai LLM class"""
+
 import openai
 import pytest
 from unittest import mock
@@ -6,7 +7,7 @@ import os
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from extensions.llms.openai.pandasai_openai import OpenAI
-from pandasai.prompts import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 
 
 class OpenAIObject:

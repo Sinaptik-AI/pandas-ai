@@ -1,0 +1,67 @@
+import traceback
+
+from pandasai.agent.state import AgentState
+from pandasai.core.prompts.base import BasePrompt
+
+from .code_cleaning import CodeCleaner
+from .code_security import CodeSecurityChecker
+from .code_validation import CodeRequirementValidator
+
+
+class CodeGenerator:
+    def __init__(self, context: AgentState):
+        self._context = context
+        self._code_cleaner = CodeCleaner(self._context)
+        self._code_security = CodeSecurityChecker(self._context)
+        self._code_validator = CodeRequirementValidator(self._context)
+
+    def generate_code(self, prompt: BasePrompt) -> tuple[str, list]:
+        """
+        Generates code using a given LLM and performs validation and cleaning steps.
+
+        Args:
+            context (PipelineContext): The pipeline context containing dataframes and logger.
+            prompt (BasePrompt): The prompt to guide code generation.
+
+        Returns:
+            str: The final cleaned and validated code.
+
+        Raises:
+            Exception: If any step fails during the process.
+        """
+        try:
+            self._context.logger.log(f"Using Prompt: {prompt}")
+
+            # Generate the code
+            code = self._context.config.llm.generate_code(prompt, self._context)
+            self._context.last_code_generated = code
+            self._context.logger.log(f"Code Generated:\n{code}")
+
+            return self.validate_and_clean_code(code)
+
+        except Exception as e:
+            error_message = f"An error occurred during code generation: {e}"
+            stack_trace = traceback.format_exc()
+
+            self._context.logger.log(
+                error_message,
+            )
+            self._context.logger.log(f"Stack Trace:\n{stack_trace}")
+
+            raise e
+
+    def validate_and_clean_code(self, code) -> tuple[str, list]:
+        # Check for malicious code
+        self._context.logger.log("Checking for malicious code...")
+        self._code_security.check(code)
+        self._context.logger.log("Malicious code check passed.")
+
+        # Validate code requirements
+        self._context.logger.log("Validating code requirements...")
+        if not self._code_validator.validate(code):
+            raise ValueError("Code validation failed due to unmet requirements.")
+        self._context.logger.log("Code validation successful.")
+
+        # Clean the code
+        self._context.logger.log("Cleaning the generated code...")
+        return self._code_cleaner.clean_code(code)

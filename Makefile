@@ -9,9 +9,9 @@ all: help  ## default target executed when no arguments are given to make
 UNIT_TESTS_DIR ?= tests/unit_tests/
 INTEGRATION_TESTS_DIR ?= tests/integration_tests/
 
-setup_python:  ## ensure we're using Python 3.10
-	@echo "Setting up Python 3.10..."
-	poetry env use python3.10
+# setup_python:  ## ensure we're using Python 3.10
+# 	@echo "Setting up Python 3.10..."
+# 	poetry env use python3.10
 
 install_deps: setup_python  ## install core dependencies
 	@echo "Installing core dependencies..."
@@ -26,7 +26,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/llms/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 
@@ -34,7 +34,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/connectors/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 
@@ -42,7 +42,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/ee/*/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 

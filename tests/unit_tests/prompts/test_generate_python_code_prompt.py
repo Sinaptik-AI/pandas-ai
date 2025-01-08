@@ -7,10 +7,10 @@ from unittest.mock import patch
 import pytest
 
 from pandasai import Agent
+from pandasai.core.prompts.generate_python_code import GeneratePythonCodePrompt
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
-from pandasai.prompts import GeneratePythonCodePrompt
 
 
 class TestGeneratePythonCodePrompt:
@@ -63,7 +63,7 @@ class TestGeneratePythonCodePrompt:
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = GeneratePythonCodePrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
 
@@ -129,7 +129,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
+    @patch("pandasai.vectorstores.VectorStore")
     def test_str_with_train_qa(self, chromadb_mock, output_type, output_type_template):
         """Test casting of prompt to string and interpolation of context.
 
@@ -150,10 +150,11 @@ Generate python code and return full updated code:"""  # noqa E501
         agent = Agent(
             DataFrame({"a": [1], "b": [4]}),
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
+            vectorstore=chromadb_instance,
         )
         agent.train(["query1"], ["code1"])
         prompt = GeneratePythonCodePrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
 
@@ -225,7 +226,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
+    @patch("pandasai.vectorstores.VectorStore")
     def test_str_with_train_docs(
         self, chromadb_mock, output_type, output_type_template
     ):
@@ -249,7 +250,7 @@ Generate python code and return full updated code:"""  # noqa E501
         )
         agent.train(docs=["document1"])
         prompt = GeneratePythonCodePrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
 
@@ -321,7 +322,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
+    @patch("pandasai.vectorstores.VectorStore")
     def test_str_with_train_docs_and_qa(
         self, chromadb_mock, output_type, output_type_template
     ):
@@ -349,7 +350,7 @@ Generate python code and return full updated code:"""  # noqa E501
         )
         agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
         prompt = GeneratePythonCodePrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
 
@@ -395,7 +396,7 @@ Generate python code and return full updated code:"""  # noqa E501
 
         assert actual_prompt_content == expected_prompt_content
 
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
+    @patch("pandasai.vectorstores.VectorStore")
     def test_str_geenerate_code_prompt_to_json(self, chromadb_mock):
         """Test casting of prompt to string and interpolation of context.
 
@@ -418,7 +419,7 @@ Generate python code and return full updated code:"""  # noqa E501
         )
         agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
         prompt = GeneratePythonCodePrompt(
-            context=agent.context, viz_lib="", output_type=None
+            context=agent._state, viz_lib="", output_type=None
         )
         prompt_json = prompt.to_json()
         if sys.platform.startswith("win"):
@@ -459,7 +460,7 @@ Generate python code and return full updated code:"""  # noqa E501
             ]
         ],
     )
-    @patch("pandasai.vectorstores.bamboo_vectorstore.BambooVectorStore")
+    @patch("pandasai.vectorstores.VectorStore")
     def test_str_relations(self, chromadb_mock, output_type, output_type_template):
         """Test casting of prompt to string and interpolation of context.
 
@@ -484,7 +485,7 @@ Generate python code and return full updated code:"""  # noqa E501
         )
         agent.train(["query1"], ["code1"])
         prompt = GeneratePythonCodePrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
 

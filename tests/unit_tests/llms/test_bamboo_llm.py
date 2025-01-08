@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import PandasAIApiCallError
 from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.prompts.base import BasePrompt
 
 
 class MockHttpResponse:
@@ -11,7 +11,7 @@ class MockHttpResponse:
         self.status_code = status_code
 
     def json(self):
-        return {"data": "Hello World", "message": "test"}
+        return {"answer": "Hello World", "message": "test"}
 
 
 class TestBambooLLM(unittest.TestCase):
@@ -39,11 +39,10 @@ class TestBambooLLM(unittest.TestCase):
         call_args = mock_request.call_args_list[0][0]
         mock_request.assert_called_once()
         assert call_args[1] == "POST"
-        assert call_args[2] == "/llm/chat"
+        assert call_args[2] == "/query"
         assert mock_request.call_args_list[0][1] == {
             "json": {
-                "code": ["print('Hello')", "for i in range(10): print(i)"],
-                "query": ["What is Chroma?", "How does it work?"],
+                "prompt": "instruction",
             }
         }
 

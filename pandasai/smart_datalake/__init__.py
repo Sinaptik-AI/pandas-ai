@@ -1,11 +1,14 @@
 import uuid
 import warnings
-import pandas as pd
 from typing import List, Optional, Union
+
+import pandas as pd
+
 from pandasai.agent import Agent
 from pandasai.dataframe.base import DataFrame
-from ..helpers.cache import Cache
+
 from ..config import Config
+from ..helpers.cache import Cache
 
 
 class SmartDatalake:

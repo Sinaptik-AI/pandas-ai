@@ -1,9 +1,11 @@
-import pytest
-import pandas as pd
 from unittest.mock import Mock, patch
-from pandasai.dataframe.base import DataFrame
-from pandasai.agent.agent import Agent
+
+import pandas as pd
+import pytest
+
 import pandasai
+from pandasai.agent import Agent
+from pandasai.dataframe.base import DataFrame
 
 
 class TestDataFrame:
@@ -31,20 +33,16 @@ class TestDataFrame:
         assert isinstance(sample_df, pd.DataFrame)
         assert sample_df.equals(pd.DataFrame(sample_data))
 
-    def test_from_pandas(self, sample_data):
-        pandas_df = pd.DataFrame(sample_data)
-        pandasai_df = DataFrame.from_pandas(pandas_df)
-        assert isinstance(pandasai_df, DataFrame)
-        assert pandasai_df.equals(pandas_df)
-
     def test_dataframe_operations(self, sample_df):
         assert len(sample_df) == 5
         assert list(sample_df.columns) == ["Name", "Age", "City", "Salary"]
         assert sample_df["Salary"].mean() == 76800
 
-    @patch("pandasai.agent.agent.Agent")
-    def test_chat_creates_agent(self, mock_agent, sample_df):
-        assert sample_df._agent is None
+    @patch("pandasai.agent.Agent")
+    @patch("os.environ")
+    def test_chat_creates_agent(self, mock_env, mock_agent, sample_data):
+        sample_df = DataFrame(sample_data)
+        mock_env.return_value = {"PANDASAI_API_URL": "localhost:8000"}
         sample_df.chat("Test query")
         mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
 
@@ -81,7 +79,7 @@ class TestDataFrame:
 
     def test_chat_with_config(self, sample_df):
         config = {"max_retries": 100}
-        with patch("pandasai.agent.agent.Agent") as mock_agent:
+        with patch("pandasai.agent.Agent") as mock_agent:
             sample_df.chat("Test query", config=config)
             mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
         assert sample_df.config.max_retries == 100

@@ -6,7 +6,7 @@ import pytest
 
 from pandasai.helpers.memory import Memory
 from pandasai_local.local_llm import LocalLLM
-from pandasai.prompts import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 
 
 @pytest.fixture

@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
-
 if TYPE_CHECKING:
-    from pandasai.chat.prompts.base import BasePrompt
+    from pandasai.core.prompts.base import BasePrompt
 
 from ..helpers.request import Session
 from .base import LLM
