@@ -26,7 +26,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/llms/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 
@@ -34,7 +34,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/connectors/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 
@@ -42,7 +42,7 @@ install_extension_deps: setup_python  ## install all extension dependencies
 	@for dir in extensions/ee/*/*/; do \
 		if [ -f "$$dir/pyproject.toml" ]; then \
 			echo "Installing dependencies for $$dir"; \
-			cd "$$dir" && poetry env use python3.10 && poetry install --all-extras --with test && cd - || exit 1; \
+			cd "$$dir" && poetry install --all-extras --with test && cd - || exit 1; \
 		fi \
 	done
 
