@@ -9,9 +9,9 @@ all: help  ## default target executed when no arguments are given to make
 UNIT_TESTS_DIR ?= tests/unit_tests/
 INTEGRATION_TESTS_DIR ?= tests/integration_tests/
 
-setup_python:  ## ensure we're using Python 3.10
-	@echo "Setting up Python 3.10..."
-	poetry env use python3.10
+# setup_python:  ## ensure we're using Python 3.10
+# 	@echo "Setting up Python 3.10..."
+# 	poetry env use python3.10
 
 install_deps: setup_python  ## install core dependencies
 	@echo "Installing core dependencies..."
