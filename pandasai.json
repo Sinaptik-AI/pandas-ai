@@ -8,7 +8,5 @@
   "open_charts": true,
   "save_charts": false,
   "save_charts_path": "exports/charts",
-  "custom_whitelisted_dependencies": [],
-  "llm": "BambooLLM",
-  "llm_options": null
+  "custom_whitelisted_dependencies": []
 }
