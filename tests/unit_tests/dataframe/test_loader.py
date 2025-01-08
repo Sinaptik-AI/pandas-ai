@@ -120,7 +120,7 @@ class TestDatasetLoader:
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
         if sys.platform.startswith("win"):
-            assert cache_path.endswith("datasets\\test\\users\\users.parquet")
+            assert cache_path.endswith("datasets\\test/users\\users.parquet")
         else:
             assert cache_path.endswith("datasets/test/users/users.parquet")
 
@@ -132,7 +132,7 @@ class TestDatasetLoader:
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
         if sys.platform.startswith("win"):
-            assert cache_path.endswith("datasets\\test\\users\\data.parquet")
+            assert cache_path.endswith("datasets\\test/users\\data.parquet")
         else:
             assert cache_path.endswith("datasets/test/users/data.parquet")
 
