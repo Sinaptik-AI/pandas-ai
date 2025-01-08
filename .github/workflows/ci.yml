@@ -39,8 +39,7 @@ jobs:
         run: poetry install --all-extras --with dev --verbose
       - name: Install extension dependencies
         run: |
-          # Install LLM extension dependencies
-          for dir in extensions/llms/*/; do
+          for dir in $(find extensions/llms -mindepth 1 -maxdepth 1 -type d); do
             if [ -f "$dir/pyproject.toml" ]; then
               echo "Installing dependencies for $dir"
               cd "$dir"
@@ -49,8 +48,7 @@ jobs:
             fi
           done
 
-          # Install connector extension dependencies
-          for dir in extensions/connectors/*/; do
+          for dir in $(find extensions/connectors -mindepth 1 -maxdepth 1 -type d); do
             if [ -f "$dir/pyproject.toml" ]; then
               echo "Installing dependencies for $dir"
               cd "$dir"
@@ -59,8 +57,7 @@ jobs:
             fi
           done
 
-          # Install enterprise extension dependencies
-          for dir in extensions/ee/*/*/; do
+          for dir in $(find extensions/ee -mindepth 2 -maxdepth 2 -type d); do
             if [ -f "$dir/pyproject.toml" ]; then
               echo "Installing dependencies for $dir"
               cd "$dir"
