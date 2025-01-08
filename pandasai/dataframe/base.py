@@ -252,13 +252,13 @@ class DataFrame(pd.DataFrame):
             ]
 
             # Send the POST request
-            data = request_session.post(
+            request_session.post(
                 "/datasets/push",
                 files=files,
                 params=params,
                 headers=headers,
             )
-            print(data)
+            print("Your dataset was successfully pushed to the pandabi platform")
 
     def pull(self):
         api_key = os.environ.get("PANDASAI_API_KEY", None)
