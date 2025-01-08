@@ -2,23 +2,23 @@ import traceback
 import uuid
 from typing import Any, List, Optional, Tuple, Union
 
-from pandasai.chat.cache import Cache
-from pandasai.chat.code_execution.code_executor import CodeExecutor
-from pandasai.chat.code_generation.base import CodeGenerator
-from pandasai.chat.prompts import (
+from pandasai.core.cache import Cache
+from pandasai.core.code_execution.code_executor import CodeExecutor
+from pandasai.core.code_generation.base import CodeGenerator
+from pandasai.core.prompts import (
     get_chat_prompt,
     get_chat_prompt_for_sql,
     get_correct_error_prompt,
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
-from pandasai.chat.response.base import ResponseParser
-from pandasai.chat.user_query import UserQuery
+from pandasai.core.response.base import ResponseParser
+from pandasai.core.user_query import UserQuery
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 
 from .state import AgentState
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.vectorstores.vectorstore import VectorStore
@@ -166,6 +166,7 @@ class Agent:
             if self._state.config.direct_sql
             else get_chat_prompt(self._state)
         )
+
         code, additional_dependencies = self._code_generator.generate_code(prompt)
         self._state.last_prompt_used = prompt
         return code, additional_dependencies
@@ -297,7 +298,9 @@ class Agent:
 
     def _process_query(self, query: str, output_type: Optional[str] = None):
         """Process a user query and return the result."""
-        query = UserQuery(query)
+        query = UserQuery(
+            query, secure=self._state.config.security in ["standard", "advanced"]
+        )
         self._state.logger.log(f"Question: {query}")
         self._state.logger.log(
             f"Running PandasAI with {self._state.config.llm.type} LLM..."

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.helpers import load_dotenv
 
 from pandasai.llm.base import LLM

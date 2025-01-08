@@ -9,7 +9,7 @@ import pytest
 from pandasai import Agent
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
-from pandasai.prompts.generate_python_code_with_sql import (
+from pandasai.core.prompts.generate_python_code_with_sql import (
     GeneratePythonCodeWithSQLPrompt,
 )
 
@@ -53,28 +53,26 @@ class TestGeneratePythonCodeWithSQLPrompt:
         llm = FakeLLM()
         agent = Agent(
             pai.DataFrame(),
-            config={"llm": llm, "dataframe_serializer": DataframeSerializerType.YML},
+            config={"llm": llm},
         )
         prompt = GeneratePythonCodeWithSQLPrompt(
-            context=agent.context,
+            context=agent._state,
             output_type=output_type,
         )
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
 
+        print(prompt_content)
+
         assert (
             prompt_content
             == f'''<tables>
 
-dfs[0]:
-  name: null
-  description: null
-  type: pd.DataFrame
-  rows: 0
-  columns: 0
-  schema:
-    fields: []
+<dataframe>
+dfs[0]:0x0
+
+</dataframe>
 
 
 </tables>

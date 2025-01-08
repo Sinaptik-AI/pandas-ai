@@ -6,7 +6,7 @@ from pandasai import Agent
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
-from pandasai.prompts import CorrectErrorPrompt
+from pandasai.core.prompts.correct_error_prompt import CorrectErrorPrompt
 
 
 class TestCorrectErrorPrompt:
@@ -21,7 +21,7 @@ class TestCorrectErrorPrompt:
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = CorrectErrorPrompt(
-            context=agent.context, code="df.head()", error="Error message"
+            context=agent._state, code="df.head()", error="Error message"
         )
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
@@ -56,7 +56,7 @@ Fix the python code above and return the new python code:"""  # noqa: E501
             config={"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV},
         )
         prompt = CorrectErrorPrompt(
-            context=agent.context, code="df.head()", error="Error message"
+            context=agent._state, code="df.head()", error="Error message"
         )
 
         assert prompt.to_json() == {

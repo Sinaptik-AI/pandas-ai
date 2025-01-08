@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from extensions.llms.bedrock.pandasai_bedrock.claude import BedrockClaude
 

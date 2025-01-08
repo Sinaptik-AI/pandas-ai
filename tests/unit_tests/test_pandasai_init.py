@@ -1,8 +1,9 @@
+import pandas
 import pytest
 from unittest.mock import patch, MagicMock
 import pandasai
 from pandasai.dataframe.base import DataFrame
-import pandas as pd
+from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 
 
 class TestPandasAIInit:
@@ -67,17 +68,93 @@ class TestPandasAIInit:
             )
             assert result == "Mocked response"
 
-    def test_load(self):
-        with patch("pandasai.DatasetLoader.load") as mock_load:
-            mock_load.return_value = DataFrame(
-                pd.DataFrame({"email": ["test@example.com"]})
-            )
+    @patch("pandasai.data_loader.loader.DatasetLoader")
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.path.exists")
+    def test_load_valid_dataset(
+        self, mock_exists, mock_find_project_root, mock_dataset_loader
+    ):
+        """Test loading a valid dataset."""
+        mock_find_project_root.return_value = "/mock/root"
+        mock_dataset_loader.load.return_value = MagicMock(name="DataFrame")
+        mock_exists.return_value = True
+        pandasai._dataset_loader = mock_dataset_loader
 
-            result = pandasai.load("test/users")
+        dataset_path = "org/dataset_name"
+        result = pandasai.load(dataset_path)
 
-            assert isinstance(result, DataFrame)
-            assert "email" in result.columns
-            mock_load.assert_called_once_with("test/users")
+        mock_dataset_loader.load.assert_called_once_with(dataset_path, False)
+        assert isinstance(result, MagicMock)
+
+    @patch("zipfile.ZipFile")
+    @patch("io.BytesIO")
+    @patch("os.environ")
+    def test_load_dataset_not_found(self, mockenviron, mock_bytes_io, mock_zip_file):
+        """Test loading when dataset does not exist locally and API returns not found."""
+        mockenviron.return_value = {"PANDASAI_API_URL": "localhost:8000"}
+        mock_request_session = MagicMock()
+        pandasai.get_pandaai_session = mock_request_session
+        pandasai.get_pandaai_session.return_value = MagicMock()
+        mock_request_session.get.return_value.status_code = 404
+
+        dataset_path = "org/dataset_name"
+
+        with pytest.raises(DatasetNotFound) as cm:
+            pandasai.load(dataset_path)
+
+    @patch("pandasai.os.path.exists")
+    @patch("pandasai.os.environ", {"PANDASAI_API_URL": "url"})
+    def test_load_missing_api_key(self, mock_exists):
+        """Test loading when API key is missing."""
+        mock_exists.return_value = False
+        dataset_path = "org/dataset_name"
+
+        with pytest.raises(PandasAIApiKeyError):
+            pandasai.load(dataset_path)
+
+    @patch("pandasai.os.path.exists")
+    @patch("pandasai.os.environ", {"PANDASAI_API_KEY": "key"})
+    def test_load_missing_api_url(self, mock_exists):
+        """Test loading when API URL is missing."""
+        mock_exists.return_value = False
+        dataset_path = "org/dataset_name"
+
+        with pytest.raises(PandasAIApiKeyError):
+            pandasai.load(dataset_path)
+
+    @patch("pandasai.os.environ", new_callable=dict)
+    @patch("pandasai.os.path.exists")
+    @patch("pandasai.get_pandaai_session")
+    @patch("pandasai.ZipFile")
+    @patch("pandasai.BytesIO")
+    @patch("pandasai.data_loader.loader.DatasetLoader")
+    def test_load_successful_zip_extraction(
+        self,
+        mock_dataset_loader,
+        mock_bytes_io,
+        mock_zip_file,
+        mock_get_pandaai_session,
+        mock_exists,
+        mock_os_environ,
+    ):
+        """Test loading when dataset is not found locally but is successfully downloaded."""
+        mock_exists.return_value = False
+        mock_os_environ.update({"PANDASAI_API_KEY": "key", "PANDASAI_API_URL": "url"})
+        mock_request_session = MagicMock()
+        mock_get_pandaai_session.return_value = mock_request_session
+        mock_request_session.get.return_value.status_code = 200
+        mock_request_session.get.return_value.content = b"mock zip content"
+        pandasai._dataset_loader = mock_dataset_loader
+
+        dataset_path = "org/dataset_name"
+
+        # Mock the zip file extraction
+        mock_zip_file.return_value.__enter__.return_value.extractall = MagicMock()
+
+        result = pandasai.load(dataset_path)
+
+        mock_zip_file.return_value.__enter__.return_value.extractall.assert_called_once()
+        assert isinstance(result, MagicMock)
 
     def test_clear_cache(self):
         with patch("pandasai.helpers.cache.Cache.clear") as mock_clear:

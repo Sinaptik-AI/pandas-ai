@@ -60,7 +60,7 @@ class TestDatasetLoader:
         with patch("os.path.exists", return_value=True), patch(
             "os.path.getmtime", return_value=pd.Timestamp.now().timestamp()
         ), patch(
-            "pandasai.dataframe.loader.DatasetLoader._read_cache"
+            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
         ) as mock_read_cache, patch(
             "builtins.open", mock_open(read_data=str(sample_schema))
         ):
@@ -116,7 +116,7 @@ class TestDatasetLoader:
         loader.schema = sample_schema
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
-        assert cache_path == "datasets/test/users/users.parquet"
+        assert cache_path.endswith("datasets/test/users/users.parquet")
 
     def test_get_cache_file_path_without_destination_path(self, sample_schema):
         schema_without_path = sample_schema.copy()
@@ -125,7 +125,7 @@ class TestDatasetLoader:
         loader.schema = schema_without_path
         loader.dataset_path = "test/users"
         cache_path = loader._get_cache_file_path()
-        assert cache_path == "datasets/test/users/data.parquet"
+        assert cache_path.endswith("datasets/test/users/data.parquet")
 
     def test_is_cache_valid(self, sample_schema):
         loader = DatasetLoader()
@@ -154,7 +154,7 @@ class TestDatasetLoader:
 
         mock_df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
         with patch("pandas.read_parquet", return_value=mock_df):
-            result = loader._read_cache("dummy_path")
+            result = loader._read_csv_or_parquet("dummy_path", "parquet")
             assert isinstance(result, pd.DataFrame)
             assert result.equals(mock_df)
 
@@ -166,7 +166,7 @@ class TestDatasetLoader:
 
         mock_df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
         with patch("pandas.read_csv", return_value=mock_df):
-            result = loader._read_cache("dummy_path")
+            result = loader._read_csv_or_parquet("dummy_path", "csv")
             assert isinstance(result, pd.DataFrame)
             assert result.equals(mock_df)
 
@@ -176,8 +176,8 @@ class TestDatasetLoader:
         loader = DatasetLoader()
         loader.schema = schema_unsupported
 
-        with pytest.raises(ValueError, match="Unsupported cache format: unsupported"):
-            loader._read_cache("dummy_path")
+        with pytest.raises(ValueError, match="Unsupported file format: unsupported"):
+            loader._read_csv_or_parquet("dummy_path", "unsupported")
 
     def test_apply_transformations(self, sample_schema):
         loader = DatasetLoader()
@@ -226,6 +226,3 @@ class TestDatasetLoader:
 
         with pytest.raises(ValueError, match="Unsupported cache format: unsupported"):
             loader._cache_data(df, "dummy_path")
-
-
-# Add more tests for _load_from_source and other methods as needed

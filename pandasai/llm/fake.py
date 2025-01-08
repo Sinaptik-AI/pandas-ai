@@ -3,7 +3,7 @@
 from typing import Optional
 
 from pandasai.agent.state import AgentState
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 
 from .base import LLM
 

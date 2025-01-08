@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 
 try:
     from langchain_core.language_models import BaseLanguageModel

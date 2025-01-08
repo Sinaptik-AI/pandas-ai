@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from openai import OpenAI
 
-from pandasai.chat.prompts.base import BasePrompt
+from pandasai.core.prompts.base import BasePrompt
 from pandasai.helpers.memory import Memory
 
 from pandasai.llm.base import LLM

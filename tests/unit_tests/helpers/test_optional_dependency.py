@@ -8,10 +8,16 @@ import types
 
 import pytest
 
-from pandasai.helpers.optional import VERSIONS, get_environment, import_dependency
-from pandasai.safe_libs.restricted_matplotlib import RestrictedMatplotlib
-from pandasai.safe_libs.restricted_numpy import RestrictedNumpy
-from pandasai.safe_libs.restricted_pandas import RestrictedPandas
+from pandasai.core.code_execution.environment import (
+    VERSIONS,
+    get_environment,
+    import_dependency,
+)
+from pandasai.core.code_execution.safe_libs.restricted_matplotlib import (
+    RestrictedMatplotlib,
+)
+from pandasai.core.code_execution.safe_libs.restricted_numpy import RestrictedNumpy
+from pandasai.core.code_execution.safe_libs.restricted_pandas import RestrictedPandas
 
 
 def test_import_optional():
