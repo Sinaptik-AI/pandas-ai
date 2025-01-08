@@ -54,7 +54,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras --with dev
+                poetry install --all-extras
                 poetry add pytest
               )
               echo "Running tests for $dir"
@@ -78,7 +78,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras --with dev
+                poetry install --all-extras
                 poetry add pytest
               )
               echo "Running tests for $dir"
@@ -103,7 +103,7 @@ jobs:
               echo "Installing dependencies for $dir"
               (
                 cd "$dir" || exit
-                poetry install --all-extras --with dev
+                poetry install --all-extras
                 poetry add pytest
               )
               echo "Running tests for $dir"
