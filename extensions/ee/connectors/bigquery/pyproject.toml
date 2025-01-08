@@ -9,7 +9,7 @@ readme = "README.md"
 python = ">=3.9,<3.12"
 pandasai = "^3.0.0"
 pandasai-sql = "^0.1.0"
-sqlalchemy-bigquery = "^1.8.0"
+google-cloud-bigquery = "^3.27.0"
 
 [tool.poetry.group.test]
 optional = true
