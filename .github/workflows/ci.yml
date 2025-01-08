@@ -55,6 +55,9 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry install --all-extras
+                poetry add pytest@7.4.0
+                poetry add pytest-mock@3.11.1
+                poetry add pytest-cov@4.1.0
               )
               echo "Running tests for $dir"
               (
@@ -73,6 +76,9 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry install --all-extras
+                poetry add pytest@7.4.0
+                poetry add pytest-mock@3.11.1
+                poetry add pytest-cov@4.1.0
               )
               echo "Running tests for $dir"
               (
@@ -91,6 +97,9 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry install --all-extras
+                poetry add pytest@7.4.0
+                poetry add pytest-mock@3.11.1
+                poetry add pytest-cov@4.1.0
               )
               echo "Running tests for $dir"
               (
