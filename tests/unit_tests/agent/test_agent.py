@@ -455,7 +455,6 @@ What is expected Salary Increase?
             )
 
     def test_query_detection(self, sample_df, config, agent: Agent):
-
         # Positive cases: should detect malicious keywords
         malicious_queries = [
             "import os",

@@ -8,7 +8,6 @@ from pandasai.dataframe.base import DataFrame
 
 
 class TestCodeCleaner(unittest.TestCase):
-
     def setUp(self):
         # Setup a mock context for CodeCleaner
         self.context = MagicMock(spec=AgentState)
