@@ -65,6 +65,7 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
+                poetry add pytest
               )
             fi
           done
@@ -88,6 +89,7 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
+                poetry add pytest
               )
             fi
           done
@@ -111,6 +113,7 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
+                poetry add pytest
               )
             fi
           done
