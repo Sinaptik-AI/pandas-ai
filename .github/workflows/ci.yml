@@ -39,31 +39,17 @@ jobs:
         run: poetry install --all-extras --with dev --verbose
       - name: Install extension dependencies
         run: |
-          for dir in $(find extensions/llms -mindepth 1 -maxdepth 1 -type d); do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras
-              cd -
-            fi
-          done
-
-          for dir in $(find extensions/connectors -mindepth 1 -maxdepth 1 -type d); do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras
-              cd -
-            fi
-          done
-
-          for dir in $(find extensions/ee -mindepth 2 -maxdepth 2 -type d); do
-            if [ -f "$dir/pyproject.toml" ]; then
-              echo "Installing dependencies for $dir"
-              cd "$dir"
-              poetry install --all-extras
-              cd -
-            fi
+          find extensions/ -mindepth 1 -type d \( \
+            -path "extensions/llms/*" -o \
+            -path "extensions/connectors/*" -o \
+            -path "extensions/ee/*/*" \) | while read -r dir; do
+              if [ -f "$dir/pyproject.toml" ]; then
+                echo "Installing dependencies for $dir"
+                (
+                  cd "$dir" || exit
+                  poetry install --all-extras
+                )
+              fi
           done
       - name: Install extension dependencies (Windows)
         if: matrix.os == 'windows-latest'
