@@ -65,6 +65,7 @@ jobs:
               echo "Cleaning up dependencies for $dir"
               (
                 cd "$dir" || exit
+                sudo chown -R $USER:$USER /Users/runner/Library/Caches/pypoetry/virtualenvs/
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
               )
             fi
@@ -89,6 +90,7 @@ jobs:
               echo "Cleaning up dependencies for $dir"
               (
                 cd "$dir" || exit
+                sudo chown -R $USER:$USER /Users/runner/Library/Caches/pypoetry/virtualenvs/
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
               )
             fi
@@ -113,8 +115,8 @@ jobs:
               echo "Cleaning up dependencies for $dir"
               (
                 cd "$dir" || exit
+                sudo chown -R $USER:$USER /Users/runner/Library/Caches/pypoetry/virtualenvs/
                 poetry env remove $(poetry env list --full-path | awk '{print $1}')
-                poetry add pytest@7.4.0
               )
             fi
           done
