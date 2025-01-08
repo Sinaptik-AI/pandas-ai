@@ -418,9 +418,7 @@ Generate python code and return full updated code:"""  # noqa E501
             vectorstore=chromadb_instance,
         )
         agent.train(queries=["query1"], codes=["code1"], docs=["document1"])
-        prompt = GeneratePythonCodePrompt(
-            context=agent._state, viz_lib="", output_type=None
-        )
+        prompt = GeneratePythonCodePrompt(context=agent._state, output_type=None)
         prompt_json = prompt.to_json()
         if sys.platform.startswith("win"):
             prompt_json["prompt"] = prompt_json["prompt"].replace("\r\n", "\n")
@@ -430,7 +428,7 @@ Generate python code and return full updated code:"""  # noqa E501
             "conversation": [],
             "system_prompt": None,
             "prompt": '<dataframe>\ndfs[0]:1x2\na,b\n1,4\n</dataframe>\n\n\n\nUpdate this initial code:\n```python\n# TODO: import the required dependencies\nimport pandas as pd\n\n# Write code here\n\n# Declare result var: \ntype (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }\n\n```\n\n\nYou can utilize these examples as a reference for generating code.\n\n[\'query1\']\n\nHere are additional documents for reference. Feel free to use them to answer.\n[\'documents1\']\n\n\n\nVariable `dfs: list[pd.DataFrame]` is already declared.\n\nAt the end, declare "result" variable as a dictionary of type and value.\n\n\nGenerate python code and return full updated code:',
-            "config": {"direct_sql": False, "viz_lib": "", "output_type": None},
+            "config": {"direct_sql": False, "output_type": None},
         }
 
     @pytest.mark.parametrize(

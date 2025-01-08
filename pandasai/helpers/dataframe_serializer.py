@@ -116,26 +116,6 @@ class DataframeSerializer:
                 "type": str(col_dtype),
             }
 
-            if not extras.get("enforce_privacy") or df.custom_head is not None:
-                col_info["samples"] = df_head[col_name].head().tolist()
-
-            # Add column description if available
-            # TODO - Fix or remove this later!
-            # if df.field_descriptions and isinstance(df.field_descriptions, dict):
-            #     if col_description := df.field_descriptions.get(col_name, None):
-            #         col_info["description"] = col_description
-
-            # if df.connector_relations:
-            #     for relation in df.connector_relations:
-            #         from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
-
-            #         if (
-            #             isinstance(relation, PrimaryKey) and relation.name == col_name
-            #         ) or (
-            #             isinstance(relation, ForeignKey) and relation.field == col_name
-            #         ):
-            #             col_info["constraints"] = relation.to_string()
-
             data["schema"]["fields"].append(col_info)
 
         result = df_info | data

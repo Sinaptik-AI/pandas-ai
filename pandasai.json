@@ -1,14 +1,9 @@
 {
   "save_logs": true,
   "verbose": false,
-  "enforce_privacy": false,
-  "enable_cache": true,
-  "use_error_correction_framework": true,
   "max_retries": 3,
   "open_charts": true,
   "save_charts": false,
   "save_charts_path": "exports/charts",
-  "custom_whitelisted_dependencies": [],
-  "llm": "BambooLLM",
-  "llm_options": null
+  "custom_whitelisted_dependencies": []
 }

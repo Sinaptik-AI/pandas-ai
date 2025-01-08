@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pandasai.config import Config
-from pandasai.helpers.cache import Cache
+from pandasai.core.cache import Cache
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
 from pandasai.vectorstores.vectorstore import VectorStore

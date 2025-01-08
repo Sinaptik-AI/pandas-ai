@@ -146,14 +146,6 @@ class SmartDataframe:
         self._agent.context.config.save_logs = save_logs
 
     @property
-    def enforce_privacy(self):
-        return self._agent.context.config.enforce_privacy
-
-    @enforce_privacy.setter
-    def enforce_privacy(self, enforce_privacy: bool):
-        self._agent.context.config.enforce_privacy = enforce_privacy
-
-    @property
     def enable_cache(self):
         return self._agent.context.config.enable_cache
 

@@ -158,12 +158,6 @@ Olivia gets paid the most.
 
 You can find more examples in the [examples](examples) directory.
 
-## 🔒 Privacy & Security
-
-In order to generate the Python code to run, we take some random samples from the dataframe, we randomize it (using random generation for sensitive data and shuffling for non-sensitive data) and send just the randomized head to the LLM.
-
-If you want to enforce further your privacy you can instantiate PandasAI with `enforce_privacy = True` which will not send the head (but just column names) to the LLM.
-
 ## 📜 License
 
 PandasAI is available under the MIT expat license, except for the `pandasai/ee` directory (which has it's [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE) if applicable.

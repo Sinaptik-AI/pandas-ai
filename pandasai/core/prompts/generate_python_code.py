@@ -8,7 +8,6 @@ class GeneratePythonCodePrompt(BasePrompt):
 
     def to_json(self):
         context = self.props["context"]
-        viz_lib = self.props["viz_lib"]
         output_type = self.props["output_type"]
         memory = context.memory
         conversations = memory.to_json()
@@ -25,7 +24,6 @@ class GeneratePythonCodePrompt(BasePrompt):
             "prompt": self.to_string(),
             "config": {
                 "direct_sql": context.config.direct_sql,
-                "viz_lib": viz_lib,
                 "output_type": output_type,
             },
         }

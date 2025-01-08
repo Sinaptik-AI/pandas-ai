@@ -126,7 +126,6 @@ class DataFrame(pd.DataFrame):
         self,
         index: int,
         is_direct_sql: bool,
-        enforce_privacy: bool,
     ) -> str:
         """
         Serialize DataFrame to string representation.
@@ -135,7 +134,6 @@ class DataFrame(pd.DataFrame):
             index (int): Index of the dataframe
             is_direct_sql (bool): Whether the query is direct SQL
             serializer_type (DataframeSerializerType): Type of serializer to use
-            enforce_privacy (bool): Whether to enforce privacy
             **kwargs: Additional parameters to pass to pandas to_string method
 
         Returns:
@@ -147,7 +145,6 @@ class DataFrame(pd.DataFrame):
                 "index": index,
                 "type": "pd.DataFrame",
                 "is_direct_sql": is_direct_sql,
-                "enforce_privacy": enforce_privacy,
             },
             type_=DataframeSerializerType.CSV,
         )

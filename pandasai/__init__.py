@@ -18,7 +18,7 @@ from pandasai.helpers.request import get_pandaai_session
 from .agent import Agent
 from .data_loader.loader import DatasetLoader
 from .dataframe.base import DataFrame
-from .helpers.cache import Cache
+from .core.cache import Cache
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 

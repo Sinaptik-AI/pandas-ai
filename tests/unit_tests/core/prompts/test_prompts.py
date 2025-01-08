@@ -29,34 +29,19 @@ class TestChatPrompts(unittest.TestCase):
 
     def test_get_chat_prompt(self):
         """Test the get_chat_prompt function."""
-        self.context.config.data_viz_library = "seaborn"
         self.context.output_type = "dataframe"
 
         prompt = get_chat_prompt(self.context)
 
         self.assertIsInstance(prompt, BasePrompt)
-
-        self.assertEqual("seaborn" in prompt.to_string(), True)
-
-    def test_get_chat_prompt_default_viz_lib(self):
-        """Test get_chat_prompt with default visualization library."""
-        self.context.config.data_viz_library = None
-        self.context.output_type = "dataframe"
-
-        prompt = get_chat_prompt(self.context)
-
-        self.assertIsInstance(prompt, BasePrompt)
-        self.assertEqual("matplotlib" in prompt.to_string(), True)
 
     def test_get_chat_prompt_for_sql(self):
         """Test the get_chat_prompt_for_sql function."""
-        self.context.config.data_viz_library = "plotly"
         self.context.output_type = "sql"
 
         prompt = get_chat_prompt_for_sql(self.context)
 
         self.assertIsInstance(prompt, BasePrompt)
-        self.assertEqual("plotly" in prompt.to_string(), True)
 
     def test_get_correct_error_prompt(self):
         """Test the get_correct_error_prompt function."""

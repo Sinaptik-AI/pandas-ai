@@ -7,7 +7,6 @@ all: help  ## default target executed when no arguments are given to make
 #############################
 
 UNIT_TESTS_DIR ?= tests/unit_tests/
-INTEGRATION_TESTS_DIR ?= tests/integration_tests/
 
 # setup_python:  ## ensure we're using Python 3.10
 # 	@echo "Setting up Python 3.10..."
@@ -76,9 +75,6 @@ test_all: test_core test_extensions  ## run all tests (core and extensions)
 tests-coverage: install_deps  ## run unit tests and generate coverage report
 	poetry run coverage run --source=pandasai -m pytest $(UNIT_TESTS_DIR)
 	poetry run coverage xml
-
-integration:  ## run integration tests
-	poetry run pytest $(INTEGRATION_TESTS_DIR)
 
 ###########################
 # SPELLCHECK AND FORMATTING

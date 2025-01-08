@@ -8,7 +8,7 @@ from pandasai.agent import Agent
 from pandasai.dataframe.base import DataFrame
 
 from ..config import Config
-from ..helpers.cache import Cache
+from ..core.cache import Cache
 
 
 class SmartDatalake:
@@ -121,14 +121,6 @@ class SmartDatalake:
         self._agent.logger.save_logs = save_logs
 
     @property
-    def enforce_privacy(self):
-        return self._agent.context.config.enforce_privacy
-
-    @enforce_privacy.setter
-    def enforce_privacy(self, enforce_privacy: bool):
-        self._agent.context.config.enforce_privacy = enforce_privacy
-
-    @property
     def enable_cache(self):
         return self._agent.context.config.enable_cache
 
@@ -140,16 +132,6 @@ class SmartDatalake:
                 self._cache = Cache()
         else:
             self._cache = None
-
-    @property
-    def use_error_correction_framework(self):
-        return self._agent.context.config.use_error_correction_framework
-
-    @use_error_correction_framework.setter
-    def use_error_correction_framework(self, use_error_correction_framework: bool):
-        self._agent.context.config.use_error_correction_framework = (
-            use_error_correction_framework
-        )
 
     @property
     def custom_prompts(self):

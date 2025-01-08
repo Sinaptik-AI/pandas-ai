@@ -158,6 +158,6 @@ class TestPandasAIInit:
         assert isinstance(result, MagicMock)
 
     def test_clear_cache(self):
-        with patch("pandasai.helpers.cache.Cache.clear") as mock_clear:
+        with patch("pandasai.core.cache.Cache.clear") as mock_clear:
             pandasai.clear_cache()
             mock_clear.assert_called_once()

@@ -1,6 +1,6 @@
 import uuid
 
-from pandasai.helpers.cache import Cache
+from pandasai.core.cache import Cache
 
 
 class TestCache:

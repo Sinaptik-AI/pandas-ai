@@ -5,7 +5,7 @@ from typing import Optional
 from urllib.parse import urljoin
 
 import requests
-from dotenv import load_dotenv
+from pandasai.helpers import load_dotenv
 
 from pandasai.exceptions import PandasAIApiCallError, PandasAIApiKeyError
 from pandasai.helpers.logger import Logger

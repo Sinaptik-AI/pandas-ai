@@ -19,27 +19,17 @@ if TYPE_CHECKING:
 
 
 def get_chat_prompt(context: AgentState) -> BasePrompt:
-    viz_lib = "matplotlib"
-    if context.config.data_viz_library:
-        viz_lib = context.config.data_viz_library
-
     return GeneratePythonCodePrompt(
         context=context,
         last_code_generated=context.get("last_code_generated"),
-        viz_lib=viz_lib,
         output_type=context.output_type,
     )
 
 
 def get_chat_prompt_for_sql(context: AgentState) -> BasePrompt:
-    viz_lib = "matplotlib"
-    if context.config.data_viz_library:
-        viz_lib = context.config.data_viz_library
-
     return GeneratePythonCodeWithSQLPrompt(
         context=context,
         last_code_generated=context.get("last_code_generated"),
-        viz_lib=viz_lib,
         output_type=context.output_type,
     )
 

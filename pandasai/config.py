@@ -3,7 +3,7 @@ import os
 from importlib.util import find_spec
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 import pandasai.llm as llm
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
@@ -15,21 +15,16 @@ from .helpers.path import find_closest
 class Config(BaseModel):
     save_logs: bool = True
     verbose: bool = False
-    enforce_privacy: bool = False
     enable_cache: bool = True
-    use_error_correction_framework: bool = True
     save_charts: bool = False
     save_charts_path: str = DEFAULT_CHART_DIRECTORY
     custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
-
     llm: Optional[LLM] = None
-    data_viz_library: Optional[str] = None
     direct_sql: bool = False
+    security: Literal["standard", "none", "advanced"] = "standard"
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    security: Literal["standard", "none", "advanced"] = "standard"
 
     @classmethod
     def from_dict(cls, config: Dict[str, Any]) -> "Config":
@@ -122,11 +117,7 @@ def load_config_from_json(
         with open(find_closest("pandasai.json"), "r") as f:
             config = json.load(f)
 
-            # if config is a dict
-            if config.get("llm") and not override_config.get("llm"):
-                options = config.get("llm_options") or {}
-                config["llm"] = getattr(llm, config["llm"])(**options)
-            elif not config.get("llm") and not override_config.get("llm"):
+            if not config.get("llm") and not override_config.get("llm"):
                 config["llm"] = llm.BambooLLM()
     except FileNotFoundError:
         # Ignore the error if the file does not exist, will use the default config
