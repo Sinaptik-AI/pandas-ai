@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = "^3.0.0"
+pandasai = "^3.0.0a0"
 pandasai-sql = "^0.1.0"
 sqlalchemy-bigquery = "^1.8.0"
 google-cloud-bigquery = "^3.27.0"
