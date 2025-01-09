@@ -3,7 +3,7 @@ import os
 from importlib.util import find_spec
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 import pandasai.llm as llm
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
