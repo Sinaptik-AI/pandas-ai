@@ -48,21 +48,66 @@ jobs:
       - name: Clear Poetry Cache
         run: poetry cache clear pypi --all
 
-      - name: Install dependencies and test extensions
+      # Install dependencies, test, and remove for each extension
+      - name: Install and test LLM extensions (Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          for ext in extensions/*; do
-            if [ -d "$ext" ] && [ -f "$ext/pyproject.toml" ]; then
-              echo "Installing dependencies and running tests for $ext"
-              (cd "$ext" && poetry install --all-extras --with test --verbose)
-              (cd "$ext" && poetry run pytest tests/)
+          find extensions/llms -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+            fi
+          done
+
+      - name: Install and test Connector extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/connectors -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
+            fi
+          done
+
+      - name: Install and test Enterprise extensions (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          find extensions/ee -mindepth 1 -type d | while read -r dir; do
+            if [ -f "$dir/pyproject.toml" ]; then
+              echo "Installing dependencies for $dir"
+              (
+                cd "$dir" || exit
+                poetry install --all-extras --with test --verbose
+              )
+              echo "Running tests for $dir"
+              (
+                cd "$dir" || exit
+                poetry run pytest tests/
+              )
             fi
           done
 
       - name: Run extension tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          Get-ChildItem -Path extensions/* -Directory | ForEach-Object {
+          # Run LLM extension tests
+          Get-ChildItem -Path extensions/llms -Directory | ForEach-Object {
             $testDir = Join-Path $_.FullName "tests"
             if (Test-Path $testDir) {
               Write-Host "Running tests for $($_.FullName)"
@@ -73,9 +118,34 @@ jobs:
             }
           }
 
+          # Run connector extension tests
+          Get-ChildItem -Path extensions/connectors -Directory | ForEach-Object {
+            $testDir = Join-Path $_.FullName "tests"
+            if (Test-Path $testDir) {
+              Write-Host "Running tests for $($_.FullName)"
+              Push-Location $_.FullName
+              poetry install --all-extras --with test --verbose
+              poetry run pytest tests/
+              Pop-Location
+            }
+          }
+
+          # Run enterprise extension tests
+          Get-ChildItem -Path extensions/ee -Recurse -Directory -Depth 2 | ForEach-Object {
+            $testDir = Join-Path $_.FullName "tests"
+            if (Test-Path $testDir) {
+              Write-Host "Running tests for $($_.FullName)"
+              Push-Location $_.FullName
+              poetry install --all-extras --with test --verbose
+              Pop-Location
+            }
+          }
+
       - name: Run code coverage for extensions
         continue-on-error: true
         run: |
+          poetry lock --no-update
+          poetry add coverage --dev
           poetry run coverage run --source=extensions -m pytest tests extensions/*/tests
           poetry run coverage xml
 
