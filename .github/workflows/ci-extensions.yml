@@ -64,6 +64,11 @@ jobs:
                 cd "$dir" || exit
                 poetry run pytest tests/
               )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env list --all | awk '{print $1}' | xargs -n 1 poetry env remove
+              )
             fi
           done
 
@@ -82,6 +87,11 @@ jobs:
                 cd "$dir" || exit
                 poetry run pytest tests/
               )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env list --all | awk '{print $1}' | xargs -n 1 poetry env remove
+              )
             fi
           done
 
@@ -99,6 +109,11 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry run pytest tests/
+              )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env list --all | awk '{print $1}' | xargs -n 1 poetry env remove
               )
             fi
           done
@@ -144,8 +159,7 @@ jobs:
       - name: Run code coverage for extensions
         continue-on-error: true
         run: |
-          poetry lock --no-update
-          poetry add coverage --dev
+          pip install coverage
           poetry run coverage run --source=extensions -m pytest tests extensions/*/tests
           poetry run coverage xml
 
