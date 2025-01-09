@@ -1,5 +1,6 @@
-import pytest
 import pandas as pd
+import pytest
+
 from pandasai.core.response.dataframe import DataFrameResponse
 
 

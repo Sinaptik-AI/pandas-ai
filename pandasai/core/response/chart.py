@@ -1,7 +1,8 @@
-from typing import Any
-from PIL import Image
 import base64
 import io
+from typing import Any
+
+from PIL import Image
 
 from .base import BaseResponse
 

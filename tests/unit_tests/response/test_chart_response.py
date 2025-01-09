@@ -1,7 +1,9 @@
-import pytest
-from PIL import Image
 import base64
 import io
+
+import pytest
+from PIL import Image
+
 from pandasai.core.response.chart import ChartResponse
 
 
