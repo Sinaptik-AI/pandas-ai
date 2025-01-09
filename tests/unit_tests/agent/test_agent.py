@@ -361,8 +361,8 @@ class TestAgent:
         agent._regenerate_code_after_error.return_value = ("test_code", [])
 
         result = agent.execute_with_retries("test_code", [])
-        # Response parser returns a String object with value accessible via get_value()
-        assert result.get_value() == "Success"
+        # Response parser returns a String object with value accessible via .value
+        assert result.value == "Success"
         # Should have 4 execute attempts and 3 regenerations
         assert agent.execute_code.call_count == 4
         assert agent._regenerate_code_after_error.call_count == 3

@@ -2,8 +2,13 @@ import unittest
 
 import pandas as pd
 
-from pandasai.core.response.base import ResponseParser
-from pandasai.core.response.response_types import Chart, DataFrame, Number, String
+from pandasai.core.response.parser import ResponseParser
+from pandasai.core.response import (
+    ChartResponse,
+    DataFrameResponse,
+    NumberResponse,
+    StringResponse,
+)
 from pandasai.exceptions import InvalidOutputValueMismatch
 
 
@@ -15,26 +20,68 @@ class TestResponseParser(unittest.TestCase):
     def test_parse_valid_number(self):
         result = {"type": "number", "value": 42}
         response = self.response_parser.parse(result)
-        self.assertIsInstance(response, Number)
+        self.assertIsInstance(response, NumberResponse)
+        self.assertEqual(response.value, 42)
+        self.assertEqual(response.last_code_executed, None)
+        self.assertEqual(response.type, "number")
 
     def test_parse_valid_string(self):
         result = {"type": "string", "value": "test string"}
         response = self.response_parser.parse(result)
-        self.assertIsInstance(response, String)
+        self.assertIsInstance(response, StringResponse)
+        self.assertEqual(response.value, "test string")
+        self.assertEqual(response.last_code_executed, None)
+        self.assertEqual(response.type, "string")
 
     def test_parse_valid_dataframe(self):
-        result = {
-            "type": "dataframe",
-            "value": pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]}),
-        }
+        expected_df = pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
+        result = {"type": "dataframe", "value": expected_df}
 
         response = self.response_parser.parse(result)
-        self.assertIsInstance(response, DataFrame)
+        self.assertIsInstance(response, DataFrameResponse)
+        pd.testing.assert_frame_equal(response.value, expected_df)
+        self.assertEqual(response.last_code_executed, None)
+        self.assertEqual(response.type, "dataframe")
 
     def test_parse_valid_plot(self):
         result = {"type": "plot", "value": "path/to/plot.png"}
         response = self.response_parser.parse(result)
-        self.assertIsInstance(response, Chart)
+        self.assertIsInstance(response, ChartResponse)
+        self.assertEqual(response.value, "path/to/plot.png")
+        self.assertEqual(response.last_code_executed, None)
+        self.assertEqual(response.type, "chart")
+
+    def test_plot_img_show_triggered(self):
+        result = {
+            "type": "plot",
+            "value": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==",
+        }
+        response = self.response_parser.parse(result)
+
+        mock_image = unittest.mock.MagicMock()
+        with unittest.mock.patch(
+            "PIL.Image.open", return_value=mock_image
+        ) as mock_open:
+            response.show()
+            mock_open.assert_called_once()
+            mock_image.show.assert_called_once()
+
+        mock_image = unittest.mock.MagicMock()
+        with unittest.mock.patch(
+            "PIL.Image.open", return_value=mock_image
+        ) as mock_open:
+            print(response)
+            mock_open.assert_called_once()
+            mock_image.show.assert_called_once()
+
+    def test_parse_with_last_code_executed(self):
+        result = {"type": "number", "value": 42}
+        last_code = "print('Hello, World!')"
+        response = self.response_parser.parse(result, last_code)
+        self.assertIsInstance(response, NumberResponse)
+        self.assertEqual(response.value, 42)
+        self.assertEqual(response.last_code_executed, last_code)
+        self.assertEqual(response.type, "number")
 
     def test_parse_invalid_type(self):
         result = {"type": "unknown", "value": "test"}

@@ -1,71 +1,43 @@
-import re
-
-import numpy as np
-import pandas as pd
-
-from pandasai.exceptions import InvalidOutputValueMismatch
-
-from .response_types import Chart, DataFrame, Number, String
+from typing import Any
+import json
 
 
-class ResponseParser:
-    def parse(self, result: dict):
-        self._validate_response(result)
-        return self._generate_response(result)
+class BaseResponse:
+    """
+    Base class for different types of response values.
+    """
 
-    def _generate_response(self, result: dict):
-        if result["type"] == "number":
-            return Number(result)
-        elif result["type"] == "string":
-            return String(result)
-        elif result["type"] == "dataframe":
-            return DataFrame(result)
-        elif result["type"] == "plot":
-            return Chart(result)
-        else:
-            raise InvalidOutputValueMismatch(f"Invalid output type: {result['type']}")
+    def __init__(
+        self, result: Any = None, type: str = None, last_code_executed: str = None
+    ):
+        """
+        Initialize the BaseResponse object
 
-    def _validate_response(self, result: dict):
-        if (
-            not isinstance(result, dict)
-            or "type" not in result
-            or "value" not in result
-        ):
-            raise InvalidOutputValueMismatch(
-                'Result must be in the format of dictionary of type and value like `result = {"type": ..., "value": ... }`'
-            )
-        elif result["type"] == "number":
-            if not isinstance(result["value"], (int, float, np.int64)):
-                raise InvalidOutputValueMismatch(
-                    "Invalid output: Expected a numeric value for result type 'number', but received a non-numeric value."
-                )
-        elif result["type"] == "string":
-            if not isinstance(result["value"], str):
-                raise InvalidOutputValueMismatch(
-                    "Invalid output: Expected a string value for result type 'string', but received a non-string value."
-                )
-        elif result["type"] == "dataframe":
-            if not isinstance(result["value"], (pd.DataFrame, pd.Series, dict)):
-                raise InvalidOutputValueMismatch(
-                    "Invalid output: Expected a Pandas DataFrame or Series, but received an incompatible type."
-                )
+        :param result: The result of the response
+        :param last_code_executed: The last code executed to generate the result
+        :raise ValueError: If result or last_code_executed is None
+        """
+        if result is None:
+            raise ValueError("Result should not be None")
+        if type is None:
+            raise ValueError("Type should not be None")
 
-        elif result["type"] == "plot":
-            if not isinstance(result["value"], (str, dict)):
-                raise InvalidOutputValueMismatch(
-                    "Invalid output: Expected a plot save path str but received an incompatible type."
-                )
+        self.value = result
+        self.type = type
+        self.last_code_executed = last_code_executed
 
-            if isinstance(result["value"], dict) or (
-                isinstance(result["value"], str)
-                and "data:image/png;base64" in result["value"]
-            ):
-                return True
+    def __str__(self) -> str:
+        """Return the string representation of the response."""
+        return str(self.value)
 
-            path_to_plot_pattern = r"^(\/[\w.-]+)+(/[\w.-]+)*$|^[^\s/]+(/[\w.-]+)*$"
-            if not bool(re.match(path_to_plot_pattern, result["value"])):
-                raise InvalidOutputValueMismatch(
-                    "Invalid output: Expected a plot save path str but received an incompatible type."
-                )
+    def __repr__(self) -> str:
+        """Return a detailed string representation for debugging."""
+        return f"{self.__class__.__name__}(type={self.type!r}, value={self.value!r})"
 
-        return True
+    def to_dict(self) -> dict:
+        """Return a dictionary representation."""
+        return self.__dict__
+
+    def to_json(self) -> str:
+        """Return a JSON representation."""
+        return json.dumps(self.to_dict())

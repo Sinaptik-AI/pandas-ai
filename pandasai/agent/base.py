@@ -14,7 +14,7 @@ from pandasai.core.prompts import (
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
-from pandasai.core.response.base import ResponseParser
+from pandasai.core.response.parser import ResponseParser
 from pandasai.core.user_query import UserQuery
 from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.dataframe.base import DataFrame
@@ -169,7 +169,7 @@ class Agent:
         while retries <= max_retries:
             try:
                 result = self.execute_code(code, additional_dependencies)
-                return self._response_parser.parse(result)
+                return self._response_parser.parse(result, code)
             except Exception as e:
                 retries += 1
                 if retries > max_retries:
@@ -298,7 +298,7 @@ class Agent:
                     self._state.cache.get_cache_key(self._state), code
                 )
 
-            self._state.logger.log("Response Generated Successfully.")
+            self._state.logger.log("Response generated successfully.")
             # Generate and return the final response
             return result
 

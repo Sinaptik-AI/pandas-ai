@@ -19,6 +19,7 @@ from pandasai.helpers.dataframe_serializer import (
 )
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
+from pandasai.core.response import BaseResponse
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent
@@ -84,7 +85,9 @@ class DataFrame(pd.DataFrame):
     def column_hash(self):
         return self._column_hash
 
-    def chat(self, prompt: str, config: Optional[Union[dict, Config]] = None) -> str:
+    def chat(
+        self, prompt: str, config: Optional[Union[dict, Config]] = None
+    ) -> BaseResponse:
         """
         Interact with the DataFrame using natural language.
 
