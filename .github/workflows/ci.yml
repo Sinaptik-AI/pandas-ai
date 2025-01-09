@@ -14,6 +14,15 @@ jobs:
         python-version: ["3.10", "3.11"]
 
     steps:
+      - name: Clean up instance space
+        if: matrix.os != 'windows-latest'
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
