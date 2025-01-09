@@ -1,6 +1,6 @@
 import ast
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from pandasai.agent.state import AgentState
 from pandasai.core.code_generation.code_cleaning import CodeCleaner
@@ -173,6 +173,77 @@ class TestCodeCleaner(unittest.TestCase):
             node, code_lines, additional_deps
         )
         self.assertIsInstance(updated_node, ast.AST)
+
+    @patch(
+        "pandasai.core.code_generation.code_cleaning.add_save_chart"
+    )  # Replace with actual module name
+    def test_handle_charts_save_charts_true(self, mock_add_save_chart):
+        handler = self.cleaner
+        handler.context = MagicMock()
+        handler.context.config.save_charts = True
+        handler.context.logger = MagicMock()  # Mock logger
+        handler.context.last_prompt_id = 123
+        handler.context.config.save_charts_path = "/custom/path"
+
+        code = 'some text "temp_chart.png" more text'
+
+        handler._handle_charts(code)
+
+        mock_add_save_chart.assert_called_once_with(
+            code,
+            logger=handler.context.logger,
+            file_name="123",
+            save_charts_path_str="/custom/path",
+        )
+
+    @patch("pandasai.core.code_generation.code_cleaning.add_save_chart")
+    @patch(
+        "pandasai.core.code_generation.code_cleaning.find_project_root",
+        return_value="/root/project",
+    )  # Mock project root
+    def test_handle_charts_save_charts_false(
+        self, mock_find_project_root, mock_add_save_chart
+    ):
+        handler = self.cleaner
+        handler.context = MagicMock()
+        handler.context.config.save_charts = False
+        handler.context.logger = MagicMock()
+        handler.context.last_prompt_id = 123
+
+        code = 'some text "temp_chart.png" more text'
+
+        handler._handle_charts(code)
+
+        mock_add_save_chart.assert_called_once_with(
+            code,
+            logger=handler.context.logger,
+            file_name="temp_chart",
+            save_charts_path_str="/root/project/exports/charts",
+        )
+
+    def test_handle_charts_empty_code(self):
+        handler = self.cleaner
+
+        code = ""
+        expected_code = ""  # It should remain empty, as no substitution is made
+
+        result = handler._handle_charts(code)
+
+        self.assertEqual(
+            result, expected_code, f"Expected '{expected_code}', but got '{result}'"
+        )
+
+    def test_handle_charts_no_png(self):
+        handler = self.cleaner
+
+        code = "some text without png"
+        expected_code = "some text without png"  # No change should occur
+
+        result = handler._handle_charts(code)
+
+        self.assertEqual(
+            result, expected_code, f"Expected '{expected_code}', but got '{result}'"
+        )
 
 
 if __name__ == "__main__":
