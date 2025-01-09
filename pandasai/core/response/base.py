@@ -8,23 +8,28 @@ class BaseResponse:
     """
 
     def __init__(
-        self, result: Any = None, type: str = None, last_code_executed: str = None
+        self,
+        value: Any = None,
+        type: str = None,
+        last_code_executed: str = None,
+        error: str = None,
     ):
         """
         Initialize the BaseResponse object
 
-        :param result: The result of the response
-        :param last_code_executed: The last code executed to generate the result
-        :raise ValueError: If result or last_code_executed is None
+        :param value: The value of the response
+        :param last_code_executed: The last code executed to generate the value
+        :raise ValueError: If value or last_code_executed is None
         """
-        if result is None:
+        if value is None:
             raise ValueError("Result should not be None")
         if type is None:
             raise ValueError("Type should not be None")
 
-        self.value = result
+        self.value = value
         self.type = type
         self.last_code_executed = last_code_executed
+        self.error = error
 
     def __str__(self) -> str:
         """Return the string representation of the response."""

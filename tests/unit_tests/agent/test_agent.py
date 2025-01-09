@@ -7,7 +7,7 @@ import pytest
 
 from pandasai.agent.base import Agent
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import MaliciousQueryError
+from pandasai.exceptions import CodeExecutionError, MaliciousQueryError
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 
@@ -329,14 +329,14 @@ class TestAgent:
     def test_execute_with_retries_max_retries_exceeds(self, agent: Agent):
         # Mock execute_code to always raise an exception
         agent.execute_code = Mock()
-        agent.execute_code.side_effect = Exception("Test error")
+        agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
         agent._regenerate_code_after_error.return_value = ("test_code", [])
 
         # Set max retries to 3 explicitly
         agent._state.config.max_retries = 3
 
-        with pytest.raises(Exception):
+        with pytest.raises(CodeExecutionError):
             agent.execute_with_retries("test_code", [])
 
         # Should be called max_retries times
@@ -352,9 +352,9 @@ class TestAgent:
         }  # Correct response format
         # Need enough side effects for all attempts including regenerated code
         agent.execute_code.side_effect = [
-            Exception("First error"),  # Original code fails
-            Exception("Second error"),  # First regenerated code fails
-            Exception("Third error"),  # Second regenerated code fails
+            CodeExecutionError("First error"),  # Original code fails
+            CodeExecutionError("Second error"),  # First regenerated code fails
+            CodeExecutionError("Third error"),  # Second regenerated code fails
             expected_result,  # Third regenerated code succeeds
         ]
         agent._regenerate_code_after_error = Mock()
@@ -371,11 +371,11 @@ class TestAgent:
         # Test with custom number of retries
         agent._state.config.max_retries = 5
         agent.execute_code = Mock()
-        agent.execute_code.side_effect = Exception("Test error")
+        agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
         agent._regenerate_code_after_error.return_value = ("test_code", [])
 
-        with pytest.raises(Exception):
+        with pytest.raises(CodeExecutionError):
             agent.execute_with_retries("test_code", [])
 
         # Should be called max_retries + 1 times (initial try + retries)

@@ -3,7 +3,7 @@ from typing import Any, List
 
 from pandasai.config import Config
 from pandasai.core.code_execution.environment import get_environment
-from pandasai.exceptions import NoResultFoundError
+from pandasai.exceptions import CodeExecutionError, NoResultFoundError
 
 
 class CodeExecutor:
@@ -39,7 +39,10 @@ class CodeExecutor:
         """
         Executes the return updated environment
         """
-        exec(code, self._environment)
+        try:
+            exec(code, self._environment)
+        except Exception as e:
+            raise CodeExecutionError("Code execution failed") from e
 
         # Get the result
         if "result" not in self._environment:

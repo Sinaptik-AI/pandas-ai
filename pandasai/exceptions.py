@@ -273,3 +273,11 @@ class DatasetNotFound(Exception):
     Args:
         Exception (Exception): DatasetNotFound
     """
+
+
+class CodeExecutionError(Exception):
+    """
+    Raise error if code execution fails
+    Args:
+        Exception (Exception): CodeExecutionError
+    """

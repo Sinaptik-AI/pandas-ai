@@ -14,6 +14,7 @@ from pandasai.core.prompts import (
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
+from pandasai.core.response.error import ErrorResponse
 from pandasai.core.response.parser import ResponseParser
 from pandasai.core.user_query import UserQuery
 from pandasai.data_loader.schema_validator import is_schema_source_same
@@ -25,6 +26,7 @@ from pandasai.vectorstores.vectorstore import VectorStore
 from ..config import Config, load_config_from_json
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import (
+    CodeExecutionError,
     InvalidConfigError,
     InvalidLLMOutputType,
     MissingVectorStoreError,
@@ -164,19 +166,19 @@ class Agent:
     ) -> Any:
         """Execute the code with retry logic."""
         max_retries = self._state.config.max_retries
-        retries = 0
+        attempts = 0
 
-        while retries <= max_retries:
+        while attempts <= max_retries:
             try:
                 result = self.execute_code(code, additional_dependencies)
                 return self._response_parser.parse(result, code)
-            except Exception as e:
-                retries += 1
-                if retries > max_retries:
+            except CodeExecutionError as e:
+                attempts += 1
+                if attempts > max_retries:
                     self._state.logger.log(f"Max retries reached. Error: {e}")
                     raise
                 self._state.logger.log(
-                    f"Retrying execution ({retries}/{max_retries})..."
+                    f"Retrying execution ({attempts}/{max_retries})..."
                 )
                 code, additional_dependencies = self._regenerate_code_after_error(
                     code, e
@@ -302,8 +304,8 @@ class Agent:
             # Generate and return the final response
             return result
 
-        except Exception as e:
-            return self._handle_exception(e)
+        except CodeExecutionError:
+            return self._handle_exception(code)
 
     def _regenerate_code_after_error(self, code: str, error: Exception) -> str:
         """Generate a new code snippet based on the error."""
@@ -378,15 +380,12 @@ class Agent:
         if self._state.logger:
             self._state.logger.log(f"Prompt ID: {self._state.last_prompt_id}")
 
-    def _handle_exception(self, exception: Exception) -> str:
+    def _handle_exception(self, code: str) -> str:
         """Handle exceptions and return an error message."""
         error_message = traceback.format_exc()
         self._state.logger.log(f"Processing failed with error: {error_message}")
-        return (
-            "Unfortunately, I was not able to get your answers, "
-            "because of the following error:\n"
-            f"\n{exception}\n"
-        )
+
+        return ErrorResponse(last_code_executed=code, error=error_message)
 
     @property
     def last_generated_code(self):
