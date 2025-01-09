@@ -6,6 +6,7 @@ import re
 from io import BytesIO
 from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
+from pandas._typing import Axes, Dtype
 
 import pandas as pd
 import yaml
@@ -39,7 +40,6 @@ class DataFrame(pd.DataFrame):
     _metadata: ClassVar[list] = [
         "name",
         "description",
-        "filepath",
         "schema",
         "path",
         "config",
@@ -47,13 +47,23 @@ class DataFrame(pd.DataFrame):
         "_column_hash",
     ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        data=None,
+        index: Axes | None = None,
+        columns: Axes | None = None,
+        dtype: Dtype | None = None,
+        copy: bool | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            data=data, index=index, columns=columns, dtype=dtype, copy=copy
+        )
+
         self.name: Optional[str] = kwargs.pop("name", None)
         self.description: Optional[str] = kwargs.pop("description", None)
         self.path: Optional[str] = kwargs.pop("path", None)
         schema: Optional[Dict] = kwargs.pop("schema", None)
-
-        super().__init__(*args, **kwargs)
 
         if schema is not None:
             self._validate_schema(schema)
@@ -72,8 +82,6 @@ class DataFrame(pd.DataFrame):
         name_str = f"name='{self.name}'" if self.name else ""
         desc_str = f"description='{self.description}'" if self.description else ""
         metadata = ", ".join(filter(None, [name_str, desc_str]))
-
-        print(f"Metadata: {metadata}")
 
         return f"PandasAI DataFrame({metadata})\n{super().__repr__()}"
 

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 from pandasai.config import Config
 from pandasai.core.code_execution.code_executor import CodeExecutor
-from pandasai.exceptions import NoResultFoundError
+from pandasai.exceptions import CodeExecutionError, NoResultFoundError
 
 
 class TestCodeExecutor(unittest.TestCase):
@@ -122,7 +122,7 @@ class TestCodeExecutor(unittest.TestCase):
     def test_execute_with_syntax_error(self):
         """Test executing code that raises a syntax error."""
         code = "result = 5 +"
-        with self.assertRaises(SyntaxError):
+        with self.assertRaises(CodeExecutionError):
             self.executor.execute(code)
 
 

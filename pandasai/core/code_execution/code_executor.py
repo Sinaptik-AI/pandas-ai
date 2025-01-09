@@ -32,17 +32,17 @@ class CodeExecutor:
         self._environment[key] = value
 
     def execute(self, code: str) -> dict:
-        exec(code, self._environment)
+        try:
+            exec(code, self._environment)
+        except Exception as e:
+            raise CodeExecutionError("Code execution failed") from e
         return self._environment
 
     def execute_and_return_result(self, code: str) -> Any:
         """
         Executes the return updated environment
         """
-        try:
-            exec(code, self._environment)
-        except Exception as e:
-            raise CodeExecutionError("Code execution failed") from e
+        self.execute(code)
 
         # Get the result
         if "result" not in self._environment:
