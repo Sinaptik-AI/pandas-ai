@@ -15,7 +15,6 @@
 
 
 import pandasai as pai
-import pandasai_sql
 
 df = pai.load("sipa/users")
 response = df.chat("How many users in total?")

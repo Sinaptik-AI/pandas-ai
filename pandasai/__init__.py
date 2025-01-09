@@ -16,9 +16,9 @@ from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
 
 from .agent import Agent
+from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
 from .dataframe.base import DataFrame
-from .core.cache import Cache
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 

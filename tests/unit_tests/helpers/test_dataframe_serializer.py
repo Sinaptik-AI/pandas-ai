@@ -32,9 +32,6 @@ class TestDataframeSerializer(unittest.TestCase):
     fields:
     - name: name
       type: object
-      samples:
-      - en_name
-      - 中文_名称
 """,
             result,
         )

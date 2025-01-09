@@ -1,4 +1,4 @@
-name: ci
+name: ci-extensions
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  extensions-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -14,7 +14,17 @@ jobs:
         python-version: ["3.10", "3.11"]
 
     steps:
+      - name: Clean up instance space
+        if: matrix.os != 'windows-latest'
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -25,25 +35,18 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo 'export PATH="$HOME/.local/bin:$PATH"' >> $GITHUB_ENV
+
       - name: Install Poetry (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
           echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" >> $env:GITHUB_PATH
+
       - name: Verify Poetry Installation
         run: poetry --version
+
       - name: Clear Poetry Cache
         run: poetry cache clear pypi --all
-      - name: Install future
-        run: pip wheel --use-pep517 "future==0.18.3"
-      - name: Install dependencies
-        run: poetry install --all-extras --with dev --verbose
-      - name: Lint with ruff
-        run: make format_diff
-      - name: Spellcheck
-        run: make spell_check
-      - name: Run core tests
-        run: make test_core
 
       # Install dependencies, test, and remove for each extension
       - name: Install and test LLM extensions (Unix)
@@ -60,6 +63,11 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry run pytest tests/
+              )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env remove --all
               )
             fi
           done
@@ -79,6 +87,11 @@ jobs:
                 cd "$dir" || exit
                 poetry run pytest tests/
               )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env remove --all
+              )
             fi
           done
 
@@ -96,6 +109,11 @@ jobs:
               (
                 cd "$dir" || exit
                 poetry run pytest tests/
+              )
+              echo "Removing envs"
+              (
+                cd "$dir" || exit
+                poetry env remove --all
               )
             fi
           done
@@ -137,11 +155,14 @@ jobs:
               Pop-Location
             }
           }
-      - name: Run code coverage
+
+      - name: Run code coverage for extensions
         continue-on-error: true
         run: |
-          poetry run coverage run --source=pandasai,extensions -m pytest tests extensions/*/tests extensions/ee/*/tests --ignore=tests/integration_tests
+          pip install coverage
+          poetry run coverage run --source=extensions -m pytest tests extensions/*/tests
           poetry run coverage xml
+
       - name: Report coverage
         uses: codecov/codecov-action@v3
         with:
