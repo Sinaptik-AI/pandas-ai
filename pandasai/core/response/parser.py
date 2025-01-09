@@ -6,10 +6,10 @@ import pandas as pd
 from pandasai.exceptions import InvalidOutputValueMismatch
 
 from .base import BaseResponse
+from .chart import ChartResponse
+from .dataframe import DataFrameResponse
 from .number import NumberResponse
 from .string import StringResponse
-from .dataframe import DataFrameResponse
-from .chart import ChartResponse
 
 
 class ResponseParser:

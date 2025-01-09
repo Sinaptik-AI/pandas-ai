@@ -2,13 +2,13 @@ import unittest
 
 import pandas as pd
 
-from pandasai.core.response.parser import ResponseParser
 from pandasai.core.response import (
     ChartResponse,
     DataFrameResponse,
     NumberResponse,
     StringResponse,
 )
+from pandasai.core.response.parser import ResponseParser
 from pandasai.exceptions import InvalidOutputValueMismatch
 
 

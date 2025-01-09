@@ -12,6 +12,7 @@ import yaml
 
 import pandasai as pai
 from pandasai.config import Config
+from pandasai.core.response import BaseResponse
 from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
@@ -19,7 +20,6 @@ from pandasai.helpers.dataframe_serializer import (
 )
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
-from pandasai.core.response import BaseResponse
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent

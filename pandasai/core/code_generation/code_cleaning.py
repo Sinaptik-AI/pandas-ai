@@ -310,7 +310,7 @@ class CodeCleaner:
             return add_save_chart(
                 code,
                 logger=self.context.logger,
-                file_name=str(self.context.prompt_id),
+                file_name=str(self.context.last_prompt_id),
                 save_charts_path_str=self.context.config.save_charts_path,
             )
         return add_save_chart(
