@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from pandasai.agent.base import Agent
+from pandasai.config import Config, ConfigManager
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import CodeExecutionError, MaliciousQueryError
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
@@ -386,13 +387,13 @@ class TestAgent:
         assert agent._get_llm(llm) == llm
 
     def test_load_llm_none(self, agent: Agent, llm):
-        with patch("pandasai.llm.bamboo_llm.BambooLLM") as mock, patch.dict(
+        mock_llm = FakeLLM()
+        with patch("pandasai.agent.base.BambooLLM", return_value=mock_llm), patch.dict(
             os.environ, {"PANDASAI_API_KEY": "test_key"}
         ):
-            bamboo_llm = Mock(type="bamboo")
-            mock.return_value = bamboo_llm
             config = agent._get_config({})
-            assert config.llm.__class__.__name__ == "BambooLLM"
+            assert isinstance(config, Config)
+            assert config.llm == mock_llm
 
     def test_train_method_with_qa(self, agent):
         queries = ["query1", "query2"]
@@ -458,3 +459,37 @@ class TestAgent:
         for query in malicious_queries:
             with pytest.raises(MaliciousQueryError):
                 agent.chat(query)
+
+    def test_get_config_none(self, agent: Agent):
+        """Test that _get_config returns global config when input is None"""
+        mock_config = Config()
+        with patch.object(ConfigManager, "get", return_value=mock_config):
+            config = agent._get_config(None)
+            assert config == mock_config
+
+    def test_get_config_dict(self, agent: Agent):
+        """Test that _get_config properly handles dict input"""
+        mock_llm = FakeLLM()
+        test_dict = {"save_logs": False, "verbose": True, "llm": mock_llm}
+        config = agent._get_config(test_dict)
+        assert isinstance(config, Config)
+        assert config.save_logs is False
+        assert config.verbose is True
+        assert config.llm == mock_llm
+
+    def test_get_config_dict_with_api_key(self, agent: Agent):
+        """Test that _get_config adds BambooLLM when API key is present"""
+        mock_llm = FakeLLM()
+        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+            "pandasai.agent.base.BambooLLM", return_value=mock_llm
+        ):
+            config = agent._get_config({})
+            assert isinstance(config, Config)
+            assert config.llm == mock_llm
+
+    def test_get_config_config(self, agent: Agent):
+        """Test that _get_config returns Config object unchanged"""
+        original_config = Config(save_logs=False, verbose=True)
+        config = agent._get_config(original_config)
+        assert config == original_config
+        assert isinstance(config, Config)

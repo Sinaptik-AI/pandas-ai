@@ -336,17 +336,24 @@ class Agent:
         if self._state.config.enable_cache:
             Folder.create(DEFAULT_CACHE_DIRECTORY)
 
-    def _get_config(self, config: Union[Config, dict]):
+    def _get_config(self, config: Union[Config, dict]) -> Config:
         """
         Load a config to be used to run the queries.
 
         Args:
             config (Union[Config, dict]): Config to be used
         """
-        if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
-            config["llm"] = BambooLLM()
+        if config is None:
+            from pandasai.config import ConfigManager
 
-        return Config(**config) if config else None
+            return ConfigManager.get()
+
+        if isinstance(config, dict):
+            if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
+                config["llm"] = BambooLLM()
+            return Config(**config)
+
+        return config
 
     def _get_llm(self, llm: Optional[LLM] = None) -> LLM:
         """
