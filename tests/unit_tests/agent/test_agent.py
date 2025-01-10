@@ -391,7 +391,6 @@ class TestAgent:
         ):
             bamboo_llm = Mock(type="bamboo")
             mock.return_value = bamboo_llm
-            print(os.environ)
             config = agent._get_config({})
             assert config.llm.__class__.__name__ == "BambooLLM"
 

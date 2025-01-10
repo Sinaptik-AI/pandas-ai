@@ -1,3 +1,4 @@
+import os
 import traceback
 import uuid
 import warnings
@@ -23,7 +24,7 @@ from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.llm.bamboo_llm import BambooLLM
 from pandasai.vectorstores.vectorstore import VectorStore
 
-from ..config import Config, load_config_from_json
+from ..config import Config
 from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from ..exceptions import (
     CodeExecutionError,
@@ -342,8 +343,9 @@ class Agent:
         Args:
             config (Union[Config, dict]): Config to be used
         """
+        if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
+            config["llm"] = BambooLLM()
 
-        config = load_config_from_json(config)
         return Config(**config) if config else None
 
     def _get_llm(self, llm: Optional[LLM] = None) -> LLM:

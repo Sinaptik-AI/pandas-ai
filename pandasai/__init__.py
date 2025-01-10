@@ -25,7 +25,6 @@ from .smart_datalake import SmartDatalake
 # Global variable to store the current agent
 _current_agent = None
 
-
 config = ConfigManager()
 
 api_key = APIKeyManager()

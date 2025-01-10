@@ -1,15 +1,11 @@
-import json
 import os
 from importlib.util import find_spec
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-import pandasai.llm as llm
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.llm.base import LLM
-
-from .helpers.path import find_closest
 
 
 class Config(BaseModel):
@@ -89,41 +85,3 @@ class APIKeyManager:
     @classmethod
     def get(cls) -> Optional[str]:
         return cls._api_key
-
-
-def load_config_from_json(
-    override_config: Optional[Union[Config, dict]] = None,
-):
-    """
-    Load the configuration from the pandasai.json file.
-
-    Args:
-        override_config (Optional[Union[Config, dict]], optional): The configuration to
-        override the one in the file. Defaults to None.
-
-    Returns:
-        dict: The configuration.
-    """
-
-    config = {}
-
-    if override_config is None:
-        override_config = {}
-
-    if isinstance(override_config, Config):
-        override_config = override_config.dict()
-
-    try:
-        with open(find_closest("pandasai.json"), "r") as f:
-            config = json.load(f)
-
-            if not config.get("llm") and not override_config.get("llm"):
-                config["llm"] = llm.BambooLLM()
-    except FileNotFoundError:
-        # Ignore the error if the file does not exist, will use the default config
-        pass
-
-    if override_config:
-        config.update(override_config)
-
-    return config

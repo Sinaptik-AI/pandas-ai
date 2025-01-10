@@ -39,7 +39,6 @@ def find_project_root(filename=None):
             os.path.isfile(os.path.join(root_folder, "pyproject.toml"))
             or os.path.isfile(os.path.join(root_folder, "setup.py"))
             or os.path.isfile(os.path.join(root_folder, "requirements.txt"))
-            or os.path.isfile(os.path.join(root_folder, "pandasai.json"))
         ):
             break
 

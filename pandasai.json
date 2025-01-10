@@ -1,9 +1,0 @@
-{
-  "save_logs": true,
-  "verbose": false,
-  "max_retries": 3,
-  "open_charts": true,
-  "save_charts": false,
-  "save_charts_path": "exports/charts",
-  "custom_whitelisted_dependencies": []
-}
