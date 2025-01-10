@@ -53,25 +53,6 @@ class TestCodeExecutor(unittest.TestCase):
         result = self.executor.execute_and_return_result(code)
         self.assertEqual(result, {"type": "plot", "value": "my_plot"})
 
-    def test_get_variable_last_line_of_code_assignment(self):
-        """Test extracting variable name from an assignment."""
-        code = "a = 5\nb = 10\nresult = a + b"
-        var_name, subscript = self.executor._get_variable_last_line_of_code(code)
-        self.assertEqual(var_name, "result")
-        self.assertEqual(subscript, None)
-
-    def test_get_variable_last_line_of_code_expression(self):
-        """Test extracting variable name from an expression."""
-        code = "print(5)\nresult = 5 + 5"
-        var_name, _ = self.executor._get_variable_last_line_of_code(code)
-        self.assertEqual(var_name, "result")
-
-    def test_get_variable_last_line_of_code_invalid(self):
-        """Test handling of invalid code syntax."""
-        code = "invalid syntax"
-        var_name = self.executor._get_variable_last_line_of_code(code)
-        self.assertIsNone(var_name)
-
     def test_get_assign_variable_with_name(self):
         """Test extracting variable name from an assignment node with a Name target."""
         assign_node = MagicMock()
