@@ -236,7 +236,7 @@ class DataFrame(pd.DataFrame):
 
     def push(self):
         if self.path is None:
-            raise ValueError("Save Dataset first before pushing to remote server")
+            raise ValueError("Please save the dataset before pushing to the remote server.")
 
         api_key = os.environ.get("PANDASAI_API_KEY", None)
 
