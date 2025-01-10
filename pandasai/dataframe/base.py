@@ -235,6 +235,9 @@ class DataFrame(pd.DataFrame):
         print(f"Dataset saved successfully to path: {dataset_directory}")
 
     def push(self):
+        if self.path is None:
+            raise ValueError("Save Dataset first before pushing to remote server")
+
         api_key = os.environ.get("PANDASAI_API_KEY", None)
 
         request_session = get_pandaai_session()
@@ -242,6 +245,7 @@ class DataFrame(pd.DataFrame):
         params = {
             "path": self.path,
             "description": self.description,
+            "name": self.name if self.name else "",
         }
 
         dataset_directory = os.path.join(find_project_root(), "datasets", self.path)
