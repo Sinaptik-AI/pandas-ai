@@ -46,16 +46,9 @@ class CodeExecutor:
 
         # Get the result
         if "result" not in self._environment:
-            var_name, subscript = self._get_variable_last_line_of_code(code)
-            if var_name and var_name in self._environment:
-                if subscript is not None:
-                    result = self._environment[var_name][subscript]
-                else:
-                    result = self._environment[var_name]
-
             raise NoResultFoundError("No result returned")
-        else:
-            result = self._environment["result"]
+
+        result = self._environment["result"]
 
         if isinstance(result, dict) and result["type"] == "plot":
             for plot in self._plots:
@@ -63,29 +56,6 @@ class CodeExecutor:
                     result["value"] = plot["value"]
 
         return self._environment.get("result", None)
-
-    def _get_variable_last_line_of_code(self, code: str) -> str:
-        """
-        Returns variable name from the last line if it is a variable name or assigned.
-        Args:
-            code (str): Code in string.
-
-        Returns:
-            str: Variable name.
-        """
-        try:
-            tree = ast.parse(code)
-            last_statement = tree.body[-1]
-
-            if isinstance(last_statement, ast.Assign):
-                return self._get_assign_variable(last_statement)
-            elif isinstance(last_statement, ast.Expr):
-                return self._get_expr_variable(last_statement)
-
-            return ast.unparse(last_statement).strip()
-
-        except SyntaxError:
-            return None
 
     def _get_assign_variable(self, assign_node):
         """
