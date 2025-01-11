@@ -13,11 +13,6 @@ from pandasai.core.code_execution.environment import (
     get_environment,
     import_dependency,
 )
-from pandasai.core.code_execution.safe_libs.restricted_matplotlib import (
-    RestrictedMatplotlib,
-)
-from pandasai.core.code_execution.safe_libs.restricted_numpy import RestrictedNumpy
-from pandasai.core.code_execution.safe_libs.restricted_pandas import RestrictedPandas
 
 
 def test_import_optional():
@@ -100,15 +95,3 @@ def test_env_for_necessary_deps():
     assert "pd" in env
     assert "plt" in env
     assert "np" in env
-
-
-def test_env_for_security():
-    env = get_environment([], secure=True)
-    assert "pd" in env and isinstance(env["pd"], RestrictedPandas)
-    assert "plt" in env and isinstance(env["plt"], RestrictedMatplotlib)
-    assert "np" in env and isinstance(env["np"], RestrictedNumpy)
-
-    env = get_environment([], secure=False)
-    assert "pd" in env and not isinstance(env["pd"], RestrictedPandas)
-    assert "plt" in env and not isinstance(env["plt"], RestrictedMatplotlib)
-    assert "np" in env and not isinstance(env["np"], RestrictedNumpy)

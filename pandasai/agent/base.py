@@ -273,9 +273,7 @@ class Agent:
 
     def _process_query(self, query: str, output_type: Optional[str] = None):
         """Process a user query and return the result."""
-        query = UserQuery(
-            query, secure=self._state.config.security in ["standard", "advanced"]
-        )
+        query = UserQuery(query)
         self._state.logger.log(f"Question: {query}")
         self._state.logger.log(
             f"Running PandasAI with {self._state.config.llm.type} LLM..."

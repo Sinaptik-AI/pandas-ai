@@ -4,7 +4,7 @@ This module contains the implementation of Custom Exceptions.
 
 """
 
-from pandasai.constants import PANDASBI_SETUP_MESSAGE
+from pandasai.constants import PANDABI_SETUP_MESSAGE
 
 
 class InvalidRequestError(Exception):
@@ -211,7 +211,7 @@ class PandasAIApiKeyError(Exception):
 
     def __init__(self, message: str = None):
         if not message:
-            message = PANDASBI_SETUP_MESSAGE
+            message = PANDABI_SETUP_MESSAGE
         super().__init__(message)
 
 

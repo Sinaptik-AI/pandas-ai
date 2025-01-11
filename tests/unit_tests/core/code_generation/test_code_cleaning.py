@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from pandasai.agent.state import AgentState
 from pandasai.core.code_generation.code_cleaning import CodeCleaner
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import BadImportError, MaliciousQueryError
+from pandasai.exceptions import MaliciousQueryError
 
 
 class TestCodeCleaner(unittest.TestCase):
@@ -30,11 +30,6 @@ class TestCodeCleaner(unittest.TestCase):
         node = ast.Import(names=[ast.alias(name="pandas", asname=None)])
         result = self.cleaner._check_imports(node)
         self.assertIsNone(result)
-
-    def test_check_imports_invalid(self):
-        node = ast.Import(names=[ast.alias(name="numpy", asname=None)])
-        with self.assertRaises(BadImportError):
-            self.cleaner._check_imports(node)
 
     def test_check_is_df_declaration_true(self):
         node = ast.Call(

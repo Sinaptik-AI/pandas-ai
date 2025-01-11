@@ -10,8 +10,7 @@ from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
 
-from ...constants import WHITELISTED_LIBRARIES
-from ...exceptions import BadImportError, MaliciousQueryError
+from ...exceptions import MaliciousQueryError
 from ...helpers.save_chart import add_save_chart
 
 
@@ -31,27 +30,12 @@ class CodeCleaner:
 
         Args:
             node (object): ast.Import or ast.ImportFrom
-
-        Raises:
-            BadImportError: If the import is not whitelisted
-
         """
         module = node.names[0].name if isinstance(node, ast.Import) else node.module
         library = module.split(".")[0]
 
         if library == "pandas":
             return
-
-        whitelisted_libs = (
-            WHITELISTED_LIBRARIES + self.context.config.custom_whitelisted_dependencies
-        )
-
-        if library not in whitelisted_libs:
-            raise BadImportError(
-                f"The library '{library}' is not in the list of whitelisted libraries. "
-                "To learn how to whitelist custom dependencies, visit: "
-                "https://docs.pandas-ai.com/custom-whitelisted-dependencies#custom-whitelisted-dependencies"
-            )
 
         for alias in node.names:
             return {

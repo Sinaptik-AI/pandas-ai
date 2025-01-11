@@ -32,9 +32,7 @@ pai.config.set({
    "save_charts_path": "exports/charts/",
    "open_charts": True,
    "enable_cache": True,
-   "max_retries": 3,
-   "security": "none",
-   "custom_whitelisted_dependencies": {}
+   "max_retries": 3
 })
 ```
 
@@ -77,13 +75,3 @@ pai.config.set({
 - **Type**: `int`
 - **Default**: `3`
 - **Description**: The maximum number of retries to use when using the error correction framework. You can use this setting to override the default number of retries.
-
-#### security
-- **Type**: `str`
-- **Default**: `"none"`
-- **Description**: The security level to use. You can use this setting to override the default security level. See [privacy settings](/v3/privacy-and-security) for more information.
-
-#### custom_whitelisted_dependencies
-- **Type**: `dict`
-- **Default**: `{}`
-- **Description**: The custom whitelisted dependencies to use. You can use this setting to override the default custom whitelisted dependencies. See [custom whitelisted dependencies](/v3/privacy-and-security#custom-whitelisted-dependencies) for more information.

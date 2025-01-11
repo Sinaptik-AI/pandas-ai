@@ -11,19 +11,6 @@ from typing import List, Union
 
 from pandas.util.version import Version
 
-from pandasai.constants import WHITELISTED_BUILTINS
-
-from .safe_libs.restricted_base64 import RestrictedBase64
-from .safe_libs.restricted_datetime import (
-    RestrictedDatetime,
-)
-from .safe_libs.restricted_json import RestrictedJson
-from .safe_libs.restricted_matplotlib import (
-    RestrictedMatplotlib,
-)
-from .safe_libs.restricted_numpy import RestrictedNumpy
-from .safe_libs.restricted_pandas import RestrictedPandas
-
 # Minimum version required for each optional dependency
 
 VERSIONS = {
@@ -46,7 +33,7 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
-def get_environment(additional_deps: List[dict], secure: bool = True) -> dict:
+def get_environment(additional_deps: List[dict]) -> dict:
     """
     Returns the environment for the code to be executed.
 
@@ -61,50 +48,24 @@ def get_environment(additional_deps: List[dict], secure: bool = True) -> dict:
             )
             for lib in additional_deps
         },
-        "__builtins__": {
-            **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
-            "__build_class__": __build_class__,
-            "__name__": "__main__",
-        },
     }
 
-    if secure:
-        env["pd"] = RestrictedPandas()
-        env["plt"] = RestrictedMatplotlib()
-        env["np"] = RestrictedNumpy()
+    env["pd"] = import_dependency("pandas")
+    env["plt"] = import_dependency("matplotlib.pyplot")
+    env["np"] = import_dependency("numpy")
 
-        for lib in additional_deps:
-            if lib["name"] == "seaborn":
-                from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
+    for lib in additional_deps:
+        if lib["name"] == "seaborn":
+            env["sns"] = import_dependency("seaborn")
 
-                env["sns"] = RestrictedSeaborn()
+        if lib["name"] == "datetime":
+            env["datetime"] = import_dependency("datetime")
 
-            if lib["name"] == "datetime":
-                env["datetime"] = RestrictedDatetime()
+        if lib["name"] == "json":
+            env["json"] = import_dependency("json")
 
-            if lib["name"] == "json":
-                env["json"] = RestrictedJson()
-
-            if lib["name"] == "base64":
-                env["base64"] = RestrictedBase64()
-
-    else:
-        env["pd"] = import_dependency("pandas")
-        env["plt"] = import_dependency("matplotlib.pyplot")
-        env["np"] = import_dependency("numpy")
-
-        for lib in additional_deps:
-            if lib["name"] == "seaborn":
-                env["sns"] = import_dependency("seaborn")
-
-            if lib["name"] == "datetime":
-                env["datetime"] = import_dependency("datetime")
-
-            if lib["name"] == "json":
-                env["json"] = import_dependency("json")
-
-            if lib["name"] == "base64":
-                env["base64"] = import_dependency("base64")
+        if lib["name"] == "base64":
+            env["base64"] = import_dependency("base64")
 
     return env
 

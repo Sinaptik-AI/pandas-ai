@@ -18,7 +18,6 @@ class CodeExecutor:
     ) -> None:
         self._environment = get_environment(
             additional_dependencies or [],
-            secure=config.security in ["standard", "advanced"],
         )
         self._plots = []
 

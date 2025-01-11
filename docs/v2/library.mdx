@@ -217,7 +217,6 @@ Settings:
 - `open_charts`: whether to open the chart during parsing of the response from the LLM. Defaults to `True`. You can completely disable displaying of charts by setting this option to `False`.
 - `enable_cache`: whether to enable caching. Defaults to `True`. If set to `True`, PandasAI will cache the results of the LLM to improve the response time. If set to `False`, PandasAI will always call the LLM.
 - `max_retries`: the maximum number of retries to use when using the error correction framework. Defaults to `3`. You can use this setting to override the default number of retries.
-- `custom_whitelisted_dependencies`: the custom whitelisted dependencies to use. Defaults to `{}`. You can use this setting to override the default custom whitelisted dependencies. You can find more information about custom whitelisted dependencies [here](/v2/custom-whitelisted-dependencies).
 - `security`: The “security” parameter allows for three levels depending on specific use cases: “none,” “standard,” and “advanced.” "standard" and "advanced" are especially useful for detecting malicious intent from user queries and avoiding the execution of potentially harmful code. By default, the “security” is set to "standard." The security check might introduce stricter rules that could flag benign queries as harmful. You can deactivate it in the configuration by setting “security” to “none.”
 
 ## Demo in Google Colab

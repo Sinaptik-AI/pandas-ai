@@ -6,7 +6,6 @@ from pandasai.core.code_execution.environment import (
     get_version,
     import_dependency,
 )
-from pandasai.core.code_execution.safe_libs.restricted_pandas import RestrictedPandas
 
 
 class TestEnvironmentFunctions(unittest.TestCase):
@@ -15,23 +14,20 @@ class TestEnvironmentFunctions(unittest.TestCase):
         """Test get_environment function in secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
         additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps, secure=True)
+        env = get_environment(additional_deps)
 
         self.assertIn("pd", env)
-        self.assertIn("__builtins__", env)
         self.assertIn("plt", env)
         self.assertIn("np", env)
-        self.assertIsInstance(env["pd"], RestrictedPandas)
 
     @patch("pandasai.core.code_execution.environment.import_dependency")
     def test_get_environment_without_secure_mode(self, mock_import_dependency):
         """Test get_environment function in non-secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
         additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps, secure=False)
+        env = get_environment(additional_deps)
 
         self.assertIn("pd", env)
-        self.assertIn("__builtins__", env)
         self.assertIn("plt", env)
         self.assertIn("np", env)
         self.assertIsInstance(env["pd"], MagicMock)
