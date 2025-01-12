@@ -4,21 +4,7 @@ Source: Taken from pandas/compat/_optional.py
 """
 
 import importlib
-import sys
 import types
-import warnings
-from typing import Union
-
-from pandas.util.version import Version
-
-# Minimum version required for each optional dependency
-
-VERSIONS = {
-    "seaborn": "0.12.2",
-}
-
-# A mapping from import name to package name (on PyPI) for packages where
-# these two names are different.
 
 INSTALL_MAPPING = {}
 
@@ -52,7 +38,6 @@ def import_dependency(
     name: str,
     extra: str = "",
     errors: str = "raise",
-    min_version: Union[str, None] = None,
 ):
     """
     Import an optional dependency.
@@ -100,29 +85,5 @@ def import_dependency(
         if errors == "raise":
             raise ImportError(msg) from exc
         return None
-
-    # Handle submodules: if we have submodule, grab parent module from sys.modules
-    parent = name.split(".")[0]
-    if parent != name:
-        install_name = parent
-        module_to_get = sys.modules[install_name]
-    else:
-        module_to_get = module
-    minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
-    if minimum_version:
-        version = get_version(module_to_get)
-        if version and Version(version) < Version(minimum_version):
-            msg = (
-                f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
-                f"(version '{version}' currently installed)."
-            )
-            if errors == "warn":
-                warnings.warn(
-                    msg,
-                    UserWarning,
-                )
-                return None
-            if errors == "raise":
-                raise ImportError(msg)
 
     return module

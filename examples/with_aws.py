@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a Dataframe and Amazon Bedrock."""
+"""Example of using PandaAI with a Dataframe and Amazon Bedrock."""
 
 import boto3
 import pandas as pd

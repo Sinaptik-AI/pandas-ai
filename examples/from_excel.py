@@ -1,4 +1,4 @@
-"""Example of using PandasAI with am Excel file."""
+"""Example of using PandaAI with am Excel file."""
 
 import os
 

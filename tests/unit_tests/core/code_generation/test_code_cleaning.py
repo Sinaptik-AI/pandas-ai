@@ -26,42 +26,6 @@ class TestCodeCleaner(unittest.TestCase):
             }
         )
 
-    def test_check_imports_valid(self):
-        node = ast.Import(names=[ast.alias(name="pandas", asname=None)])
-        result = self.cleaner._check_imports(node)
-        self.assertIsNone(result)
-
-    def test_check_is_df_declaration_true(self):
-        node = ast.Call(
-            func=ast.Attribute(
-                value=ast.Name(id="pd", ctx=ast.Load()),
-                attr="DataFrame",
-                ctx=ast.Load(),
-            ),
-            args=[],
-            keywords=[],
-        )
-        node_ast = MagicMock()
-        node_ast.value = node
-        result = self.cleaner._check_is_df_declaration(node_ast)
-        self.assertTrue(result)
-
-    def test_check_is_df_declaration_false(self):
-        node = ast.Call(func=ast.Name(id="list", ctx=ast.Load()), args=[], keywords=[])
-        node_ast = MagicMock()
-        node_ast.value = node
-        result = self.cleaner._check_is_df_declaration(node_ast)
-        self.assertFalse(result)
-
-    def test_get_target_names_single(self):
-        node = ast.Assign(
-            targets=[ast.Name(id="df", ctx=ast.Store())],
-            value=ast.Name(id="pd", ctx=ast.Load()),
-        )
-        target_names, is_slice, target = self.cleaner._get_target_names(node.targets)
-        self.assertEqual(target_names, ["df"])
-        self.assertFalse(is_slice)
-
     def test_check_direct_sql_func_def_exists_true(self):
         node = ast.FunctionDef(
             name="execute_sql_query",

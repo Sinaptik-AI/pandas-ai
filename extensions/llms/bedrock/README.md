@@ -1,6 +1,6 @@
-# Google AI Extension for PandasAI
+# Google AI Extension for PandaAI
 
-This extension integrates Google AI with PandasAI, providing Google AI LLMs support.
+This extension integrates Google AI with PandaAI, providing Google AI LLMs support.
 
 ## Installation
 

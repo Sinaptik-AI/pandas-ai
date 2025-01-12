@@ -1,6 +1,6 @@
-# HuggingFace Extension for PandasAI
+# HuggingFace Extension for PandaAI
 
-This extension integrates HuggingFace with PandasAI, providing HuggingFace LLMs support.
+This extension integrates HuggingFace with PandaAI, providing HuggingFace LLMs support.
 
 ## Installation
 

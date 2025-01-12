@@ -182,7 +182,6 @@ print('Cached result: US has the highest GDP.')"""
         mock_code_executor.return_value.execute_and_return_result.return_value = {
             "result": "Execution successful"
         }
-        mock_code_executor.return_value.add_to_env = MagicMock()
 
         # Execute the code
         code = "print('Hello, World!')"
@@ -190,9 +189,6 @@ print('Cached result: US has the highest GDP.')"""
 
         # Verify the code was executed and the result is correct
         assert result == {"result": "Execution successful"}
-        mock_code_executor.return_value.add_to_env.assert_any_call(
-            "dfs", agent._state.dfs
-        )
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
             code
         )
@@ -203,7 +199,6 @@ print('Cached result: US has the highest GDP.')"""
         mock_code_executor.return_value.execute_and_return_result.return_value = {
             "result": "SQL Execution successful"
         }
-        mock_code_executor.return_value.add_to_env = MagicMock()
 
         # Mock SQL method in the DataFrame
         agent._state.dfs[0].execute_sql_query = MagicMock()
@@ -214,9 +209,6 @@ print('Cached result: US has the highest GDP.')"""
 
         # Verify the SQL execution environment was set up correctly
         assert result == {"result": "SQL Execution successful"}
-        mock_code_executor.return_value.add_to_env.assert_any_call(
-            "execute_sql_query", agent._state.dfs[0].execute_sql_query
-        )
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
             code
         )

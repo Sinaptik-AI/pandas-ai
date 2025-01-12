@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-milvus"
 version = "0.1.1"
-description = "Milvus integration for PandasAI"
+description = "Milvus integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 

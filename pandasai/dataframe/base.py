@@ -14,7 +14,7 @@ import yaml
 import pandasai as pai
 from pandasai.config import Config
 from pandasai.core.response import BaseResponse
-from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 class DataFrame(pd.DataFrame):
     """
-    PandasAI DataFrame that extends pandas DataFrame with natural language capabilities.
+    PandaAI DataFrame that extends pandas DataFrame with natural language capabilities.
 
     Attributes:
         name (Optional[str]): Name of the dataframe
@@ -83,7 +83,7 @@ class DataFrame(pd.DataFrame):
         desc_str = f"description='{self.description}'" if self.description else ""
         metadata = ", ".join(filter(None, [name_str, desc_str]))
 
-        return f"PandasAI DataFrame({metadata})\n{super().__repr__()}"
+        return f"PandaAI DataFrame({metadata})\n{super().__repr__()}"
 
     def _calculate_column_hash(self):
         column_string = ",".join(self.columns)
@@ -278,7 +278,7 @@ class DataFrame(pd.DataFrame):
         api_key = os.environ.get("PANDASAI_API_KEY", None)
 
         if not api_key:
-            raise PandasAIApiKeyError(
+            raise PandaAIApiKeyError(
                 "Set PANDASAI_API_URL and PANDASAI_API_KEY in environment to pull dataset to the remote server"
             )
 

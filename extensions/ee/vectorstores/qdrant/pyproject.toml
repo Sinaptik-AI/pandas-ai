@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-qdrant"
 version = "0.1.1"
-description = "Qdrant integration for PandasAI"
+description = "Qdrant integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 

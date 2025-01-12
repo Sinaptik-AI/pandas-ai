@@ -2,7 +2,7 @@
 title: "Custom Response"
 ---
 
-PandasAI offers the flexibility to handle chat responses in a customized manner. By default, PandasAI includes a ResponseParser class that can be extended to modify the response output according to your needs.
+PandaAI offers the flexibility to handle chat responses in a customized manner. By default, PandaAI includes a ResponseParser class that can be extended to modify the response output according to your needs.
 
 You have the option to provide a custom parser, such as `StreamlitResponse`, to the configuration object like this:
 
@@ -16,7 +16,7 @@ from pandasai import SmartDatalake
 from pandasai.responses.response_parser import ResponseParser
 
 # This class overrides default behaviour how dataframe is returned
-# By Default PandasAI returns the SmartDataFrame
+# By Default PandaAI returns the SmartDataFrame
 class PandasDataFrame(ResponseParser):
 
     def __init__(self, context) -> None:

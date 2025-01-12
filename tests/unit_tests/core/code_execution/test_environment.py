@@ -46,13 +46,6 @@ class TestEnvironmentFunctions(unittest.TestCase):
             import_dependency("non_existent_module")
 
     @patch("pandasai.core.code_execution.environment.importlib.import_module")
-    def test_import_dependency_version_too_old(self, mock_import_module):
-        """Test handling of a dependency with an old version."""
-        mock_import_module.return_value = MagicMock(__version__="0.9.0")
-        with self.assertRaises(ImportError):
-            import_dependency("numpy", min_version="1.0.0")
-
-    @patch("pandasai.core.code_execution.environment.importlib.import_module")
     def test_import_dependency_with_extra_message(self, mock_import_module):
         """Test import dependency with additional error message."""
         mock_import_module.side_effect = ImportError("Module not found")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-PandasAI is a wrapper around a LLM to make dataframes conversational
+PandaAI is a wrapper around a LLM to make dataframes conversational
 """
 
 import os
@@ -11,7 +11,7 @@ from zipfile import ZipFile
 import pandas as pd
 
 from pandasai.config import APIKeyManager, ConfigManager
-from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.request import get_pandaai_session
 
@@ -86,7 +86,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
         dataset_path (str): Path in the format 'organization/dataset_name'.
 
     Returns:
-        DataFrame: A new PandasAI DataFrame instance with loaded data.
+        DataFrame: A new PandaAI DataFrame instance with loaded data.
     """
     path_parts = dataset_path.split("/")
     if len(path_parts) != 2:
@@ -98,7 +98,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
         api_key = os.environ.get("PANDASAI_API_KEY", None)
         api_url = os.environ.get("PANDASAI_API_URL", None)
         if not api_url or not api_key:
-            raise PandasAIApiKeyError(
+            raise PandaAIApiKeyError(
                 "Please set the PANDASAI_API_URL and PANDASAI_API_KEY environment variables to pull the dataset from the remote server."
             )
 

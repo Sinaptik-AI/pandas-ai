@@ -34,7 +34,7 @@ class DataframeSerializer:
         """
         Convert df to csv like format where csv is wrapped inside <dataframe></dataframe>
         Args:
-            df (pd.DataFrame): PandasAI dataframe or dataframe
+            df (pd.DataFrame): PandaAI dataframe or dataframe
             extras (dict, optional): expect index to exists
 
         Returns:
@@ -66,7 +66,7 @@ class DataframeSerializer:
         """
         Convert df to csv like format where csv is wrapped inside <table></table>
         Args:
-            df (pd.DataFrame): PandasAI dataframe or dataframe
+            df (pd.DataFrame): PandaAI dataframe or dataframe
             extras (dict, optional): expect index to exists
 
         Returns:
@@ -82,7 +82,7 @@ class DataframeSerializer:
         """
         Convert df to json dictionary and return json
         Args:
-            df (pd.DataFrame): PandasAI dataframe or dataframe
+            df (pd.DataFrame): PandaAI dataframe or dataframe
             extras (dict, optional): expect index to exists
 
         Returns:
@@ -120,7 +120,7 @@ class DataframeSerializer:
         """
         Convert df to json and return it as string
         Args:
-            df (pd.DataFrame): PandasAI dataframe or dataframe
+            df (pd.DataFrame): PandaAI dataframe or dataframe
             extras (dict, optional): expect index to exists
 
         Returns:

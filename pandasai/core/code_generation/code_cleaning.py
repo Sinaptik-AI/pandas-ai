@@ -1,7 +1,5 @@
 import ast
-import copy
 import re
-from typing import Union
 
 import astor
 
@@ -23,58 +21,6 @@ class CodeCleaner:
             context (AgentState): The pipeline context for cleaning and validation.
         """
         self.context = context
-
-    def _check_imports(self, node: Union[ast.Import, ast.ImportFrom]):
-        """
-        Check if the node represents an import statement.
-
-        Args:
-            node (object): ast.Import or ast.ImportFrom
-        """
-        module = node.names[0].name if isinstance(node, ast.Import) else node.module
-        library = module.split(".")[0]
-
-        if library == "pandas":
-            return
-
-        for alias in node.names:
-            return {
-                "module": module,
-                "name": alias.name,
-                "alias": alias.asname or alias.name,
-            }
-
-    def _check_is_df_declaration(self, node: ast.AST) -> bool:
-        """
-        Check if the node represents a pandas DataFrame declaration.
-        """
-        value = node.value
-        return (
-            isinstance(value, ast.Call)
-            and isinstance(value.func, ast.Attribute)
-            and isinstance(value.func.value, ast.Name)
-            and hasattr(value.func.value, "id")
-            and value.func.value.id == "pd"
-            and value.func.attr == "DataFrame"
-        )
-
-    def _get_target_names(self, targets):
-        """
-        Extract target names from AST nodes.
-        """
-        target_names = []
-        is_slice = False
-
-        for target in targets:
-            if isinstance(target, ast.Name) or (
-                isinstance(target, ast.Subscript) and isinstance(target.value, ast.Name)
-            ):
-                target_names.append(
-                    target.id if isinstance(target, ast.Name) else target.value.id
-                )
-                is_slice = isinstance(target, ast.Subscript)
-
-        return target_names, is_slice, target
 
     def _check_direct_sql_func_def_exists(self, node: ast.AST) -> bool:
         """
@@ -171,7 +117,6 @@ class CodeCleaner:
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
                 code_executor = CodeExecutor(self.context.config)
-                code_executor.add_to_env("dfs", copy.deepcopy(self.context.dfs))
                 env = code_executor.execute(code)
 
                 df_generated = (

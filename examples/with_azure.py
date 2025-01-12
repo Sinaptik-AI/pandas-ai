@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a Pandas DataFrame"""
+"""Example of using PandaAI with a Pandas DataFrame"""
 
 import pandas as pd
 from data.sample_dataframe import dataframe

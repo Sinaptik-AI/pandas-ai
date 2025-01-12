@@ -28,7 +28,7 @@ from .state import AgentState
 
 class Agent:
     """
-    Base Agent class to improve the conversational experience in PandasAI
+    Base Agent class to improve the conversational experience in PandaAI
     """
 
     def __init__(
@@ -102,8 +102,6 @@ class Agent:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
         code_executor = CodeExecutor(self._state.config)
-        code_executor.add_to_env("dfs", self._state.dfs)
-
         code_executor.add_to_env(
             "execute_sql_query", self._state.dfs[0].execute_sql_query
         )
@@ -187,7 +185,7 @@ class Agent:
         query = UserQuery(query)
         self._state.logger.log(f"Question: {query}")
         self._state.logger.log(
-            f"Running PandasAI with {self._state.config.llm.type} LLM..."
+            f"Running PandaAI with {self._state.config.llm.type} LLM..."
         )
 
         self._state.output_type = output_type

@@ -1,6 +1,6 @@
-# LangChain LLMs Extension for PandasAI
+# LangChain LLMs Extension for PandaAI
 
-This extension integrates LangChain LLMs with PandasAI, providing LangChain LLMs support.
+This extension integrates LangChain LLMs with PandaAI, providing LangChain LLMs support.
 
 ## Installation
 

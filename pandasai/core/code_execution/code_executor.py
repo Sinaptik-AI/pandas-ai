@@ -1,4 +1,3 @@
-import ast
 from typing import Any
 
 from pandasai.config import Config
@@ -15,7 +14,6 @@ class CodeExecutor:
 
     def __init__(self, config: Config) -> None:
         self._environment = get_environment()
-        self._plots = []
 
     def add_to_env(self, key: str, value: Any) -> None:
         """
@@ -43,55 +41,4 @@ class CodeExecutor:
         if "result" not in self._environment:
             raise NoResultFoundError("No result returned")
 
-        result = self._environment["result"]
-
-        if isinstance(result, dict) and result["type"] == "plot":
-            for plot in self._plots:
-                if plot["type"] == "plot":
-                    result["value"] = plot["value"]
-
         return self._environment.get("result", None)
-
-    def _get_assign_variable(self, assign_node):
-        """
-        Extracts the variable name from an assignment node.
-
-        Args:
-            assign_node (ast.Assign): Assignment node.
-
-        Returns:
-            str: Variable name.
-        """
-        if isinstance(assign_node.targets[0], ast.Subscript):
-            return self._get_subscript_variable(assign_node.targets[0])
-        elif isinstance(assign_node.targets[0], ast.Name):
-            return assign_node.targets[0].id, None
-
-    def _get_expr_variable(self, expr_node):
-        """
-        Extracts the variable name from an expression node.
-
-        Args:
-            expr_node (ast.Expr): Expression node.
-
-        Returns:
-            str: Variable name.
-        """
-        if isinstance(expr_node.value, ast.Subscript):
-            return self._get_subscript_variable(expr_node.value)
-        elif isinstance(expr_node.value, ast.Name):
-            return expr_node.value.id, None
-
-    def _get_subscript_variable(self, subscript_node):
-        """
-        Extracts the variable name from a subscript node.
-
-        Args:
-            subscript_node (ast.Subscript): Subscript node.
-
-        Returns:
-            str: Variable name.
-        """
-        if isinstance(subscript_node.value, ast.Name):
-            variable_name = subscript_node.value.id
-            return variable_name, subscript_node.slice.value
