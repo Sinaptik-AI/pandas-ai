@@ -42,7 +42,7 @@ class TestDataFrame:
     @patch("os.environ")
     def test_chat_creates_agent(self, mock_env, mock_agent, sample_data):
         sample_df = DataFrame(sample_data)
-        mock_env.return_value = {"PANDASAI_API_URL": "localhost:8000"}
+        mock_env.return_value = {"PANDABI_API_URL": "localhost:8000"}
         sample_df.chat("Test query")
         mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
 

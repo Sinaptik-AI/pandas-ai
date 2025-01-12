@@ -26,7 +26,7 @@ databricks_connector = DatabricksConnector(
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDASAI_API_KEY"] = "your-api-key"
+os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 
 agent = Agent(databricks_connector)
 

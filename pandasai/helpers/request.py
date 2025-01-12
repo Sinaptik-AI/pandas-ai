@@ -25,13 +25,13 @@ class Session:
         logger: Optional[Logger] = None,
     ) -> None:
         if api_key is None:
-            api_key = os.environ.get("PANDASAI_API_KEY") or None
+            api_key = os.environ.get("PANDABI_API_KEY") or None
         if api_key is None:
             raise PandasAIApiKeyError()
         self._api_key = api_key
 
         if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.pandabi.ai")
+            endpoint_url = os.environ.get("PANDABI_API_URL", "https://api.pandabi.ai")
 
         self._endpoint_url = endpoint_url
         self._version_path = "/api"
@@ -102,11 +102,11 @@ class Session:
 
 
 def get_pandaai_session():
-    api_url = os.environ.get("PANDASAI_API_URL", None)
-    api_key = os.environ.get("PANDASAI_API_KEY", None)
+    api_url = os.environ.get("PANDABI_API_URL", None)
+    api_key = os.environ.get("PANDABI_API_KEY", None)
     if not api_url or not api_key:
         raise PandasAIApiKeyError(
-            "Set PANDASAI_API_URL and PANDASAI_API_KEY in environment to push/pull dataset to the remote server"
+            "Set PANDABI_API_URL and PANDABI_API_KEY in environment to push/pull dataset to the remote server"
         )
 
     return Session(endpoint_url=api_url, api_key=api_key)
