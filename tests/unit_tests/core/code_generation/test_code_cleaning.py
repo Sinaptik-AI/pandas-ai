@@ -143,9 +143,8 @@ class TestCodeCleaner(unittest.TestCase):
                 "happiness_index": [6.94, 7.22, 5.87, 5.12],
             })"""
         ]
-        additional_deps = []
         updated_node = self.cleaner.extract_fix_dataframe_redeclarations(
-            node, code_lines, additional_deps
+            node, code_lines
         )
         self.assertIsInstance(updated_node, ast.AST)
 

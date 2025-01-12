@@ -13,7 +13,7 @@ class CodeGenerator:
         self._code_cleaner = CodeCleaner(self._context)
         self._code_validator = CodeRequirementValidator(self._context)
 
-    def generate_code(self, prompt: BasePrompt) -> tuple[str, list]:
+    def generate_code(self, prompt: BasePrompt) -> str:
         """
         Generates code using a given LLM and performs validation and cleaning steps.
 
@@ -46,7 +46,7 @@ class CodeGenerator:
 
             raise e
 
-    def validate_and_clean_code(self, code) -> tuple[str, list]:
+    def validate_and_clean_code(self, code: str) -> str:
         # Validate code requirements
         self._context.logger.log("Validating code requirements...")
         if not self._code_validator.validate(code):

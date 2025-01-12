@@ -77,20 +77,15 @@ class TestAgent:
     def test_code_generation(self, mock_generate_code, sample_df, config):
         # Create an Agent instance for testing
         mock_generate_code.generate_code.return_value = (
-            "print(United States has the highest gdp)",
-            [],
+            "print(United States has the highest gdp)"
         )
         agent = Agent(sample_df, config)
         agent._code_generator = mock_generate_code
 
         # Test the chat function
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest gdp?"
-        )
+        response = agent.generate_code("Which country has the highest gdp?")
         assert agent._code_generator.generate_code.called
         assert isinstance(response, str)
-        assert isinstance(additional_dependencies, list)
-
         assert response == "print(United States has the highest gdp)"
 
     @patch("pandasai.agent.base.CodeGenerator")
@@ -103,12 +98,11 @@ print('Cached result: US has the highest GDP.')"""
 
         # Mock code generator is not used because of the cache hit
         mock_generate_code.validate_and_clean_code.return_value = (
-            "print('Cached result: US has the highest GDP.')",
-            [],
+            "print('Cached result: US has the highest GDP.')"
         )
 
         # Generate code
-        response, _ = agent.generate_code("Which country has the highest GDP?")
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the cached code was used
         assert response == cached_code
@@ -122,15 +116,12 @@ print('Cached result: US has the highest GDP.')"""
 
         # Mock the code generator to return a new response
         mock_generate_code.generate_code.return_value = (
-            "print('New result: US has the highest GDP.')",
-            [],
+            "print('New result: US has the highest GDP.')"
         )
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest GDP?"
-        )
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the cache miss triggered new code generation
         assert mock_generate_code.generate_code.called
@@ -140,15 +131,12 @@ print('Cached result: US has the highest GDP.')"""
     def test_generate_code_with(self, mock_generate_code, agent: Agent):
         # Mock the code generator to return a SQL-based response
         mock_generate_code.generate_code.return_value = (
-            "SELECT country FROM countries ORDER BY gdp DESC LIMIT 1;",
-            [],
+            "SELECT country FROM countries ORDER BY gdp DESC LIMIT 1;"
         )
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest GDP?"
-        )
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the SQL-specific prompt was used
         assert mock_generate_code.generate_code.called
@@ -160,16 +148,11 @@ print('Cached result: US has the highest GDP.')"""
         agent._state.logger.log = MagicMock()
 
         # Mock the code generator
-        mock_generate_code.generate_code.return_value = (
-            "print('Logging test.')",
-            [],
-        )
+        mock_generate_code.generate_code.return_value = "print('Logging test.')"
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Test logging during code generation."
-        )
+        response = agent.generate_code("Test logging during code generation.")
 
         # Verify logger was called
         agent._state.logger.log.assert_any_call("Generating new code...")
@@ -180,18 +163,13 @@ print('Cached result: US has the highest GDP.')"""
     def test_generate_code_updates_last_prompt(self, mock_generate_code, agent: Agent):
         # Mock the code generator
         prompt = "Cust  om SQL prompt"
-        mock_generate_code.generate_code.return_value = (
-            "print('Prompt test.')",
-            [],
-        )
+        mock_generate_code.generate_code.return_value = "print('Prompt test.')"
         agent._state.last_prompt_used = None
         agent._code_generator = mock_generate_code
 
         # Mock the prompt creation function
         with patch("pandasai.agent.base.get_chat_prompt_for_sql", return_value=prompt):
-            response, additional_dependencies = agent.generate_code(
-                "Which country has the highest GDP?"
-            )
+            response = agent.generate_code("Which country has the highest GDP?")
 
         # Verify the last prompt used is updated
         assert agent._state.last_prompt_used == prompt
@@ -208,8 +186,7 @@ print('Cached result: US has the highest GDP.')"""
 
         # Execute the code
         code = "print('Hello, World!')"
-        additional_dependencies = ["numpy"]
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the code was executed and the result is correct
         assert result == {"result": "Execution successful"}
@@ -233,8 +210,7 @@ print('Cached result: US has the highest GDP.')"""
 
         # Execute the code
         code = "execute_sql_query('SELECT * FROM table')"
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the SQL execution environment was set up correctly
         assert result == {"result": "SQL Execution successful"}
@@ -257,8 +233,7 @@ print('Cached result: US has the highest GDP.')"""
 
         # Execute the code
         code = "print('Logging test')"
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the logger was called with the correct message
         agent._state.logger.log.assert_called_with(f"Executing code: {code}")
@@ -278,10 +253,9 @@ print('Cached result: US has the highest GDP.')"""
 
         # Execute the code
         code = "import pandas as pd; print(pd.DataFrame())"
-        additional_dependencies = ["pandas"]
 
         with pytest.raises(ImportError):
-            agent.execute_code(code, additional_dependencies)
+            agent.execute_code(code)
 
         # Verify the CodeExecutor was called despite the missing dependency
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
@@ -295,8 +269,7 @@ print('Cached result: US has the highest GDP.')"""
 
         # Execute empty code
         code = ""
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the result is empty and the code executor was not called
         assert result == {}
@@ -317,9 +290,9 @@ print('Cached result: US has the highest GDP.')"""
         # Mock the code generator
         agent._code_generator = Mock()
         expected_code = "print('Test successful')"
-        agent._code_generator.generate_code.return_value = (expected_code, [])
+        agent._code_generator.generate_code.return_value = expected_code
 
-        code, deps = agent.generate_code("Test query")
+        code = agent.generate_code("Test query")
         assert code == expected_code
         assert agent._code_generator.generate_code.call_count == 1
 
@@ -328,13 +301,13 @@ print('Cached result: US has the highest GDP.')"""
         agent.execute_code = Mock()
         agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
         # Set max retries to 3 explicitly
         agent._state.config.max_retries = 3
 
         with pytest.raises(CodeExecutionError):
-            agent.execute_with_retries("test_code", [])
+            agent.execute_with_retries("test_code")
 
         # Should be called max_retries times
         assert agent.execute_code.call_count == 4
@@ -355,9 +328,9 @@ print('Cached result: US has the highest GDP.')"""
             expected_result,  # Third regenerated code succeeds
         ]
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
-        result = agent.execute_with_retries("test_code", [])
+        result = agent.execute_with_retries("test_code")
         # Response parser returns a String object with value accessible via .value
         assert result.value == "Success"
         # Should have 4 execute attempts and 3 regenerations
@@ -370,10 +343,10 @@ print('Cached result: US has the highest GDP.')"""
         agent.execute_code = Mock()
         agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
         with pytest.raises(CodeExecutionError):
-            agent.execute_with_retries("test_code", [])
+            agent.execute_with_retries("test_code")
 
         # Should be called max_retries + 1 times (initial try + retries)
         assert agent.execute_code.call_count == 6

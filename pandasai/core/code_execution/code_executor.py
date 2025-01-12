@@ -1,5 +1,5 @@
 import ast
-from typing import Any, List
+from typing import Any
 
 from pandasai.config import Config
 from pandasai.core.code_execution.environment import get_environment
@@ -13,12 +13,8 @@ class CodeExecutor:
 
     _environment: dict
 
-    def __init__(
-        self, config: Config, additional_dependencies: List[dict] = None
-    ) -> None:
-        self._environment = get_environment(
-            additional_dependencies or [],
-        )
+    def __init__(self, config: Config) -> None:
+        self._environment = get_environment()
         self._plots = []
 
     def add_to_env(self, key: str, value: Any) -> None:

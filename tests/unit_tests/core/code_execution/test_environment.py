@@ -13,8 +13,7 @@ class TestEnvironmentFunctions(unittest.TestCase):
     def test_get_environment_with_secure_mode(self, mock_import_dependency):
         """Test get_environment function in secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
-        additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps)
+        env = get_environment()
 
         self.assertIn("pd", env)
         self.assertIn("plt", env)
@@ -24,8 +23,7 @@ class TestEnvironmentFunctions(unittest.TestCase):
     def test_get_environment_without_secure_mode(self, mock_import_dependency):
         """Test get_environment function in non-secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
-        additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps)
+        env = get_environment()
 
         self.assertIn("pd", env)
         self.assertIn("plt", env)

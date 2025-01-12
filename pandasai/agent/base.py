@@ -3,7 +3,7 @@ import traceback
 import uuid
 import warnings
 from importlib.util import find_spec
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 
 from pandasai.core.cache import Cache
 from pandasai.core.code_execution.code_executor import CodeExecutor
@@ -120,9 +120,7 @@ class Agent:
         """
         return self._process_query(query, output_type)
 
-    def generate_code(
-        self, query: Union[UserQuery, str]
-    ) -> Tuple[str, Optional[List[str]]]:
+    def generate_code(self, query: Union[UserQuery, str]) -> str:
         """Generate code using the LLM."""
 
         self._state.memory.add(str(query), is_user=True)
@@ -137,16 +135,15 @@ class Agent:
         self._state.logger.log("Generating new code...")
         prompt = get_chat_prompt_for_sql(self._state)
 
-        code, additional_dependencies = self._code_generator.generate_code(prompt)
+        code = self._code_generator.generate_code(prompt)
+        print("+++ code in generate_code: ", code)
         self._state.last_prompt_used = prompt
-        return code, additional_dependencies
+        return code
 
-    def execute_code(
-        self, code: str, additional_dependencies: Optional[List[str]]
-    ) -> dict:
+    def execute_code(self, code: str) -> dict:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
-        code_executor = CodeExecutor(self._state.config, additional_dependencies)
+        code_executor = CodeExecutor(self._state.config)
         code_executor.add_to_env("dfs", self._state.dfs)
 
         code_executor.add_to_env(
@@ -155,16 +152,14 @@ class Agent:
 
         return code_executor.execute_and_return_result(code)
 
-    def execute_with_retries(
-        self, code: str, additional_dependencies: Optional[List[str]]
-    ) -> Any:
+    def execute_with_retries(self, code: str) -> Any:
         """Execute the code with retry logic."""
         max_retries = self._state.config.max_retries
         attempts = 0
 
         while attempts <= max_retries:
             try:
-                result = self.execute_code(code, additional_dependencies)
+                result = self.execute_code(code)
                 return self._response_parser.parse(result, code)
             except CodeExecutionError as e:
                 attempts += 1
@@ -174,9 +169,7 @@ class Agent:
                 self._state.logger.log(
                     f"Retrying execution ({attempts}/{max_retries})..."
                 )
-                code, additional_dependencies = self._regenerate_code_after_error(
-                    code, e
-                )
+                code = self._regenerate_code_after_error(code, e)
 
     def train(
         self,
@@ -257,10 +250,10 @@ class Agent:
                 self._state.cache = Cache()
 
             # Generate code
-            code, additional_dependencies = self.generate_code(query)
+            code = self.generate_code(query)
 
             # Execute code with retries
-            result = self.execute_with_retries(code, additional_dependencies)
+            result = self.execute_with_retries(code)
 
             # Cache the result if caching is enabled
             if self._state.config.enable_cache:

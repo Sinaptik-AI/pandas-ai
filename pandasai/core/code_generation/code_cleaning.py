@@ -26,7 +26,7 @@ class CodeCleaner:
 
     def _check_imports(self, node: Union[ast.Import, ast.ImportFrom]):
         """
-        Add whitelisted imports to _additional_dependencies.
+        Check if the node represents an import statement.
 
         Args:
             node (object): ast.Import or ast.ImportFrom
@@ -154,7 +154,6 @@ class CodeCleaner:
         self,
         node: ast.AST,
         code_lines: list[str],
-        additional_deps: list[dict],
     ) -> ast.AST:
         """
         Checks if dataframe reclaration in the code like pd.DataFrame({...})
@@ -171,7 +170,7 @@ class CodeCleaner:
             if target_names and self.check_is_df_declaration(node):
                 # Construct dataframe from node
                 code = "\n".join(code_lines)
-                code_executor = CodeExecutor(self.context.config, additional_deps)
+                code_executor = CodeExecutor(self.context.config)
                 code_executor.add_to_env("dfs", copy.deepcopy(self.context.dfs))
                 env = code_executor.execute(code)
 
@@ -232,7 +231,7 @@ class CodeCleaner:
             and value.func.attr == "DataFrame"
         )
 
-    def clean_code(self, code: str) -> tuple[str, list]:
+    def clean_code(self, code: str) -> str:
         """
         Clean the provided code by validating imports, handling SQL queries, and processing charts.
 
@@ -247,19 +246,12 @@ class CodeCleaner:
         # If plt.show is in the code, remove that line
         code = re.sub(r"plt.show\(\)", "", code)
 
-        additional_dependencies = []
         clean_code_lines = []
 
         tree = ast.parse(code)
         new_body = []
 
         for node in tree.body:
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                imported_lib = self._check_imports(node)
-                if imported_lib:
-                    additional_dependencies.append(imported_lib)
-                continue
-
             if self._check_direct_sql_func_def_exists(node):
                 continue
 
@@ -268,17 +260,12 @@ class CodeCleaner:
             clean_code_lines.append(astor.to_source(node))
 
             new_body.append(
-                self.extract_fix_dataframe_redeclarations(
-                    node, clean_code_lines, additional_dependencies
-                )
+                self.extract_fix_dataframe_redeclarations(node, clean_code_lines)
                 or node
             )
 
         new_tree = ast.Module(body=new_body)
-        return (
-            astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip(),
-            additional_dependencies,
-        )
+        return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
 
     def _handle_charts(self, code: str) -> str:
         """

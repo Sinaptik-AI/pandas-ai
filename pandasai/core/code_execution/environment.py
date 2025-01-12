@@ -7,7 +7,7 @@ import importlib
 import sys
 import types
 import warnings
-from typing import List, Union
+from typing import Union
 
 from pandas.util.version import Version
 
@@ -33,39 +33,17 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
-def get_environment(additional_deps: List[dict]) -> dict:
+def get_environment() -> dict:
     """
     Returns the environment for the code to be executed.
 
     Returns (dict): A dictionary of environment variables
     """
     env = {
-        **{
-            lib["alias"]: (
-                getattr(import_dependency(lib["module"]), lib["name"])
-                if hasattr(import_dependency(lib["module"]), lib["name"])
-                else import_dependency(lib["module"])
-            )
-            for lib in additional_deps
-        },
+        "pd": import_dependency("pandas"),
+        "plt": import_dependency("matplotlib.pyplot"),
+        "np": import_dependency("numpy"),
     }
-
-    env["pd"] = import_dependency("pandas")
-    env["plt"] = import_dependency("matplotlib.pyplot")
-    env["np"] = import_dependency("numpy")
-
-    for lib in additional_deps:
-        if lib["name"] == "seaborn":
-            env["sns"] = import_dependency("seaborn")
-
-        if lib["name"] == "datetime":
-            env["datetime"] = import_dependency("datetime")
-
-        if lib["name"] == "json":
-            env["json"] = import_dependency("json")
-
-        if lib["name"] == "base64":
-            env["base64"] = import_dependency("base64")
 
     return env
 
