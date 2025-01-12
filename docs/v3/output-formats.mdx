@@ -1,0 +1,88 @@
+---
+title: 'Output Formats'
+description: 'Understanding the different output formats supported by PandasAI'
+---
+
+# Output Formats
+
+PandasAI supports multiple output formats for responses, each designed to handle different types of data and analysis results effectively. This document outlines the available output formats and their use cases.
+
+## Available Output Formats
+
+### DataFrame Response
+Used when the result is a pandas DataFrame. This format preserves the tabular structure of your data and allows for further data manipulation.
+
+### Chart Response
+Handles visualization outputs, supporting various types of charts and plots generated during data analysis.
+
+### String Response
+Returns textual responses, explanations, and insights about your data in a readable format.
+
+### Number Response
+Specialized format for numerical outputs, typically used for calculations, statistics, and metrics.
+
+### Error Response
+Provides structured error information when something goes wrong during the analysis process.
+
+## Usage
+
+The response format is automatically determined based on the type of analysis performed and the nature of the output. You don't need to explicitly specify the format - PandasAI will choose the most appropriate one for your results.
+
+Example:
+```python
+import pandas as pd
+import pandasai as pai
+
+df = pai.load("my-org/users")
+
+response = df.chat("Who is the user with the highest age?") # Returns a String response
+response = df.chat("How many users in total?") # Returns a Number response
+response = df.chat("Show me the data") # Returns a DataFrame response
+response = df.chat("Plot the distribution") # Returns a Chart response
+```
+
+## Response Types Details
+
+Each response type is designed to handle specific use cases:
+
+- **String Response**: Provides textual analysis and explanations
+- **Number Response**: Returns numerical results from calculations
+- **DataFrame Response**: Preserves the structure and functionality of pandas DataFrames
+- **Chart Response**: Handles various visualization formats and plotting libraries
+- **Error Response**: Structured error handling with informative messages
+
+The response system is extensible and type-safe, ensuring that outputs are properly formatted and handled according to their specific requirements.
+
+## Response Object Methods
+
+The response object provides several useful methods and properties to interact with the results:
+
+### Value Property
+By default, when you print a response object, it automatically returns its `.value` property:
+
+```python
+response = df.chat("What is the average age?")
+print(response)  # Automatically calls response.value
+# Output: The average age is 34.5 years
+
+# For charts, printing will display the visualization
+chart_response = df.chat("Plot age distribution")
+print(chart_response)  # Displays the chart
+```
+
+### Generated Code
+You can inspect the code that was generated to produce the result:
+
+```python
+response = df.chat("Calculate the correlation between age and salary")
+print(response.last_code_generated)
+# Output: df['age'].corr(df['salary'])
+```
+
+### Saving Charts
+For chart responses, you can save the visualization to a file:
+
+```python
+chart_response = df.chat("Create a scatter plot of age vs salary")
+chart_response.save("scatter_plot.png")  # Saves the chart as PNG
+```

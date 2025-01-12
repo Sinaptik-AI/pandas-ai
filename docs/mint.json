@@ -54,7 +54,7 @@
     "navigation": [
       {
         "group": "Overview",
-        "pages": ["v3/introduction", "v3/getting-started"],
+        "pages": ["v3/introduction", "v3/getting-started", "v3/output-formats"],
         "version": "v3"
       },
       {
