@@ -106,12 +106,12 @@ print('Hello World')
     def test_get_system_prompt_empty_memory(self):
         assert LLM().get_system_prompt(Memory()) == "\n"
 
-    def test_get_system_prompt_memory_with_agent_info(self):
-        mem = Memory(agent_info="xyz")
+    def test_get_system_prompt_memory_with_agent_description(self):
+        mem = Memory(agent_description="xyz")
         assert LLM().get_system_prompt(mem) == " xyz \n"
 
-    def test_get_system_prompt_memory_with_agent_info_messages(self):
-        mem = Memory(agent_info="xyz", memory_size=10)
+    def test_get_system_prompt_memory_with_agent_description_messages(self):
+        mem = Memory(agent_description="xyz", memory_size=10)
         mem.add("hello world", True)
         mem.add('print("hello world)', False)
         mem.add("hello world", True)
@@ -125,7 +125,7 @@ print('Hello World')
         assert LLM().prepend_system_prompt("hello world", Memory()) == "\nhello world"
 
     def test_prepend_system_prompt_with_non_empty_mem(self):
-        mem = Memory(agent_info="xyz", memory_size=10)
+        mem = Memory(agent_description="xyz", memory_size=10)
         mem.add("hello world", True)
         mem.add('print("hello world)', False)
         mem.add("hello world", True)

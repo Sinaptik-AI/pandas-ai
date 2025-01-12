@@ -7,12 +7,14 @@ class Memory:
 
     _messages: list
     _memory_size: int
-    _agent_info: str
+    agent_description: str
 
-    def __init__(self, memory_size: int = 1, agent_info: Union[str, None] = None):
+    def __init__(
+        self, memory_size: int = 1, agent_description: Union[str, None] = None
+    ):
         self._messages = []
         self._memory_size = memory_size
-        self._agent_info = agent_info
+        self.agent_description = agent_description
 
     def add(self, message: str, is_user: bool):
         self._messages.append({"message": message, "is_user": is_user})
@@ -67,9 +69,6 @@ class Memory:
         messages = self.get_messages(self._memory_size)
         return "" if len(messages) == 0 else messages[-1]
 
-    def get_system_prompt(self) -> str:
-        return self._agent_info
-
     def to_json(self):
         messages = []
         for message in self.all():
@@ -84,11 +83,11 @@ class Memory:
         Returns the conversation messages in the format expected by the OpenAI API
         """
         messages = []
-        if self.agent_info:
+        if self.agent_description:
             messages.append(
                 {
                     "role": "system",
-                    "content": self.get_system_prompt(),
+                    "content": self.agent_description,
                 }
             )
         for message in self.all():
@@ -104,7 +103,3 @@ class Memory:
     @property
     def size(self):
         return self._memory_size
-
-    @property
-    def agent_info(self):
-        return self._agent_info

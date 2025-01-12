@@ -85,8 +85,8 @@ class BedrockClaude(LLM):
         messages = []
         system_prompt = ""
         if memory:
-            if memory.agent_info:
-                system_prompt = memory.get_system_prompt()
+            if memory.agent_description:
+                system_prompt = memory.agent_description
 
             for message in memory.all():
                 if message["is_user"]:

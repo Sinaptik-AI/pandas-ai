@@ -1,4 +1,4 @@
-{% if memory.agent_info %} {{memory.get_system_prompt()}} {% endif %}
+{% if memory.agent_description %} {{memory.agent_description}} {% endif %}
 {% if memory.count() > 1 %}
 ### PREVIOUS CONVERSATION
 {{ memory.get_previous_conversation() }}

@@ -1,8 +1,5 @@
-import os
 import traceback
-import uuid
 import warnings
-from importlib.util import find_spec
 from typing import Any, List, Optional, Union
 
 from pandasai.core.cache import Cache
@@ -16,24 +13,16 @@ from pandasai.core.prompts import (
 from pandasai.core.response.error import ErrorResponse
 from pandasai.core.response.parser import ResponseParser
 from pandasai.core.user_query import UserQuery
-from pandasai.data_loader.schema_validator import is_schema_source_same
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
-from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.vectorstores.vectorstore import VectorStore
-
-from ..config import Config
-from ..constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
-from ..exceptions import (
+from pandasai.exceptions import (
     CodeExecutionError,
-    InvalidConfigError,
     InvalidLLMOutputType,
     MissingVectorStoreError,
 )
-from ..helpers.folder import Folder
-from ..helpers.logger import Logger
-from ..helpers.memory import Memory
-from ..llm.base import LLM
+from pandasai.vectorstores.vectorstore import VectorStore
+
+from ..config import Config
 from .state import AgentState
 
 
@@ -54,10 +43,14 @@ class Agent:
     ):
         """
         Args:
-            df (Union[pd.DataFrame, List[pd.DataFrame]]): Pandas or Modin dataframe or Database connectors
-            memory_size (int, optional): Conversation history to use during chat.
-            Defaults to 1.
+            dfs (Union[Union[DataFrame, VirtualDataFrame], List[Union[DataFrame, VirtualDataFrame]]]): The dataframe(s) to be used for the conversation.
+            config (Optional[Union[Config, dict]]): The configuration for the agent.
+            memory_size (Optional[int]): The size of the memory.
+            vectorstore (Optional[VectorStore]): The vectorstore to be used for the conversation.
+            description (str): The description of the agent.
         """
+
+        # Deprecation warnings
         if config is not None:
             warnings.warn(
                 "The 'config' parameter is deprecated and will be removed in a future version. "
@@ -66,44 +59,11 @@ class Agent:
                 stacklevel=2,
             )
 
+        self.description = description
         self._state = AgentState()
+        self._state.initialize(dfs, config, memory_size, vectorstore, description)
 
-        self.agent_info = description
-
-        # Instantiate dfs
-        self._state.dfs = dfs if isinstance(dfs, list) else [dfs]
-
-        # Instantiate the config
-        self._state.config = self._get_config(config)
-
-        # Validate df input with configurations
-        self._validate_input()
-
-        # Initialize the context
-        self._state.memory = Memory(memory_size, agent_info=description)
-
-        # Instantiate the logger
-        self._state.logger = Logger(
-            save_logs=self._state.config.save_logs, verbose=self._state.config.verbose
-        )
-
-        # If user provided config but not llm but have setup the env for BambooLLM, will be deprecated in future
-        if config:
-            self._state.config.llm = self._get_llm(self._state.config.llm)
-
-        # Initiate VectorStore
-        self._state.vectorstore = vectorstore
-
-        # Initialize Cache
-        self._state.cache = Cache() if self._state.config.enable_cache else None
-
-        # Setup directory paths for cache and charts
-        self._configure()
-
-        # Initialize Code Generator
         self._code_generator = CodeGenerator(self._state)
-
-        # Initialize Response Generator
         self._response_parser = ResponseParser()
 
     def chat(self, query: str, output_type: Optional[str] = None):
@@ -111,7 +71,6 @@ class Agent:
         Start a new chat interaction with the assistant on Dataframe.
         """
         self.start_new_conversation()
-
         return self._process_query(query, output_type)
 
     def follow_up(self, query: str, output_type: Optional[str] = None):
@@ -224,15 +183,6 @@ class Agent:
         """
         self.clear_memory()
 
-    def _validate_input(self):
-        base_schema_source = self._state.dfs[0].schema
-        for df in self._state.dfs[1:]:
-            if not is_schema_source_same(base_schema_source, df.schema):
-                raise InvalidConfigError(
-                    "Direct SQL requires all connectors to be of the same type, "
-                    "belong to the same datasource, and have the same credentials."
-                )
-
     def _process_query(self, query: str, output_type: Optional[str] = None):
         """Process a user query and return the result."""
         query = UserQuery(query)
@@ -243,7 +193,7 @@ class Agent:
 
         self._state.output_type = output_type
         try:
-            self._assign_prompt_id()
+            self._state.assign_prompt_id()
 
             # To ensure the cache is set properly if config is changed in between
             if self._state.config.enable_cache and self._state.cache is None:
@@ -281,71 +231,6 @@ class Agent:
             prompt = get_correct_error_prompt_for_sql(self._state, code, error_trace)
 
         return self._code_generator.generate_code(prompt)
-
-    def _configure(self):
-        # Add project root path if save_charts_path is default
-        if (
-            self._state.config.save_charts
-            and self._state.config.save_charts_path == DEFAULT_CHART_DIRECTORY
-        ):
-            Folder.create(self._state.config.save_charts_path)
-
-        # Add project root path if cache_path is default
-        if self._state.config.enable_cache:
-            Folder.create(DEFAULT_CACHE_DIRECTORY)
-
-    def _get_config(self, config: Union[Config, dict, None]) -> Config:
-        """
-        Load a config to be used to run the queries.
-
-        Args:
-            config (Union[Config, dict]): Config to be used
-        """
-        if config is None:
-            from pandasai.config import ConfigManager
-
-            return ConfigManager.get()
-
-        if isinstance(config, dict):
-            if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
-                config["llm"] = BambooLLM()
-            return Config(**config)
-
-        return config
-
-    def _get_llm(self, llm: Optional[LLM] = None) -> LLM:
-        """
-        Load a LLM to be used to run the queries.
-        Check if it is a PandasAI LLM or a Langchain LLM.
-        If it is a Langchain LLM, wrap it in a PandasAI LLM.
-
-        Args:
-            llm (object): LLMs option to be used for API access
-
-        Raises:
-            BadImportError: If the LLM is a Langchain LLM but the langchain package
-            is not installed
-        """
-
-        if llm is None:
-            return BambooLLM()
-
-        # Check if pandasai_langchain is installed
-        if find_spec("pandasai_langchain") is not None:
-            from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
-
-            if is_langchain_llm(llm):
-                llm = LangchainLLM(llm)
-
-        return llm
-
-    def _assign_prompt_id(self):
-        """Assign a prompt ID"""
-
-        self._state.last_prompt_id = uuid.uuid4()
-
-        if self._state.logger:
-            self._state.logger.log(f"Prompt ID: {self._state.last_prompt_id}")
 
     def _handle_exception(self, code: str) -> str:
         """Handle exceptions and return an error message."""

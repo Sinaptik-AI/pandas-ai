@@ -158,7 +158,7 @@ class GoogleVertexAI(BaseGoogle):
                         ChatMessage(author="model", content=message["message"])
                     )
             chat = code_chat_model.start_chat(
-                context=memory.get_system_prompt(), message_history=messages
+                context=memory.agent_description, message_history=messages
             )
 
             response = chat.send_message(prompt)

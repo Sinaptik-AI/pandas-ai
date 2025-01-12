@@ -2,15 +2,24 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+import os
+import uuid
+from importlib.util import find_spec
 
-from pandasai.config import Config
+from pandasai.config import Config, ConfigManager
 from pandasai.core.cache import Cache
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
 from pandasai.vectorstores.vectorstore import VectorStore
+from pandasai.helpers.folder import Folder
+from pandasai.llm.bamboo_llm import BambooLLM
+from pandasai.exceptions import InvalidConfigError
+from pandasai.data_loader.schema_validator import is_schema_source_same
+from pandasai.constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 
 if TYPE_CHECKING:
     from pandasai.dataframe import DataFrame, VirtualDataFrame
+    from pandasai.llm.base import LLM
 
 
 @dataclass
@@ -39,6 +48,86 @@ class AgentState:
         # Initialize cache only if enabled in config
         if getattr(self.config, "enable_cache", False) and self.cache is None:
             self.cache = Cache()
+
+    def initialize(
+        self,
+        dfs: Union[
+            Union[DataFrame, VirtualDataFrame], List[Union[DataFrame, VirtualDataFrame]]
+        ],
+        config: Optional[Union[Config, dict]] = None,
+        memory_size: Optional[int] = 10,
+        vectorstore: Optional[VectorStore] = None,
+        description: str = None,
+    ):
+        """Initialize the state with the given parameters."""
+        self.dfs = dfs if isinstance(dfs, list) else [dfs]
+        self.config = self._get_config(config)
+        if config:
+            self.config.llm = self._get_llm(self.config.llm)
+        self.memory = Memory(memory_size, agent_description=description)
+        self.logger = Logger(
+            save_logs=self.config.save_logs, verbose=self.config.verbose
+        )
+        self.vectorstore = vectorstore
+        self.cache = Cache() if self.config.enable_cache else None
+
+        self._validate_input()
+        self._configure()
+
+    def _validate_input(self):
+        """Validate that all dataframes share the same schema source."""
+        base_schema_source = self.dfs[0].schema
+        for df in self.dfs[1:]:
+            if not is_schema_source_same(base_schema_source, df.schema):
+                raise InvalidConfigError(
+                    "All connectors must share the same type, datasource, and credentials."
+                )
+
+    def _configure(self):
+        """Configure paths for charts and cache."""
+        # Add project root path if save_charts_path is default
+        if (
+            self.config.save_charts
+            and self.config.save_charts_path == DEFAULT_CHART_DIRECTORY
+        ):
+            Folder.create(self.config.save_charts_path)
+
+        # Add project root path if cache_path is default
+        if self.config.enable_cache:
+            Folder.create(DEFAULT_CACHE_DIRECTORY)
+
+    def _get_config(self, config: Union[Config, dict, None]) -> Config:
+        """Load a config to be used for queries."""
+        if config is None:
+            return ConfigManager.get()
+
+        if isinstance(config, dict):
+            if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
+                config["llm"] = BambooLLM()
+            return Config(**config)
+
+        return config
+
+    def _get_llm(self, llm: Optional[LLM] = None) -> LLM:
+        """Load and configure the LLM."""
+        if llm is None:
+            return BambooLLM()
+
+        # Check if pandasai_langchain is installed
+        if find_spec("pandasai_langchain") is not None:
+            from pandasai_langchain.langchain import LangchainLLM, is_langchain_llm
+
+            if is_langchain_llm(llm):
+                llm = LangchainLLM(llm)
+
+        return llm
+
+    def assign_prompt_id(self):
+        """Assign a new prompt ID."""
+        self.last_prompt_id = uuid.uuid4()
+
+        if self.logger:
+            self.logger.log(f"Prompt ID: {self.last_prompt_id}")
 
     def reset_intermediate_values(self):
         """Resets the intermediate values dictionary."""
