@@ -84,7 +84,7 @@ class TestPandaAIInit:
         dataset_path = "org/dataset_name"
         result = pandasai.load(dataset_path)
 
-        mock_dataset_loader.load.assert_called_once_with(dataset_path, False)
+        mock_dataset_loader.load.assert_called_once_with(dataset_path)
         assert isinstance(result, MagicMock)
 
     @patch("zipfile.ZipFile")

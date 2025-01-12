@@ -42,6 +42,48 @@ class TestDatasetLoader:
                 },
             ],
             "source": {
+                "type": "csv",
+                "path": "users.csv",
+            },
+            "destination": {
+                "type": "local",
+                "format": "parquet",
+                "path": "users.parquet",
+            },
+        }
+
+    @pytest.fixture
+    def mysql_schema(self):
+        return {
+            "name": "Users",
+            "update_frequency": "weekly",
+            "columns": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "description": "User's email address",
+                },
+                {
+                    "name": "first_name",
+                    "type": "string",
+                    "description": "User's first name",
+                },
+                {
+                    "name": "timestamp",
+                    "type": "datetime",
+                    "description": "Timestamp of the record",
+                },
+            ],
+            "order_by": ["created_at DESC"],
+            "limit": 100,
+            "transformations": [
+                {"type": "anonymize", "params": {"column": "email"}},
+                {
+                    "type": "convert_timezone",
+                    "params": {"column": "timestamp", "to": "UTC"},
+                },
+            ],
+            "source": {
                 "type": "mysql",
                 "connection": {
                     "host": "localhost",
@@ -66,9 +108,16 @@ class TestDatasetLoader:
             "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
         ) as mock_read_cache, patch(
             "builtins.open", mock_open(read_data=str(sample_schema))
-        ):
+        ), patch(
+            "pandasai.data_loader.loader.DatasetLoader._load_from_source"
+        ) as mock_load_source, patch(
+            "pandasai.data_loader.loader.DatasetLoader.load_head"
+        ) as mock_load_head:
             loader = DatasetLoader()
             mock_read_cache.return_value = DataFrame(
+                pd.DataFrame({"email": ["test@example.com"]})
+            )
+            mock_load_head.return_value = DataFrame(
                 pd.DataFrame({"email": ["test@example.com"]})
             )
 
@@ -77,6 +126,7 @@ class TestDatasetLoader:
             assert isinstance(result, DataFrame)
             assert "email" in result.columns
             mock_read_cache.assert_called_once()
+            mock_load_source.assert_not_called()
 
     def test_anonymize_method(self):
         loader = DatasetLoader()
@@ -235,3 +285,45 @@ class TestDatasetLoader:
 
         with pytest.raises(ValueError, match="Unsupported cache format: unsupported"):
             loader._cache_data(df, "dummy_path")
+
+    def test_load_mysql_source(self, mysql_schema):
+        """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""
+        with patch("os.path.exists", return_value=True), patch(
+            "builtins.open", mock_open(read_data=str(mysql_schema))
+        ), patch(
+            "pandasai.data_loader.loader.DatasetLoader.execute_query"
+        ) as mock_execute_query:
+            # Mock the query results
+            mock_execute_query.return_value = DataFrame(
+                pd.DataFrame(
+                    {
+                        "email": ["test@example.com"],
+                        "first_name": ["John"],
+                        "timestamp": [pd.Timestamp.now()],
+                    }
+                )
+            )
+
+            loader = DatasetLoader()
+            result = loader.load("test/users")
+
+            # Test that we get a VirtualDataFrame
+            assert isinstance(result, DataFrame)
+            assert result.schema == mysql_schema
+
+            # Test that load_head() works
+            head_result = result.head()
+            assert isinstance(head_result, DataFrame)
+            assert "email" in head_result.columns
+            assert "first_name" in head_result.columns
+            assert "timestamp" in head_result.columns
+
+            # Verify the SQL query was executed correctly
+            mock_execute_query.assert_called_once_with(
+                "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
+            )
+
+            # Test executing a custom query
+            custom_query = "SELECT email FROM users WHERE first_name = 'John'"
+            result.execute_sql_query(custom_query)
+            mock_execute_query.assert_called_with(custom_query)

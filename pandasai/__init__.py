@@ -78,7 +78,7 @@ def follow_up(query: str):
 _dataset_loader = DatasetLoader()
 
 
-def load(dataset_path: str, virtualized=False) -> DataFrame:
+def load(dataset_path: str) -> DataFrame:
     """
     Load data based on the provided dataset path.
 
@@ -115,7 +115,7 @@ def load(dataset_path: str, virtualized=False) -> DataFrame:
         with ZipFile(BytesIO(file_data.content)) as zip_file:
             zip_file.extractall(dataset_full_path)
 
-    return _dataset_loader.load(dataset_path, virtualized)
+    return _dataset_loader.load(dataset_path)
 
 
 def read_csv(filepath: str) -> DataFrame:

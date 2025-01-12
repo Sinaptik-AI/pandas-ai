@@ -22,7 +22,7 @@ PANDABI_SETUP_MESSAGE = (
     "3. Set environment variable like os.environ['PANDASAI_API_KEY'] = '$2a$10$flb7....'"
 )
 
-SUPPORTED_SOURCES = {
+SUPPORTED_SOURCE_CONNECTORS = {
     "mysql": "pandasai_sql",
     "postgres": "pandasai_sql",
     "cockroachdb": "pandasai_sql",
@@ -33,3 +33,17 @@ SUPPORTED_SOURCES = {
     "databricks": "pandasai_databricks",
     "oracle": "pandasai_oracle",
 }
+
+LOCAL_SOURCE_TYPES = ["csv", "parquet"]
+REMOTE_SOURCE_TYPES = [
+    "mysql",
+    "postgres",
+    "cockroach",
+    "sqlite",
+    "data",
+    "yahoo_finance",
+    "bigquery",
+    "snowflake",
+    "databricks",
+    "oracle",
+]
