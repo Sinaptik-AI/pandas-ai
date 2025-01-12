@@ -6,10 +6,10 @@ import re
 from io import BytesIO
 from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
-from pandas._typing import Axes, Dtype
 
 import pandas as pd
 import yaml
+from pandas._typing import Axes, Dtype
 
 import pandasai as pai
 from pandasai.config import Config
@@ -236,7 +236,9 @@ class DataFrame(pd.DataFrame):
 
     def push(self):
         if self.path is None:
-            raise ValueError("Please save the dataset before pushing to the remote server.")
+            raise ValueError(
+                "Please save the dataset before pushing to the remote server."
+            )
 
         api_key = os.environ.get("PANDASAI_API_KEY", None)
 
