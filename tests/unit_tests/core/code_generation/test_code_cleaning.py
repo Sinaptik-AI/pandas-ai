@@ -63,7 +63,6 @@ class TestCodeCleaner(unittest.TestCase):
         self.assertFalse(is_slice)
 
     def test_check_direct_sql_func_def_exists_true(self):
-        self.context.config.direct_sql = True
         node = ast.FunctionDef(
             name="execute_sql_query",
             args=ast.arguments(
@@ -80,25 +79,6 @@ class TestCodeCleaner(unittest.TestCase):
         )
         result = self.cleaner._check_direct_sql_func_def_exists(node)
         self.assertTrue(result)
-
-    def test_check_direct_sql_func_def_exists_false(self):
-        self.context.config.direct_sql = False
-        node = ast.FunctionDef(
-            name="execute_sql_query",
-            args=ast.arguments(
-                args=[],
-                vararg=None,
-                kwonlyargs=[],
-                kw_defaults=[],
-                kwarg=None,
-                defaults=[],
-            ),
-            body=[],
-            decorator_list=[],
-            returns=None,
-        )
-        result = self.cleaner._check_direct_sql_func_def_exists(node)
-        self.assertFalse(result)
 
     def test_replace_table_names_valid(self):
         sql_query = "SELECT * FROM my_table;"

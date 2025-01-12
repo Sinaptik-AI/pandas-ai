@@ -16,7 +16,6 @@ class Config(BaseModel):
     save_charts_path: str = DEFAULT_CHART_DIRECTORY
     max_retries: int = 3
     llm: Optional[LLM] = None
-    direct_sql: bool = False
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

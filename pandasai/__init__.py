@@ -18,7 +18,7 @@ from pandasai.helpers.request import get_pandaai_session
 from .agent import Agent
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
-from .dataframe.base import DataFrame
+from .dataframe import DataFrame, VirtualDataFrame
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 
@@ -125,12 +125,14 @@ def read_csv(filepath: str) -> DataFrame:
 
 __all__ = [
     "Agent",
+    "DataFrame",
+    "VirtualDataFrame",
     "clear_cache",
     "pandas",
-    "DataFrame",
     "chat",
     "follow_up",
     "load",
+    # Deprecated
     "SmartDataframe",
     "SmartDatalake",
 ]

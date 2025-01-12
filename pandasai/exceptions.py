@@ -281,3 +281,9 @@ class CodeExecutionError(Exception):
     Args:
         Exception (Exception): CodeExecutionError
     """
+
+
+class VirtualizationError(Exception):
+    """Raised when there is an error with DataFrame virtualization."""
+
+    pass

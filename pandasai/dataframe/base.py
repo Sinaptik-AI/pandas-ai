@@ -93,6 +93,10 @@ class DataFrame(pd.DataFrame):
     def column_hash(self):
         return self._column_hash
 
+    @property
+    def type(self) -> str:
+        return "pd.DataFrame"
+
     def chat(
         self, prompt: str, config: Optional[Union[dict, Config]] = None
     ) -> BaseResponse:
@@ -136,14 +140,12 @@ class DataFrame(pd.DataFrame):
     def serialize_dataframe(
         self,
         index: int,
-        is_direct_sql: bool,
     ) -> str:
         """
         Serialize DataFrame to string representation.
 
         Args:
             index (int): Index of the dataframe
-            is_direct_sql (bool): Whether the query is direct SQL
             serializer_type (DataframeSerializerType): Type of serializer to use
             **kwargs: Additional parameters to pass to pandas to_string method
 
@@ -155,7 +157,6 @@ class DataFrame(pd.DataFrame):
             extras={
                 "index": index,
                 "type": "pd.DataFrame",
-                "is_direct_sql": is_direct_sql,
             },
             type_=DataframeSerializerType.CSV,
         )
@@ -236,7 +237,9 @@ class DataFrame(pd.DataFrame):
 
     def push(self):
         if self.path is None:
-            raise ValueError("Please save the dataset before pushing to the remote server.")
+            raise ValueError(
+                "Please save the dataset before pushing to the remote server."
+            )
 
         api_key = os.environ.get("PANDASAI_API_KEY", None)
 
@@ -306,7 +309,7 @@ class DataFrame(pd.DataFrame):
                 with open(target_path, "wb") as f:
                     f.write(zip_file.read(file_name))
 
-        # reloads the Dataframe
+        # Reloads the Dataframe
         from pandasai import DatasetLoader
 
         dataset_loader = DatasetLoader()
@@ -316,3 +319,10 @@ class DataFrame(pd.DataFrame):
         )
 
         print(f"Dataset pulled successfully from path: {self.path}")
+
+    def execute_sql_query(self, query: str) -> pd.DataFrame:
+        import duckdb
+
+        db = duckdb.connect(":memory:")
+        db.register(self.name, self)
+        return db.query(query).df()

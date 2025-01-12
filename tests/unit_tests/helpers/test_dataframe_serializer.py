@@ -20,18 +20,20 @@ class TestDataframeSerializer(unittest.TestCase):
             type_=DataframeSerializerType.YML,
             extras={"index": 0, "type": "pd.Dataframe"},
         )
-        print(result)
+
         self.assertIn(
-            """dfs[0]:
-  name: en_table_name
-  description: null
-  type: pd.Dataframe
-  rows: 2
-  columns: 1
-  schema:
-    fields:
-    - name: name
-      type: object
+            """<table>
+name: en_table_name
+description: null
+type: pd.DataFrame
+rows: 2
+columns: 1
+schema:
+  fields:
+  - name: name
+    type: object
+
+</table>
 """,
             result,
         )

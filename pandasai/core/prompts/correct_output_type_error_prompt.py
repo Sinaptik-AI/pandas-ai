@@ -29,7 +29,6 @@ class CorrectOutputTypeErrorPrompt(BasePrompt):
                 "exception_type": "InvalidLLMOutputType",
             },
             "config": {
-                "direct_sql": context.config.direct_sql,
                 "output_type": output_type,
             },
         }

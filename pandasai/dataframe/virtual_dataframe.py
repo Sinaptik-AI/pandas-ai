@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 import pandas as pd
 
 from pandasai.dataframe.base import DataFrame
+from pandasai.exceptions import VirtualizationError
 
 if TYPE_CHECKING:
     from pandasai.data_loader.loader import DatasetLoader
@@ -15,8 +16,6 @@ class VirtualDataFrame(DataFrame):
         "_loader",
         "head",
         "_head",
-        "name",
-        "description",
         "schema",
         "config",
         "_agent",
@@ -26,9 +25,22 @@ class VirtualDataFrame(DataFrame):
     def __init__(self, *args, **kwargs):
         self._loader: DatasetLoader = kwargs.pop("data_loader", None)
         if not self._loader:
-            raise Exception("Data loader is required for virtualization!")
+            raise VirtualizationError("Data loader is required for virtualization!")
         self._head = None
-        super().__init__(self.get_head(), *args, **kwargs)
+
+        schema = kwargs.get("schema", None)
+        if not schema:
+            raise VirtualizationError("Schema is required for virtualization!")
+        table_name = schema["source"].get("table", None) or schema["name"]
+        table_description = schema.get("description", None)
+
+        super().__init__(
+            self.get_head(),
+            name=table_name,
+            description=table_description,
+            *args,
+            **kwargs,
+        )
 
     def head(self):
         if self._head is None:

@@ -60,13 +60,9 @@ class DatasetLoader:
                 )
 
             data_loader = self.copy()
-            table_name = self.schema["source"].get("table", None) or self.schema["name"]
-            table_description = self.schema.get("description", None)
             return VirtualDataFrame(
                 schema=self.schema,
                 data_loader=data_loader,
-                name=table_name,
-                description=table_description,
                 path=dataset_path,
             )
 

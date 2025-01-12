@@ -27,5 +27,4 @@ class CorrectExecuteSQLQueryUsageErrorPrompt(BasePrompt):
                 "error_trace": str(error),
                 "exception_type": "ExecuteSQLQueryNotUsed",
             },
-            "config": {"direct_sql": context.config.direct_sql},
         }

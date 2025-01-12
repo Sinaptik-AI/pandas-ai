@@ -49,8 +49,7 @@ class CodeRequirementValidator:
             bool: True if the code meets the requirements, False otherwise.
 
         Raises:
-            ExecuteSQLQueryNotUsed: If the `direct_sql` configuration is enabled and
-                                     `execute_sql_query` is not used in the code.
+            ExecuteSQLQueryNotUsed: If `execute_sql_query` is not used in the code.
         """
         # Parse the code into an AST
         tree = ast.parse(code)
@@ -60,10 +59,7 @@ class CodeRequirementValidator:
         func_call_visitor.visit(tree)
 
         # Validate requirements
-        if (
-            self.context.config.direct_sql
-            and "execute_sql_query" not in func_call_visitor.function_calls
-        ):
+        if "execute_sql_query" not in func_call_visitor.function_calls:
             raise ExecuteSQLQueryNotUsed(
                 "The code must execute SQL queries using the `execute_sql_query` function, which is already defined!"
             )

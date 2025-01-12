@@ -9,9 +9,7 @@ from pandasai.core.cache import Cache
 from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.core.code_generation.base import CodeGenerator
 from pandasai.core.prompts import (
-    get_chat_prompt,
     get_chat_prompt_for_sql,
-    get_correct_error_prompt,
     get_correct_error_prompt_for_sql,
     get_correct_output_type_error_prompt,
 )
@@ -137,11 +135,7 @@ class Agent:
                 return self._code_generator.validate_and_clean_code(cached_code)
 
         self._state.logger.log("Generating new code...")
-        prompt = (
-            get_chat_prompt_for_sql(self._state)
-            if self._state.config.direct_sql
-            else get_chat_prompt(self._state)
-        )
+        prompt = get_chat_prompt_for_sql(self._state)
 
         code, additional_dependencies = self._code_generator.generate_code(prompt)
         self._state.last_prompt_used = prompt
@@ -155,10 +149,9 @@ class Agent:
         code_executor = CodeExecutor(self._state.config, additional_dependencies)
         code_executor.add_to_env("dfs", self._state.dfs)
 
-        if self._state.config.direct_sql:
-            code_executor.add_to_env(
-                "execute_sql_query", self._state.dfs[0].execute_sql_query
-            )
+        code_executor.add_to_env(
+            "execute_sql_query", self._state.dfs[0].execute_sql_query
+        )
 
         return code_executor.execute_and_return_result(code)
 
@@ -239,37 +232,13 @@ class Agent:
         self.clear_memory()
 
     def _validate_input(self):
-        from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
-
-        # Check if all DataFrames are VirtualDataFrame, and set direct_sql accordingly
-        all_virtual = all(isinstance(df, VirtualDataFrame) for df in self._state.dfs)
-        if all_virtual:
-            self._state.config.direct_sql = True
-
-        # Validate the configurations based on direct_sql flag all have same source
-        if self._state.config.direct_sql and all_virtual:
-            base_schema_source = self._state.dfs[0].schema
-            for df in self._state.dfs[1:]:
-                # Ensure all DataFrames have the same source in direct_sql mode
-
-                if not is_schema_source_same(base_schema_source, df.schema):
-                    raise InvalidConfigError(
-                        "Direct SQL requires all connectors to be of the same type, "
-                        "belong to the same datasource, and have the same credentials."
-                    )
-        else:
-            # If not using direct_sql, ensure all DataFrames have the same source
-            if any(isinstance(df, VirtualDataFrame) for df in self._state.dfs):
-                base_schema_source = self._state.dfs[0].schema
-                for df in self._state.dfs[1:]:
-                    if not is_schema_source_same(base_schema_source, df.schema):
-                        raise InvalidConfigError(
-                            "All DataFrames must belong to the same source."
-                        )
-                self._state.config.direct_sql = True
-            else:
-                # Means all are none virtual
-                self._state.config.direct_sql = False
+        base_schema_source = self._state.dfs[0].schema
+        for df in self._state.dfs[1:]:
+            if not is_schema_source_same(base_schema_source, df.schema):
+                raise InvalidConfigError(
+                    "Direct SQL requires all connectors to be of the same type, "
+                    "belong to the same datasource, and have the same credentials."
+                )
 
     def _process_query(self, query: str, output_type: Optional[str] = None):
         """Process a user query and return the result."""
@@ -315,10 +284,8 @@ class Agent:
             prompt = get_correct_output_type_error_prompt(
                 self._state, code, error_trace
             )
-        elif self._state.config.direct_sql:
-            prompt = get_correct_error_prompt_for_sql(self._state, code, error_trace)
         else:
-            prompt = get_correct_error_prompt(self._state, code, error_trace)
+            prompt = get_correct_error_prompt_for_sql(self._state, code, error_trace)
 
         return self._code_generator.generate_code(prompt)
 
@@ -334,7 +301,7 @@ class Agent:
         if self._state.config.enable_cache:
             Folder.create(DEFAULT_CACHE_DIRECTORY)
 
-    def _get_config(self, config: Union[Config, dict]) -> Config:
+    def _get_config(self, config: Union[Config, dict, None]) -> Config:
         """
         Load a config to be used to run the queries.
 

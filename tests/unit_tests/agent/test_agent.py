@@ -28,7 +28,8 @@ class TestAgent:
                     14631844184064,
                 ],
                 "happiness_index": [6.94, 7.22, 5.87, 5.12],
-            }
+            },
+            name="countries",
         )
 
     @pytest.fixture
@@ -95,7 +96,8 @@ class TestAgent:
     @patch("pandasai.agent.base.CodeGenerator")
     def test_generate_code_with_cache_hit(self, mock_generate_code, agent: Agent):
         # Set up the cache to return a pre-cached response
-        cached_code = "print('Cached result: US has the highest GDP.')"
+        cached_code = """execute_sql_query('SELECT country FROM countries ORDER BY gdp DESC LIMIT 1')
+print('Cached result: US has the highest GDP.')"""
         agent._state.config.enable_cache = True
         agent._state.cache.get = MagicMock(return_value=cached_code)
 
@@ -135,10 +137,7 @@ class TestAgent:
         assert response == "print('New result: US has the highest GDP.')"
 
     @patch("pandasai.agent.base.CodeGenerator")
-    def test_generate_code_with_direct_sql(self, mock_generate_code, agent: Agent):
-        # Enable direct SQL in the config
-        agent._state.config.direct_sql = True
-
+    def test_generate_code_with(self, mock_generate_code, agent: Agent):
         # Mock the code generator to return a SQL-based response
         mock_generate_code.generate_code.return_value = (
             "SELECT country FROM countries ORDER BY gdp DESC LIMIT 1;",
@@ -189,7 +188,7 @@ class TestAgent:
         agent._code_generator = mock_generate_code
 
         # Mock the prompt creation function
-        with patch("pandasai.agent.base.get_chat_prompt", return_value=prompt):
+        with patch("pandasai.agent.base.get_chat_prompt_for_sql", return_value=prompt):
             response, additional_dependencies = agent.generate_code(
                 "Which country has the highest GDP?"
             )
@@ -222,10 +221,7 @@ class TestAgent:
         )
 
     @patch("pandasai.agent.base.CodeExecutor")
-    def test_execute_code_with_direct_sql(self, mock_code_executor, agent: Agent):
-        # Enable direct SQL in the config
-        agent._state.config.direct_sql = True
-
+    def test_execute_code(self, mock_code_executor, agent: Agent):
         # Mock CodeExecutor to return a result
         mock_code_executor.return_value.execute_and_return_result.return_value = {
             "result": "SQL Execution successful"

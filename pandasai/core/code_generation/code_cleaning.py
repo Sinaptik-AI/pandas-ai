@@ -80,11 +80,7 @@ class CodeCleaner:
         """
         Check if the node defines a direct SQL execution function.
         """
-        return (
-            self.context.config.direct_sql
-            and isinstance(node, ast.FunctionDef)
-            and node.name == "execute_sql_query"
-        )
+        return isinstance(node, ast.FunctionDef) and node.name == "execute_sql_query"
 
     def _replace_table_names(
         self, sql_query: str, table_names: list, allowed_table_names: list
@@ -267,8 +263,7 @@ class CodeCleaner:
             if self._check_direct_sql_func_def_exists(node):
                 continue
 
-            if self.context.config.direct_sql:
-                node = self._validate_and_make_table_name_case_sensitive(node)
+            node = self._validate_and_make_table_name_case_sensitive(node)
 
             clean_code_lines.append(astor.to_source(node))
 
