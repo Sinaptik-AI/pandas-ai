@@ -1,6 +1,6 @@
 import ast
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from pandasai.agent.state import AgentState
 from pandasai.core.code_generation.code_cleaning import CodeCleaner
@@ -148,10 +148,7 @@ class TestCodeCleaner(unittest.TestCase):
         )
         self.assertIsInstance(updated_node, ast.AST)
 
-    @patch(
-        "pandasai.core.code_generation.code_cleaning.add_save_chart"
-    )  # Replace with actual module name
-    def test_handle_charts_save_charts_true(self, mock_add_save_chart):
+    def test_replace_output_filenames_with_temp_chart(self):
         handler = self.cleaner
         handler.context = MagicMock()
         handler.context.config.save_charts = True
@@ -159,61 +156,32 @@ class TestCodeCleaner(unittest.TestCase):
         handler.context.last_prompt_id = 123
         handler.context.config.save_charts_path = "/custom/path"
 
-        code = 'some text "temp_chart.png" more text'
+        code = 'some text "hello.png" more text'
 
-        handler._handle_charts(code)
+        code = handler._replace_output_filenames_with_temp_chart(code)
 
-        mock_add_save_chart.assert_called_once_with(
-            code,
-            logger=handler.context.logger,
-            file_name="123",
-            save_charts_path_str="/custom/path",
-        )
+        expected_code = 'some text "exports/charts/temp_chart.png" more text'
+        self.assertEqual(code, expected_code)
 
-    @patch("pandasai.core.code_generation.code_cleaning.add_save_chart")
-    @patch(
-        "pandasai.core.code_generation.code_cleaning.find_project_root",
-        return_value="/root/project",
-    )  # Mock project root
-    def test_handle_charts_save_charts_false(
-        self, mock_find_project_root, mock_add_save_chart
-    ):
-        handler = self.cleaner
-        handler.context = MagicMock()
-        handler.context.config.save_charts = False
-        handler.context.logger = MagicMock()
-        handler.context.last_prompt_id = 123
-
-        code = 'some text "temp_chart.png" more text'
-
-        handler._handle_charts(code)
-
-        mock_add_save_chart.assert_called_once_with(
-            code,
-            logger=handler.context.logger,
-            file_name="temp_chart",
-            save_charts_path_str="/root/project/exports/charts",
-        )
-
-    def test_handle_charts_empty_code(self):
+    def test_replace_output_filenames_with_temp_chart_empty_code(self):
         handler = self.cleaner
 
         code = ""
         expected_code = ""  # It should remain empty, as no substitution is made
 
-        result = handler._handle_charts(code)
+        result = handler._replace_output_filenames_with_temp_chart(code)
 
         self.assertEqual(
             result, expected_code, f"Expected '{expected_code}', but got '{result}'"
         )
 
-    def test_handle_charts_no_png(self):
+    def test_replace_output_filenames_with_temp_chart_no_png(self):
         handler = self.cleaner
 
         code = "some text without png"
         expected_code = "some text without png"  # No change should occur
 
-        result = handler._handle_charts(code)
+        result = handler._replace_output_filenames_with_temp_chart(code)
 
         self.assertEqual(
             result, expected_code, f"Expected '{expected_code}', but got '{result}'"

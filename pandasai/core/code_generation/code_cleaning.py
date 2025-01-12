@@ -6,12 +6,12 @@ from typing import Union
 import astor
 
 from pandasai.agent.state import AgentState
+from pathlib import Path
+from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.core.code_execution.code_executor import CodeExecutor
-from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql import extract_table_names
 
 from ...exceptions import MaliciousQueryError
-from ...helpers.save_chart import add_save_chart
 
 
 class CodeCleaner:
@@ -241,7 +241,7 @@ class CodeCleaner:
         Returns:
             tuple: Cleaned code as a string and a list of additional dependencies.
         """
-        code = self._handle_charts(code)
+        code = self._replace_output_filenames_with_temp_chart(code)
 
         # If plt.show is in the code, remove that line
         code = re.sub(r"plt.show\(\)", "", code)
@@ -267,21 +267,13 @@ class CodeCleaner:
         new_tree = ast.Module(body=new_body)
         return astor.to_source(new_tree, pretty_source=lambda x: "".join(x)).strip()
 
-    def _handle_charts(self, code: str) -> str:
+    def _replace_output_filenames_with_temp_chart(self, code: str) -> str:
         """
-        Handle chart-related code modifications.
+        Replace output file names with "temp_chart.png".
         """
-        code = re.sub(r"""(['"])([^'"]*\.png)\1""", r"\1temp_chart.png\1", code)
-        if self.context.config.save_charts:
-            return add_save_chart(
-                code,
-                logger=self.context.logger,
-                file_name=str(self.context.last_prompt_id),
-                save_charts_path_str=self.context.config.save_charts_path,
-            )
-        return add_save_chart(
+        chart_path = Path(DEFAULT_CHART_DIRECTORY) / "temp_chart.png"
+        return re.sub(
+            r"""(['"])([^'"]*\.png)\1""",
+            lambda m: f"{m.group(1)}{chart_path}{m.group(1)}",
             code,
-            logger=self.context.logger,
-            file_name="temp_chart",
-            save_charts_path_str=f"{find_project_root()}/exports/charts",
         )

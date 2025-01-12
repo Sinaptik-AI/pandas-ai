@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.llm.base import LLM
 
 
@@ -12,8 +11,6 @@ class Config(BaseModel):
     save_logs: bool = True
     verbose: bool = False
     enable_cache: bool = True
-    save_charts: bool = False
-    save_charts_path: str = DEFAULT_CHART_DIRECTORY
     max_retries: int = 3
     llm: Optional[LLM] = None
 

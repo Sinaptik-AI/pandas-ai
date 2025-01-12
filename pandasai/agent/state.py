@@ -86,11 +86,7 @@ class AgentState:
     def _configure(self):
         """Configure paths for charts and cache."""
         # Add project root path if save_charts_path is default
-        if (
-            self.config.save_charts
-            and self.config.save_charts_path == DEFAULT_CHART_DIRECTORY
-        ):
-            Folder.create(self.config.save_charts_path)
+        Folder.create(DEFAULT_CHART_DIRECTORY)
 
         # Add project root path if cache_path is default
         if self.config.enable_cache:

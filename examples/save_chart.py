@@ -23,8 +23,6 @@ user_defined_path = os.path.join(user_defined_path, "exports", "charts")
 agent = Agent(
     df,
     config={
-        "save_charts_path": user_defined_path,
-        "save_charts": True,
         "verbose": True,
     },
 )

@@ -95,7 +95,6 @@ class Agent:
         prompt = get_chat_prompt_for_sql(self._state)
 
         code = self._code_generator.generate_code(prompt)
-        print("+++ code in generate_code: ", code)
         self._state.last_prompt_used = prompt
         return code
 
