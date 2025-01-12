@@ -15,7 +15,7 @@ Then you can set your API key as an environment variable:
 ```python
 import os
 
-os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAIAPI_KEY"
+os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 ```
 
 It is important that you set the API key, or it will fail with the following error: `No vector store provided. Please provide a vector store to train the agent`.
@@ -36,7 +36,7 @@ As an alternative, if you want to use a local vector store (enterprise only for 
 from pandasai import Agent
 
 # Set your PandasAI API key (you can generate one signing up at https://pandabi.ai)
-os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"
+os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 
 agent = Agent("data.csv")
 agent.train(docs="The fiscal year starts in April")
@@ -135,12 +135,12 @@ Here's how to fix it:
 First of all, you'll need to generated an API key (check the prerequisites paragraph above).
 Once you have generated the API key, you have 2 options:
 
-1. Override the env variable (`os.environ["PANDASAI_API_KEY"] = "YOUR_PANDASAI_API_KEY"`)
+1. Override the env variable (`os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"`)
 2. Instantiate the vector store and pass the API key:
 
 ```python
 # Instantiate the vector store with the API keys
-vector_store = BambooVectorStor(api_key="YOUR_PANDASAI_API_KEY")
+vector_store = BambooVectorStor(api_key="YOUR_PANDABI_API_KEY")
 
 # Instantiate the agent with the custom vector store
 agent = Agent(connector, config={...} vectorstore=vector_store)

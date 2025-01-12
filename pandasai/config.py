@@ -41,7 +41,7 @@ class ConfigManager:
     @classmethod
     def get(cls) -> Config:
         """Get the global configuration."""
-        if cls._config.llm is None and os.environ.get("PANDASAI_API_KEY"):
+        if cls._config.llm is None and os.environ.get("PANDABI_API_KEY"):
             from pandasai.llm.bamboo_llm import BambooLLM
 
             cls._config.llm = BambooLLM()
@@ -60,7 +60,7 @@ class ConfigManager:
         """
         Initializes a default LLM if not provided.
         """
-        if cls._config.llm is None and os.environ.get("PANDASAI_API_KEY"):
+        if cls._config.llm is None and os.environ.get("PANDABI_API_KEY"):
             from pandasai.llm.bamboo_llm import BambooLLM
 
             cls._config.llm = BambooLLM()
@@ -79,7 +79,7 @@ class APIKeyManager:
 
     @classmethod
     def set(cls, api_key: str):
-        os.environ["PANDASAI_API_KEY"] = api_key
+        os.environ["PANDABI_API_KEY"] = api_key
         cls._api_key = api_key
 
     @classmethod

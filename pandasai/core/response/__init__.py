@@ -1,10 +1,10 @@
 from .base import BaseResponse
 from .chart import ChartResponse
 from .dataframe import DataFrameResponse
+from .error import ErrorResponse
 from .number import NumberResponse
 from .parser import ResponseParser
 from .string import StringResponse
-from .error import ErrorResponse
 
 __all__ = [
     "ResponseParser",

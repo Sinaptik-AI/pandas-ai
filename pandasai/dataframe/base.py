@@ -6,10 +6,10 @@ import re
 from io import BytesIO
 from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
-from pandas._typing import Axes, Dtype
 
 import pandas as pd
 import yaml
+from pandas._typing import Axes, Dtype
 
 import pandasai as pai
 from pandasai.config import Config
@@ -236,9 +236,11 @@ class DataFrame(pd.DataFrame):
 
     def push(self):
         if self.path is None:
-            raise ValueError("Please save the dataset before pushing to the remote server.")
+            raise ValueError(
+                "Please save the dataset before pushing to the remote server."
+            )
 
-        api_key = os.environ.get("PANDASAI_API_KEY", None)
+        api_key = os.environ.get("PANDABI_API_KEY", None)
 
         request_session = get_pandaai_session()
 
@@ -272,11 +274,11 @@ class DataFrame(pd.DataFrame):
             print("Your dataset was successfully pushed to the pandabi platform")
 
     def pull(self):
-        api_key = os.environ.get("PANDASAI_API_KEY", None)
+        api_key = os.environ.get("PANDABI_API_KEY", None)
 
         if not api_key:
             raise PandasAIApiKeyError(
-                "Set PANDASAI_API_URL and PANDASAI_API_KEY in environment to pull dataset to the remote server"
+                "Set PANDABI_API_URL and PANDABI_API_KEY in environment to pull dataset to the remote server"
             )
 
         request_session = get_pandaai_session()

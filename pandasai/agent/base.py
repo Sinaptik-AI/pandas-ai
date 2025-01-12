@@ -349,7 +349,7 @@ class Agent:
             return ConfigManager.get()
 
         if isinstance(config, dict):
-            if not config.get("llm") and os.environ.get("PANDASAI_API_KEY"):
+            if not config.get("llm") and os.environ.get("PANDABI_API_KEY"):
                 config["llm"] = BambooLLM()
             return Config(**config)
 

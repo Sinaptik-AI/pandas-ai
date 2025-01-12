@@ -389,7 +389,7 @@ class TestAgent:
     def test_load_llm_none(self, agent: Agent, llm):
         mock_llm = FakeLLM()
         with patch("pandasai.agent.base.BambooLLM", return_value=mock_llm), patch.dict(
-            os.environ, {"PANDASAI_API_KEY": "test_key"}
+            os.environ, {"PANDABI_API_KEY": "test_key"}
         ):
             config = agent._get_config({})
             assert isinstance(config, Config)
@@ -480,7 +480,7 @@ class TestAgent:
     def test_get_config_dict_with_api_key(self, agent: Agent):
         """Test that _get_config adds BambooLLM when API key is present"""
         mock_llm = FakeLLM()
-        with patch.dict(os.environ, {"PANDASAI_API_KEY": "test_key"}), patch(
+        with patch.dict(os.environ, {"PANDABI_API_KEY": "test_key"}), patch(
             "pandasai.agent.base.BambooLLM", return_value=mock_llm
         ):
             config = agent._get_config({})
