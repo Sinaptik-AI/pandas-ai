@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: ruff
         name: ruff
+        args: [--fix, --select=I, pandasai, examples, tests]
       - id: ruff-format
         name: ruff-format
   - repo: local
