@@ -1,10 +1,10 @@
 import ast
 import re
+from pathlib import Path
 
 import astor
 
 from pandasai.agent.state import AgentState
-from pathlib import Path
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.helpers.sql import extract_table_names
