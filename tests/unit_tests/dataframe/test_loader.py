@@ -7,6 +7,7 @@ import pytest
 
 from pandasai.data_loader.loader import DatasetLoader
 from pandasai.dataframe.base import DataFrame
+from pandasai.exceptions import InvalidDataSourceType
 
 
 class TestDatasetLoader:
@@ -109,8 +110,8 @@ class TestDatasetLoader:
         ) as mock_read_cache, patch(
             "builtins.open", mock_open(read_data=str(sample_schema))
         ), patch(
-            "pandasai.data_loader.loader.DatasetLoader._load_from_source"
-        ) as mock_load_source, patch(
+            "pandasai.data_loader.loader.DatasetLoader._load_from_local_source"
+        ) as mock_load_local_source, patch(
             "pandasai.data_loader.loader.DatasetLoader.load_head"
         ) as mock_load_head:
             loader = DatasetLoader()
@@ -126,7 +127,34 @@ class TestDatasetLoader:
             assert isinstance(result, DataFrame)
             assert "email" in result.columns
             mock_read_cache.assert_called_once()
-            mock_load_source.assert_not_called()
+            mock_load_local_source.assert_not_called()
+
+    def test_load_from_local_source_valid(self, sample_schema):
+        with patch("os.path.exists", return_value=True), patch(
+            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
+        ) as mock_read_csv_or_parquet:
+            loader = DatasetLoader()
+            loader.dataset_path = "test"
+            loader.schema = sample_schema
+
+            mock_read_csv_or_parquet.return_value = DataFrame(
+                {"email": ["test@example.com"]}
+            )
+
+            result = loader._load_from_local_source()
+
+            assert isinstance(result, DataFrame)
+            assert "email" in result.columns
+
+    def test_load_from_local_source_invalid_source_type(self, sample_schema):
+        loader = DatasetLoader()
+        sample_schema["source"]["type"] = "mysql"
+        loader.schema = sample_schema
+
+        with pytest.raises(
+            InvalidDataSourceType, match="Unsupported local source type"
+        ):
+            loader._load_from_local_source()
 
     def test_anonymize_method(self):
         loader = DatasetLoader()
