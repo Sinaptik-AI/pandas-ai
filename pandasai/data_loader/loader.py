@@ -46,7 +46,7 @@ class DatasetLoader:
                 cache_format = self.schema["destination"]["format"]
                 return self._read_csv_or_parquet(cache_file, cache_format)
 
-            df = self._load_from_source()
+            df = self._load_from_local_source()
             df = self._apply_transformations(df)
 
             # Convert to pandas DataFrame while preserving internal data
@@ -169,18 +169,20 @@ class DatasetLoader:
         else:
             raise ValueError(f"Unsupported file format: {format}")
 
-    def _load_from_source(self) -> pd.DataFrame:
+    def _load_from_local_source(self) -> pd.DataFrame:
         source_type = self.schema["source"]["type"]
-        if source_type in ["csv", "parquet"]:
-            filepath = os.path.join(
-                self._get_abs_dataset_path(),
-                self.schema["source"]["path"],
-            )
-            return self._read_csv_or_parquet(filepath, source_type)
 
-        query_builder = QueryBuilder(self.schema)
-        query = query_builder.build_query()
-        return self.execute_query(query)
+        if source_type not in LOCAL_SOURCE_TYPES:
+            raise InvalidDataSourceType(
+                f"Unsupported local source type: {source_type}. Supported types are: {LOCAL_SOURCE_TYPES}."
+            )
+
+        filepath = os.path.join(
+            str(self._get_abs_dataset_path()),
+            self.schema["source"]["path"],
+        )
+
+        return self._read_csv_or_parquet(filepath, source_type)
 
     def load_head(self) -> pd.DataFrame:
         query_builder = QueryBuilder(self.schema)
