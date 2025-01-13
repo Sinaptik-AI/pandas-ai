@@ -174,7 +174,7 @@ class DatasetLoader:
 
         if source_type not in LOCAL_SOURCE_TYPES:
             raise InvalidDataSourceType(
-                f"Unsupported local source type: {source_type}. Supported types: {LOCAL_SOURCE_TYPES}"
+                f"Unsupported local source type: {source_type}. Supported types are: {LOCAL_SOURCE_TYPES}."
             )
 
         filepath = os.path.join(
