@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 import os
 import uuid
+from dataclasses import dataclass, field
 from importlib.util import find_spec
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pandasai.config import Config, ConfigManager
+from pandasai.constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from pandasai.core.cache import Cache
+from pandasai.data_loader.schema_validator import is_schema_source_same
+from pandasai.exceptions import InvalidConfigError
+from pandasai.helpers.folder import Folder
 from pandasai.helpers.logger import Logger
 from pandasai.helpers.memory import Memory
-from pandasai.vectorstores.vectorstore import VectorStore
-from pandasai.helpers.folder import Folder
 from pandasai.llm.bamboo_llm import BambooLLM
-from pandasai.exceptions import InvalidConfigError
-from pandasai.data_loader.schema_validator import is_schema_source_same
-from pandasai.constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
+from pandasai.vectorstores.vectorstore import VectorStore
 
 if TYPE_CHECKING:
     from pandasai.dataframe import DataFrame, VirtualDataFrame

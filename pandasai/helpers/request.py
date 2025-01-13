@@ -1,6 +1,7 @@
 """Request helper module."""
 
 from typing import Optional
+
 import requests
 
 

@@ -1,6 +1,7 @@
 import glob
 import os
 from typing import Any
+
 import duckdb
 
 from pandasai.constants import CACHE_TOKEN, DEFAULT_FILE_PERMISSIONS

@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from pandasai.core.prompts.base import BasePrompt
 
 from pandasai.llm.base import LLM
+
 from .session import Session
 
 
