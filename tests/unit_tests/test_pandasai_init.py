@@ -92,7 +92,7 @@ class TestPandaAIInit:
     @patch("os.environ")
     def test_load_dataset_not_found(self, mockenviron, mock_bytes_io, mock_zip_file):
         """Test loading when dataset does not exist locally and API returns not found."""
-        mockenviron.return_value = {"PANDASAI_API_URL": "localhost:8000"}
+        mockenviron.return_value = {"PANDABI_API_URL": "localhost:8000"}
         mock_request_session = MagicMock()
         pandasai.get_pandaai_session = mock_request_session
         pandasai.get_pandaai_session.return_value = MagicMock()
@@ -104,7 +104,7 @@ class TestPandaAIInit:
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
-    @patch("pandasai.os.environ", {"PANDASAI_API_URL": "url"})
+    @patch("pandasai.os.environ", {"PANDABI_API_URL": "url"})
     def test_load_missing_api_key(self, mock_exists):
         """Test loading when API key is missing."""
         mock_exists.return_value = False
@@ -114,7 +114,7 @@ class TestPandaAIInit:
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
-    @patch("pandasai.os.environ", {"PANDASAI_API_KEY": "key"})
+    @patch("pandasai.os.environ", {"PANDABI_API_KEY": "key"})
     def test_load_missing_api_url(self, mock_exists):
         """Test loading when API URL is missing."""
         mock_exists.return_value = False
@@ -140,7 +140,7 @@ class TestPandaAIInit:
     ):
         """Test loading when dataset is not found locally but is successfully downloaded."""
         mock_exists.return_value = False
-        mock_os_environ.update({"PANDASAI_API_KEY": "key", "PANDASAI_API_URL": "url"})
+        mock_os_environ.update({"PANDABI_API_KEY": "key", "PANDABI_API_URL": "url"})
         mock_request_session = MagicMock()
         mock_get_pandaai_session.return_value = mock_request_session
         mock_request_session.get.return_value.status_code = 200

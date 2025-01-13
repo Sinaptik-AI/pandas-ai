@@ -46,8 +46,8 @@ class TestGeneratePythonCodeWithSQLPrompt:
     def test_str_with_args(self, output_type, output_type_template):
         """Test that the __str__ method is implemented"""
 
-        os.environ["PANDASAI_API_URL"] = ""
-        os.environ["PANDASAI_API_KEY"] = ""
+        os.environ["PANDABI_API_URL"] = ""
+        os.environ["PANDABI_API_KEY"] = ""
 
         llm = FakeLLM()
         agent = Agent(

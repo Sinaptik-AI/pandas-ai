@@ -25,13 +25,13 @@ class Session:
         logger: Optional[Logger] = None,
     ) -> None:
         if api_key is None:
-            api_key = os.environ.get("PANDASAI_API_KEY") or None
+            api_key = os.environ.get("PANDABI_API_KEY") or None
         if api_key is None:
             raise PandaAIApiKeyError()
         self._api_key = api_key
 
         if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDASAI_API_URL", "https://api.pandabi.ai")
+            endpoint_url = os.environ.get("PANDABI_API_URL", "https://api.pandabi.ai")
 
         self._endpoint_url = endpoint_url
         self._version_path = "/api"

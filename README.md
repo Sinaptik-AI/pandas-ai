@@ -86,7 +86,7 @@ df = pai.DataFrame({
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 
 df.chat('Which are the top 5 countries by sales?')
 ```
@@ -146,7 +146,7 @@ salaries_df = pd.DataFrame(salaries_data)
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDASAI_API_KEY"] = "YOUR_API_KEY"
+os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 
 agent = Agent([employees_df, salaries_df])
 agent.chat("Who gets paid the most?")
