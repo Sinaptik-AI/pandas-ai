@@ -14,7 +14,7 @@ from pandas._typing import Axes, Dtype
 import pandasai as pai
 from pandasai.config import Config
 from pandasai.core.response import BaseResponse
-from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import (
     DataframeSerializer,
     DataframeSerializerType,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 class DataFrame(pd.DataFrame):
     """
-    PandasAI DataFrame that extends pandas DataFrame with natural language capabilities.
+    PandaAI DataFrame that extends pandas DataFrame with natural language capabilities.
 
     Attributes:
         name (Optional[str]): Name of the dataframe
@@ -83,7 +83,7 @@ class DataFrame(pd.DataFrame):
         desc_str = f"description='{self.description}'" if self.description else ""
         metadata = ", ".join(filter(None, [name_str, desc_str]))
 
-        return f"PandasAI DataFrame({metadata})\n{super().__repr__()}"
+        return f"PandaAI DataFrame({metadata})\n{super().__repr__()}"
 
     def _calculate_column_hash(self):
         column_string = ",".join(self.columns)
@@ -92,6 +92,10 @@ class DataFrame(pd.DataFrame):
     @property
     def column_hash(self):
         return self._column_hash
+
+    @property
+    def type(self) -> str:
+        return "pd.DataFrame"
 
     def chat(
         self, prompt: str, config: Optional[Union[dict, Config]] = None
@@ -136,14 +140,12 @@ class DataFrame(pd.DataFrame):
     def serialize_dataframe(
         self,
         index: int,
-        is_direct_sql: bool,
     ) -> str:
         """
         Serialize DataFrame to string representation.
 
         Args:
             index (int): Index of the dataframe
-            is_direct_sql (bool): Whether the query is direct SQL
             serializer_type (DataframeSerializerType): Type of serializer to use
             **kwargs: Additional parameters to pass to pandas to_string method
 
@@ -155,7 +157,6 @@ class DataFrame(pd.DataFrame):
             extras={
                 "index": index,
                 "type": "pd.DataFrame",
-                "is_direct_sql": is_direct_sql,
             },
             type_=DataframeSerializerType.CSV,
         )
@@ -277,7 +278,7 @@ class DataFrame(pd.DataFrame):
         api_key = os.environ.get("PANDABI_API_KEY", None)
 
         if not api_key:
-            raise PandasAIApiKeyError(
+            raise PandaAIApiKeyError(
                 "Set PANDABI_API_URL and PANDABI_API_KEY in environment to pull dataset to the remote server"
             )
 
@@ -308,7 +309,7 @@ class DataFrame(pd.DataFrame):
                 with open(target_path, "wb") as f:
                     f.write(zip_file.read(file_name))
 
-        # reloads the Dataframe
+        # Reloads the Dataframe
         from pandasai import DatasetLoader
 
         dataset_loader = DatasetLoader()
@@ -318,3 +319,10 @@ class DataFrame(pd.DataFrame):
         )
 
         print(f"Dataset pulled successfully from path: {self.path}")
+
+    def execute_sql_query(self, query: str) -> pd.DataFrame:
+        import duckdb
+
+        db = duckdb.connect(":memory:")
+        db.register(self.name, self)
+        return db.query(query).df()

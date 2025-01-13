@@ -24,6 +24,15 @@ class LLM:
 
     last_prompt: Optional[str] = None
 
+    def __init__(self, api_key: Optional[str] = None, **kwargs: Any) -> None:
+        """Initialize LLM.
+
+        Args:
+            api_key (Optional[str], optional): API key for LLM. Defaults to None.
+            **kwargs (Any): Additional arguments.
+        """
+        self.api_key = api_key
+
     def is_pandasai_llm(self) -> bool:
         """
         Return True if the LLM is from pandasAI.

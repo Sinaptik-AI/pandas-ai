@@ -1,10 +1,9 @@
 import os
 from importlib.util import find_spec
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.llm.base import LLM
 
 
@@ -12,13 +11,8 @@ class Config(BaseModel):
     save_logs: bool = True
     verbose: bool = False
     enable_cache: bool = True
-    save_charts: bool = False
-    save_charts_path: str = DEFAULT_CHART_DIRECTORY
-    custom_whitelisted_dependencies: List[str] = Field(default_factory=list)
     max_retries: int = 3
     llm: Optional[LLM] = None
-    direct_sql: bool = False
-    security: Literal["standard", "none", "advanced"] = "standard"
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

@@ -10,20 +10,10 @@ from pandasai.core.prompts.correct_output_type_error_prompt import (
 )
 
 from .base import BasePrompt
-from .correct_error_prompt import CorrectErrorPrompt
-from .generate_python_code import GeneratePythonCodePrompt
 from .generate_python_code_with_sql import GeneratePythonCodeWithSQLPrompt
 
 if TYPE_CHECKING:
     from pandasai.agent.state import AgentState
-
-
-def get_chat_prompt(context: AgentState) -> BasePrompt:
-    return GeneratePythonCodePrompt(
-        context=context,
-        last_code_generated=context.get("last_code_generated"),
-        output_type=context.output_type,
-    )
 
 
 def get_chat_prompt_for_sql(context: AgentState) -> BasePrompt:
@@ -31,16 +21,6 @@ def get_chat_prompt_for_sql(context: AgentState) -> BasePrompt:
         context=context,
         last_code_generated=context.get("last_code_generated"),
         output_type=context.output_type,
-    )
-
-
-def get_correct_error_prompt(
-    context: AgentState, code: str, traceback_error: str
-) -> BasePrompt:
-    return CorrectErrorPrompt(
-        context=context,
-        code=code,
-        error=traceback_error,
     )
 
 

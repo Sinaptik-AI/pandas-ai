@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a DataBricks"""
+"""Example of using PandaAI with a DataBricks"""
 
 import os
 

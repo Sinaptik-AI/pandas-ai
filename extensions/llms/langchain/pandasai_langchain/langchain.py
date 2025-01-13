@@ -36,7 +36,7 @@ def is_langchain_llm(llm) -> bool:
 
 class LangchainLLM(LLM):
     """
-    Class to wrap Langchain LLMs and make PandasAI interoperable
+    Class to wrap Langchain LLMs and make PandaAI interoperable
     with LangChain.
     """
 

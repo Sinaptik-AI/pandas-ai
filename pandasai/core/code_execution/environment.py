@@ -4,34 +4,7 @@ Source: Taken from pandas/compat/_optional.py
 """
 
 import importlib
-import sys
 import types
-import warnings
-from typing import List, Union
-
-from pandas.util.version import Version
-
-from pandasai.constants import WHITELISTED_BUILTINS
-
-from .safe_libs.restricted_base64 import RestrictedBase64
-from .safe_libs.restricted_datetime import (
-    RestrictedDatetime,
-)
-from .safe_libs.restricted_json import RestrictedJson
-from .safe_libs.restricted_matplotlib import (
-    RestrictedMatplotlib,
-)
-from .safe_libs.restricted_numpy import RestrictedNumpy
-from .safe_libs.restricted_pandas import RestrictedPandas
-
-# Minimum version required for each optional dependency
-
-VERSIONS = {
-    "seaborn": "0.12.2",
-}
-
-# A mapping from import name to package name (on PyPI) for packages where
-# these two names are different.
 
 INSTALL_MAPPING = {}
 
@@ -46,65 +19,17 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
-def get_environment(additional_deps: List[dict], secure: bool = True) -> dict:
+def get_environment() -> dict:
     """
     Returns the environment for the code to be executed.
 
     Returns (dict): A dictionary of environment variables
     """
     env = {
-        **{
-            lib["alias"]: (
-                getattr(import_dependency(lib["module"]), lib["name"])
-                if hasattr(import_dependency(lib["module"]), lib["name"])
-                else import_dependency(lib["module"])
-            )
-            for lib in additional_deps
-        },
-        "__builtins__": {
-            **{builtin: __builtins__[builtin] for builtin in WHITELISTED_BUILTINS},
-            "__build_class__": __build_class__,
-            "__name__": "__main__",
-        },
+        "pd": import_dependency("pandas"),
+        "plt": import_dependency("matplotlib.pyplot"),
+        "np": import_dependency("numpy"),
     }
-
-    if secure:
-        env["pd"] = RestrictedPandas()
-        env["plt"] = RestrictedMatplotlib()
-        env["np"] = RestrictedNumpy()
-
-        for lib in additional_deps:
-            if lib["name"] == "seaborn":
-                from pandasai.safe_libs.restricted_seaborn import RestrictedSeaborn
-
-                env["sns"] = RestrictedSeaborn()
-
-            if lib["name"] == "datetime":
-                env["datetime"] = RestrictedDatetime()
-
-            if lib["name"] == "json":
-                env["json"] = RestrictedJson()
-
-            if lib["name"] == "base64":
-                env["base64"] = RestrictedBase64()
-
-    else:
-        env["pd"] = import_dependency("pandas")
-        env["plt"] = import_dependency("matplotlib.pyplot")
-        env["np"] = import_dependency("numpy")
-
-        for lib in additional_deps:
-            if lib["name"] == "seaborn":
-                env["sns"] = import_dependency("seaborn")
-
-            if lib["name"] == "datetime":
-                env["datetime"] = import_dependency("datetime")
-
-            if lib["name"] == "json":
-                env["json"] = import_dependency("json")
-
-            if lib["name"] == "base64":
-                env["base64"] = import_dependency("base64")
 
     return env
 
@@ -113,7 +38,6 @@ def import_dependency(
     name: str,
     extra: str = "",
     errors: str = "raise",
-    min_version: Union[str, None] = None,
 ):
     """
     Import an optional dependency.
@@ -161,29 +85,5 @@ def import_dependency(
         if errors == "raise":
             raise ImportError(msg) from exc
         return None
-
-    # Handle submodules: if we have submodule, grab parent module from sys.modules
-    parent = name.split(".")[0]
-    if parent != name:
-        install_name = parent
-        module_to_get = sys.modules[install_name]
-    else:
-        module_to_get = module
-    minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
-    if minimum_version:
-        version = get_version(module_to_get)
-        if version and Version(version) < Version(minimum_version):
-            msg = (
-                f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
-                f"(version '{version}' currently installed)."
-            )
-            if errors == "warn":
-                warnings.warn(
-                    msg,
-                    UserWarning,
-                )
-                return None
-            if errors == "raise":
-                raise ImportError(msg)
 
     return module

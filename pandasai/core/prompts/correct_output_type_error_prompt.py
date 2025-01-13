@@ -14,7 +14,7 @@ class CorrectOutputTypeErrorPrompt(BasePrompt):
         memory = context.memory
         conversations = memory.to_json()
 
-        system_prompt = memory.get_system_prompt()
+        system_prompt = memory.agent_description
 
         # prepare datasets
         datasets = [dataset.to_json() for dataset in context.dfs]
@@ -29,7 +29,6 @@ class CorrectOutputTypeErrorPrompt(BasePrompt):
                 "exception_type": "InvalidLLMOutputType",
             },
             "config": {
-                "direct_sql": context.config.direct_sql,
                 "output_type": output_type,
             },
         }

@@ -4,10 +4,10 @@ import pytest
 
 import pandasai
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import DatasetNotFound, PandasAIApiKeyError
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 
 
-class TestPandasAIInit:
+class TestPandaAIInit:
     @pytest.fixture
     def sample_df(self):
         return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
@@ -84,7 +84,7 @@ class TestPandasAIInit:
         dataset_path = "org/dataset_name"
         result = pandasai.load(dataset_path)
 
-        mock_dataset_loader.load.assert_called_once_with(dataset_path, False)
+        mock_dataset_loader.load.assert_called_once_with(dataset_path)
         assert isinstance(result, MagicMock)
 
     @patch("zipfile.ZipFile")
@@ -110,7 +110,7 @@ class TestPandasAIInit:
         mock_exists.return_value = False
         dataset_path = "org/dataset_name"
 
-        with pytest.raises(PandasAIApiKeyError):
+        with pytest.raises(PandaAIApiKeyError):
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
@@ -120,7 +120,7 @@ class TestPandasAIInit:
         mock_exists.return_value = False
         dataset_path = "org/dataset_name"
 
-        with pytest.raises(PandasAIApiKeyError):
+        with pytest.raises(PandaAIApiKeyError):
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.environ", new_callable=dict)

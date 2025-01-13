@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a CSV file."""
+"""Example of using PandaAI with a CSV file."""
 
 import os
 

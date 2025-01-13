@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-bedrock"
 version = "0.1.1"
-description = "AWS Bedrock integration for PandasAI"
+description = "AWS Bedrock integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"

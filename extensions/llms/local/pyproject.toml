@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-local"
 version = "0.1.1"
-description = "Local LLM integration for PandasAI"
+description = "Local LLM integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"

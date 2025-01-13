@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-oracle"
 version = "0.1.1"
-description = "Oracle connector integration for PandasAI"
+description = "Oracle connector integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 

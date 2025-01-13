@@ -13,7 +13,11 @@ from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.exceptions import InvalidDataSourceType
 from pandasai.helpers.path import find_project_root
 
-from ..constants import SUPPORTED_SOURCES
+from ..constants import (
+    LOCAL_SOURCE_TYPES,
+    REMOTE_SOURCE_TYPES,
+    SUPPORTED_SOURCE_CONNECTORS,
+)
 from .query_builder import QueryBuilder
 
 
@@ -22,11 +26,20 @@ class DatasetLoader:
         self.schema = None
         self.dataset_path = None
 
-    def load(self, dataset_path: str, virtualized=False) -> DataFrame:
+    def load(self, dataset_path: str) -> DataFrame:
+        """Load data based on the provided dataset path.
+
+        Args:
+            dataset_path (str): Path in the format 'organization/dataset_name'
+
+        Returns:
+            DataFrame: A new PandaAI DataFrame instance with loaded data.
+        """
         self.dataset_path = dataset_path
         self._load_schema()
         self._validate_source_type()
-        if not virtualized:
+
+        if self.schema["source"]["type"] in LOCAL_SOURCE_TYPES:
             cache_file = self._get_cache_file_path()
 
             if self._is_cache_valid(cache_file):
@@ -50,24 +63,16 @@ class DatasetLoader:
                 description=table_description,
                 path=dataset_path,
             )
-        else:
-            # Initialize new dataset loader for virtualization
-            source_type = self.schema["source"]["type"]
-
-            if source_type in ["csv", "parquet"]:
-                raise ValueError(
-                    "Virtualization is not supported for CSV and Parquet files."
-                )
-
+        elif self.schema["source"]["type"] in REMOTE_SOURCE_TYPES:
             data_loader = self.copy()
-            table_name = self.schema["source"].get("table", None) or self.schema["name"]
-            table_description = self.schema.get("description", None)
             return VirtualDataFrame(
                 schema=self.schema,
                 data_loader=data_loader,
-                name=table_name,
-                description=table_description,
                 path=dataset_path,
+            )
+        else:
+            raise ValueError(
+                f"Unsupported source type: {self.schema['source']['type']}"
             )
 
     def _get_abs_dataset_path(self):
@@ -83,7 +88,7 @@ class DatasetLoader:
 
     def _validate_source_type(self):
         source_type = self.schema["source"]["type"]
-        if source_type not in SUPPORTED_SOURCES and source_type not in [
+        if source_type not in SUPPORTED_SOURCE_CONNECTORS and source_type not in [
             "csv",
             "parquet",
         ]:
@@ -117,7 +122,7 @@ class DatasetLoader:
         Get the loader function for a specified data source type.
         """
         try:
-            module_name = SUPPORTED_SOURCES[source_type]
+            module_name = SUPPORTED_SOURCE_CONNECTORS[source_type]
             module = importlib.import_module(module_name)
 
             if source_type not in {
@@ -139,7 +144,7 @@ class DatasetLoader:
         except ImportError as e:
             raise ImportError(
                 f"{source_type.capitalize()} connector not found. "
-                f"Please install the {SUPPORTED_SOURCES[source_type]} library."
+                f"Please install the {SUPPORTED_SOURCE_CONNECTORS[source_type]} library."
             ) from e
 
     def _read_csv_or_parquet(self, file_path: str, format: str) -> DataFrame:

@@ -1,6 +1,6 @@
-# Milvus Extension for PandasAI
+# Milvus Extension for PandaAI
 
-This extension integrates Milvus with PandasAI, providing vector storage capabilities for enhanced data analysis and machine learning tasks.
+This extension integrates Milvus with PandaAI, providing vector storage capabilities for enhanced data analysis and machine learning tasks.
 
 ## Installation
 

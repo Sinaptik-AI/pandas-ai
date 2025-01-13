@@ -1,11 +1,7 @@
 import glob
 import os
 from typing import Any
-
-try:
-    import duckdb
-except ImportError:
-    duckdb = None
+import duckdb
 
 from pandasai.constants import CACHE_TOKEN, DEFAULT_FILE_PERMISSIONS
 from pandasai.helpers.path import find_project_root
@@ -98,7 +94,7 @@ class Cache:
         """
         cache_key = context.memory.get_conversation()
 
-        # make the cache key unique for each combination of dfs
+        # Make the cache key unique for each combination of dfs
         for df in context.dfs:
             cache_key += str(df.column_hash)
 

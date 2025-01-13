@@ -6,7 +6,7 @@ from pandasai.ee.connectors.relations import ForeignKey, PrimaryKey
 
 llm = OpenAI("sk-*************")
 
-config_ = {"llm": llm, "direct_sql": True}
+config_ = {"llm": llm}
 
 payment_connector = PostgreSQLConnector(
     config={

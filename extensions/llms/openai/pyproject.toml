@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-openai"
 version = "0.1.1"
-description = "OpenAI integration for PandasAI"
+description = "OpenAI integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"

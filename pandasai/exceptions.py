@@ -1,10 +1,10 @@
-"""PandasAI's custom exceptions.
+"""PandaAI's custom exceptions.
 
 This module contains the implementation of Custom Exceptions.
 
 """
 
-from pandasai.constants import PANDASBI_SETUP_MESSAGE
+from pandasai.constants import PANDABI_SETUP_MESSAGE
 
 
 class InvalidRequestError(Exception):
@@ -202,24 +202,24 @@ class MissingVectorStoreError(Exception):
     """
 
 
-class PandasAIApiKeyError(Exception):
+class PandaAIApiKeyError(Exception):
     """
     Raise error if api key is not found for remote vectorstore and llm
     Args:
-        Exception (Exception): PandasAIApiKeyError
+        Exception (Exception): PandaAIApiKeyError
     """
 
     def __init__(self, message: str = None):
         if not message:
-            message = PANDASBI_SETUP_MESSAGE
+            message = PANDABI_SETUP_MESSAGE
         super().__init__(message)
 
 
-class PandasAIApiCallError(Exception):
+class PandaAIApiCallError(Exception):
     """
     Raise error if exception in API request fails
     Args:
-        Exception (Exception): PandasAIApiCallError
+        Exception (Exception): PandaAIApiCallError
     """
 
 
@@ -281,3 +281,9 @@ class CodeExecutionError(Exception):
     Args:
         Exception (Exception): CodeExecutionError
     """
+
+
+class VirtualizationError(Exception):
+    """Raised when there is an error with DataFrame virtualization."""
+
+    pass

@@ -4,7 +4,6 @@ from pandasai.agent.state import AgentState
 from pandasai.core.prompts.base import BasePrompt
 
 from .code_cleaning import CodeCleaner
-from .code_security import CodeSecurityChecker
 from .code_validation import CodeRequirementValidator
 
 
@@ -12,10 +11,9 @@ class CodeGenerator:
     def __init__(self, context: AgentState):
         self._context = context
         self._code_cleaner = CodeCleaner(self._context)
-        self._code_security = CodeSecurityChecker(self._context)
         self._code_validator = CodeRequirementValidator(self._context)
 
-    def generate_code(self, prompt: BasePrompt) -> tuple[str, list]:
+    def generate_code(self, prompt: BasePrompt) -> str:
         """
         Generates code using a given LLM and performs validation and cleaning steps.
 
@@ -48,12 +46,7 @@ class CodeGenerator:
 
             raise e
 
-    def validate_and_clean_code(self, code) -> tuple[str, list]:
-        # Check for malicious code
-        self._context.logger.log("Checking for malicious code...")
-        self._code_security.check(code)
-        self._context.logger.log("Malicious code check passed.")
-
+    def validate_and_clean_code(self, code: str) -> str:
         # Validate code requirements
         self._context.logger.log("Validating code requirements...")
         if not self._code_validator.validate(code):

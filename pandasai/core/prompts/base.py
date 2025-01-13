@@ -68,7 +68,7 @@ class BasePrompt:
         context = self.props["context"]
         memory = context.memory
         conversations = memory.to_json()
-        system_prompt = memory.get_system_prompt()
+        system_prompt = memory.agent_description
         return {
             "conversation": conversations,
             "system_prompt": system_prompt,

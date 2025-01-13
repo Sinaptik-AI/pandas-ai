@@ -1,6 +1,6 @@
-# Local LLMs Extension for PandasAI
+# Local LLMs Extension for PandaAI
 
-This extension integrates Local LLMs with PandasAI, providing Local LLMs support.
+This extension integrates Local LLMs with PandaAI, providing Local LLMs support.
 
 ## Installation
 

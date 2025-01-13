@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pandasai-huggingface"
 version = "0.1.1"
-description = "Hugging Face integration for PandasAI"
+description = "Hugging Face integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
 readme = "README.md"

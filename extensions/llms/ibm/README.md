@@ -1,6 +1,6 @@
-# IBM WatsonX Extension for PandasAI
+# IBM WatsonX Extension for PandaAI
 
-This extension integrates IBM WatsonX with PandasAI, providing IBM WatsonX LLMs support.
+This extension integrates IBM WatsonX with PandaAI, providing IBM WatsonX LLMs support.
 
 ## Installation
 

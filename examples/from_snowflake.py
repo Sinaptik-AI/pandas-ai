@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a Snowflake"""
+"""Example of using PandaAI with a Snowflake"""
 
 import os
 

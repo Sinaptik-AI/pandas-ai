@@ -6,7 +6,6 @@ from pandasai.core.code_execution.environment import (
     get_version,
     import_dependency,
 )
-from pandasai.core.code_execution.safe_libs.restricted_pandas import RestrictedPandas
 
 
 class TestEnvironmentFunctions(unittest.TestCase):
@@ -14,24 +13,19 @@ class TestEnvironmentFunctions(unittest.TestCase):
     def test_get_environment_with_secure_mode(self, mock_import_dependency):
         """Test get_environment function in secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
-        additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps, secure=True)
+        env = get_environment()
 
         self.assertIn("pd", env)
-        self.assertIn("__builtins__", env)
         self.assertIn("plt", env)
         self.assertIn("np", env)
-        self.assertIsInstance(env["pd"], RestrictedPandas)
 
     @patch("pandasai.core.code_execution.environment.import_dependency")
     def test_get_environment_without_secure_mode(self, mock_import_dependency):
         """Test get_environment function in non-secure mode."""
         mock_import_dependency.side_effect = lambda name: MagicMock(name=name)
-        additional_deps = [{"alias": "pd", "module": "pandas", "name": "DataFrame"}]
-        env = get_environment(additional_deps, secure=False)
+        env = get_environment()
 
         self.assertIn("pd", env)
-        self.assertIn("__builtins__", env)
         self.assertIn("plt", env)
         self.assertIn("np", env)
         self.assertIsInstance(env["pd"], MagicMock)
@@ -50,13 +44,6 @@ class TestEnvironmentFunctions(unittest.TestCase):
         mock_import_module.side_effect = ImportError("Module not found")
         with self.assertRaises(ImportError):
             import_dependency("non_existent_module")
-
-    @patch("pandasai.core.code_execution.environment.importlib.import_module")
-    def test_import_dependency_version_too_old(self, mock_import_module):
-        """Test handling of a dependency with an old version."""
-        mock_import_module.return_value = MagicMock(__version__="0.9.0")
-        with self.assertRaises(ImportError):
-            import_dependency("numpy", min_version="1.0.0")
 
     @patch("pandasai.core.code_execution.environment.importlib.import_module")
     def test_import_dependency_with_extra_message(self, mock_import_module):

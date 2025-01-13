@@ -1,4 +1,4 @@
-"""Example of using PandasAI on multiple Pandas DataFrame"""
+"""Example of using PandaAI on multiple Pandas DataFrame"""
 
 import os
 

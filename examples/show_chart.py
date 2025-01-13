@@ -1,4 +1,4 @@
-"""Example of using PandasAI to generate a chart from a Pandas DataFrame"""
+"""Example of using PandaAI to generate a chart from a Pandas DataFrame"""
 
 import os
 

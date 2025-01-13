@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a Parquet file."""
+"""Example of using PandaAI with a Parquet file."""
 
 import os
 

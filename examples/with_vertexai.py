@@ -1,4 +1,4 @@
-"""Example of using PandasAI with a CSV file and Google Vertexai."""
+"""Example of using PandaAI with a CSV file and Google Vertexai."""
 
 import os
 
