@@ -7,7 +7,6 @@ from typing import Any, Optional
 
 import pandas as pd
 import yaml
-from sympy.parsing.sympy_parser import transformations
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
@@ -16,7 +15,6 @@ from pandasai.helpers.path import find_project_root
 
 from ..constants import (
     LOCAL_SOURCE_TYPES,
-    REMOTE_SOURCE_TYPES,
     SUPPORTED_SOURCE_CONNECTORS,
 )
 from .query_builder import QueryBuilder
