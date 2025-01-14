@@ -14,7 +14,6 @@ except ImportError:
 
 from typing import TYPE_CHECKING
 
-
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:

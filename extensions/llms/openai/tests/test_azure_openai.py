@@ -1,9 +1,9 @@
 """Unit tests for the openai LLM class"""
 import openai
 import pytest
+from pandasai_openai import AzureOpenAI
 
 from pandasai.exceptions import APIKeyNotFoundError, MissingModelError
-from pandasai_openai import AzureOpenAI
 
 
 class OpenAIObject:

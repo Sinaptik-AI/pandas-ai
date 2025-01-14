@@ -9,10 +9,10 @@ from langchain_core.outputs import (
     GenerationChunk,
     LLMResult,
 )
-
-from pandasai.llm.base import LLM
 from pandasai_langchain.langchain import LangchainLLM
+
 from pandasai.core.prompts.base import BasePrompt
+from pandasai.llm.base import LLM
 
 
 class TestLangchainLLM:
@@ -69,8 +69,9 @@ class TestLangchainLLM:
         )
 
     def test_agent_integration(self):
-        from pandasai.agent import Agent
         from unittest.mock import MagicMock, PropertyMock
+
+        from pandasai.agent import Agent
 
         class FakeChatOpenAI(LLM):
             openai_api_key: str = "fake_key"
