@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from pandasai.core.prompts.base import BasePrompt
 
+from pandasai.helpers.session import Session
 from pandasai.llm.base import LLM
-
-from .session import Session
 
 
 class BambooLLM(LLM):

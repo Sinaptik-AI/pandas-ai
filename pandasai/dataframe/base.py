@@ -20,7 +20,7 @@ from pandasai.helpers.dataframe_serializer import (
     DataframeSerializerType,
 )
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.request import get_pandaai_session
+from pandasai.helpers.session import get_pandaai_session
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent

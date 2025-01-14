@@ -1,3 +1,5 @@
+"""Request helper module."""
+
 import logging
 import os
 import traceback
@@ -99,3 +101,19 @@ class Session:
         except requests.exceptions.RequestException as e:
             self._logger.log(f"Request failed: {traceback.format_exc()}", logging.ERROR)
             raise PandaAIApiCallError(f"Request failed: {e}") from e
+
+
+def get_pandaai_session() -> Session:
+    """Get a requests session with the PandaAI API key.
+
+    Returns:
+        requests.Session: Session with API key.
+    """
+
+    api_url = os.environ.get("PANDABI_API_URL", None)
+    if not api_url or not api_key:
+        raise PandasAIApiKeyError(
+            "Set PANDABI_API_URL and PANDABI_API_KEY in environment to push/pull dataset to the remote server"
+        )
+
+    return Session(endpoint_url=api_url, api_key=api_key)
