@@ -26,6 +26,7 @@ openpyxl = { version = "^3.0.7", optional = true }
 sqlglot = { extras = ["rs"], version = "^25.0.3" }
 transformers = "^4.45.2"
 typing-extensions = "^4.0.0"
+docker = "^7.1.0"
 
 [tool.poetry.group.dev]
 optional = true
