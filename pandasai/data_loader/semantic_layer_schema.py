@@ -1,13 +1,12 @@
 import json
 from typing import Dict, List, Optional, Union
 
+import yaml
 from pydantic import (
     BaseModel,
     Field,
-    ValidationError,
     field_validator,
     model_validator,
-    root_validator,
 )
 
 from pandasai.constants import (
@@ -21,7 +20,7 @@ from pandasai.constants import (
 class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
     type: str = Field(..., description="Data type of the column.")
-    description: str = Field(..., description="Description of the column")
+    description: Optional[str] = Field(None, description="Description of the column")
 
     @field_validator("type")
     @classmethod
@@ -51,15 +50,14 @@ class Source(BaseModel):
         None, description="Connection object of the data source."
     )
     path: Optional[str] = Field(None, description="Path of the local data source.")
-    query: Optional[str] = Field(
-        None, description="Query to retrieve data from the data source"
-    )
+    table: Optional[str] = Field(None, description="Table of the data source.")
 
     @model_validator(mode="before")
     @classmethod
     def validate_type_and_fields(cls, values):
         _type = values.get("type")
         path = values.get("path")
+        table = values.get("table")
         connection = values.get("connection")
 
         if _type in LOCAL_SOURCE_TYPES:
@@ -72,6 +70,10 @@ class Source(BaseModel):
                 raise ValueError(
                     f"For remote source type '{_type}', 'connection' must be defined."
                 )
+            if not table:
+                raise ValueError(
+                    f"For remote source type '{_type}', 'table' must be defined."
+                )
         else:
             raise ValueError(f"Unsupported source type: {_type}")
 
@@ -82,6 +84,13 @@ class Destination(BaseModel):
     type: str = Field(..., description="Type of the destination.")
     format: str = Field(..., description="Format of the output file.")
     path: str = Field(..., description="Path to save the output file.")
+
+    @field_validator("format")
+    @classmethod
+    def is_format_supported(cls, format: str) -> str:
+        if format not in LOCAL_SOURCE_TYPES:
+            raise ValueError(f"Unsupported destination format: {format}")
+        return format
 
 
 class SemanticLayerSchema(BaseModel):
@@ -108,6 +117,9 @@ class SemanticLayerSchema(BaseModel):
     update_frequency: Optional[str] = Field(
         None, description="Frequency of dataset updates."
     )
+
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(), sort_keys=False)
 
 
 def is_schema_source_same(

@@ -1,4 +1,5 @@
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from pandasai.data_loader.semantic_layer_schema import (
@@ -125,11 +126,17 @@ class TestSemanticLayerSchema:
         assert schema.source.type == "mysql"
         assert schema.destination.path == "users.parquet"
 
-    def test_missing_schema_path(self, sample_schema):
+    def test_missing_source_path(self, sample_schema):
         sample_schema["source"].pop("path")
 
         with pytest.raises(ValidationError):
             SemanticLayerSchema(**sample_schema)
+
+    def test_missing_source_table(self, mysql_schema):
+        mysql_schema["source"].pop("table")
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_schema)
 
     def test_missing_mysql_connection(self, mysql_schema):
         mysql_schema["source"].pop("connection")
@@ -179,16 +186,17 @@ class TestSemanticLayerSchema:
         assert destination.format == "parquet"
         assert destination.path == "output.parquet"
 
-    def test_missing_destination_path(self, sample_schema):
+    def test_invalid_destination_format(self):
         destination_data = {
             "type": "local",
-            "format": "parquet",
+            "format": "invalid",
+            "path": "output.parquet",
         }
 
         with pytest.raises(ValidationError):
             Destination(**destination_data)
 
-    def test_invalid_transformation_type(self, sample_schema):
+    def test_invalid_transformation_type(self):
         transformation_data = {
             "type": "unsupported_transformation",
             "params": {"column": "email"},

@@ -1,9 +1,11 @@
-from unittest.mock import Mock, patch
+import os
+from unittest.mock import Mock, mock_open, patch
 
 import pandas as pd
 import pytest
 
 import pandasai
+from pandasai import find_project_root
 from pandasai.agent import Agent
 from pandasai.dataframe.base import DataFrame
 
@@ -88,3 +90,84 @@ class TestDataFrame:
         assert hasattr(sample_df, "column_hash")
         assert isinstance(sample_df.column_hash, str)
         assert len(sample_df.column_hash) == 32  # MD5 hash length
+
+    def test_save_creates_correct_schema(self, sample_df):
+        path = "org-name/dataset-name"
+        name = "Test Dataset"
+        description = "This is a test dataset"
+        columns = [
+            {"name": "Name", "type": "string"},
+            {"name": "Age", "type": "integer"},
+        ]
+
+        with (
+            patch("os.makedirs"),
+            patch("pandas.DataFrame.to_parquet"),
+            patch("builtins.open", mock_open()) as mock_file,
+            patch("yaml.dump") as mock_yaml_dump,
+        ):
+            sample_df.save(path, name, description, columns)
+
+            expected_schema = {
+                "name": name,
+                "description": description,
+                "columns": [
+                    {"name": "Name", "type": "string", "description": None},
+                    {"name": "Age", "type": "integer", "description": None},
+                ],
+                "destination": {
+                    "format": "parquet",
+                    "path": "data.parquet",
+                    "type": "local",
+                },
+                "limit": None,
+                "order_by": None,
+                "source": {
+                    "connection": None,
+                    "path": "data.parquet",
+                    "table": None,
+                    "type": "parquet",
+                },
+                "transformations": None,
+                "update_frequency": None,
+            }
+
+            mock_yaml_dump.assert_called_once_with(
+                expected_schema, mock_file(), sort_keys=False
+            )
+
+    def test_save_creates_directory_and_files(self, sample_df):
+        path = "org-name/dataset-name"
+        name = "Test Dataset"
+        description = "This is a test dataset"
+        columns = [
+            {"name": "Name", "type": "string"},
+            {"name": "Age", "type": "integer"},
+        ]
+
+        with (
+            patch("os.makedirs") as mock_makedirs,
+            patch("pandas.DataFrame.to_parquet") as mock_to_parquet,
+            patch("builtins.open", mock_open()) as mock_file,
+            patch("yaml.dump") as mock_yaml_dump,
+        ):
+            sample_df.save(path, name, description, columns)
+
+            root = find_project_root()
+
+            dataset_directory = os.path.join(
+                root, "datasets", "org-name", "dataset-name"
+            )
+
+            # Assert directory creation
+            mock_makedirs.assert_called_once_with(dataset_directory, exist_ok=True)
+
+            # Assert Parquet file creation
+            mock_to_parquet.assert_called_once_with(
+                os.path.join(dataset_directory, "data.parquet"), index=False
+            )
+
+            # Assert schema YAML creation
+            schema_path = os.path.join(dataset_directory, "schema.yaml")
+            mock_yaml_dump.assert_called_once()
+            mock_file.assert_called_once_with(schema_path, "w")

@@ -3,10 +3,11 @@ import hashlib
 import importlib
 import os
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 import pandas as pd
 import yaml
+from sympy.parsing.sympy_parser import transformations
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
@@ -19,11 +20,12 @@ from ..constants import (
     SUPPORTED_SOURCE_CONNECTORS,
 )
 from .query_builder import QueryBuilder
+from .semantic_layer_schema import SemanticLayerSchema
 
 
 class DatasetLoader:
     def __init__(self):
-        self.schema = None
+        self.schema: Optional[SemanticLayerSchema] = None
         self.dataset_path = None
 
     def load(self, dataset_path: str) -> DataFrame:
@@ -37,13 +39,13 @@ class DatasetLoader:
         """
         self.dataset_path = dataset_path
         self._load_schema()
-        self._validate_source_type()
 
-        if self.schema["source"]["type"] in LOCAL_SOURCE_TYPES:
+        source_type = self.schema.source.type
+        if source_type in LOCAL_SOURCE_TYPES:
             cache_file = self._get_cache_file_path()
 
             if self._is_cache_valid(cache_file):
-                cache_format = self.schema["destination"]["format"]
+                cache_format = self.schema.destination.format
                 return self._read_csv_or_parquet(cache_file, cache_format)
 
             df = self._load_from_local_source()
@@ -53,26 +55,19 @@ class DatasetLoader:
             df = pd.DataFrame(df._data)
             self._cache_data(df, cache_file)
 
-            table_name = self.schema["source"].get("table", None) or self.schema["name"]
-            table_description = self.schema.get("description", None)
-
             return DataFrame(
                 df._data,
                 schema=self.schema,
-                name=table_name,
-                description=table_description,
+                name=self.schema.name,
+                description=self.schema.description,
                 path=dataset_path,
             )
-        elif self.schema["source"]["type"] in REMOTE_SOURCE_TYPES:
+        else:
             data_loader = self.copy()
             return VirtualDataFrame(
                 schema=self.schema,
                 data_loader=data_loader,
                 path=dataset_path,
-            )
-        else:
-            raise ValueError(
-                f"Unsupported source type: {self.schema['source']['type']}"
             )
 
     def _get_abs_dataset_path(self):
@@ -84,33 +79,26 @@ class DatasetLoader:
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
         with open(schema_path, "r") as file:
-            self.schema = yaml.safe_load(file)
-
-    def _validate_source_type(self):
-        source_type = self.schema["source"]["type"]
-        if source_type not in SUPPORTED_SOURCE_CONNECTORS and source_type not in [
-            "csv",
-            "parquet",
-        ]:
-            raise ValueError(f"Unsupported database type: {source_type}")
+            raw_schema = yaml.safe_load(file)
+            self.schema = SemanticLayerSchema(**raw_schema)
 
     def _get_cache_file_path(self) -> str:
-        if "path" in self.schema["destination"]:
+        if self.schema.destination.path:
             return os.path.join(
-                self._get_abs_dataset_path(), self.schema["destination"]["path"]
+                str(self._get_abs_dataset_path()), self.schema.destination.path
             )
 
         file_extension = (
-            "parquet" if self.schema["destination"]["format"] == "parquet" else "csv"
+            "parquet" if self.schema.destination.format == "parquet" else "csv"
         )
-        return os.path.join(self._get_abs_dataset_path(), f"data.{file_extension}")
+        return os.path.join(str(self._get_abs_dataset_path()), f"data.{file_extension}")
 
     def _is_cache_valid(self, cache_file: str) -> bool:
         if not os.path.exists(cache_file):
             return False
 
         file_mtime = datetime.fromtimestamp(os.path.getmtime(cache_file))
-        update_frequency = self.schema.get("update_frequency", None)
+        update_frequency = self.schema.update_frequency
 
         if update_frequency and update_frequency == "weekly":
             return file_mtime > datetime.now() - timedelta(weeks=1)
@@ -148,29 +136,27 @@ class DatasetLoader:
             ) from e
 
     def _read_csv_or_parquet(self, file_path: str, format: str) -> DataFrame:
-        table_name = self.schema["source"].get("table") or self.schema.get("name", None)
-        table_description = self.schema.get("description", None)
         if format == "parquet":
             return DataFrame(
                 pd.read_parquet(file_path),
                 schema=self.schema,
                 path=self.dataset_path,
-                name=table_name,
-                description=table_description,
+                name=self.schema.name,
+                description=self.schema.description,
             )
         elif format == "csv":
             return DataFrame(
                 pd.read_csv(file_path),
                 schema=self.schema,
                 path=self.dataset_path,
-                name=table_name,
-                description=table_description,
+                name=self.schema.name,
+                description=self.schema.description,
             )
         else:
             raise ValueError(f"Unsupported file format: {format}")
 
     def _load_from_local_source(self) -> pd.DataFrame:
-        source_type = self.schema["source"]["type"]
+        source_type = self.schema.source.type
 
         if source_type not in LOCAL_SOURCE_TYPES:
             raise InvalidDataSourceType(
@@ -179,7 +165,7 @@ class DatasetLoader:
 
         filepath = os.path.join(
             str(self._get_abs_dataset_path()),
-            self.schema["source"]["path"],
+            self.schema.source.path,
         )
 
         return self._read_csv_or_parquet(filepath, source_type)
@@ -213,15 +199,17 @@ class DatasetLoader:
             ) from e
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
-        for transform in self.schema.get("transformations", []):
-            if transform["type"] == "anonymize":
-                df[transform["params"]["column"]] = df[
-                    transform["params"]["column"]
-                ].apply(self._anonymize)
-            elif transform["type"] == "convert_timezone":
-                df[transform["params"]["column"]] = pd.to_datetime(
-                    df[transform["params"]["column"]]
-                ).dt.tz_convert(transform["params"]["to"])
+        for transformation in self.schema.transformations or []:
+            transformation_type = transformation.type
+            transformation_column = transformation.params["column"]
+            if transformation_type == "anonymize":
+                df[transformation_column] = df[transformation_column].apply(
+                    self._anonymize
+                )
+            elif transformation_type == "convert_timezone":
+                df[transformation_column] = pd.to_datetime(
+                    df[transformation_column]
+                ).dt.tz_convert(transformation.params["to"])
         return df
 
     @staticmethod
@@ -235,13 +223,11 @@ class DatasetLoader:
             return value
 
     def _cache_data(self, df: pd.DataFrame, cache_file: str):
-        cache_format = self.schema["destination"]["format"]
+        cache_format = self.schema.destination.format
         if cache_format == "parquet":
             df.to_parquet(cache_file, index=False)
         elif cache_format == "csv":
             df.to_csv(cache_file, index=False)
-        else:
-            raise ValueError(f"Unsupported cache format: {cache_format}")
 
     def copy(self) -> "DatasetLoader":
         """
