@@ -25,7 +25,7 @@ class TestBambooLLM(unittest.TestCase):
     def get_context(self):
         return MagicMock()
 
-    @patch("pandasai.llm.bamboo_llm.session.Session.post")
+    @patch("pandasai.helpers.session.Session.post")
     def test_call_method(self, mock_post):
         prompt = self.get_prompt()
         context = self.get_context()
@@ -37,7 +37,7 @@ class TestBambooLLM(unittest.TestCase):
             json={"prompt": "instruction"},
         )
 
-    @patch("pandasai.llm.bamboo_llm.session.Session.post")
+    @patch("pandasai.helpers.session.Session.post")
     def test_status_code_200(self, mock_post):
         prompt = self.get_prompt()
         context = self.get_context()
@@ -45,7 +45,7 @@ class TestBambooLLM(unittest.TestCase):
         bllm = BambooLLM(api_key="dummy_key")
         bllm.call(prompt, context)
 
-    @patch("pandasai.llm.bamboo_llm.session.Session.post")
+    @patch("pandasai.helpers.session.Session.post")
     def test_status_code_not_200(self, mock_post):
         prompt = self.get_prompt()
         context = self.get_context()

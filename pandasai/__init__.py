@@ -13,7 +13,7 @@ import pandas as pd
 from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.request import get_pandaai_session
+from pandasai.helpers.session import get_pandaai_session
 
 from .agent import Agent
 from .core.cache import Cache
