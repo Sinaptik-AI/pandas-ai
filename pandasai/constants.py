@@ -47,3 +47,7 @@ REMOTE_SOURCE_TYPES = [
     "databricks",
     "oracle",
 ]
+
+VALID_COLUMN_TYPES = ["string", "integer", "float", "datetime", "boolean"]
+
+VALID_TRANSFORMATION_TYPES = ["anonymize", "convert_timezone"]

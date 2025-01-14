@@ -7,7 +7,6 @@ from pandasai.core.code_execution.environment import import_dependency
 from pandasai.core.prompts.base import BasePrompt
 from pandasai.exceptions import APIKeyNotFoundError
 from pandasai.helpers import load_dotenv
-
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:

@@ -1,12 +1,12 @@
 import unittest
 import uuid
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from qdrant_client import models
 
 from extensions.ee.vectorstores.qdrant.pandasai_qdrant.qdrant import (
-    Qdrant,
     UUID_NAMESPACE,
+    Qdrant,
 )
 
 

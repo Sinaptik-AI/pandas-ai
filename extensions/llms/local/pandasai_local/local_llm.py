@@ -6,7 +6,6 @@ from openai import OpenAI
 
 from pandasai.core.prompts.base import BasePrompt
 from pandasai.helpers.memory import Memory
-
 from pandasai.llm.base import LLM
 
 if TYPE_CHECKING:

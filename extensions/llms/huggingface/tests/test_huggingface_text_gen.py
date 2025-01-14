@@ -3,6 +3,7 @@
 from pandasai_huggingface.huggingface_text_gen import (
     HuggingFaceTextGen,
 )
+
 from pandasai.core.prompts.base import BasePrompt
 
 

@@ -5,6 +5,7 @@ import openai
 
 from pandasai.exceptions import APIKeyNotFoundError, UnsupportedModelError
 from pandasai.helpers import load_dotenv
+
 from .base import BaseOpenAI
 
 load_dotenv()
