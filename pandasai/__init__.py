@@ -4,6 +4,7 @@ PandaAI is a wrapper around a LLM to make dataframes conversational
 """
 
 import os
+import re
 from io import BytesIO
 from typing import List
 from zipfile import ZipFile
@@ -12,6 +13,7 @@ import pandas as pd
 
 from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.constants import DEFAULT_API_URL
+from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
@@ -23,6 +25,66 @@ from .dataframe import DataFrame, VirtualDataFrame
 from .helpers.sql_sanitizer import sanitize_sql_table_name
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
+
+
+def create(path: str, df: pd.DataFrame, schema: SemanticLayerSchema):
+    """
+    Create a new dataset with the given DataFrame and schema.
+
+    Args:
+        path (str): Path in format 'organization/dataset'
+        df (pd.DataFrame): DataFrame to save
+        schema (SemanticLayerSchema): Schema containing dataset metadata
+
+    Returns:
+        DataFrame: A new PandaAI DataFrame instance with loaded data
+    """
+
+    # Validate path format
+    path_parts = path.split("/")
+    if len(path_parts) != 2:
+        raise ValueError("Path must be in format 'organization/dataset'")
+
+    org_name, dataset_name = path_parts
+    if not org_name or not dataset_name:
+        raise ValueError("Both organization and dataset names are required")
+
+    # Validate organization and dataset name format
+    if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
+        raise ValueError(
+            "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
+        )
+
+    if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
+        raise ValueError(
+            "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
+        )
+
+    # Create full path with slugified dataset name
+    dataset_directory = os.path.join(
+        find_project_root(), "datasets", org_name, dataset_name
+    )
+
+    os.makedirs(dataset_directory, exist_ok=True)
+
+    # Save DataFrame to parquet
+    df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
+
+    # Save schema to yaml
+    schema_path = os.path.join(dataset_directory, "schema.yaml")
+    with open(schema_path, "w") as yml_file:
+        yml_file.write(schema.to_yaml())
+
+    print(f"Dataset saved successfully to path: {dataset_directory}")
+
+    return DataFrame(
+        df._data,
+        schema=schema,
+        path=path,
+        name=schema.name,
+        description=schema.description,
+    )
+
 
 # Global variable to store the current agent
 _current_agent = None

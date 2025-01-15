@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import os
-import re
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
 
 import pandas as pd
-import yaml
 from pandas._typing import Axes, Dtype
 
 import pandasai as pai
@@ -176,54 +174,6 @@ class DataFrame(pd.DataFrame):
         )
 
         return schema.to_dict()
-
-    def save(
-        self, path: str, name: str, description: str = None, columns: List[dict] = None
-    ):
-        self.name = name
-        self.description = description
-
-        # Validate path format
-        path_parts = path.split("/")
-        if len(path_parts) != 2:
-            raise ValueError("Path must be in format 'organization/dataset'")
-
-        org_name, dataset_name = path_parts
-        if not org_name or not dataset_name:
-            raise ValueError("Both organization and dataset names are required")
-
-        # Validate organization and dataset name format
-        if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
-            raise ValueError(
-                "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
-            )
-
-        if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
-            raise ValueError(
-                "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
-            )
-
-        self.path = path
-
-        # Create full path with slugified dataset name
-        dataset_directory = os.path.join(
-            find_project_root(), "datasets", org_name, dataset_name
-        )
-
-        os.makedirs(dataset_directory, exist_ok=True)
-
-        # Convert to pandas DataFrame while preserving all data
-        df = pd.DataFrame(self._data)
-        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
-
-        # create schema yaml file
-        schema_path = os.path.join(dataset_directory, "schema.yaml")
-        self.schema = self._create_yml_template(self.name, self.description, columns)
-        # Save metadata to a .yml file
-        with open(schema_path, "w") as yml_file:
-            yaml.dump(self.schema, yml_file, sort_keys=False)
-
-        print(f"Dataset saved successfully to path: {dataset_directory}")
 
     def push(self):
         if self.path is None:

@@ -28,6 +28,24 @@ class TestPandaAIInit:
         df2 = DataFrame({"X": [10, 20, 30], "Y": ["x", "y", "z"]})
         return [df1, df2]
 
+    @pytest.fixture
+    def sample_schema(self):
+        from pandasai.data_loader.semantic_layer_schema import (
+            Column,
+            SemanticLayerSchema,
+            Source,
+        )
+
+        return SemanticLayerSchema(
+            name="test_dataset",
+            description="A test dataset",
+            source=Source(type="parquet", path="data.parquet"),
+            columns=[
+                Column(name="A", type="integer", description="Column A"),
+                Column(name="B", type="integer", description="Column B"),
+            ],
+        )
+
     def test_chat_creates_agent(self, sample_df):
         with patch("pandasai.Agent") as MockAgent:
             pandasai.chat("Test query", sample_df)
@@ -251,3 +269,70 @@ class TestPandaAIInit:
             },
             params={"path": "org/dataset"},
         )
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_valid_dataset(
+        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
+    ):
+        """Test creating a dataset with valid inputs."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("builtins.open", mock_open()) as mock_file, patch.object(
+            sample_df, "to_parquet"
+        ) as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            result = pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+
+            # Check if directories were created
+            mock_makedirs.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset", exist_ok=True
+            )
+
+            # Check if DataFrame was saved
+            mock_to_parquet.assert_called_once()
+            assert mock_to_parquet.call_args[0][0].endswith("data.parquet")
+            assert mock_to_parquet.call_args[1]["index"] is False
+
+            # Check if schema was saved
+            mock_file.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset/schema.yaml", "w"
+            )
+
+            # Check returned DataFrame
+            assert isinstance(result, DataFrame)
+            assert result.name == sample_schema.name
+            assert result.description == sample_schema.description
+            assert result.path == "test-org/test-dataset"
+
+    def test_create_invalid_path_format(self, sample_df, sample_schema):
+        """Test creating a dataset with invalid path format."""
+        with pytest.raises(
+            ValueError, match="Path must be in format 'organization/dataset'"
+        ):
+            pandasai.create("invalid_path", sample_df, sample_schema)
+
+    def test_create_invalid_org_name(self, sample_df, sample_schema):
+        """Test creating a dataset with invalid organization name."""
+        with pytest.raises(ValueError, match="Organization name must be lowercase"):
+            pandasai.create("Invalid-Org/test-dataset", sample_df, sample_schema)
+
+    def test_create_invalid_dataset_name(self, sample_df, sample_schema):
+        """Test creating a dataset with invalid dataset name."""
+        with pytest.raises(ValueError, match="Dataset name must be lowercase"):
+            pandasai.create("test-org/Invalid-Dataset", sample_df, sample_schema)
+
+    def test_create_empty_org_name(self, sample_df, sample_schema):
+        """Test creating a dataset with empty organization name."""
+        with pytest.raises(
+            ValueError, match="Both organization and dataset names are required"
+        ):
+            pandasai.create("/test-dataset", sample_df, sample_schema)
+
+    def test_create_empty_dataset_name(self, sample_df, sample_schema):
+        """Test creating a dataset with empty dataset name."""
+        with pytest.raises(
+            ValueError, match="Both organization and dataset names are required"
+        ):
+            pandasai.create("test-org/", sample_df, sample_schema)
