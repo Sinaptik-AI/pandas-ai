@@ -21,10 +21,7 @@ from pandasai.data_loader.semantic_layer_schema import (
     Source,
 )
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
-from pandasai.helpers.dataframe_serializer import (
-    DataframeSerializer,
-    DataframeSerializerType,
-)
+from pandasai.helpers.dataframe_serializer import DataframeSerializer
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
 
@@ -67,6 +64,11 @@ class DataFrame(pd.DataFrame):
         )
 
         self.name: Optional[str] = kwargs.pop("name", None)
+        self._column_hash = self._calculate_column_hash()
+
+        if not self.name:
+            self.name = f"table_{self._column_hash}"
+
         self.description: Optional[str] = kwargs.pop("description", None)
         self.path: Optional[str] = kwargs.pop("path", None)
         schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
@@ -74,7 +76,6 @@ class DataFrame(pd.DataFrame):
         self.schema = schema
         self.config = pai.config.get()
         self._agent: Optional[Agent] = None
-        self._column_hash = self._calculate_column_hash()
 
     def __repr__(self) -> str:
         """Return a string representation of the DataFrame."""
@@ -136,29 +137,14 @@ class DataFrame(pd.DataFrame):
     def columns_count(self) -> int:
         return len(self.columns)
 
-    def serialize_dataframe(
-        self,
-        index: int,
-    ) -> str:
+    def serialize_dataframe(self) -> str:
         """
         Serialize DataFrame to string representation.
-
-        Args:
-            index (int): Index of the dataframe
-            serializer_type (DataframeSerializerType): Type of serializer to use
-            **kwargs: Additional parameters to pass to pandas to_string method
 
         Returns:
             str: Serialized string representation of the DataFrame
         """
-        return DataframeSerializer().serialize(
-            self,
-            extras={
-                "index": index,
-                "type": "pd.DataFrame",
-            },
-            type_=DataframeSerializerType.CSV,
-        )
+        return DataframeSerializer().serialize(self)
 
     def get_head(self):
         return self.head()

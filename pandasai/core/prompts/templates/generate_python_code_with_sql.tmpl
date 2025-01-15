@@ -1,6 +1,6 @@
 <tables>
 {% for df in context.dfs %}
-{% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}
+{% include 'shared/dataframe.tmpl' with context %}
 {% endfor %}
 </tables>
 
