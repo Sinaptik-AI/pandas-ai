@@ -4,17 +4,11 @@
 [![CI](https://github.com/sinaptik-ai/pandas-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sinaptik-ai/pandas-ai/actions/workflows/ci.yml/badge.svg)
 [![CD](https://github.com/sinaptik-ai/pandas-ai/actions/workflows/cd.yml/badge.svg)](https://github.com/sinaptik-ai/pandas-ai/actions/workflows/cd.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/sinaptik-ai/pandas-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/sinaptik-ai/pandas-ai)
-[![Discord](https://dcbadge.vercel.app/api/server/kF7FqH2FwS?style=flat&compact=true)](https://discord.gg/kF7FqH2FwS)
+[![Discord](https://dcbadge.vercel.app/api/server/kF7FqH2FwS?style=flat&compact=true)](https://discord.gg/KYKj9F2FRH)
 [![Downloads](https://static.pepy.tech/badge/pandasai)](https://pepy.tech/project/pandasai) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
 
 PandaAI is a Python platform that makes it easy to ask questions to your data in natural language. It helps non-technical users to interact with their data in a more natural way, and it helps technical users to save time, and effort when working with data.
-
-# 🚀 Deploying PandaAI
-
-PandaAI can be used in a variety of ways. You can easily use it in your Jupyter notebooks or Streamlit apps, or you can deploy it as a REST API such as with FastAPI or Flask.
-
-If you are interested in the managed PandaAI Cloud or our self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
 # 🔧 Getting started
 
@@ -24,29 +18,13 @@ You can either decide to use PandaAI in your Jupyter notebooks, Streamlit apps, 
 
 ## ☁️ Using the platform
 
-[![PandaAI platform](assets/demo.gif?raw=true)](https://www.youtube.com/watch?v=kh61wEy9GYM)
-
-### 📦 Installation
-
-PandaAI platform is uses a dockerized client-server architecture. You will need to have Docker installed in your machine.
-
-```bash
-git clone https://github.com/sinaptik-ai/pandas-ai/
-cd pandas-ai
-docker-compose build
-```
-
-### 🚀 Running the platform
-
-Once you have built the platform, you can run it with:
-
-```bash
-docker-compose up
-```
-
-This will start the client and server, and you can access the client at `http://localhost:3000`.
+![PandaAI](assets/demo.gif) 
 
 ## 📚 Using the library
+
+### Python Requirements
+
+Python version `3.8+ <3.12`
 
 ### 📦 Installation
 
@@ -64,18 +42,11 @@ With poetry:
 poetry add pandasai
 ```
 
-### 🔍 Demo
-
-Try out the PandaAI library yourself in your browser:
-
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZnO-njhL7TBOYPZaqvMvGtsjckZKrv2E?usp=sharing)
-
 ### 💻 Usage
 
 #### Ask questions
 
 ```python
-import os
 import pandasai as pai
 
 # Sample DataFrame
@@ -86,7 +57,7 @@ df = pai.DataFrame({
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
 # You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
+pai.api_key.set("your-pai-api-key")
 
 df.chat('Which are the top 5 countries by sales?')
 ```
@@ -126,8 +97,6 @@ df.chat(
 You can also pass in multiple dataframes to PandaAI and ask questions relating them.
 
 ```python
-import os
-import pandas as pd
 from pandasai import Agent
 
 employees_data = {
@@ -141,12 +110,12 @@ salaries_data = {
     'Salary': [5000, 6000, 4500, 7000, 5500]
 }
 
-employees_df = pd.DataFrame(employees_data)
-salaries_df = pd.DataFrame(salaries_data)
+employees_df = pai.DataFrame(employees_data)
+salaries_df = pai.DataFrame(salaries_data)
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
-# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
-os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
+# You can get your free API key signing up at https://app.pandabi.ai (you can also configure it in your .env file)
+pai.api_key.set("your-pai-api-key")
 
 agent = Agent([employees_df, salaries_df])
 agent.chat("Who gets paid the most?")
@@ -168,7 +137,7 @@ If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offerin
 
 - [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
 - [Examples](examples) for example notebooks
-- [Discord](https://discord.gg/kF7FqH2FwS) for discussion with the community and PandaAI team
+- [Discord](https://discord.gg/KYKj9F2FRH) for discussion with the community and PandaAI team
 
 ## 🤝 Contributing
 
