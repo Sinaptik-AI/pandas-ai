@@ -18,6 +18,22 @@ You can either decide to use PandaAI in your Jupyter notebooks, Streamlit apps, 
 
 ## ☁️ Using the platform
 
+The library can be used alongside our powerful data platform, making end-to-end conversational data analytics possible with as little as a few lines of code. 
+
+Load your data, save them as a dataframe, and push them to the platform
+
+```python
+import pandasai as pai
+
+df = pai.read_csv("./filepath.csv")
+df.push()
+
+df.save(path="your-organization/dataset-name",
+    name="dataset-name",
+    description="dataset-description")
+```
+Your team can now access and query this data using natural language through the platform.
+
 ![PandaAI](assets/demo.gif) 
 
 ## 📚 Using the library
