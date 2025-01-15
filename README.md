@@ -72,7 +72,7 @@ df = pai.DataFrame({
 })
 
 # By default, unless you choose a different LLM, it will use BambooLLM.
-# You can get your free API key signing up at https://pandabi.ai (you can also configure it in your .env file)
+# You can get your free API key signing up at https://app.pandabi.ai (you can also configure it in your .env file)
 pai.api_key.set("your-pai-api-key")
 
 df.chat('Which are the top 5 countries by sales?')
