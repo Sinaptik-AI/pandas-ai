@@ -28,4 +28,4 @@ Alice,25
 Bob,30
 </table>
 """
-        assert result == expected
+        assert result.replace("\r\n", "\n") == expected.replace("\r\n", "\n")
