@@ -22,11 +22,10 @@ class TestDataframeSerializer:
         """Test serialization with name and description attributes."""
 
         result = sample_dataframe_serializer.serialize(sample_df)
-        expected = (
-            '<table table_name="test_table" description="This is a test table" dimensions="2x2">\n'
-            "Name,Age\n"
-            "Alice,25\n"
-            "Bob,30\n"
-            "</table>\n"
-        )
+        expected = """<table table_name="test_table" description="This is a test table" dimensions="2x2">
+Name,Age
+Alice,25
+Bob,30
+</table>
+"""
         assert result == expected
