@@ -336,3 +336,43 @@ class TestPandaAIInit:
             ValueError, match="Both organization and dataset names are required"
         ):
             pandasai.create("test-org/", sample_df, sample_schema)
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_existing_dataset(
+        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
+    ):
+        """Test creating a dataset that already exists."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("os.path.exists") as mock_exists:
+            # Mock that both directory and schema file exist
+            mock_exists.side_effect = lambda path: True
+
+            with pytest.raises(ValueError, match="Dataset already exists at path: test-org/test-dataset"):
+                pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_existing_directory_no_dataset(
+        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
+    ):
+        """Test creating a dataset in an existing directory but without existing dataset files."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        def mock_exists_side_effect(path):
+            # Return True for directory, False for schema and data files
+            return not (path.endswith("schema.yaml") or path.endswith("data.parquet"))
+
+        with patch("os.path.exists", side_effect=mock_exists_side_effect), \
+             patch("builtins.open", mock_open()) as mock_file, \
+             patch.object(sample_df, "to_parquet") as mock_to_parquet, \
+             patch("pandasai.find_project_root", return_value="/mock/root"):
+
+            result = pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+
+            # Verify dataset was created successfully
+            assert isinstance(result, DataFrame)
+            assert result.name == sample_schema.name
+            mock_to_parquet.assert_called_once()
+            mock_file.assert_called_once()

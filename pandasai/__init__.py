@@ -38,6 +38,9 @@ def create(path: str, df: pd.DataFrame, schema: SemanticLayerSchema):
 
     Returns:
         DataFrame: A new PandaAI DataFrame instance with loaded data
+
+    Raises:
+        ValueError: If path format is invalid or dataset already exists
     """
 
     # Validate path format
@@ -64,6 +67,12 @@ def create(path: str, df: pd.DataFrame, schema: SemanticLayerSchema):
     dataset_directory = os.path.join(
         find_project_root(), "datasets", org_name, dataset_name
     )
+
+    # Check if dataset already exists
+    if os.path.exists(dataset_directory):
+        schema_path = os.path.join(dataset_directory, "schema.yaml")
+        if os.path.exists(schema_path):
+            raise ValueError(f"Dataset already exists at path: {path}")
 
     os.makedirs(dataset_directory, exist_ok=True)
 
