@@ -1,10 +1,20 @@
-from unittest.mock import MagicMock, patch
+import io
+import os
+import zipfile
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
 import pandasai
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
+
+
+def create_test_zip():
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr("test.csv", "a,b,c\n1,2,3")
+    return zip_buffer.getvalue()
 
 
 class TestPandaAIInit:
@@ -104,9 +114,9 @@ class TestPandaAIInit:
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
-    @patch("pandasai.os.environ", {"PANDABI_API_URL": "url"})
-    def test_load_missing_api_key(self, mock_exists):
-        """Test loading when API key is missing."""
+    @patch("pandasai.os.environ", {"PANDABI_API_KEY": "key"})
+    def test_load_missing_api_url(self, mock_exists):
+        """Test loading when API URL is missing."""
         mock_exists.return_value = False
         dataset_path = "org/dataset_name"
 
@@ -115,12 +125,16 @@ class TestPandaAIInit:
 
     @patch("pandasai.os.path.exists")
     @patch("pandasai.os.environ", {"PANDABI_API_KEY": "key"})
-    def test_load_missing_api_url(self, mock_exists):
+    @patch("pandasai.get_pandaai_session")
+    def test_load_missing_api_url(self, mock_session, mock_exists):
         """Test loading when API URL is missing."""
         mock_exists.return_value = False
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_session.return_value.get.return_value = mock_response
         dataset_path = "org/dataset_name"
 
-        with pytest.raises(PandaAIApiKeyError):
+        with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.environ", new_callable=dict)
@@ -157,7 +171,83 @@ class TestPandaAIInit:
         mock_zip_file.return_value.__enter__.return_value.extractall.assert_called_once()
         assert isinstance(result, MagicMock)
 
+    def test_load_without_api_credentials(self):
+        """Test that load raises PandaAIApiKeyError when no API credentials are provided"""
+        with pytest.raises(PandaAIApiKeyError) as exc_info:
+            pandasai.load("test/dataset")
+        assert (
+            str(exc_info.value)
+            == "PandaAI API key not found. Please set your API key using PandaAI.set_api_key() or by setting the PANDASAI_API_KEY environment variable."
+        )
+
     def test_clear_cache(self):
         with patch("pandasai.core.cache.Cache.clear") as mock_clear:
             pandasai.clear_cache()
             mock_clear.assert_called_once()
+
+    @patch.dict(os.environ, {"PANDABI_API_KEY": "test-key"})
+    @patch("pandasai.get_pandaai_session")
+    @patch("pandasai.os.path.exists")
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("pandasai.os.makedirs")
+    def test_load_with_default_api_url(
+        self, mock_makedirs, mock_root, mock_exists, mock_session
+    ):
+        """Test that load uses DEFAULT_API_URL when no URL is provided"""
+        mock_root.return_value = "/tmp/test_project"
+        mock_exists.return_value = False
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = create_test_zip()
+        mock_session.return_value.get.return_value = mock_response
+
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("zipfile.ZipFile") as mock_zip_file:
+                mock_zip_file.return_value.__enter__.return_value.extractall = (
+                    MagicMock()
+                )
+                pandasai.load("org/dataset")
+
+        mock_session.return_value.get.assert_called_once_with(
+            "/datasets/pull",
+            headers={
+                "accept": "application/json",
+                "x-authorization": "Bearer test-key",
+            },
+            params={"path": "org/dataset"},
+        )
+
+    @patch.dict(
+        os.environ,
+        {"PANDABI_API_KEY": "test-key", "PANDABI_API_URL": "https://custom.api.url"},
+    )
+    @patch("pandasai.get_pandaai_session")
+    @patch("pandasai.os.path.exists")
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("pandasai.os.makedirs")
+    def test_load_with_custom_api_url(
+        self, mock_makedirs, mock_root, mock_exists, mock_session
+    ):
+        """Test that load uses custom URL from environment"""
+        mock_root.return_value = "/tmp/test_project"
+        mock_exists.return_value = False
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = create_test_zip()
+        mock_session.return_value.get.return_value = mock_response
+
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("zipfile.ZipFile") as mock_zip_file:
+                mock_zip_file.return_value.__enter__.return_value.extractall = (
+                    MagicMock()
+                )
+                pandasai.load("org/dataset")
+
+        mock_session.return_value.get.assert_called_once_with(
+            "/datasets/pull",
+            headers={
+                "accept": "application/json",
+                "x-authorization": "Bearer test-key",
+            },
+            params={"path": "org/dataset"},
+        )

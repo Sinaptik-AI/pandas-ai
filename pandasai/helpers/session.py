@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 
+from pandasai.constants import DEFAULT_API_URL
 from pandasai.exceptions import PandaAIApiCallError, PandaAIApiKeyError
 from pandasai.helpers import load_dotenv
 from pandasai.helpers.logger import Logger
@@ -33,7 +34,7 @@ class Session:
         self._api_key = api_key
 
         if endpoint_url is None:
-            endpoint_url = os.environ.get("PANDABI_API_URL", "https://api.pandabi.ai")
+            endpoint_url = os.environ.get("PANDABI_API_URL", DEFAULT_API_URL)
 
         self._endpoint_url = endpoint_url
         self._version_path = "/api"
@@ -110,11 +111,9 @@ def get_pandaai_session() -> Session:
         requests.Session: Session with API key.
     """
 
-    api_url = os.environ.get("PANDABI_API_URL", None)
     api_key = os.environ.get("PANDABI_API_KEY", None)
+    api_url = os.environ.get("PANDABI_API_URL", DEFAULT_API_URL)
     if not api_url or not api_key:
-        raise PandaAIApiKeyError(
-            "Set PANDABI_API_URL and PANDABI_API_KEY in environment to push/pull dataset to the remote server"
-        )
+        raise PandaAIApiKeyError()
 
     return Session(endpoint_url=api_url, api_key=api_key)

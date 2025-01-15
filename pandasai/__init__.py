@@ -11,6 +11,7 @@ from zipfile import ZipFile
 import pandas as pd
 
 from pandasai.config import APIKeyManager, ConfigManager
+from pandasai.constants import DEFAULT_API_URL
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
@@ -97,11 +98,9 @@ def load(dataset_path: str) -> DataFrame:
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
     if not os.path.exists(dataset_full_path):
         api_key = os.environ.get("PANDABI_API_KEY", None)
-        api_url = os.environ.get("PANDABI_API_URL", None)
+        api_url = os.environ.get("PANDABI_API_URL", DEFAULT_API_URL)
         if not api_url or not api_key:
-            raise PandaAIApiKeyError(
-                "Please set the PANDABI_API_URL and PANDABI_API_KEY environment variables to pull the dataset from the remote server."
-            )
+            raise PandaAIApiKeyError()
 
         request_session = get_pandaai_session()
 

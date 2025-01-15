@@ -205,14 +205,11 @@ class MissingVectorStoreError(Exception):
 class PandaAIApiKeyError(Exception):
     """
     Raise error if api key is not found for remote vectorstore and llm
-    Args:
-        Exception (Exception): PandaAIApiKeyError
     """
 
-    def __init__(self, message: str = None):
-        if not message:
-            message = PANDABI_SETUP_MESSAGE
-        super().__init__(message)
+    def __init__(self, message=None):
+        default_message = "PandaAI API key not found. Please set your API key using PandaAI.set_api_key() or by setting the PANDASAI_API_KEY environment variable."
+        super().__init__(message or default_message)
 
 
 class PandaAIApiCallError(Exception):
