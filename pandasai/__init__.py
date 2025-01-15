@@ -13,12 +13,13 @@ import pandas as pd
 from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.request import get_pandaai_session
+from pandasai.helpers.session import get_pandaai_session
 
 from .agent import Agent
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
 from .dataframe import DataFrame, VirtualDataFrame
+from .helpers.sql_sanitizer import sanitize_sql_table_name
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 
@@ -120,7 +121,8 @@ def load(dataset_path: str) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    return DataFrame(data._data)
+    name = f"table_{sanitize_sql_table_name(filepath)}"
+    return DataFrame(data._data, name=name)
 
 
 __all__ = [

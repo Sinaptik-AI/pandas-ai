@@ -1,9 +1,9 @@
 """Unit tests for the openai LLM class"""
 
 import pytest
+from pandasai_google.google_vertexai import GoogleVertexAI
 
 from pandasai.exceptions import UnsupportedModelError
-from pandasai_google.google_vertexai import GoogleVertexAI
 
 
 class MockedCompletion:

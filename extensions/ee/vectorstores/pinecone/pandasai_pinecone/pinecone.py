@@ -1,7 +1,8 @@
+import uuid
 from typing import Any, Callable, Iterable, List, Optional, Union
 
 import pinecone
-import uuid
+
 from pandasai.helpers.logger import Logger
 from pandasai.vectorstores.vectorstore import VectorStore
 

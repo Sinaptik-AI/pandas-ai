@@ -4,7 +4,7 @@ import hashlib
 import os
 import re
 from io import BytesIO
-from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Union
 from zipfile import ZipFile
 
 import pandas as pd
@@ -14,13 +14,16 @@ from pandas._typing import Axes, Dtype
 import pandasai as pai
 from pandasai.config import Config
 from pandasai.core.response import BaseResponse
-from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
-from pandasai.helpers.dataframe_serializer import (
-    DataframeSerializer,
-    DataframeSerializerType,
+from pandasai.data_loader.semantic_layer_schema import (
+    Column,
+    Destination,
+    SemanticLayerSchema,
+    Source,
 )
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
+from pandasai.helpers.dataframe_serializer import DataframeSerializer
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.request import get_pandaai_session
+from pandasai.helpers.session import get_pandaai_session
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent
@@ -33,7 +36,7 @@ class DataFrame(pd.DataFrame):
     Attributes:
         name (Optional[str]): Name of the dataframe
         description (Optional[str]): Description of the dataframe
-        schema (Optional[Dict]): Schema definition for the dataframe
+        schema (Optional[SemanticLayerSchema]): Schema definition for the dataframe
         config (Config): Configuration settings
     """
 
@@ -61,21 +64,18 @@ class DataFrame(pd.DataFrame):
         )
 
         self.name: Optional[str] = kwargs.pop("name", None)
+        self._column_hash = self._calculate_column_hash()
+
+        if not self.name:
+            self.name = f"table_{self._column_hash}"
+
         self.description: Optional[str] = kwargs.pop("description", None)
         self.path: Optional[str] = kwargs.pop("path", None)
-        schema: Optional[Dict] = kwargs.pop("schema", None)
+        schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
 
-        if schema is not None:
-            self._validate_schema(schema)
         self.schema = schema
         self.config = pai.config.get()
         self._agent: Optional[Agent] = None
-        self._column_hash = self._calculate_column_hash()
-
-    def _validate_schema(self, schema: Optional[Dict]) -> None:
-        """Validates the provided schema format."""
-        if not isinstance(schema, dict):
-            raise ValueError("Schema must be a dictionary")
 
     def __repr__(self) -> str:
         """Return a string representation of the DataFrame."""
@@ -137,58 +137,48 @@ class DataFrame(pd.DataFrame):
     def columns_count(self) -> int:
         return len(self.columns)
 
-    def serialize_dataframe(
-        self,
-        index: int,
-    ) -> str:
+    def serialize_dataframe(self) -> str:
         """
         Serialize DataFrame to string representation.
-
-        Args:
-            index (int): Index of the dataframe
-            serializer_type (DataframeSerializerType): Type of serializer to use
-            **kwargs: Additional parameters to pass to pandas to_string method
 
         Returns:
             str: Serialized string representation of the DataFrame
         """
-        return DataframeSerializer().serialize(
-            self,
-            extras={
-                "index": index,
-                "type": "pd.DataFrame",
-            },
-            type_=DataframeSerializerType.CSV,
-        )
+        return DataframeSerializer().serialize(self)
 
     def get_head(self):
         return self.head()
 
-    def _create_yml_template(self, name, description, columns: List[dict]):
+    @staticmethod
+    def _create_yml_template(
+        name, description, columns_dict: List[dict]
+    ) -> Dict[str, Any]:
         """
         Generate a .yml file with a simplified metadata template from a pandas DataFrame.
 
         Args:
-            dataframe (pd.DataFrame): The DataFrame to document.
+            name: dataset name
             description: dataset description
-            output_yml_path (str): The file path where the .yml file will be saved.
-            table_name (str): Name of the table or dataset.
+            columns_dict: dictionary with info about columns of the dataframe
         """
-        # Metadata template
-        return {
-            "name": name,
-            "description": description,
-            "columns": columns,
-            "source": {"type": "parquet", "path": "data.parquet"},
-            "destination": {
-                "type": "local",
-                "format": "parquet",
-                "path": "data.parquet",
-            },
-        }
+
+        if columns_dict:
+            columns_dict = list(map(lambda column: Column(**column), columns_dict))
+
+        schema = SemanticLayerSchema(
+            name=name,
+            description=description,
+            columns=columns_dict,
+            source=Source(type="parquet", path="data.parquet"),
+            destination=Destination(
+                type="local", format="parquet", path="data.parquet"
+            ),
+        )
+
+        return schema.to_dict()
 
     def save(
-        self, path: str, name: str, description: str = None, columns: List[dict] = []
+        self, path: str, name: str, description: str = None, columns: List[dict] = None
     ):
         self.name = name
         self.description = description

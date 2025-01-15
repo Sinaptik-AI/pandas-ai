@@ -1,5 +1,5 @@
-import pandas as pd
 import cx_Oracle
+import pandas as pd
 
 
 def load_from_oracle(connection_info, query):

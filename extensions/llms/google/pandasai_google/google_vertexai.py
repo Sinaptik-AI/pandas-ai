@@ -1,9 +1,9 @@
 from typing import Optional
 
+from pandasai.core.code_execution.environment import import_dependency
+from pandasai.exceptions import UnsupportedModelError
 from pandasai.helpers.memory import Memory
 
-from pandasai.exceptions import UnsupportedModelError
-from pandasai.core.code_execution.environment import import_dependency
 from .base import BaseGoogle
 
 
