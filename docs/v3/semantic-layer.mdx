@@ -27,20 +27,22 @@ df.save(
     path="company/sales-data",         # Format: "organization/dataset"
     name="sales-data",                 # Human-readable name
     description="Sales data from our retail stores",  # Optional description
-    columns={
-        "transaction_id": {
+    columns=[
+        {
+            "name": "transaction_id",
             "type": "string",
             "description": "Unique identifier for each sale"
         },
-        "sale_date": {
+        {
+            "name": "sale_date"
             "type": "datetime",
             "description": "Date and time of the sale"
         }
-    }
+    ]
 )
 ```
 
-#### name 
+#### name
 
 The name field identifies your dataset in the save method.
 
@@ -84,28 +86,33 @@ df.save(
     path="company/sales-data",
     name="sales-data",
     description="Daily sales transactions from all retail stores",
-    columns={
-        "transaction_id": {
+    columns=[
+        {
+            "name": "transaction_id",
             "type": "string",
             "description": "Unique identifier for each sale"
         },
-        "sale_date": {
+        {
+            "name": "sale_date"
             "type": "datetime",
             "description": "Date and time of the sale"
         },
-        "quantity": {
+        {
+            "name": "quantity",
             "type": "integer",
             "description": "Number of units sold"
         },
-        "price": {
+        {
+            "name": "price",
             "type": "float",
             "description": "Price per unit in USD"
         },
-        "is_online": {
+        {
+            "name": "is_online",
             "type": "boolean",
             "description": "Whether the sale was made online"
         }
-    }
+    ]
 )
 ```
 
@@ -238,7 +245,7 @@ source:
 - `connection_string` (str): Connection string for the data source
 - `query` (str): Query to retrieve data from the data source
 
-
+{/* commented as destination and update frequency will be only in the materialized case
 #### destination (mandatory)
 Specify the destination for your dataset.
 
@@ -256,6 +263,7 @@ destination:
   path: /path/to/data
 ```
 
+
 #### update_frequency
 Specify the frequency of updates for your dataset.
 
@@ -268,6 +276,7 @@ Specify the frequency of updates for your dataset.
 ```yaml
 update_frequency: daily
 ```
+*/}
 
 #### order_by
 Specify the columns to order by.

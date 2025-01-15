@@ -112,24 +112,18 @@ class TestDataFrame:
                 "name": name,
                 "description": description,
                 "columns": [
-                    {"name": "Name", "type": "string", "description": None},
-                    {"name": "Age", "type": "integer", "description": None},
+                    {"name": "Name", "type": "string"},
+                    {"name": "Age", "type": "integer"},
                 ],
                 "destination": {
                     "format": "parquet",
                     "path": "data.parquet",
                     "type": "local",
                 },
-                "limit": None,
-                "order_by": None,
                 "source": {
-                    "connection": None,
                     "path": "data.parquet",
-                    "table": None,
                     "type": "parquet",
                 },
-                "transformations": None,
-                "update_frequency": None,
             }
 
             mock_yaml_dump.assert_called_once_with(
