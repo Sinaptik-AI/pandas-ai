@@ -1,4 +1,4 @@
-{% for df in context.dfs %}{% set index = loop.index %}{% include 'shared/dataframe.tmpl' with context %}{% endfor %}
+{% for df in context.dfs %}{% include 'shared/dataframe.tmpl' with context %}{% endfor %}
 
 The user asked the following question:
 {{context.memory.get_conversation()}}

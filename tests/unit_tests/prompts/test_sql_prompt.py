@@ -51,7 +51,7 @@ class TestGeneratePythonCodeWithSQLPrompt:
 
         llm = FakeLLM()
         agent = Agent(
-            pai.DataFrame(),
+            pai.DataFrame(name="test"),
             config={"llm": llm},
         )
         prompt = GeneratePythonCodeWithSQLPrompt(
@@ -68,10 +68,9 @@ class TestGeneratePythonCodeWithSQLPrompt:
             prompt_content
             == f'''<tables>
 
-<dataframe>
-dfs[0]:0x0
+<table table_name="test" dimensions="0x0">
 
-</dataframe>
+</table>
 
 
 </tables>

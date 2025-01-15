@@ -1,39 +1,32 @@
-import unittest
+import pytest
 
-from pandasai.dataframe.base import DataFrame
-from pandasai.helpers.dataframe_serializer import (
-    DataframeSerializer,
-    DataframeSerializerType,
-)
+from pandasai import DataFrame
+from pandasai.helpers.dataframe_serializer import DataframeSerializer
 
 
-class TestDataframeSerializer(unittest.TestCase):
-    def setUp(self):
-        self.serializer = DataframeSerializer()
+class TestDataframeSerializer:
+    @pytest.fixture
+    def sample_df(self):
+        df = DataFrame({"Name": ["Alice", "Bob"], "Age": [25, 30]})
+        df.name = "test_table"
+        df.description = "This is a test table"
+        return df
 
-    def test_convert_df_to_yml(self):
-        # Test convert df to yml
-        data = {"name": ["en_name", "中文_名称"]}
-        connector = DataFrame(data, name="en_table_name", description="中文_描述")
-        result = self.serializer.serialize(
-            connector,
-            type_=DataframeSerializerType.YML,
-            extras={"index": 0, "type": "pd.Dataframe"},
+    @pytest.fixture
+    def sample_dataframe_serializer(self):
+        return DataframeSerializer()
+
+    def test_serialize_with_name_and_description(
+        self, sample_dataframe_serializer, sample_df
+    ):
+        """Test serialization with name and description attributes."""
+
+        result = sample_dataframe_serializer.serialize(sample_df)
+        expected = (
+            '<table table_name="test_table" description="This is a test table" dimensions="2x2">\n'
+            "Name,Age\n"
+            "Alice,25\n"
+            "Bob,30\n"
+            "</table>\n"
         )
-
-        self.assertIn(
-            """<table>
-name: en_table_name
-description: null
-type: pd.DataFrame
-rows: 2
-columns: 1
-schema:
-  fields:
-  - name: name
-    type: object
-
-</table>
-""",
-            result,
-        )
+        assert result == expected

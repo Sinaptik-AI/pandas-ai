@@ -19,6 +19,7 @@ from .agent import Agent
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
 from .dataframe import DataFrame, VirtualDataFrame
+from .helpers.sql_sanitizer import sanitize_sql_table_name
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 
@@ -120,7 +121,8 @@ def load(dataset_path: str) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    return DataFrame(data._data)
+    name = f"table_{sanitize_sql_table_name(filepath)}"
+    return DataFrame(data._data, name=name)
 
 
 __all__ = [
