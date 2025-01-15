@@ -72,7 +72,7 @@ class DatasetLoader:
         return os.path.join(find_project_root(), "datasets", self.dataset_path)
 
     def _load_schema(self):
-        schema_path = os.path.join(self._get_abs_dataset_path(), "schema.yaml")
+        schema_path = os.path.join(str(self._get_abs_dataset_path()), "schema.yaml")
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 

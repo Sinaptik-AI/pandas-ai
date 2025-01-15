@@ -176,22 +176,23 @@ class DataFrame(pd.DataFrame):
             columns_dict: dictionary with info about columns of the dataframe
         """
 
-        columns = list(map(lambda column: Column(**column), columns_dict))
+        if columns_dict:
+            columns_dict = list(map(lambda column: Column(**column), columns_dict))
 
         schema = SemanticLayerSchema(
             name=name,
             description=description,
-            columns=columns,
+            columns=columns_dict,
             source=Source(type="parquet", path="data.parquet"),
             destination=Destination(
                 type="local", format="parquet", path="data.parquet"
             ),
         )
 
-        return schema.model_dump()
+        return schema.to_dict()
 
     def save(
-        self, path: str, name: str, description: str = None, columns: List[dict] = []
+        self, path: str, name: str, description: str = None, columns: List[dict] = None
     ):
         self.name = name
         self.description = description

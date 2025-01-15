@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import (
@@ -19,21 +19,23 @@ from pandasai.constants import (
 
 class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
-    type: str = Field(..., description="Data type of the column.")
+    type: Optional[str] = Field(None, description="Data type of the column.")
     description: Optional[str] = Field(None, description="Description of the column")
 
     @field_validator("type")
     @classmethod
     def is_column_type_supported(cls, type: str) -> str:
         if type not in VALID_COLUMN_TYPES:
-            raise ValueError(f"Unsupported column type: {type}")
+            raise ValueError(
+                f"Unsupported column type: {type}. Supported types are: {VALID_COLUMN_TYPES}"
+            )
         return type
 
 
 class Transformation(BaseModel):
     type: str = Field(..., description="Type of transformation to be applied.")
-    params: Dict[str, str] = Field(
-        ..., description="Parameters for the transformation."
+    params: Optional[Dict[str, str]] = Field(
+        None, description="Parameters for the transformation."
     )
 
     @field_validator("type")
@@ -95,13 +97,13 @@ class Destination(BaseModel):
 
 class SemanticLayerSchema(BaseModel):
     name: str = Field(..., description="Dataset name.")
+    source: Source = Field(..., description="Data source for your dataset.")
     description: Optional[str] = Field(
         None, description="Dataset’s contents and purpose description."
     )
     columns: Optional[List[Column]] = Field(
         None, description="Structure and metadata of your dataset’s columns"
     )
-    source: Source = Field(..., description="Data source for your dataset.")
     order_by: Optional[List[str]] = Field(
         None, description="Ordering criteria for the dataset."
     )
@@ -118,8 +120,11 @@ class SemanticLayerSchema(BaseModel):
         None, description="Frequency of dataset updates."
     )
 
+    def to_dict(self) -> dict[str, Any]:
+        return self.model_dump(exclude_none=True)
+
     def to_yaml(self) -> str:
-        return yaml.dump(self.model_dump(), sort_keys=False)
+        return yaml.dump(self.to_dict(), sort_keys=False)
 
 
 def is_schema_source_same(
