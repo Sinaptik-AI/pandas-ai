@@ -19,12 +19,12 @@ pip install pandasai
 ## Chat with your data
 
 In order to use PandaAI, you need a large language model (LLM). While you can use any LLM, for the purpose of this guide, we are using BambooLLM. 
-You can get your free API key signing up at [pandabi.ai](https://pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
+You can get your free API key signing up at [pandabi.ai](https://app.pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
 
 ```python
 import pandasai as pai
 
-# replace "YOUR_PANDABI_API_KEY" with your API key from https://pandabi.ai
+# get the api key from https://app.pandabi.ai
 pai.api_key.set("YOUR_PANDABI_API_KEY")
 ```
 
@@ -38,8 +38,16 @@ df = pai.read_csv("filepath")
 
 # ask questions
 df.chat('Which are the top 5 countries by sales?')
-# replace "Which are the top 5 countries by sales?" with your question
 ```
+
+When you ask a question, PandaAI will use the LLM to generate the answer and output a response.
+Depending on your question, it can return different objects:
+- string
+- dataframe
+- chart
+- number
+
+Find it more about output data formats [here](/v3/output-formats)
 
 ### Save and load dataframes
 
@@ -68,6 +76,27 @@ df = pai.read_csv("filepath")
 df.load("organization/dataset-name")
 ```
 
+## Share with your team
+
+Dataframes can be shared with your team using the [data platform](/v3/ai-dashboards).
+
+```python
+import pandasai as pai
+
+df = pai.load("company/heart-data")
+df.push()
+
+```
+
+The pushed datasets can then be accessed by your team-mates that can use natural language to ask questions about the data.
+[![PandaAI](../assets/demo.gif)](https://app.pandabi.ai)
+
+
+## Advanced features
+
+- Explore the [Semantic Layer](/v3/semantic-layer) to learn how to configure, save and dataframes
+- Learn more about the [Natural Language Layer](/v3/overview-nl)
+
 
 ### Chat with multiple dataframes
 
@@ -82,10 +111,3 @@ df_products = pai.load("company/products")
 
 response = pai.chat('Who are our top 5 customers and what products do they buy most frequently?', df_customers, df_orders, df_products)
 ```
-
-## Share with your team
-
-## Advances features
-
-- Explore the [Semantic Layer](/v3/semantic-layer) to learn how to configure, save and dataframes
-- Learn more about the [Natural Language Layer](/v3/overview-nl)

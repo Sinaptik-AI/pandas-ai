@@ -3,16 +3,19 @@ title: 'AI Dashboards'
 description: 'Turn your dataframes into collaborative AI dashboards'
 ---
 
-PandaAI provides a data platform that maximizes the power of your [semantic dataframes](/v3/dataframes). 
+PandaAI provides a [data platform](https://app.pandabi.ai) that maximizes the power of your [semantic dataframes](/v3/dataframes). 
 With a single line of code, you can turn your dataframes into auto-updating AI dashboards - no UI development needed.
 Each dashboard comes with a pre-generated set of insights and a conversational agent that helps you and your team explore the data through natural language.
 
 ```python
 import pandasai as pai
 
-df = pai.load("company/customers")
+df = pai.load("company/heart-data")
 df.push()
 ```
+
+The pushed datasets can then be accessed by your team-mates that can use natural language to ask questions about the data.
+[![PandaAI](../assets/demo.gif)](https://app.pandabi.ai)
 
 ## Auto-generated Dashboards
 
@@ -49,4 +52,5 @@ Your dashboards and conversational agent stay continuously synchronized with you
 Whether you're a data scientist sharing analysis with stakeholders, a business analyst creating reports, or a team leader fostering data-driven decisions, the platform makes it easy to collaborate on data analysis through our [sharing capabilities](/v3/share-dataframes).
 
 ## How to get the Data Platform?
-The data platform is available as a Cloud SaaS or as an enterprise solution that can be deployed on your own cloud infrastructure with full privacy and security controls.
+Visit [app.pandabi.ai](https://app.pandabi.ai) to get started. 
+The data platform is available as a Cloud SaaS or as an enterprise solution that can be deployed on your own cloud infrastructure with full privacy and security controls. 

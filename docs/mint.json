@@ -54,7 +54,7 @@
     "navigation": [
       {
         "group": "Overview",
-        "pages": ["v3/introduction", "v3/getting-started", "v3/output-formats"],
+        "pages": ["v3/introduction", "v3/getting-started"],
         "version": "v3"
       },
       {
@@ -64,7 +64,7 @@
       },
       {
         "group": "Natural Language",
-        "pages": ["v3/overview-nl", "v3/large-language-models", "v3/chat-and-cache", "v3/privacy-and-security"],
+        "pages": ["v3/overview-nl", "v3/large-language-models", "v3/chat-and-cache", "v3/output-formats"],
         "version": "v3"
       },
       {
