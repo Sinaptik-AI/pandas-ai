@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pandas as pd
 
+from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import VirtualizationError
 
@@ -28,16 +29,17 @@ class VirtualDataFrame(DataFrame):
             raise VirtualizationError("Data loader is required for virtualization!")
         self._head = None
 
-        schema = kwargs.get("schema", None)
+        schema: SemanticLayerSchema = kwargs.get("schema", None)
         if not schema:
             raise VirtualizationError("Schema is required for virtualization!")
-        table_name = schema["source"].get("table", None) or schema["name"]
-        table_description = schema.get("description", None)
+
+        table_name = schema.source.table
+        description = schema.description
 
         super().__init__(
             self.get_head(),
             name=table_name,
-            description=table_description,
+            description=description,
             *args,
             **kwargs,
         )

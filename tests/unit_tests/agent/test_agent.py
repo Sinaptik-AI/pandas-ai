@@ -9,7 +9,6 @@ from pandasai.agent.base import Agent
 from pandasai.config import Config, ConfigManager
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import CodeExecutionError
-from pandasai.helpers.dataframe_serializer import DataframeSerializerType
 from pandasai.llm.fake import FakeLLM
 
 
@@ -38,7 +37,7 @@ class TestAgent:
 
     @pytest.fixture
     def config(self, llm: FakeLLM) -> dict:
-        return {"llm": llm, "dataframe_serializer": DataframeSerializerType.CSV}
+        return {"llm": llm}
 
     @pytest.fixture
     def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:

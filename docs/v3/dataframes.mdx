@@ -3,33 +3,35 @@ title: 'Semantic Dataframes'
 description: 'Working with semantic dataframes in PandaAI'
 ---
 
-Once you have turned raw data into semantic enhanced dataframes with the [semantic layer](/v3/semantic-layer), you can load them locally as either materialized or virtualized dataframes. 
+Once you have turned raw data into semantic enhanced dataframes with the [semantic layer](/v3/semantic-layer), you can load them as either materialized or virtualized dataframes, depending on the data source. 
 Using the `.chat` method, you can ask questions and get responses and charts. 
-Both materialized and virtualized dataframes can be [shared with your team](/v3/share-dataframes) by pushing them to our [data platform](/v3/ai-dashboards).
+These dataframes can be [shared with your team](/v3/share-dataframes) by pushing them to our [data platform](/v3/ai-dashboards).
 
 ## Materialized Dataframes
 
-Materialized dataframes load the entire dataset into memory, providing:
+When working with local files (CSV, Parquet) or datasets based on such files, the dataframes are materialized, meaning:
+- Data is loaded entirely into memory
 - Fast access to all data
-- Full in-memory operations
-- Ideal for small to medium datasets
+- Ideal for local file processing or cross-source analysis
 
 ```python
-from pandasai import load
+import pandas as pd
+from pandasai import SmartDataframe
 
-# Load as materialized dataframe (default)
-df = load("organization/dataset-name")
+# Load local files as materialized dataframes
+df = pd.read_csv("local_file.csv")
+smart_df = SmartDataframe(df)
 ```
 
 ## Virtualized Dataframes
 
-Virtualized dataframes are ideal for large datasets as they:
-- Minimize memory usage
-- Load data on-demand rather than all at once
-- Support the same operations as materialized dataframes
+When loading remote datasets, dataframes are virtualized by default, providing:
+- Minimal memory usage through on-demand data loading
+- Efficient handling of large datasets
+- Optimal for remote data sources
 
 ```python
 from pandasai import load
 
-# Load as virtualized dataframe
-df = load("organization/dataset-name", virtualized=True)
+# Load remote datasets (virtualized by default)
+df = load("organization/dataset-name")

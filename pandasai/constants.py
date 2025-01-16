@@ -2,6 +2,9 @@
 Constants used in the pandasai package.
 """
 
+# Default API url
+DEFAULT_API_URL = "https://api.pandabi.ai"
+
 # Default directory to store chart if user doesn't provide any
 DEFAULT_CHART_DIRECTORY = "exports/charts"
 
@@ -47,3 +50,7 @@ REMOTE_SOURCE_TYPES = [
     "databricks",
     "oracle",
 ]
+
+VALID_COLUMN_TYPES = ["string", "integer", "float", "datetime", "boolean"]
+
+VALID_TRANSFORMATION_TYPES = ["anonymize", "convert_timezone"]

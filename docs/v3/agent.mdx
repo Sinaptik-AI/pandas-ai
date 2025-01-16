@@ -8,7 +8,7 @@ You can train PandaAI to understand your data better and to improve its performa
 
 ## Prerequisites
 
-Before you start training PandaAI, you need to set your PandaAI API key. You can generate your API key by signing up at [https://pandabi.ai](https://pandabi.ai).
+Before you start training PandaAI, you need to set your PandaAI API key. You can generate your API key by signing up at [https://app.pandabi.ai](https://app.pandabi.ai).
 
 Then you can set your API key as an environment variable:
 
@@ -35,7 +35,7 @@ As an alternative, if you want to use a local vector store (enterprise only for 
 ```python
 from pandasai import Agent
 
-# Set your PandasAI API key (you can generate one signing up at https://pandabi.ai)
+# Set your PandasAI API key (you can generate one signing up at https://app.pandabi.ai)
 os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
 
 agent = Agent("data.csv")

@@ -1,13 +1,14 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
 
 # Assuming the functions are in a module called db_loader
 from pandasai_sql import (
+    load_from_cockroachdb,
     load_from_mysql,
     load_from_postgres,
     load_from_sqlite,
-    load_from_cockroachdb,
 )
 
 

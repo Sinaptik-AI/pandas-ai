@@ -3,8 +3,8 @@ import sys
 
 import pytest
 
-from pandasai.exceptions import APIKeyNotFoundError
 from extensions.llms.ibm.pandasai_ibm.ibm_watsonx import IBMwatsonx
+from pandasai.exceptions import APIKeyNotFoundError
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.10 or higher")

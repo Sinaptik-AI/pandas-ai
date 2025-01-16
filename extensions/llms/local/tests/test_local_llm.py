@@ -3,10 +3,10 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from pandasai.helpers.memory import Memory
 from pandasai_local.local_llm import LocalLLM
+
 from pandasai.core.prompts.base import BasePrompt
+from pandasai.helpers.memory import Memory
 
 
 @pytest.fixture

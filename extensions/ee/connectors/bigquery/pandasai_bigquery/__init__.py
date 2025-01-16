@@ -1,5 +1,5 @@
-from google.cloud import bigquery
 import pandas as pd
+from google.cloud import bigquery
 
 
 def load_from_bigquery(connection_info, query):

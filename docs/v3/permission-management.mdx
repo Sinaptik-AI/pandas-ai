@@ -10,34 +10,18 @@ You can choose between four levels of access:
 - Password-protected: for controlled sharing
 - Organization: for team collaboration
 
+![Permission Management](../assets/permissions.png)
+
 Each access level determines who can view and interact with your dataframes, and who consumes query quota when asking questions to the AI agent.
 
 ## Private Dataframes
 Private dataframes are accessible only by their owner. When asking questions to the agent, the owner consumes their own query quota.
 
-```python
-import pandasai as pai
-
-df = pai.load("sales_data.csv")
-df.push(access="private")
-```
-
 ## Public Dataframes
 Public dataframes are accessible by anyone with a PandaAI account. They are indexed on the web for discovery. When users ask questions, they consume their own query quota.
 
-```python
-df.push(access="public")
-```
-
 ## Password-Protected Dataframes
 Password-protected dataframes are accessible only by users with the correct password. When users ask questions, the dataframe owner consumes their query quota.
-
-```python
-df.push(
-    access="password_protected",
-    password="secure_password"
-)
-```
 
 ## Organization Dataframes
 Organization dataframes are accessible by team members based on their permissions. Members can have read-only or write access. Permissions are handled in-platform by the organization owner and admins.
