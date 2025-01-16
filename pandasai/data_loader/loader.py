@@ -40,18 +40,11 @@ class DatasetLoader:
 
         source_type = self.schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:
-            cache_file = self._get_cache_file_path()
-
-            if self._is_cache_valid(cache_file):
-                cache_format = self.schema.destination.format
-                return self._read_csv_or_parquet(cache_file, cache_format)
-
             df = self._load_from_local_source()
             df = self._apply_transformations(df)
 
             # Convert to pandas DataFrame while preserving internal data
             df = pd.DataFrame(df._data)
-            self._cache_data(df, cache_file)
 
             return DataFrame(
                 df._data,
@@ -79,29 +72,6 @@ class DatasetLoader:
         with open(schema_path, "r") as file:
             raw_schema = yaml.safe_load(file)
             self.schema = SemanticLayerSchema(**raw_schema)
-
-    def _get_cache_file_path(self) -> str:
-        if self.schema.destination.path:
-            return os.path.join(
-                str(self._get_abs_dataset_path()), self.schema.destination.path
-            )
-
-        file_extension = (
-            "parquet" if self.schema.destination.format == "parquet" else "csv"
-        )
-        return os.path.join(str(self._get_abs_dataset_path()), f"data.{file_extension}")
-
-    def _is_cache_valid(self, cache_file: str) -> bool:
-        if not os.path.exists(cache_file):
-            return False
-
-        file_mtime = datetime.fromtimestamp(os.path.getmtime(cache_file))
-        update_frequency = self.schema.update_frequency
-
-        if update_frequency and update_frequency == "weekly":
-            return file_mtime > datetime.now() - timedelta(weeks=1)
-
-        return False
 
     def _get_loader_function(self, source_type: str):
         """
@@ -180,9 +150,9 @@ class DatasetLoader:
         return result.iloc[0, 0]
 
     def execute_query(self, query: str) -> pd.DataFrame:
-        source = self.schema.get("source", {})
-        source_type = source.get("type")
-        connection_info = source.get("connection", {})
+        source = self.schema.source
+        source_type = source.type
+        connection_info = source.connection
 
         if not source_type:
             raise ValueError("Source type is missing in the schema.")
@@ -219,13 +189,6 @@ class DatasetLoader:
             return f"{hashlib.md5(local.encode()).hexdigest()}@{domain}"
         except ValueError:
             return value
-
-    def _cache_data(self, df: pd.DataFrame, cache_file: str):
-        cache_format = self.schema.destination.format
-        if cache_format == "parquet":
-            df.to_parquet(cache_file, index=False)
-        elif cache_format == "csv":
-            df.to_csv(cache_file, index=False)
 
     def copy(self) -> "DatasetLoader":
         """

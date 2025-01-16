@@ -1,5 +1,4 @@
 import pytest
-import yaml
 from pydantic import ValidationError
 
 from pandasai.data_loader.semantic_layer_schema import (
@@ -46,11 +45,6 @@ class TestSemanticLayerSchema:
                 "type": "csv",
                 "path": "users.csv",
             },
-            "destination": {
-                "type": "local",
-                "format": "parquet",
-                "path": "users.parquet",
-            },
         }
 
     @pytest.fixture
@@ -95,11 +89,6 @@ class TestSemanticLayerSchema:
                 },
                 "table": "users",
             },
-            "destination": {
-                "type": "local",
-                "format": "parquet",
-                "path": "users.parquet",
-            },
         }
 
     def test_valid_schema(self, sample_schema):
@@ -112,7 +101,6 @@ class TestSemanticLayerSchema:
         assert schema.limit == 100
         assert len(schema.transformations) == 2
         assert schema.source.type == "csv"
-        assert schema.destination.path == "users.parquet"
 
     def test_valid_mysql_schema(self, mysql_schema):
         schema = SemanticLayerSchema(**mysql_schema)
@@ -124,7 +112,6 @@ class TestSemanticLayerSchema:
         assert schema.limit == 100
         assert len(schema.transformations) == 2
         assert schema.source.type == "mysql"
-        assert schema.destination.path == "users.parquet"
 
     def test_missing_source_path(self, sample_schema):
         sample_schema["source"].pop("path")
