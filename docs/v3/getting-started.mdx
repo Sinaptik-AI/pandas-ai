@@ -19,7 +19,7 @@ pip install pandasai
 ## Chat with your data
 
 In order to use PandaAI, you need a large language model (LLM). While you can use any LLM, for the purpose of this guide, we are using BambooLLM. 
-You can get your free API key signing up at [pandabi.ai](https://app.pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
+You can get your free API key signing up at [app.pandabi.ai](https://app.pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
 
 ```python
 import pandasai as pai
@@ -49,7 +49,7 @@ Depending on your question, it can return different objects:
 
 Find it more about output data formats [here](/v3/output-formats)
 
-### Save and load dataframes
+### Create and load dataframes
 
 To work faster with your data, you can save dataframes.
 This allows you to avoid reading the data every time.
@@ -60,20 +60,18 @@ import pandasai as pai
 # read csv - replace "filepath" with your file path
 df = pai.read_csv("filepath")
 
-df.save(path="organization/dataset-name",
+df = pai.create(path="organization/dataset-name",
     name="dataset-name",
+    df = df,
     description="describe your dataset")
 ```
 
-The saved dataframe can then be loaded using the `load` method.
+The created dataframe can then be loaded using the `load` method.
 
 ```python
 import pandasai as pai
 
-# read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
-
-df.load("organization/dataset-name")
+df = pai.load("organization/dataset-name")
 ```
 
 ## Share with your team

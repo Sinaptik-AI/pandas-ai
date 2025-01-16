@@ -25,12 +25,16 @@ Load your data, save them as a dataframe, and push them to the platform
 ```python
 import pandasai as pai
 
-df = pai.read_csv("./filepath.csv")
-df.push()
+pai.api_key.set("your-pai-api-key")
 
-df.save(path="your-organization/dataset-name",
+df = pai.read_csv("./filepath.csv")
+
+df = pai.create(path="your-organization/dataset-name",
+    df=df,
     name="dataset-name",
     description="dataset-description")
+
+df.push()
 ```
 Your team can now access and query this data using natural language through the platform.
 

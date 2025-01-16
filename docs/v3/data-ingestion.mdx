@@ -24,8 +24,10 @@ import pandasai as pai
 df = pai.read_csv("data.csv")
 
 # Use the semantic layer on CSV
-df.save(
+df = pai.create(
+    path="company/sales-data",
     name="sales_data",
+    df = df,
     description="Sales data from our retail stores",
     columns={
         "transaction_id": {"type": "string", "description": "Unique identifier for each sale"},
