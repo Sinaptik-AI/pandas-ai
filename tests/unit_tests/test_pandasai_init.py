@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 import pandasai
+from pandasai.data_loader.semantic_layer_schema import Column
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 
@@ -272,8 +273,8 @@ class TestPandaAIInit:
 
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
-    def test_create_valid_dataset(
-        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
+    def test_create_valid_dataset_no_params(
+        self, mock_makedirs, mock_find_project_root, sample_df
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = "/mock/root"
@@ -283,7 +284,7 @@ class TestPandaAIInit:
         ) as mock_to_parquet, patch(
             "pandasai.find_project_root", return_value="/mock/root"
         ):
-            result = pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+            result = pandasai.create("test-org/test-dataset", sample_df)
 
             # Check if directories were created
             mock_makedirs.assert_called_once_with(
@@ -302,46 +303,43 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_schema.name
-            assert result.description == sample_schema.description
+            assert result.name == sample_df.name
+            assert result.description is None
             assert result.path == "test-org/test-dataset"
 
-    def test_create_invalid_path_format(self, sample_df, sample_schema):
+    def test_create_invalid_path_format(self, sample_df):
         """Test creating a dataset with invalid path format."""
         with pytest.raises(
             ValueError, match="Path must be in format 'organization/dataset'"
         ):
-            pandasai.create("invalid_path", sample_df, sample_schema)
+            pandasai.create("invalid_path", sample_df)
 
-    def test_create_invalid_org_name(self, sample_df, sample_schema):
+    def test_create_invalid_org_name(self, sample_df):
         """Test creating a dataset with invalid organization name."""
         with pytest.raises(ValueError, match="Organization name must be lowercase"):
-            pandasai.create("Invalid-Org/test-dataset", sample_df, sample_schema)
+            pandasai.create("Invalid-Org/test-dataset", sample_df)
 
-    def test_create_invalid_dataset_name(self, sample_df, sample_schema):
+    def test_create_invalid_dataset_name(self, sample_df):
         """Test creating a dataset with invalid dataset name."""
         with pytest.raises(ValueError, match="Dataset name must be lowercase"):
-            pandasai.create("test-org/Invalid-Dataset", sample_df, sample_schema)
+            pandasai.create("test-org/Invalid-Dataset", sample_df)
 
-    def test_create_empty_org_name(self, sample_df, sample_schema):
+    def test_create_empty_org_name(self, sample_df):
         """Test creating a dataset with empty organization name."""
         with pytest.raises(
             ValueError, match="Both organization and dataset names are required"
         ):
-            pandasai.create("/test-dataset", sample_df, sample_schema)
+            pandasai.create("/test-dataset", sample_df)
 
-    def test_create_empty_dataset_name(self, sample_df, sample_schema):
+    def test_create_empty_dataset_name(self, sample_df):
         """Test creating a dataset with empty dataset name."""
         with pytest.raises(
             ValueError, match="Both organization and dataset names are required"
         ):
-            pandasai.create("test-org/", sample_df, sample_schema)
+            pandasai.create("test-org/", sample_df)
 
     @patch("pandasai.helpers.path.find_project_root")
-    @patch("os.makedirs")
-    def test_create_existing_dataset(
-        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
-    ):
+    def test_create_existing_dataset(self, mock_find_project_root, sample_df):
         """Test creating a dataset that already exists."""
         mock_find_project_root.return_value = "/mock/root"
 
@@ -349,13 +347,15 @@ class TestPandaAIInit:
             # Mock that both directory and schema file exist
             mock_exists.side_effect = lambda path: True
 
-            with pytest.raises(ValueError, match="Dataset already exists at path: test-org/test-dataset"):
-                pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+            with pytest.raises(
+                ValueError,
+                match="Dataset already exists at path: test-org/test-dataset",
+            ):
+                pandasai.create("test-org/test-dataset", sample_df)
 
     @patch("pandasai.helpers.path.find_project_root")
-    @patch("os.makedirs")
     def test_create_existing_directory_no_dataset(
-        self, mock_makedirs, mock_find_project_root, sample_df, sample_schema
+        self, mock_find_project_root, sample_df
     ):
         """Test creating a dataset in an existing directory but without existing dataset files."""
         mock_find_project_root.return_value = "/mock/root"
@@ -364,15 +364,154 @@ class TestPandaAIInit:
             # Return True for directory, False for schema and data files
             return not (path.endswith("schema.yaml") or path.endswith("data.parquet"))
 
-        with patch("os.path.exists", side_effect=mock_exists_side_effect), \
-             patch("builtins.open", mock_open()) as mock_file, \
-             patch.object(sample_df, "to_parquet") as mock_to_parquet, \
-             patch("pandasai.find_project_root", return_value="/mock/root"):
-
-            result = pandasai.create("test-org/test-dataset", sample_df, sample_schema)
+        with patch("os.path.exists", side_effect=mock_exists_side_effect), patch(
+            "os.makedirs"
+        ) as mock_makedirs, patch(
+            "builtins.open", mock_open()
+        ) as mock_file, patch.object(sample_df, "to_parquet") as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            result = pandasai.create("test-org/test-dataset", sample_df)
 
             # Verify dataset was created successfully
             assert isinstance(result, DataFrame)
-            assert result.name == sample_schema.name
+            assert result.name == sample_df.name
             mock_to_parquet.assert_called_once()
+            mock_makedirs.assert_called_once()
             mock_file.assert_called_once()
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_valid_dataset_with_name(
+        self, mock_makedirs, mock_find_project_root, sample_df
+    ):
+        """Test creating a dataset with valid inputs."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("builtins.open", mock_open()) as mock_file, patch.object(
+            sample_df, "to_parquet"
+        ) as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            result = pandasai.create("test-org/test-dataset", sample_df, "test_name")
+
+            # Check if directories were created
+            mock_makedirs.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset", exist_ok=True
+            )
+
+            # Check if DataFrame was saved
+            mock_to_parquet.assert_called_once()
+            assert mock_to_parquet.call_args[0][0].endswith("data.parquet")
+            assert mock_to_parquet.call_args[1]["index"] is False
+
+            # Check if schema was saved
+            mock_file.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset/schema.yaml", "w"
+            )
+
+            # Check returned DataFrame
+            assert isinstance(result, DataFrame)
+            assert result.name == "test_name"
+            assert result.description is None
+            assert result.path == "test-org/test-dataset"
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_valid_dataset_with_description(
+        self, mock_makedirs, mock_find_project_root, sample_df
+    ):
+        """Test creating a dataset with valid inputs."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("builtins.open", mock_open()) as mock_file, patch.object(
+            sample_df, "to_parquet"
+        ) as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            result = pandasai.create(
+                "test-org/test-dataset", sample_df, description="test_description"
+            )
+
+            # Check if directories were created
+            mock_makedirs.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset", exist_ok=True
+            )
+
+            # Check if DataFrame was saved
+            mock_to_parquet.assert_called_once()
+            assert mock_to_parquet.call_args[0][0].endswith("data.parquet")
+            assert mock_to_parquet.call_args[1]["index"] is False
+
+            # Check if schema was saved
+            mock_file.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset/schema.yaml", "w"
+            )
+
+            # Check returned DataFrame
+            assert isinstance(result, DataFrame)
+            assert result.name == sample_df.name
+            assert result.description == "test_description"
+            assert result.path == "test-org/test-dataset"
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_valid_dataset_with_columns(
+        self, mock_makedirs, mock_find_project_root, sample_df
+    ):
+        """Test creating a dataset with valid inputs."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("builtins.open", mock_open()) as mock_file, patch.object(
+            sample_df, "to_parquet"
+        ) as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            columns_dict = [{"name": "a"}, {"name": "b"}]
+            result = pandasai.create(
+                "test-org/test-dataset", sample_df, columns=columns_dict
+            )
+
+            # Check if directories were created
+            mock_makedirs.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset", exist_ok=True
+            )
+
+            # Check if DataFrame was saved
+            mock_to_parquet.assert_called_once()
+            assert mock_to_parquet.call_args[0][0].endswith("data.parquet")
+            assert mock_to_parquet.call_args[1]["index"] is False
+
+            # Check if schema was saved
+            mock_file.assert_called_once_with(
+                "/mock/root/datasets/test-org/test-dataset/schema.yaml", "w"
+            )
+
+            # Check returned DataFrame
+            assert isinstance(result, DataFrame)
+            assert result.name == sample_df.name
+            assert result.description is None
+            assert result.schema.columns == list(
+                map(lambda column: Column(**column), columns_dict)
+            )
+            assert result.path == "test-org/test-dataset"
+
+    @patch("pandasai.helpers.path.find_project_root")
+    @patch("os.makedirs")
+    def test_create_dataset_wrong_columns(
+        self, mock_makedirs, mock_find_project_root, sample_df
+    ):
+        """Test creating a dataset with valid inputs."""
+        mock_find_project_root.return_value = "/mock/root"
+
+        with patch("builtins.open", mock_open()) as mock_file, patch.object(
+            sample_df, "to_parquet"
+        ) as mock_to_parquet, patch(
+            "pandasai.find_project_root", return_value="/mock/root"
+        ):
+            columns_dict = [{"no-name": "a"}, {"name": "b"}]
+
+            with pytest.raises(ValueError):
+                pandasai.create(
+                    "test-org/test-dataset", sample_df, columns=columns_dict
+                )
