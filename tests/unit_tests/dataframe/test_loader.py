@@ -156,7 +156,7 @@ class TestDatasetLoader:
             with pytest.raises(FileNotFoundError):
                 loader._load_schema()
 
-    def test_read_csv_or_parquet_parquet(self, sample_schema):
+    def test_read_parquet(self, sample_schema):
         loader = DatasetLoader()
         loader.schema = sample_schema
 
@@ -167,7 +167,7 @@ class TestDatasetLoader:
             assert isinstance(result, pd.DataFrame)
             assert result.equals(mock_df)
 
-    def test_read_csv_or_parquet_csv(self, sample_schema):
+    def test_read_csv(self, sample_schema):
         loader = DatasetLoader()
         loader.schema = sample_schema
 
