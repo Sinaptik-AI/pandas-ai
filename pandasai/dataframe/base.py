@@ -251,7 +251,7 @@ class DataFrame(pd.DataFrame):
         from pandasai import DatasetLoader
 
         dataset_loader = DatasetLoader()
-        df = dataset_loader.load(self.path, virtualized=not isinstance(self, DataFrame))
+        df = dataset_loader.load(self.path)
         self.__init__(
             df, schema=df.schema, name=df.name, description=df.description, path=df.path
         )
