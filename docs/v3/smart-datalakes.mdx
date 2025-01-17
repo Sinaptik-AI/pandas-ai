@@ -3,13 +3,36 @@ title: 'SmartDatalake'
 description: 'Legacy documentation for SmartDatalake class'
 ---
 
-<Note title="Beta Notice">
-Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+<Note title="Backwards Compatibility">
+This documentation page is for backwards compatibility. For new projects, we recommend using the new [semantic dataframes](/v3/dataframes).
 </Note>
 
-## SmartDatalake (Legacy)
+## Migrate SmartDatalakes
 
-> **Note**: This documentation is for backwards compatibility. For new projects, we recommend using the new [semantic dataframes](/v3/dataframes) API with multiple dataframes.
+To migrate from SmartDatalake to the new semantic dataframes:
+
+1. Use the new multiple dataframe syntax with `pai.chat()`
+2. Update configuration to use `pai.config.set()`
+
+Example migration:
+
+```python
+# Old code
+from pandasai import SmartDatalake, SmartDataframe
+lake = SmartDatalake([
+    SmartDataframe(customers_df),
+    SmartDataframe(orders_df)
+])
+response = lake.chat("Query across dataframes")
+
+# New code
+import pandasai as pai
+df_customers = pai.DataFrame(customers_df)
+df_orders = pai.DataFrame(orders_df)
+response = pai.chat("Query across dataframes", df_customers, df_orders)
+```
+
+## SmartDatalakes (Legacy)
 
 The SmartDatalake class was the previous way to work with multiple dataframes in PandaAI. It allowed you to combine multiple SmartDataframes and ask questions that span across them.
 
@@ -53,29 +76,4 @@ lake = SmartDatalake(
         "verbose": True
     }
 )
-```
-
-### Migration Guide
-
-To migrate from SmartDatalake to the new semantic dataframes:
-
-1. Use the new multiple dataframe syntax with `pai.chat()`
-2. Update configuration to use `pai.config.set()`
-
-Example migration:
-
-```python
-# Old code
-from pandasai import SmartDatalake, SmartDataframe
-lake = SmartDatalake([
-    SmartDataframe(customers_df),
-    SmartDataframe(orders_df)
-])
-response = lake.chat("Query across dataframes")
-
-# New code
-import pandasai as pai
-df_customers = pai.DataFrame(customers_df)
-df_orders = pai.DataFrame(orders_df)
-response = pai.chat("Query across dataframes", df_customers, df_orders)
 ```

@@ -154,10 +154,12 @@ PandaAI is available under the MIT expat license, except for the `pandasai/ee` d
 If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
 
 ## Resources
-
 - [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
 - [Examples](examples) for example notebooks
 - [Discord](https://discord.gg/KYKj9F2FRH) for discussion with the community and PandaAI team
+
+> **Beta Notice**  
+> Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
 
 ## 🤝 Contributing
 

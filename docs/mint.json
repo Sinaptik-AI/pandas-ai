@@ -64,7 +64,7 @@
       },
       {
         "group": "Natural Language",
-        "pages": ["v3/overview-nl", "v3/large-language-models", "v3/chat-and-cache", "v3/output-formats"],
+        "pages": ["v3/overview-nl", "v3/large-language-models", "v3/chat-and-output"],
         "version": "v3"
       },
       {
