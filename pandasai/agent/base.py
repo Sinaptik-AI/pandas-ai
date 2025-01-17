@@ -107,7 +107,6 @@ class Agent:
         self._state.logger.log(f"Executing code: {code}")
         code_executor = CodeExecutor(self._state.config)
         code_executor.add_to_env("execute_sql_query", self._execute_sql_query)
-
         return code_executor.execute_and_return_result(code)
 
     def _execute_local_sql_query(self, query: str) -> pd.DataFrame:
