@@ -229,13 +229,6 @@ class DataFrame(pd.DataFrame):
 
         print(f"Dataset pulled successfully from path: {self.path}")
 
-    def execute_sql_query(self, query: str) -> pd.DataFrame:
-        import duckdb
-
-        db = duckdb.connect(":memory:")
-        db.register(self.name, self)
-        return db.query(query).df()
-
     @staticmethod
     def get_column_type(column_dtype) -> Optional[str]:
         """

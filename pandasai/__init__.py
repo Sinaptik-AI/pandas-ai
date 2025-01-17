@@ -121,7 +121,7 @@ def clear_cache(filename: str = None):
     cache.clear()
 
 
-def chat(query: str, *dataframes: List[DataFrame]):
+def chat(query: str, *dataframes: DataFrame):
     """
     Start a new chat interaction with the assistant on Dataframe(s).
 

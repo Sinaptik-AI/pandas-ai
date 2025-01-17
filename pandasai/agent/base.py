@@ -2,6 +2,9 @@ import traceback
 import warnings
 from typing import Any, List, Optional, Union
 
+import duckdb
+import pandas as pd
+
 from pandasai.core.cache import Cache
 from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.core.code_generation.base import CodeGenerator
@@ -23,6 +26,7 @@ from pandasai.exceptions import (
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import Config
+from ..constants import LOCAL_SOURCE_TYPES
 from .state import AgentState
 
 
@@ -102,11 +106,42 @@ class Agent:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
         code_executor = CodeExecutor(self._state.config)
-        code_executor.add_to_env(
-            "execute_sql_query", self._state.dfs[0].execute_sql_query
-        )
+        code_executor.add_to_env("execute_sql_query", self.execute_sql_query)
 
         return code_executor.execute_and_return_result(code)
+
+    def _execute_local_sql_query(self, query: str) -> pd.DataFrame:
+        try:
+            # Use a context manager to ensure the connection is closed
+            with duckdb.connect() as con:
+                # Register all DataFrames in the state
+                for df in self._state.dfs:
+                    con.register(df.name, df)
+
+                # Execute the query and fetch the result as a pandas DataFrame
+                result = con.sql(query).df()
+
+            return result
+        except duckdb.Error as e:
+            raise RuntimeError(f"SQL execution failed: {e}") from e
+
+    def execute_sql_query(self, query: str) -> pd.DataFrame:
+        """
+        Executes an SQL query on registered DataFrames.
+
+        Args:
+            query (str): The SQL query to execute.
+
+        Returns:
+            pd.DataFrame: The result of the SQL query as a pandas DataFrame.
+        """
+        if not self._state.dfs:
+            raise ValueError("No DataFrames available to register for query execution.")
+
+        if self._state.dfs[0].schema.source.type in LOCAL_SOURCE_TYPES:
+            return self._execute_local_sql_query(query)
+        else:
+            return self._state.dfs[0].execute_sql_query(query)
 
     def execute_with_retries(self, code: str) -> Any:
         """Execute the code with retry logic."""

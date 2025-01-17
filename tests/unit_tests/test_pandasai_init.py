@@ -190,7 +190,10 @@ class TestPandaAIInit:
         mock_zip_file.return_value.__enter__.return_value.extractall.assert_called_once()
         assert isinstance(result, MagicMock)
 
-    def test_load_without_api_credentials(self):
+    @patch("pandasai.os.environ", {})
+    def test_load_without_api_credentials(
+        self,
+    ):
         """Test that load raises PandaAIApiKeyError when no API credentials are provided"""
         with pytest.raises(PandaAIApiKeyError) as exc_info:
             pandasai.load("test/dataset")
