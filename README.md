@@ -155,7 +155,7 @@ If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offerin
 ## Resources
 
 > **Beta Notice**  
-> Release v3 is currently in beta. The following documentation and examples reflect he features and functionality in progress and may change before the final release.
+> Release v3 is currently in beta. The following documentation and examples reflect the features and functionality in progress and may change before the final release.
 
 - [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
 - [Examples](examples) for example notebooks
