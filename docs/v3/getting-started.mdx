@@ -19,7 +19,7 @@ pip install pandasai
 ## Chat with your data
 
 In order to use PandaAI, you need a large language model (LLM). While you can use any LLM, for the purpose of this guide, we are using BambooLLM. 
-You can get your free API key signing up at [pandabi.ai](https://app.pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
+You can get your free API key signing up at [app.pandabi.ai](https://app.pandabi.ai), which allows you to both use the data platform and get BambooLLM credits.
 
 ```python
 import pandasai as pai
@@ -34,10 +34,10 @@ pai.api_key.set("YOUR_PANDABI_API_KEY")
 import pandasai as pai
 
 # read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
+file = pai.read_csv("filepath")
 
 # ask questions
-df.chat('Which are the top 5 countries by sales?')
+file.chat('Which are the top 5 countries by sales?')
 ```
 
 When you ask a question, PandaAI will use the LLM to generate the answer and output a response.
@@ -47,9 +47,9 @@ Depending on your question, it can return different objects:
 - chart
 - number
 
-Find it more about output data formats [here](/v3/output-formats)
+Find it more about output data formats [here](/v3/chat-and-output#available-output-formats).
 
-### Save and load dataframes
+### Create and load dataframes
 
 To work faster with your data, you can save dataframes.
 This allows you to avoid reading the data every time.
@@ -58,22 +58,20 @@ This allows you to avoid reading the data every time.
 import pandasai as pai
 
 # read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
+file = pai.read_csv("filepath")
 
-df.save(path="organization/dataset-name",
+df = pai.create(path="organization/dataset-name",
     name="dataset-name",
+    df = file,
     description="describe your dataset")
 ```
 
-The saved dataframe can then be loaded using the `load` method.
+The created dataframe can then be loaded using the `load` method.
 
 ```python
 import pandasai as pai
 
-# read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
-
-df.load("organization/dataset-name")
+df = pai.load("organization/dataset-name")
 ```
 
 ## Share with your team
@@ -110,4 +108,3 @@ df_orders = pai.load("company/orders")
 df_products = pai.load("company/products")
 
 response = pai.chat('Who are our top 5 customers and what products do they buy most frequently?', df_customers, df_orders, df_products)
-```

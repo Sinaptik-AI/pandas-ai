@@ -3,19 +3,22 @@ title: 'Agent'
 description: 'Add few-shot learning to your PandaAI agent'
 ---
 
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
 You can train PandaAI to understand your data better and to improve its performance. Training is as easy as calling the `train` method on the `Agent`.
 
 
 ## Prerequisites
 
-Before you start training PandaAI, you need to set your PandaAI API key. You can generate your API key by signing up at [https://app.pandabi.ai](https://app.pandabi.ai).
-
-Then you can set your API key as an environment variable:
+Before you start training PandaAI, you need to set your PandaAI API key. 
+You can generate your API key by signing up at [https://app.pandabi.ai](https://app.pandabi.ai).
 
 ```python
-import os
+import pandasai as pai
 
-os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
+pai.api_key.set("your-pai-api-key")
 ```
 
 It is important that you set the API key, or it will fail with the following error: `No vector store provided. Please provide a vector store to train the agent`.
@@ -33,10 +36,10 @@ The training uses by default the `BambooVectorStore` to store the training data,
 As an alternative, if you want to use a local vector store (enterprise only for production use cases), you can use the `ChromaDB`, `Qdrant` or `Pinecone` vector stores (see examples below).
 
 ```python
+import pandasai as pai
 from pandasai import Agent
 
-# Set your PandasAI API key (you can generate one signing up at https://app.pandabi.ai)
-os.environ["PANDABI_API_KEY"] = "YOUR_PANDABI_API_KEY"
+pai.api_key.set("your-pai-api-key")
 
 agent = Agent("data.csv")
 agent.train(docs="The fiscal year starts in April")
@@ -61,19 +64,22 @@ agent = Agent("data.csv")
 
 # Train the model
 query = "What is the total sales for the current fiscal year?"
-response = """
-import pandas as pd
+# The following code is passed as a string to the response variable
+response = '\n'.join([
+    'import pandas as pd',
+    '',
+    'df = dfs[0]',
+    '',
+    '# Calculate the total sales for the current fiscal year',
+    'total_sales = df[df[\'date\'] >= pd.to_datetime(\'today\').replace(month=4, day=1)][\'sales\'].sum()',
+    'result = { "type": "number", "value": total_sales }'
+])
 
-df = dfs[0]
-
-# Calculate the total sales for the current fiscal year
-total_sales = df[df['date'] >= pd.to_datetime('today').replace(month=4, day=1)]['sales'].sum()
-result = { "type": "number", "value": total_sales }
-"""
 agent.train(queries=[query], codes=[response])
 
 response = agent.chat("What is the total sales for the last fiscal year?")
 print(response)
+
 # The model will use the information provided in the training to generate a response
 ```
 
@@ -110,15 +116,17 @@ agent = Agent("data.csv", vectorstore=vector_store)
 
 # Train the model
 query = "What is the total sales for the current fiscal year?"
-response = """
-import pandas as pd
+# The following code is passed as a string to the response variable
+response = '\n'.join([
+    'import pandas as pd',
+    '',
+    'df = dfs[0]',
+    '',
+    '# Calculate the total sales for the current fiscal year',
+    'total_sales = df[df[\'date\'] >= pd.to_datetime(\'today\').replace(month=4, day=1)][\'sales\'].sum()',
+    'result = { "type": "number", "value": total_sales }'
+])
 
-df = dfs[0]
-
-# Calculate the total sales for the current fiscal year
-total_sales = df[df['date'] >= pd.to_datetime('today').replace(month=4, day=1)]['sales'].sum()
-result = { "type": "number", "value": total_sales }
-"""
 agent.train(queries=[query], codes=[response])
 
 response = agent.chat("What is the total sales for the last fiscal year?")
@@ -145,3 +153,37 @@ vector_store = BambooVectorStor(api_key="YOUR_PANDABI_API_KEY")
 # Instantiate the agent with the custom vector store
 agent = Agent(connector, config={...} vectorstore=vector_store)
 ```
+## Custom Head
+
+In some cases, you might want to provide custom data samples to the conversational agent to improve its understanding and responses. For example, you might want to:
+- Provide better examples that represent your data patterns
+- Avoid sharing sensitive information
+- Guide the agent with specific data scenarios
+
+You can do this by passing a custom head to the agent:
+
+```python
+import pandas as pd
+import pandasai as pai
+
+# Your original dataframe
+df = pd.DataFrame({
+    'sensitive_id': [1001, 1002, 1003, 1004, 1005],
+    'amount': [150, 200, 300, 400, 500],
+    'category': ['A', 'B', 'A', 'C', 'B']
+})
+
+# Create a custom head with anonymized data
+head_df = pd.DataFrame({
+    'sensitive_id': [1, 2, 3, 4, 5],
+    'amount': [100, 200, 300, 400, 500],
+    'category': ['A', 'B', 'C', 'A', 'B']
+})
+
+# Use the custom head
+smart_df = pai.SmartDataframe(df, config={
+    "custom_head": head_df
+})
+```
+
+The agent will use your custom head instead of the default first 5 rows of the dataframe when analyzing and responding to queries.

@@ -3,9 +3,33 @@ title: 'SmartDataframe'
 description: 'Legacy documentation for SmartDataframe class'
 ---
 
-## SmartDataframe (Legacy)
+<Note title="Backwards Compatibility">
+This documentation page is for backwards compatibility. For new projects, we recommend using the new [semantic dataframes](/v3/dataframes).
+</Note>
 
-> **Note**: This documentation is for backwards compatibility. For new projects, we recommend using the new [semantic dataframes](/v3/dataframes).
+### Migrate SmartDataframe
+
+To migrate from SmartDataframe to the new [semantic dataframes](/v3/dataframes):
+
+1. Replace SmartDataframe imports with semantic dataframe imports
+2. Update configuration to use `pai.config.set()`
+3. Use the new `.chat()` method syntax
+
+Example migration:
+
+```python
+# Old code
+from pandasai import SmartDataframe
+smart_df = SmartDataframe(df)
+
+# New code
+import pandasai as pai
+
+df = pai.DataFrame(df)
+```
+
+
+## SmartDataframe (Legacy)
 
 The SmartDataframe class was the previous way to create dataframes in PandaAI. It provided similar functionality to the current semantic dataframes but with a different API.
 
@@ -36,29 +60,7 @@ SmartDataframe accepted configuration options through its constructor:
 ```python
 smart_df = SmartDataframe(df, config={
     "llm": llm,                              # LLM instance
-    "enable_cache": True,                    # Enable/disable cache
     "save_logs": True,                       # Save conversation logs
     "verbose": False                         # Print detailed logs
 })
-```
-
-### Migration Guide
-
-To migrate from SmartDataframe to the new semantic dataframes:
-
-1. Replace SmartDataframe imports with semantic dataframe imports
-2. Update configuration to use `pai.config.set()`
-3. Use the new `.chat()` method syntax
-
-Example migration:
-
-```python
-# Old code
-from pandasai import SmartDataframe
-smart_df = SmartDataframe(df, config={"enable_cache": False})
-
-# New code
-import pandasai as pai
-pai.config.set({"enable_cache": False})
-df = pai.DataFrame(df)
 ```
