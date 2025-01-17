@@ -20,11 +20,11 @@ Example migration:
 ```python
 # Old code
 from pandasai import SmartDataframe
-smart_df = SmartDataframe(df, config={"enable_cache": False})
+smart_df = SmartDataframe(df)
 
 # New code
 import pandasai as pai
-pai.config.set({"enable_cache": False})
+
 df = pai.DataFrame(df)
 ```
 
@@ -60,7 +60,6 @@ SmartDataframe accepted configuration options through its constructor:
 ```python
 smart_df = SmartDataframe(df, config={
     "llm": llm,                              # LLM instance
-    "enable_cache": True,                    # Enable/disable cache
     "save_logs": True,                       # Save conversation logs
     "verbose": False                         # Print detailed logs
 })

@@ -117,7 +117,7 @@ df.chat(
 You can also pass in multiple dataframes to PandaAI and ask questions relating them.
 
 ```python
-from pandasai import Agent
+import pandasai as pai
 
 employees_data = {
     'EmployeeID': [1, 2, 3, 4, 5],
@@ -137,8 +137,7 @@ salaries_df = pai.DataFrame(salaries_data)
 # You can get your free API key signing up at https://app.pandabi.ai (you can also configure it in your .env file)
 pai.api_key.set("your-pai-api-key")
 
-agent = Agent([employees_df, salaries_df])
-agent.chat("Who gets paid the most?")
+pai.chat("Who gets paid the most?", employees_df, salaries_df)
 ```
 
 ```
@@ -149,17 +148,19 @@ You can find more examples in the [examples](examples) directory.
 
 ## 📜 License
 
-PandaAI is available under the MIT expat license, except for the `pandasai/ee` directory (which has it's [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE) if applicable.
+PandaAI is available under the MIT expat license, except for the `pandasai/ee` directory of this repository, which has its [license here](https://github.com/Sinaptik-AI/pandas-ai/blob/master/pandasai/ee/LICENSE).
 
-If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offering, [contact us](https://forms.gle/JEUqkwuTqFZjhP7h8).
+If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offering, [contact us](https://getpanda.ai/pricing).
 
 ## Resources
+
+> **Beta Notice**  
+> Release v3 is currently in beta. The following documentation and examples reflect he features and functionality in progress and may change before the final release.
+
 - [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
 - [Examples](examples) for example notebooks
 - [Discord](https://discord.gg/KYKj9F2FRH) for discussion with the community and PandaAI team
 
-> **Beta Notice**  
-> Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
 
 ## 🤝 Contributing
 
