@@ -106,7 +106,7 @@ class Agent:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
         code_executor = CodeExecutor(self._state.config)
-        code_executor.add_to_env("execute_sql_query", self.execute_sql_query)
+        code_executor.add_to_env("execute_sql_query", self._execute_sql_query)
 
         return code_executor.execute_and_return_result(code)
 
@@ -125,7 +125,7 @@ class Agent:
         except duckdb.Error as e:
             raise RuntimeError(f"SQL execution failed: {e}") from e
 
-    def execute_sql_query(self, query: str) -> pd.DataFrame:
+    def _execute_sql_query(self, query: str) -> pd.DataFrame:
         """
         Executes an SQL query on registered DataFrames.
 

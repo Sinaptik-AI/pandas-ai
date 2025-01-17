@@ -1,11 +1,8 @@
 import logging
-import sys
-from datetime import datetime, timedelta
 from unittest.mock import mock_open, patch
 
 import pandas as pd
 import pytest
-import yaml
 
 from pandasai.data_loader.loader import DatasetLoader
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema

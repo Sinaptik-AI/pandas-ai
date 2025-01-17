@@ -1,12 +1,14 @@
 import os
 from typing import Optional
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pandas as pd
 import pytest
 
+from pandasai import DatasetLoader, VirtualDataFrame
 from pandasai.agent.base import Agent
 from pandasai.config import Config, ConfigManager
+from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import CodeExecutionError
 from pandasai.llm.fake import FakeLLM
@@ -14,6 +16,24 @@ from pandasai.llm.fake import FakeLLM
 
 class TestAgent:
     "Unit tests for Agent class"
+
+    @pytest.fixture
+    def mysql_schema(self):
+        raw_schema = {
+            "name": "countries",
+            "source": {
+                "type": "mysql",
+                "connection": {
+                    "host": "localhost",
+                    "port": 3306,
+                    "database": "test_db",
+                    "user": "test_user",
+                    "password": "test_password",
+                },
+                "table": "countries",
+            },
+        }
+        return SemanticLayerSchema(**raw_schema)
 
     @pytest.fixture
     def sample_df(self) -> DataFrame:
@@ -429,3 +449,52 @@ print('Cached result: US has the highest GDP.')"""
         codes = ["code1", "code2"]
         with pytest.raises(ValueError):
             agent.train(codes)
+
+    def test_execute_local_sql_query_success(self, agent):
+        query = "SELECT count(*) as total from countries;"
+        expected_result = pd.DataFrame({"total": [4]})
+        result = agent._execute_local_sql_query(query)
+        pd.testing.assert_frame_equal(result, expected_result)
+
+    def test_execute_local_sql_query_failure(self, agent):
+        with pytest.raises(RuntimeError, match="SQL execution failed"):
+            agent._execute_local_sql_query("wrong query;")
+
+    def test_execute_sql_query_success_local(self, agent):
+        query = "SELECT count(*) as total from countries;"
+        expected_result = pd.DataFrame({"total": [4]})
+        result = agent._execute_sql_query(query)
+        pd.testing.assert_frame_equal(result, expected_result)
+
+    @patch("os.path.exists", return_value=True)
+    def test_execute_sql_query_success_virtual_dataframe(
+        self, mock_exists, agent, mysql_schema, sample_df
+    ):
+        query = "SELECT count(*) as total from countries;"
+        loader = DatasetLoader()
+        expected_result = pd.DataFrame({"total": [4]})
+
+        with patch(
+            "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
+        ), patch(
+            "pandasai.data_loader.loader.DatasetLoader.execute_query"
+        ) as mock_query:
+            # Set up the mock for both the sample data and the query result
+            mock_query.side_effect = [sample_df, expected_result]
+
+            virtual_dataframe = loader.load("test/users")
+            agent._state.dfs = [virtual_dataframe]
+
+            pd.testing.assert_frame_equal(virtual_dataframe.head(), sample_df)
+            result = agent._execute_sql_query(query)
+            pd.testing.assert_frame_equal(result, expected_result)
+
+            # Verify execute_query was called appropriately
+            assert mock_query.call_count == 2  # Once for head(), once for the SQL query
+
+    def test_execute_sql_query_error_no_dataframe(self, agent):
+        query = "SELECT count(*) as total from countries;"
+        agent._state.dfs = None
+
+        with pytest.raises(ValueError, match="No DataFrames available"):
+            agent._execute_sql_query(query)
