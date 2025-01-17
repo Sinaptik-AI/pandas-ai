@@ -15,12 +15,15 @@ When working with local files (CSV, Parquet) or datasets based on such files, th
 - Ideal for local file processing or cross-source analysis
 
 ```python
-import pandas as pd
-from pandasai import SmartDataframe
+import pandasai as pai
 
 # Load local files as materialized dataframes
-df = pd.read_csv("local_file.csv")
-smart_df = SmartDataframe(df)
+file= pai.read_csv("local_file.csv")
+
+df = pai.create(path="organization/dataset-name",
+    name="dataset-name",
+    df = file,
+    description="describe your dataset")
 ```
 
 ## Virtualized Dataframes
@@ -31,7 +34,7 @@ When loading remote datasets, dataframes are virtualized by default, providing:
 - Optimal for remote data sources
 
 ```python
-from pandasai import load
+import pandasai as pai
 
 # Load remote datasets (virtualized by default)
-df = load("organization/dataset-name")
+df = pai.load("organization/dataset-name")

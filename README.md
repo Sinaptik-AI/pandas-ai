@@ -27,14 +27,14 @@ import pandasai as pai
 
 pai.api_key.set("your-pai-api-key")
 
-df = pai.read_csv("./filepath.csv")
+file = pai.read_csv("./filepath.csv")
 
-df = pai.create(path="your-organization/dataset-name",
-    df=df,
+dataset = pai.create(path="your-organization/dataset-name",
+    df=file,
     name="dataset-name",
     description="dataset-description")
 
-df.push()
+dataset.push()
 ```
 Your team can now access and query this data using natural language through the platform.
 

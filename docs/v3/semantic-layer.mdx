@@ -21,12 +21,12 @@ The simplest way to create a semantic layer for CSV files is using the `create` 
 ```python
 import pandasai as pai
 
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 df = pai.create(
     path="company/sales-data",         # Format: "organization/dataset"
     name="sales-data",                 # Human-readable name
-    df = df,                           # Input Dataframe
+    df = file,                           # Input Dataframe
     description="Sales data from our retail stores",  # Optional description
     columns=[
         {
@@ -48,7 +48,7 @@ df = pai.create(
 The name field identifies your dataset in the create method.
 
 ```python
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 pai.create(
     path="company/sales-data",
@@ -67,7 +67,7 @@ pai.create(
 The path uniquely identifies your dataset in the PandaAI ecosystem using the format "organization/dataset".
 
 ```python
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 pai.create(
     path="acme-corp/sales-data",  # Format: "organization/dataset"
@@ -87,11 +87,11 @@ pai.create(
 The input dataframe that contains your data, typically created using `pai.read_csv()`.
 
 ```python
-df = pai.read_csv("data.csv")  # Create the input dataframe
+file = pai.read_csv("data.csv")  # Create the input dataframe
 
 pai.create(
     path="acme-corp/sales-data",
-    df=df,  # Pass your dataframe here
+    df=file,  # Pass your dataframe here
     ...
 )
 ```
@@ -105,12 +105,12 @@ pai.create(
 A clear text description that helps others understand the dataset's contents and purpose.
 
 ```python
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 pai.create(
     path="company/sales-data",
     name="sales-data",
-    df = df,
+    df = file,
     description="Daily sales transactions from all retail stores, including transaction IDs, dates, and amounts",
     ...
 )
@@ -129,12 +129,12 @@ Define the structure and metadata of your dataset's columns to help PandaAI unde
 When specified, only the declared columns will be included, allowing you to select specific columns for your semantic layer.
 
 ```python
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 pai.create(
     path="company/sales-data",
     name="sales-data",
-    df = df,
+    df = file,
     description="Daily sales transactions from all retail stores",
     columns=[
         {

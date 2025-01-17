@@ -2,6 +2,12 @@
 title: "Chat and cache"
 description: "Learn how to use PandaAI's powerful chat functionality for natural language data analysis and understand how caching improves performance"
 ---
+
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
+
 ## Chat
 
 The `.chat()` method is PandaAI's core feature that enables natural language interaction with your data. It allows you to:
@@ -18,7 +24,7 @@ import pandasai as pai
 
 df_customers = pai.load("company/customers")
 
-response = df.chat("Which are our top 5 customers?")
+response = df_customers.chat("Which are our top 5 customers?")
 ```
 
 ### Chat with multiple DataFrames

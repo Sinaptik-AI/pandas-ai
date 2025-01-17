@@ -34,10 +34,10 @@ pai.api_key.set("YOUR_PANDABI_API_KEY")
 import pandasai as pai
 
 # read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
+file = pai.read_csv("filepath")
 
 # ask questions
-df.chat('Which are the top 5 countries by sales?')
+file.chat('Which are the top 5 countries by sales?')
 ```
 
 When you ask a question, PandaAI will use the LLM to generate the answer and output a response.
@@ -58,11 +58,11 @@ This allows you to avoid reading the data every time.
 import pandasai as pai
 
 # read csv - replace "filepath" with your file path
-df = pai.read_csv("filepath")
+file = pai.read_csv("filepath")
 
 df = pai.create(path="organization/dataset-name",
     name="dataset-name",
-    df = df,
+    df = file,
     description="describe your dataset")
 ```
 
@@ -108,4 +108,3 @@ df_orders = pai.load("company/orders")
 df_products = pai.load("company/products")
 
 response = pai.chat('Who are our top 5 customers and what products do they buy most frequently?', df_customers, df_orders, df_products)
-```
