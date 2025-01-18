@@ -94,7 +94,7 @@ agent.chat('Which are the top 5 countries by sales?')
 ```
 
 ```
-China, United States, Japan, Germany, Australia
+The top 5 countries by sales are: China, United States, Japan, Germany, United Kingdom
 ```
 
 ---
