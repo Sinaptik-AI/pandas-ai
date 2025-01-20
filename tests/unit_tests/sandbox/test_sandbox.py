@@ -74,12 +74,15 @@ result = execute_sql_query(sql_query)
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value
         mock_container = mock_client.containers.run.return_value
-        mock_container.exec_run.return_value = (0, (b"{'result': 42}", b""))
+        mock_container.exec_run.return_value = (
+            0,
+            (b'{"type": "number", "value": 42}', b""),
+        )
         sandbox.container = mock_container
 
-        code = "result = {'result': 42}"
+        code = 'result = {"type": "number", "value": 42}'
         result = sandbox._exec_code(code, dfs=self.dfs)
-        self.assertEqual(result, "{'result': 42}")
+        self.assertEqual(result, {"type": "number", "value": 42})
 
     @patch("pandasai.sandbox.docker_sandbox.docker.from_env")
     def test_exec_code_with_sql_queries(self, mock_docker):
@@ -88,7 +91,7 @@ result = execute_sql_query(sql_query)
         mock_container = mock_client.containers.run.return_value
         mock_container.exec_run.return_value = (
             0,
-            (b"{'type': 'number', 'value': 42}", b""),
+            (b'{"type": "number", "value": 42}', b""),
         )
         sandbox.container = mock_container
 
@@ -103,7 +106,7 @@ total_artists = total_artists_df['total_artists'].iloc[0]
 result = {'type': 'number', 'value': total_artists}
         """
         result = sandbox._exec_code(code, dfs=self.dfs)
-        self.assertEqual(result, "{'type': 'number', 'value': 42}")
+        self.assertEqual(result, {"type": "number", "value": 42})
 
 
 if __name__ == "__main__":

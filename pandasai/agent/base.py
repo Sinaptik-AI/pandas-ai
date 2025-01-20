@@ -20,6 +20,7 @@ from pandasai.exceptions import (
     InvalidLLMOutputType,
     MissingVectorStoreError,
 )
+from pandasai.sandbox import Sandbox
 from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import Config
@@ -40,6 +41,7 @@ class Agent:
         memory_size: Optional[int] = 10,
         vectorstore: Optional[VectorStore] = None,
         description: str = None,
+        sandbox: Sandbox = None,
     ):
         """
         Args:
@@ -65,6 +67,7 @@ class Agent:
 
         self._code_generator = CodeGenerator(self._state)
         self._response_parser = ResponseParser()
+        self._sandbox = sandbox
 
     def chat(self, query: str, output_type: Optional[str] = None):
         """
@@ -101,6 +104,9 @@ class Agent:
     def execute_code(self, code: str) -> dict:
         """Execute the generated code."""
         self._state.logger.log(f"Executing code: {code}")
+        if self._sandbox:
+            return self._sandbox.execute(code)
+
         code_executor = CodeExecutor(self._state.config)
         code_executor.add_to_env(
             "execute_sql_query", self._state.dfs[0].execute_sql_query

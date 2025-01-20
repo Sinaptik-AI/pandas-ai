@@ -1,16 +1,19 @@
 import ast
 import io
+import json
 import os
+import re
 import tarfile
 import uuid
 
 import docker
+import pandas as pd
 
 from .sandbox import Sandbox
 
 
 class DockerSandbox(Sandbox):
-    def __init__(self, image_name, dockerfile_path=None):
+    def __init__(self, image_name="pandaai-sandbox", dockerfile_path=None):
         super().__init__()
         self.dockerfile_path = dockerfile_path or os.path.join(
             os.path.dirname(__file__)
@@ -22,6 +25,10 @@ class DockerSandbox(Sandbox):
         # Build the image if it does not exist
         if not self._image_exists():
             self._build_image()
+
+        self._helper_code = self._read_start_code(
+            os.path.join(os.path.dirname(__file__), "serializer.py")
+        )
 
     def _image_exists(self):
         try:
@@ -88,11 +95,29 @@ class DockerSandbox(Sandbox):
 
         return sql_queries
 
+    def _compile_code(self, code: str) -> str:
+        try:
+            return compile(code, "<string>", "exec")
+        except SyntaxError as e:
+            raise SyntaxError(f"Syntax error in code: {e}") from e
+
+    def _read_start_code(self, file_path: str) -> str:
+        with open(file_path, "r") as file:
+            return file.read()
+
     def _exec_code(self, code, dfs):
         if not self.container:
             raise RuntimeError("Container is not running.")
 
         sql_queries = self.extract_sql_queries_from_code(code)
+
+        # check if chart replace path in the code
+        chart_path = "/tmp/temp_chart.png"
+        code = re.sub(
+            r"""(['"])([^'"]*\.png)\1""",
+            lambda m: f"{m.group(1)}{chart_path}{m.group(1)}",
+            code,
+        )
 
         datasets_map = {}
         for sql_query in sql_queries:
@@ -101,28 +126,46 @@ class DockerSandbox(Sandbox):
             self.pass_csv(query_df, filename=filename)
             datasets_map[sql_query] = filename
 
+        start_code = self._helper_code
+
+        dataset_map = f"""
+datasets_map = {datasets_map}
+
+def execute_sql_query(sql_query):
+    filename = datasets_map[sql_query]
+    filepath = os.path.join("/tmp", filename)
+    return pd.read_csv(filepath)
+"""
+        end_code = """
+print(parser.serialize(result))
+"""
+
+        code = start_code + dataset_map + code + end_code
+
+        self._compile_code(code)
+
+        code = code.replace('"', '\\"')
+
         exit_code, output = self.container.exec_run(
             cmd=f'python -c "{code}"', demux=True
         )
 
-        # sql_query = "SELECT ...."
-        # list []
-        # result = execute_sql_query("....")
-        # ...
-        # {
-        #     ...
-        # }
-        # def execute_sql_query(sql_query):
-
-        #     return pd.read_csv(filepath)
-
-        # result = execute_sql_query(sql_query)
-        # orginal
-        # ...
-
         if exit_code != 0:
             raise RuntimeError(f"Error executing code: {output[1].decode()}")
-        return output[0].decode()
+
+        response = output[0].decode()
+        result = json.loads(response)
+
+        if result["type"] == "dataframe":
+            result["value"] = pd.DataFrame(result["value"])
+
+        elif result["type"] == "plot":
+            chart_path = result["value"]
+            with open(chart_path, "rb") as image_file:
+                image_data = image_file.read()
+            result["value"] = image_data
+
+        return result
 
     def pass_csv(self, csv_data, filename="file.csv"):
         if not self.container:
@@ -145,3 +188,7 @@ class DockerSandbox(Sandbox):
 
         # Transfer the tar archive to the container
         self.container.put_archive("/tmp", tar_stream)
+
+    def __del__(self):
+        self.container.stop()
+        self.container.remove()
