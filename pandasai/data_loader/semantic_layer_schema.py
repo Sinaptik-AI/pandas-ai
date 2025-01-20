@@ -142,7 +142,7 @@ class SemanticLayerSchema(BaseModel):
 
     @model_validator(mode="after")
     def check_columns_relations(self):
-        column_re_check = r"^[a-zA-Z_]+\.[a-zA-Z_]+$"
+        column_re_check = r"^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$"
         is_view_column_name = partial(re.match, column_re_check)
 
         # unpack columns info
