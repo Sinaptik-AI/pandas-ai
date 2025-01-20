@@ -19,12 +19,14 @@ from ..constants import (
 )
 from .query_builder import QueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
+from .view_query_builder import ViewQueryBuilder
 
 
 class DatasetLoader:
     def __init__(self):
         self.schema: Optional[SemanticLayerSchema] = None
-        self.dataset_path = None
+        self.query_builder: Optional[QueryBuilder] = None
+        self.dataset_path: Optional[str] = None
 
     def load(self, dataset_path: str) -> DataFrame:
         """Load data based on the provided dataset path.
@@ -37,6 +39,11 @@ class DatasetLoader:
         """
         self.dataset_path = dataset_path
         self._load_schema()
+
+        if self.schema.source.view:
+            self.query_builder = ViewQueryBuilder(self.schema)
+        else:
+            self.query_builder = QueryBuilder(self.schema)
 
         source_type = self.schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:
@@ -139,13 +146,11 @@ class DatasetLoader:
         return self._read_csv_or_parquet(filepath, source_type)
 
     def load_head(self) -> pd.DataFrame:
-        query_builder = QueryBuilder(self.schema)
-        query = query_builder.get_head_query()
+        query = self.query_builder.get_head_query()
         return self.execute_query(query)
 
     def get_row_count(self) -> int:
-        query_builder = QueryBuilder(self.schema)
-        query = query_builder.get_row_count()
+        query = self.query_builder.get_row_count()
         result = self.execute_query(query)
         return result.iloc[0, 0]
 
@@ -154,16 +159,18 @@ class DatasetLoader:
         source_type = source.type
         connection_info = source.connection
 
+        formatted_query = self.query_builder.format_query(query)
+
         if not source_type:
             raise ValueError("Source type is missing in the schema.")
 
         load_function = self._get_loader_function(source_type)
 
         try:
-            return load_function(connection_info, query)
+            return load_function(connection_info, formatted_query)
         except Exception as e:
             raise RuntimeError(
-                f"Failed to execute query for source type '{source_type}' with query: {query}"
+                f"Failed to execute query for source type '{source_type}' with query: {formatted_query}"
             ) from e
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -199,5 +206,6 @@ class DatasetLoader:
         """
         new_loader = DatasetLoader()
         new_loader.schema = copy.deepcopy(self.schema)
+        new_loader.query_builder = copy.deepcopy(self.query_builder)
         new_loader.dataset_path = self.dataset_path
         return new_loader
