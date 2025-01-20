@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from pandasai.config import Config, ConfigManager
 from pandasai.constants import DEFAULT_CACHE_DIRECTORY, DEFAULT_CHART_DIRECTORY
 from pandasai.core.cache import Cache
-from pandasai.data_loader.schema_validator import is_schema_source_same
+from pandasai.data_loader.semantic_layer_schema import is_schema_source_same
 from pandasai.exceptions import InvalidConfigError
 from pandasai.helpers.folder import Folder
 from pandasai.helpers.logger import Logger

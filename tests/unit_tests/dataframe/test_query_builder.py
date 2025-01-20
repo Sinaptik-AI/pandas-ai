@@ -47,11 +47,6 @@ class TestQueryBuilder:
                 },
                 "table": "users",
             },
-            "destination": {
-                "type": "local",
-                "format": "parquet",
-                "path": "users.parquet",
-            },
         }
         return SemanticLayerSchema(**raw_schema)
 

@@ -3,6 +3,10 @@ title: 'Semantic Layer'
 description: 'Turn raw data into semantic-enhanced and clean dataframes'
 ---
 
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
 ## What's the Semantic Layer?
 
 The semantic layer allows you to turn raw data into [dataframes](/v3/dataframes) you can ask questions to and [share with your team](/v3/share-dataframes) as conversational AI dashboards. It serves several important purposes:
@@ -14,18 +18,19 @@ The semantic layer allows you to turn raw data into [dataframes](/v3/dataframes)
 
 There are two ways to use the semantic layer:
 
-### For CSV files: using the save method
+### For CSV files: using the create method
 
-The simplest way to create a semantic layer for CSV files is using the `save` method:
+The simplest way to create a semantic layer for CSV files is using the `create` method:
 
 ```python
 import pandasai as pai
 
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
-df.save(
+df = pai.create(
     path="company/sales-data",         # Format: "organization/dataset"
     name="sales-data",                 # Human-readable name
+    df = file,                           # Input Dataframe
     description="Sales data from our retail stores",  # Optional description
     columns=[
         {
@@ -44,10 +49,12 @@ df.save(
 
 #### name
 
-The name field identifies your dataset in the save method.
+The name field identifies your dataset in the create method.
 
 ```python
-df.save(
+file = pai.read_csv("data.csv")
+
+pai.create(
     path="company/sales-data",
     name="sales-data",  # Unique, descriptive name
     ...
@@ -59,13 +66,55 @@ df.save(
 - Unique within your project
 - Examples: "sales-data", "customer-profiles"
 
+#### path
+
+The path uniquely identifies your dataset in the PandaAI ecosystem using the format "organization/dataset".
+
+```python
+file = pai.read_csv("data.csv")
+
+pai.create(
+    path="acme-corp/sales-data",  # Format: "organization/dataset"
+    ...
+)
+```
+
+**Type**: `str`
+- Must follow the format: "organization-identifier/dataset-identifier"
+- Organization identifier should be unique to your organization
+- Dataset identifier should be unique within your organization
+- Can be used both locally and with the PandaAI Data Platform
+- Examples: "acme-corp/sales-data", "my-org/customer-profiles"
+
+#### df
+
+The input dataframe that contains your data, typically created using `pai.read_csv()`.
+
+```python
+file = pai.read_csv("data.csv")  # Create the input dataframe
+
+pai.create(
+    path="acme-corp/sales-data",
+    df=file,  # Pass your dataframe here
+    ...
+)
+```
+
+**Type**: `DataFrame`
+- Must be a pandas DataFrame created with `pai.read_csv()`
+- Contains the raw data you want to enhance with semantic information
+- Required parameter for creating a semantic layer
+
 #### description
 A clear text description that helps others understand the dataset's contents and purpose.
 
 ```python
-df.save(
+file = pai.read_csv("data.csv")
+
+pai.create(
     path="company/sales-data",
     name="sales-data",
+    df = file,
     description="Daily sales transactions from all retail stores, including transaction IDs, dates, and amounts",
     ...
 )
@@ -77,14 +126,19 @@ df.save(
 - Any relevant context about data collection or usage
 - Optional but recommended for better data understanding
 
-
 #### columns
 Define the structure and metadata of your dataset's columns to help PandaAI understand your data better.
 
+**Note**: If the `columns` parameter is not provided, all columns from the input dataframe will be included in the semantic layer. 
+When specified, only the declared columns will be included, allowing you to select specific columns for your semantic layer.
+
 ```python
-df.save(
+file = pai.read_csv("data.csv")
+
+pai.create(
     path="company/sales-data",
     name="sales-data",
+    df = file,
     description="Daily sales transactions from all retail stores",
     columns=[
         {
@@ -184,15 +238,22 @@ columns:
 ```
 
 **Type**: `list[dict]`
-- Each dictionary represents a column
-- `name` (str): Name of the column
-- `type` (str): Data type of the column
-  - "string": IDs, names, categories
-  - "integer": counts, whole numbers
-  - "float": prices, percentages
-  - "datetime": timestamps, dates
-  - "boolean": flags, true/false values
-- `description` (str): Clear explanation of what the column represents
+- Each dictionary represents a column.
+- **Fields**:
+  - `name` (str): Name of the column.
+    - For tables: Use simple column names (e.g., `transaction_id`).
+  - `type` (str): Data type of the column.
+    - Supported types:
+      - `"string"`: IDs, names, categories.
+      - `"integer"`: Counts, whole numbers.
+      - `"float"`: Prices, percentages.
+      - `"datetime"`: Timestamps, dates.
+      - `"boolean"`: Flags, true/false values.
+  - `description` (str): Clear explanation of what the column represents.
+
+**Constraints**:
+1. Column names must be unique.
+2. For views, all column names must be in the format `[table].[column]`.
 
 #### transformations
 Apply transformations to your data to clean, convert, or anonymize it.
@@ -297,3 +358,52 @@ Specify the maximum number of records to load.
 
 ```yaml
 limit: 1000
+```
+
+### View Configuration
+
+The following sections detail all available configurations for view options in your `schema.yaml` file. Similar to views in SQL, you can define multiple tables and the relationships between them.
+
+#### Example Configuration
+
+```yaml
+name: table_heart
+source:
+  type: postgres
+  connection:
+    host: localhost
+    port: 5432
+    database: test
+    user: test
+    password: test
+  view: true
+columns:
+- name: parents.id
+- name: parents.name
+- name: parents.age
+- name: children.name
+- name: children.age
+relations:
+- name: parent_to_children
+  description: Relation linking the parent to its children
+  from: parents.id
+  to: children.id
+```
+
+---
+
+#### Constraints
+
+1. **Mutual Exclusivity**:
+   - A schema cannot define both `table` and `view` simultaneously.
+   - If `source.view` is `true`, then the schema represents a view.
+
+2. **Column Format**:
+   - For views:
+     - All columns must follow the format `[table].[column]`.
+     - `from` and `to` fields in `relations` must follow the `[table].[column]` format.
+     - Example: `parents.id`, `children.name`.
+
+3. **Relationships for Views**:
+   - Each table referenced in `columns` must have at least one relationship defined in `relations`.
+   - Relationships must specify `from` and `to` attributes in the `[table].[column]` format.

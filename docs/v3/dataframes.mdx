@@ -3,8 +3,12 @@ title: 'Semantic Dataframes'
 description: 'Working with semantic dataframes in PandaAI'
 ---
 
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
 Once you have turned raw data into semantic enhanced dataframes with the [semantic layer](/v3/semantic-layer), you can load them as either materialized or virtualized dataframes, depending on the data source. 
-Using the `.chat` method, you can ask questions and get responses and charts. 
+Using the [`.chat`](/v3/chat-and-output) method, you can ask questions and get responses and charts. 
 These dataframes can be [shared with your team](/v3/share-dataframes) by pushing them to our [data platform](/v3/ai-dashboards).
 
 ## Materialized Dataframes
@@ -15,12 +19,15 @@ When working with local files (CSV, Parquet) or datasets based on such files, th
 - Ideal for local file processing or cross-source analysis
 
 ```python
-import pandas as pd
-from pandasai import SmartDataframe
+import pandasai as pai
 
 # Load local files as materialized dataframes
-df = pd.read_csv("local_file.csv")
-smart_df = SmartDataframe(df)
+file= pai.read_csv("local_file.csv")
+
+df = pai.create(path="organization/dataset-name",
+    name="dataset-name",
+    df = file,
+    description="describe your dataset")
 ```
 
 ## Virtualized Dataframes
@@ -31,7 +38,7 @@ When loading remote datasets, dataframes are virtualized by default, providing:
 - Optimal for remote data sources
 
 ```python
-from pandasai import load
+import pandasai as pai
 
 # Load remote datasets (virtualized by default)
-df = load("organization/dataset-name")
+df = pai.load("organization/dataset-name")

@@ -3,6 +3,11 @@ title: 'Add Data Sources'
 description: 'Learn how to ingest data from various sources in PandaAI'
 ---
 
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
+
 ## What type of data does PandaAI support?
 PandaAI mission is to make data analysis and manipulation more efficient and accessible to everyone. You can work with data in various ways:
 
@@ -21,11 +26,13 @@ Loading data from CSV files is straightforward with PandaAI:
 import pandasai as pai
 
 # Basic CSV loading
-df = pai.read_csv("data.csv")
+file = pai.read_csv("data.csv")
 
 # Use the semantic layer on CSV
-df.save(
+df = pai.create(
+    path="company/sales-data",
     name="sales_data",
+    df = file,
     description="Sales data from our retail stores",
     columns={
         "transaction_id": {"type": "string", "description": "Unique identifier for each sale"},

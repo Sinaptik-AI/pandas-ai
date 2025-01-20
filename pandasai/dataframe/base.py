@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, Union
 from zipfile import ZipFile
 
 import pandas as pd
@@ -14,7 +14,6 @@ from pandasai.config import Config
 from pandasai.core.response import BaseResponse
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
-    Destination,
     SemanticLayerSchema,
     Source,
 )
@@ -38,14 +37,14 @@ class DataFrame(pd.DataFrame):
         config (Config): Configuration settings
     """
 
-    _metadata: ClassVar[list] = [
-        "name",
-        "description",
-        "schema",
-        "path",
-        "config",
+    _metadata = [
         "_agent",
         "_column_hash",
+        "config",
+        "description",
+        "name",
+        "path",
+        "schema",
     ]
 
     def __init__(
@@ -57,21 +56,22 @@ class DataFrame(pd.DataFrame):
         copy: bool | None = None,
         **kwargs,
     ) -> None:
+        _name: Optional[str] = kwargs.pop("name", None)
+        _schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
+        _description: Optional[str] = kwargs.pop("description", None)
+        _path: Optional[str] = kwargs.pop("path", None)
+
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
 
-        self.name: Optional[str] = kwargs.pop("name", None)
         self._column_hash = self._calculate_column_hash()
 
-        if not self.name:
-            self.name = f"table_{self._column_hash}"
+        self.name = _name or f"table_{self._column_hash}"
+        self.schema = _schema or DataFrame.get_default_schema(self)
+        self.description = _description
+        self.path = _path
 
-        self.description: Optional[str] = kwargs.pop("description", None)
-        self.path: Optional[str] = kwargs.pop("path", None)
-        schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
-
-        self.schema = schema
         self.config = pai.config.get()
         self._agent: Optional[Agent] = None
 
@@ -146,34 +146,6 @@ class DataFrame(pd.DataFrame):
 
     def get_head(self):
         return self.head()
-
-    @staticmethod
-    def _create_yml_template(
-        name, description, columns_dict: List[dict]
-    ) -> Dict[str, Any]:
-        """
-        Generate a .yml file with a simplified metadata template from a pandas DataFrame.
-
-        Args:
-            name: dataset name
-            description: dataset description
-            columns_dict: dictionary with info about columns of the dataframe
-        """
-
-        if columns_dict:
-            columns_dict = list(map(lambda column: Column(**column), columns_dict))
-
-        schema = SemanticLayerSchema(
-            name=name,
-            description=description,
-            columns=columns_dict,
-            source=Source(type="parquet", path="data.parquet"),
-            destination=Destination(
-                type="local", format="parquet", path="data.parquet"
-            ),
-        )
-
-        return schema.to_dict()
 
     def push(self):
         if self.path is None:
@@ -258,9 +230,33 @@ class DataFrame(pd.DataFrame):
 
         print(f"Dataset pulled successfully from path: {self.path}")
 
-    def execute_sql_query(self, query: str) -> pd.DataFrame:
-        import duckdb
+    @staticmethod
+    def get_column_type(column_dtype) -> Optional[str]:
+        """
+        Map pandas dtype to a valid column type.
+        """
+        if pd.api.types.is_string_dtype(column_dtype):
+            return "string"
+        elif pd.api.types.is_integer_dtype(column_dtype):
+            return "integer"
+        elif pd.api.types.is_float_dtype(column_dtype):
+            return "float"
+        elif pd.api.types.is_datetime64_any_dtype(column_dtype):
+            return "datetime"
+        elif pd.api.types.is_bool_dtype(column_dtype):
+            return "boolean"
+        else:
+            return None
 
-        db = duckdb.connect(":memory:")
-        db.register(self.name, self)
-        return db.query(query).df()
+    @classmethod
+    def get_default_schema(cls, dataframe: DataFrame) -> SemanticLayerSchema:
+        columns_list = [
+            Column(name=str(name), type=DataFrame.get_column_type(dtype))
+            for name, dtype in dataframe.dtypes.items()
+        ]
+
+        return SemanticLayerSchema(
+            name=dataframe.name,
+            source=Source(type="parquet", path="data.parquet"),
+            columns=columns_list,
+        )

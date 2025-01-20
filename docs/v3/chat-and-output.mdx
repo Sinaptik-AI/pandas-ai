@@ -1,11 +1,47 @@
 ---
-title: 'Output formats'
-description: 'Understanding the different output formats supported by PandaAI'
+title: "Chat and output formats"
+description: "Learn how to use PandaAI's powerful chat functionality and the output formats for natural language data analysis"
 ---
+
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
+## Chat
+
+The `.chat()` method is PandaAI's core feature that enables natural language interaction with your data. It allows you to:
+- Query your data using plain English
+- Generate visualizations and statistical analyses
+- Work with multiple DataFrames simultaneously
+
+For a more UI-based data analysis experience, check out our [Data Platform](/v3/ai-dashboards).
+
+### Basic Usage
+
+```python
+import pandasai as pai
+
+df_customers = pai.load("company/customers")
+
+response = df_customers.chat("Which are our top 5 customers?")
+```
+
+### Chat with multiple DataFrames
+
+```python
+import pandasai as pai
+
+df_customers = pai.load("company/customers")
+df_orders = pai.load("company/orders")
+df_products = pai.load("company/products")
+
+response = pai.chat('Who are our top 5 customers and what products do they buy most frequently?', df_customers, df_orders, df_products)
+```
+
+## Available Output Formats
 
 PandaAI supports multiple output formats for responses, each designed to handle different types of data and analysis results effectively. This document outlines the available output formats and their use cases.
 
-## Available Output Formats
 
 ### DataFrame Response
 Used when the result is a pandas DataFrame. This format preserves the tabular structure of your data and allows for further data manipulation.
@@ -28,7 +64,6 @@ The response format is automatically determined based on the type of analysis pe
 
 Example:
 ```python
-import pandas as pd
 import pandasai as pai
 
 df = pai.load("my-org/users")
