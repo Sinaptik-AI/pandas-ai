@@ -37,14 +37,14 @@ class DataFrame(pd.DataFrame):
         config (Config): Configuration settings
     """
 
-    _metadata: ClassVar[list] = [
-        "name",
-        "description",
-        "schema",
-        "path",
-        "config",
+    _metadata = [
         "_agent",
         "_column_hash",
+        "config",
+        "description",
+        "name",
+        "path",
+        "schema",
     ]
 
     def __init__(
@@ -56,21 +56,22 @@ class DataFrame(pd.DataFrame):
         copy: bool | None = None,
         **kwargs,
     ) -> None:
+        _name: Optional[str] = kwargs.pop("name", None)
+        _schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
+        _description: Optional[str] = kwargs.pop("description", None)
+        _path: Optional[str] = kwargs.pop("path", None)
+
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
 
-        self.name: Optional[str] = kwargs.pop("name", None)
         self._column_hash = self._calculate_column_hash()
 
-        if not self.name:
-            self.name = f"table_{self._column_hash}"
+        self.name = _name or f"table_{self._column_hash}"
+        self.schema = _schema or DataFrame.get_default_schema(self)
+        self.description = _description
+        self.path = _path
 
-        schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
-        self.schema = schema or DataFrame.get_default_schema(self)
-
-        self.description: Optional[str] = kwargs.pop("description", None)
-        self.path: Optional[str] = kwargs.pop("path", None)
         self.config = pai.config.get()
         self._agent: Optional[Agent] = None
 

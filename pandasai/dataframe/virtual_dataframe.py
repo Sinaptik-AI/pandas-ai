@@ -13,14 +13,17 @@ if TYPE_CHECKING:
 
 
 class VirtualDataFrame(DataFrame):
-    _metadata: ClassVar[list] = [
-        "_loader",
-        "head",
-        "_head",
-        "schema",
-        "config",
+    _metadata = [
         "_agent",
         "_column_hash",
+        "_head",
+        "_loader",
+        "config",
+        "description",
+        "head",
+        "name",
+        "path",
+        "schema",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -34,6 +37,7 @@ class VirtualDataFrame(DataFrame):
             raise VirtualizationError("Schema is required for virtualization!")
 
         table_name = schema.source.table
+
         description = schema.description
 
         super().__init__(
@@ -47,7 +51,6 @@ class VirtualDataFrame(DataFrame):
     def head(self):
         if self._head is None:
             self._head = self._loader.load_head()
-
         return self._head
 
     @property
