@@ -83,7 +83,7 @@ class Source(BaseModel):
                     f"For local source type '{_type}', 'path' must be defined."
                 )
             if view:
-                raise ValueError("For local source type you can't use a view.")
+                raise ValueError("A view cannot be used with a local source type.")
         elif _type in REMOTE_SOURCE_TYPES:
             if not connection:
                 raise ValueError(
