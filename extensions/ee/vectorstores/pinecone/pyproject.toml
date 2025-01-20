@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-pinecone"
-version = "0.1.1"
+version = "0.1.2"
 description = "Pinecone integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = ">=3.0.0a0"
+pandasai = "^3.0.0-beta.0"
 pinecone-client = "^3.0.0"
 numpy = "1.23.2"
 sentence-transformers = "^2.2.2"

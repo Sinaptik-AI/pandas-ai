@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-ibm"
-version = "0.1.1"
+version = "0.1.2"
 description = "IBM integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-pandasai = ">=3.0.0a0"
+pandasai = "^3.0.0-beta.0"
 ibm-watsonx-ai = "^1.1.0"
 numpy = "1.23.2"
 
