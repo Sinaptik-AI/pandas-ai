@@ -91,6 +91,29 @@ class TestSemanticLayerSchema:
             },
         }
 
+    @pytest.fixture
+    def mysql_view_schema(self):
+        return {
+            "name": "Users",
+            "columns": [
+                {"name": "parents.id"},
+                {"name": "parents.name"},
+                {"name": "children.name"},
+            ],
+            "relations": [{"from": "parents.id", "to": "children.id"}],
+            "source": {
+                "type": "mysql",
+                "connection": {
+                    "host": "localhost",
+                    "port": 3306,
+                    "database": "test_db",
+                    "user": "test_user",
+                    "password": "test_password",
+                },
+                "view": "true",
+            },
+        }
+
     def test_valid_schema(self, sample_schema):
         schema = SemanticLayerSchema(**sample_schema)
 
@@ -111,6 +134,14 @@ class TestSemanticLayerSchema:
         assert schema.order_by == ["created_at DESC"]
         assert schema.limit == 100
         assert len(schema.transformations) == 2
+        assert schema.source.type == "mysql"
+
+    def test_valid_mysql_view_schema(self, mysql_view_schema):
+        schema = SemanticLayerSchema(**mysql_view_schema)
+
+        assert schema.name == "Users"
+        assert len(schema.columns) == 3
+        assert schema.source.view == True
         assert schema.source.type == "mysql"
 
     def test_missing_source_path(self, sample_schema):
@@ -203,3 +234,51 @@ class TestSemanticLayerSchema:
         schema2 = SemanticLayerSchema(**sample_schema)
 
         assert is_schema_source_same(schema1, schema2) is False
+
+    def test_invalid_source_view_for_local_type(self, sample_schema):
+        sample_schema["source"]["view"] = True
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**sample_schema)
+
+    def test_invalid_source_view_and_table(self, mysql_schema):
+        mysql_schema["source"]["view"] = True
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_schema)
+
+    def test_invalid_source_missing_view_or_table(self, mysql_schema):
+        mysql_schema["source"].pop("table")
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_schema)
+
+    def test_invalid_duplicated_columns(self, sample_schema):
+        sample_schema["columns"].append(sample_schema["columns"][0])
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**sample_schema)
+
+    def test_invalid_wrong_column_format_in_view(self, mysql_view_schema):
+        mysql_view_schema["columns"][0]["name"] = "parentsid"
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_view_schema)
+
+    def test_invalid_wrong_column_format(self, sample_schema):
+        sample_schema["columns"][0]["name"] = "parents.id"
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**sample_schema)
+
+    def test_invalid_wrong_relation_format_in_view(self, mysql_view_schema):
+        mysql_view_schema["relations"][0]["to"] = "parentsid"
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_view_schema)
+
+    def test_invalid_uncovered_columns_in_view(self, mysql_view_schema):
+        mysql_view_schema.pop("relations")
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_view_schema)

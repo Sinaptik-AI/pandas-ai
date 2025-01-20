@@ -238,15 +238,22 @@ columns:
 ```
 
 **Type**: `list[dict]`
-- Each dictionary represents a column
-- `name` (str): Name of the column
-- `type` (str): Data type of the column
-  - "string": IDs, names, categories
-  - "integer": counts, whole numbers
-  - "float": prices, percentages
-  - "datetime": timestamps, dates
-  - "boolean": flags, true/false values
-- `description` (str): Clear explanation of what the column represents
+- Each dictionary represents a column.
+- **Fields**:
+  - `name` (str): Name of the column.
+    - For tables: Use simple column names (e.g., `transaction_id`).
+  - `type` (str): Data type of the column.
+    - Supported types:
+      - `"string"`: IDs, names, categories.
+      - `"integer"`: Counts, whole numbers.
+      - `"float"`: Prices, percentages.
+      - `"datetime"`: Timestamps, dates.
+      - `"boolean"`: Flags, true/false values.
+  - `description` (str): Clear explanation of what the column represents.
+
+**Constraints**:
+1. Column names must be unique.
+2. For views, all column names must be in the format `[table].[column]`.
 
 #### transformations
 Apply transformations to your data to clean, convert, or anonymize it.
@@ -351,3 +358,52 @@ Specify the maximum number of records to load.
 
 ```yaml
 limit: 1000
+```
+
+### View Configuration
+
+The following sections detail all available configurations for view options in your `schema.yaml` file. Similar to views in SQL, you can define multiple tables and the relationships between them.
+
+#### Example Configuration
+
+```yaml
+name: table_heart
+source:
+  type: postgres
+  connection:
+    host: localhost
+    port: 5432
+    database: test
+    user: test
+    password: test
+  view: true
+columns:
+- name: parents.id
+- name: parents.name
+- name: parents.age
+- name: children.name
+- name: children.age
+relations:
+- name: parent_to_children
+  description: Relation linking the parent to its children
+  from: parents.id
+  to: children.id
+```
+
+---
+
+#### Constraints
+
+1. **Mutual Exclusivity**:
+   - A schema cannot define both `table` and `view` simultaneously.
+   - If `source.view` is `true`, then the schema represents a view.
+
+2. **Column Format**:
+   - For views:
+     - All columns must follow the format `[table].[column]`.
+     - `from` and `to` fields in `relations` must follow the `[table].[column]` format.
+     - Example: `parents.id`, `children.name`.
+
+3. **Relationships for Views**:
+   - Each table referenced in `columns` must have at least one relationship defined in `relations`.
+   - Relationships must specify `from` and `to` attributes in the `[table].[column]` format.
