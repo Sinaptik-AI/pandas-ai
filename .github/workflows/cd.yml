@@ -24,6 +24,8 @@ jobs:
       - name: Install Poetry and dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry self update
           pip install requests
 
       - name: Build and publish main package
