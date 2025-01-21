@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-chromadb"
-version = "0.1.1"
+version = "0.1.2"
 description = "ChromaDB integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = ">=3.0.0a0"
+pandasai = ">=3.0.0-beta.0"
 chromadb = "^0.4.22"
 numpy = "1.23.2"
 pydantic = "^2.0.0"

@@ -7,6 +7,11 @@ repos:
         args: [--fix, --select=I, pandasai, examples, tests]
       - id: ruff-format
         name: ruff-format
+  - repo: https://github.com/python-poetry/poetry
+    rev: 2.0.1
+    hooks:
+      - id: poetry-check  # Ensures your `pyproject.toml` is valid
+      - id: poetry-lock   # Ensures the `poetry.lock` file is in sync with `pyproject.toml`
   - repo: local
     hooks:
       - id: install-deps

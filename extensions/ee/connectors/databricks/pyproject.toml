@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-databricks"
-version = "0.1.1"
+version = "0.1.2"
 description = "Databricks connector integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = "^3.0.0a0"
+pandasai = ">=3.0.0-beta.0"
 pandasai-sql = "^0.1.0"
 pyarrow = "^14.0.1"
 databricks-sql-connector = {extras = ["sqlalchemy"], version = "^3.6.0"}
