@@ -11,14 +11,14 @@ class Sandbox:
     def stop(self):
         raise NotImplementedError("The stop method must be implemented by subclasses.")
 
-    def execute(self, code: str, enviroment: dict) -> dict:
+    def execute(self, code: str, environment: dict) -> dict:
         if not self._started:
             self.start()
-            return self._exec_code(code, enviroment)
+            return self._exec_code(code, environment)
 
-        return self._exec_code(code, enviroment)
+        return self._exec_code(code, environment)
 
-    def _exec_code(self, code: str, enviroment: dict) -> dict:
+    def _exec_code(self, code: str, environment: dict) -> dict:
         raise NotImplementedError(
             "The exec_code method must be implemented by subclasses."
         )

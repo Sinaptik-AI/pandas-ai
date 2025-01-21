@@ -1,4 +1,4 @@
-# Intall pandasai docker using
+# Install pandasai docker using
 # pip install pandasai-docker
 from pandasai_docker import DockerSandbox
 from pandasai_openai.openai import OpenAI

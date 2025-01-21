@@ -80,12 +80,12 @@ class DockerSandbox(Sandbox):
         with open(file_path, "r") as file:
             return file.read()
 
-    def _exec_code(self, code: str, enviroment: dict) -> dict:
+    def _exec_code(self, code: str, environment: dict) -> dict:
         """Execute Python code in a Docker container.
 
         Args:
             code (str): Code to execute.
-            enviroment (dict): Environment variables to pass to the container.
+            environment (dict): Environment variables to pass to the container.
 
         Returns:
             dict: Result of the code execution.
@@ -113,7 +113,7 @@ class DockerSandbox(Sandbox):
         # Execute SQL queries, save the query results to CSV files
         datasets_map = {}
         for sql_query in sql_queries:
-            execute_sql_query_func = enviroment.get("execute_sql_query")
+            execute_sql_query_func = environment.get("execute_sql_query")
             if execute_sql_query_func is None:
                 raise RuntimeError(
                     "execute_sql_query function is not defined in the environment."
