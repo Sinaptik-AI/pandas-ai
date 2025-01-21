@@ -19,9 +19,7 @@ class Sandbox:
         return self._exec_code(code, environment)
 
     def _exec_code(self, code: str, environment: dict) -> dict:
-        raise NotImplementedError(
-            "Subclasses must implement the _exec_code method."
-        )
+        raise NotImplementedError("Subclasses must implement the _exec_code method.")
 
     def transfer_file(self, csv_data, filename="file.csv"):
         raise NotImplementedError(
