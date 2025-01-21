@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-local"
-version = "0.1.1"
+version = "0.1.2"
 description = "Local LLM integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = ">=3.0.0a0"
+pandasai = "^3.0.0-beta.0"
 transformers = "^4.35.0"
 torch = "^2.1.0"
 numpy = "1.23.2"

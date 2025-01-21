@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-snowflake"
-version = "0.1.2"
+version = "0.1.3"
 description = "Snowflake connector integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-pandasai = "^3.0.0a0"
+pandasai = "^3.0.0-beta.0"
 pandasai-sql = "^0.1.0"
 snowflake-sqlalchemy = "^1.5.0"
 
