@@ -7,8 +7,8 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-pandasai = "^3.0.0-beta.0"
+python = ">=3.9,<3.12"
+pandasai = ">=3.0.0-beta.0"
 sqlalchemy = "^2.0.0"
 numpy = ">=1.23.2,<2.0.0"
 
