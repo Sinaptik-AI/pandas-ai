@@ -9,7 +9,7 @@ class ViewQueryBuilder(QueryBuilder):
         super().__init__(schema)
 
     def format_query(self, query):
-        return f"{self._get_with_statement()} {query}"
+        return f"{self._get_with_statement()}{query}"
 
     def build_query(self) -> str:
         columns = self._get_columns()
@@ -34,16 +34,21 @@ class ViewQueryBuilder(QueryBuilder):
     def _get_with_statement(self):
         relations = self.schema.relations
         first_table = relations[0].from_.split(".")[0]
-        query = f" WITH {self.schema.name} AS ( SELECT \n"
-        query += ", ".join(
-            [
-                f"{col.name} AS {col.name.replace('.', '_')}"
-                for col in self.schema.columns
-            ]
-        )
-        query += f"\n FROM {first_table}"
+        query = f"WITH {self.schema.name} AS ( SELECT\n"
+
+        if self.schema.columns:
+            query += ", ".join(
+                [
+                    f"{col.name} AS {col.name.replace('.', '_')}"
+                    for col in self.schema.columns
+                ]
+            )
+        else:
+            query += "*"
+
+        query += f"\nFROM {first_table}"
         for relation in relations:
             to_table = relation.to.split(".")[0]
-            query += f"\n JOIN {to_table} ON {relation.from_} = {relation.to}"
+            query += f"\nJOIN {to_table} ON {relation.from_} = {relation.to}"
         query += ")\n"
         return query
