@@ -53,7 +53,11 @@ class DockerSandbox(Sandbox):
                 f"Starting a Docker container from the image '{self._image_name}'"
             )
             self._container = self._client.containers.run(
-                self._image_name, command="sleep infinity", detach=True, tty=True
+                self._image_name,
+                command="sleep infinity",
+                network_disabled=True,
+                detach=True,
+                tty=True,
             )
             logger.info(
                 f"Started a Docker container with id '{self._container.id}' from the image '{self._image_name}'"
@@ -122,7 +126,7 @@ class DockerSandbox(Sandbox):
             query_df = execute_sql_query_func(sql_query)
             filename = f"{uuid.uuid4().hex}.csv"
             # Pass the files to the container for further processing
-            self.pass_csv(query_df, filename=filename)
+            self.transfer_file(query_df, filename=filename)
             datasets_map[sql_query] = filename
 
         # Add the datasets_map variable to the code
@@ -160,7 +164,7 @@ print(parser.serialize(result))
         response = output[0].decode()
         return ResponseSerializer.deserialize(response, original_chart_path)
 
-    def pass_csv(self, csv_data, filename="file.csv") -> None:
+    def transfer_file(self, csv_data, filename="file.csv") -> None:
         if not self._container:
             raise RuntimeError("Container is not running.")
 

@@ -6,8 +6,8 @@ authors = ["ArslanSaleem <khan.arslan38@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-pandasai = ">=3.0.0a0"
+python = ">=3.8,<3.12"
+pandasai = ">=3.0.0-beta.0"
 numpy = ">=1.23.2,<2.0.0"
 docker = "^7.1.0"
 

@@ -18,7 +18,7 @@ class TestSandbox(unittest.TestCase):
                 exec(code, exec_globals)
                 return exec_globals
 
-            def pass_csv(self, csv_data):
+            def transfer_file(self, csv_data, filename):
                 return f"Processed CSV: {csv_data}"
 
         self.sandbox = SandboxImpl()
@@ -54,8 +54,8 @@ class TestSandbox(unittest.TestCase):
         self.assertIn("a", result)
         self.assertEqual(result["a"], 20)
 
-    def test_pass_csv(self):
-        result = self.sandbox.pass_csv("sample_data")
+    def test_transfer_file(self):
+        result = self.sandbox.transfer_file("sample_data", None)
         self.assertEqual(result, "Processed CSV: sample_data")
 
     def test_extract_sql_queries(self):
@@ -96,7 +96,7 @@ execute_sql_query(query)
         with self.assertRaises(NotImplementedError):
             sandbox_base._exec_code("", {})
         with self.assertRaises(NotImplementedError):
-            sandbox_base.pass_csv("data")
+            sandbox_base.transfer_file("data")
 
 
 if __name__ == "__main__":

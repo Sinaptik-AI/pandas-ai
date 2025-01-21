@@ -68,7 +68,11 @@ class TestDockerSandbox(unittest.TestCase):
 
         sandbox.start()
         mock_client.containers.run.assert_called_once_with(
-            self.image_name, command="sleep infinity", detach=True, tty=True
+            self.image_name,
+            command="sleep infinity",
+            network_disabled=True,
+            detach=True,
+            tty=True,
         )
 
         sandbox.stop()
@@ -84,14 +88,14 @@ result = execute_sql_query(sql_query)
         self.assertEqual(queries, ["SELECT COUNT(*) FROM table"])
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    def test_pass_csv(self, mock_docker):
+    def test_transfer_file(self, mock_docker):
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value
         mock_container = mock_client.containers.run.return_value
         sandbox._container = mock_container
 
         df = pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
-        sandbox.pass_csv(df, filename="test.csv")
+        sandbox.transfer_file(df, filename="test.csv")
 
         mock_container.put_archive.assert_called()
 
@@ -114,8 +118,8 @@ result = execute_sql_query(sql_query)
         self.assertEqual(result, {"type": "number", "value": 42})
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    @patch("pandasai_docker.docker_sandbox.DockerSandbox.pass_csv")
-    def test_exec_code_with_sql_queries(self, mock_pass_csv, mock_docker):
+    @patch("pandasai_docker.docker_sandbox.DockerSandbox.transfer_file")
+    def test_exec_code_with_sql_queries(self, mock_transfer_file, mock_docker):
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value
         mock_container = mock_client.containers.run.return_value
@@ -142,8 +146,10 @@ result = {'type': 'number', 'value': total_artists}
         )
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    @patch("pandasai_docker.docker_sandbox.DockerSandbox.pass_csv")
-    def test_exec_code_with_sql_queries_raise_no_env(self, mock_pass_csv, mock_docker):
+    @patch("pandasai_docker.docker_sandbox.DockerSandbox.transfer_file")
+    def test_exec_code_with_sql_queries_raise_no_env(
+        self, mock_transfer_file, mock_docker
+    ):
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value
         mock_container = mock_client.containers.run.return_value
@@ -166,10 +172,10 @@ result = {'type': 'number', 'value': total_artists}
             sandbox._exec_code(code, env)
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    @patch("pandasai_docker.docker_sandbox.DockerSandbox.pass_csv")
+    @patch("pandasai_docker.docker_sandbox.DockerSandbox.transfer_file")
     @patch("pandasai_docker.docker_sandbox.ResponseSerializer.deserialize")
     def test_exec_code_with_sql_queries_with_plot(
-        self, mock_deserialize, mock_pass_csv, mock_docker
+        self, mock_deserialize, mock_transfer_file, mock_docker
     ):
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value
@@ -212,10 +218,10 @@ result = {'type': 'plot', 'value': '/exports/charts/temp_chart.png'}
         )
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    @patch("pandasai_docker.docker_sandbox.DockerSandbox.pass_csv")
+    @patch("pandasai_docker.docker_sandbox.DockerSandbox.transfer_file")
     @patch("pandasai_docker.docker_sandbox.ResponseSerializer.deserialize")
     def test_exec_code_with_sql_queries_with_dataframe(
-        self, mock_deserialize, mock_pass_csv, mock_docker
+        self, mock_deserialize, mock_transfer_file, mock_docker
     ):
         sandbox = DockerSandbox(image_name=self.image_name)
         mock_client = mock_docker.return_value

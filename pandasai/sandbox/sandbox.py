@@ -23,9 +23,9 @@ class Sandbox:
             "The exec_code method must be implemented by subclasses."
         )
 
-    def pass_csv(self, csv_data):
+    def transfer_file(self, csv_data, filename="file.csv"):
         raise NotImplementedError(
-            "The pass_csv method must be implemented by subclasses."
+            "The transfer_file method must be implemented by subclasses."
         )
 
     def _extract_sql_queries_from_code(self, code) -> list[str]:
