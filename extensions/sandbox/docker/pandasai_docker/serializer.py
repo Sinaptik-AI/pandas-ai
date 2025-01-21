@@ -13,10 +13,8 @@ class ResponseSerializer:
     @staticmethod
     def serialize_dataframe(df: pd.DataFrame) -> dict:
         if df.empty:
-            return {"headers": [], "rows": []}
-
-        json_data = df.to_dict(orient="split")
-        return {"headers": json_data["columns"], "rows": json_data["data"]}
+            return {"columns": [], "data": [], "index": []}
+        return df.to_dict(orient="split")
 
     @staticmethod
     def serialize(result: dict) -> str:
@@ -31,6 +29,28 @@ class ResponseSerializer:
             result["value"] = base64.b64encode(image_data).decode()
 
         return json.dumps(result, cls=CustomEncoder)
+
+    @staticmethod
+    def deserialize(response: str, chart_path: str = None) -> dict:
+        result = json.loads(response)
+        if result["type"] == "dataframe":
+            json_data = result["value"]
+            result["value"] = pd.DataFrame(
+                data=json_data["data"],
+                index=json_data["index"],
+                columns=json_data["columns"],
+            )
+
+        elif result["type"] == "plot" and chart_path:
+            image_data = base64.b64decode(result["value"])
+
+            # Write the binary data to a file
+            with open(chart_path, "wb") as image_file:
+                image_file.write(image_data)
+
+            result["value"] = chart_path
+
+        return result
 
 
 class CustomEncoder(JSONEncoder):
