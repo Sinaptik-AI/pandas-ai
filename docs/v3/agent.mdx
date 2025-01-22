@@ -134,6 +134,56 @@ print(response)
 # The model will use the information provided in the training to generate a response
 ```
 
+## Using the Sandbox Environment
+
+To enhance security and protect against malicious code through prompt injection, PandaAI provides a sandbox environment for code execution. The sandbox runs your code in an isolated Docker container, ensuring that potentially harmful operations are contained.
+
+### Installation
+
+First, install the sandbox package:
+
+```bash
+pip install pandasai-docker
+```
+
+### Basic Usage
+
+Here's how to use the sandbox with your PandaAI agent:
+
+```python
+from pandasai import Agent
+from pandasai_docker import DockerSandbox
+
+# Initialize the sandbox
+sandbox = DockerSandbox()
+sandbox.start()
+
+# Create an agent with the sandbox
+df = pai.read_csv("data.csv")
+agent = Agent([df], sandbox=sandbox)
+
+# Chat with the agent - code will run in the sandbox
+response = agent.chat("Calculate the average sales")
+
+# Don't forget to stop the sandbox when done
+sandbox.stop()
+```
+
+### Customizing the Sandbox
+
+You can customize the sandbox environment by specifying a custom name and Dockerfile:
+
+```python
+sandbox = DockerSandbox(
+    "custom-sandbox-name",
+    "/path/to/custom/Dockerfile"
+)
+```
+
+<Note>
+The sandbox works offline and provides an additional layer of security for code execution. It's particularly useful when working with untrusted data or when you need to ensure that code execution is isolated from your main system.
+</Note>
+
 ## Troubleshooting
 
 In some cases, you might get an error like this: `No vector store provided. Please provide a vector store to train the agent`. It means no API key has been generated to use the `BambooVectorStore`.
