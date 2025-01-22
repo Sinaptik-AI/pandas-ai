@@ -117,7 +117,7 @@ class TestAgentChat:
 
     root_dir = Path(__file__).resolve().parents[3]
 
-    hear_stroke_path = root_dir / "examples" / "data" / "heart.csv"
+    heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
     loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
 
     @pytest.fixture
@@ -214,7 +214,7 @@ class TestAgentChat:
         Test heart stoke related questions to ensure the response types match the expected ones.
         """
 
-        df = pandas_ai.read_csv(str(self.hear_stroke_path))
+        df = pandas_ai.read_csv(str(self.heart_stroke_path))
 
         response = pandas_ai.chat(question, df)
 
@@ -228,7 +228,7 @@ class TestAgentChat:
         Test heart stoke related questions to ensure the response types match the expected ones.
         """
 
-        df1 = pandas_ai.read_csv(str(self.hear_stroke_path))
+        df1 = pandas_ai.read_csv(str(self.heart_stroke_path))
         loans = pandas_ai.read_csv(str(self.loans_path))
 
         response = pandas_ai.chat(question, *(df1, loans))
