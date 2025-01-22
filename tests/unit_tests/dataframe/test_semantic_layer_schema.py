@@ -253,6 +253,12 @@ class TestSemanticLayerSchema:
         with pytest.raises(ValidationError):
             SemanticLayerSchema(**mysql_schema)
 
+    def test_invalid_no_relation_for_view(self, mysql_view_schema):
+        mysql_view_schema.pop("relations")
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**mysql_view_schema)
+
     def test_invalid_duplicated_columns(self, sample_schema):
         sample_schema["columns"].append(sample_schema["columns"][0])
 
@@ -278,7 +284,7 @@ class TestSemanticLayerSchema:
             SemanticLayerSchema(**mysql_view_schema)
 
     def test_invalid_uncovered_columns_in_view(self, mysql_view_schema):
-        mysql_view_schema.pop("relations")
+        mysql_view_schema["relations"][0]["to"] = "parents.id"
 
         with pytest.raises(ValidationError):
             SemanticLayerSchema(**mysql_view_schema)
