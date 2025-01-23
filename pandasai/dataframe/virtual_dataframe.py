@@ -36,7 +36,7 @@ class VirtualDataFrame(DataFrame):
         if not schema:
             raise VirtualizationError("Schema is required for virtualization!")
 
-        table_name = schema.source.table
+        table_name = schema.source.table or schema.name
 
         description = schema.description
 

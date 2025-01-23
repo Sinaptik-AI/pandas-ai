@@ -188,6 +188,9 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations or ()
             }
 
+            if not self.relations:
+                raise ValueError("At least one relation must be defined for view.")
+
             if not all(
                 is_view_column_name(column_name) for column_name in _column_names
             ):
