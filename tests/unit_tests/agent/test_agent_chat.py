@@ -27,7 +27,6 @@ class TestAgentChat:
     cache_path = root_dir / "cache"
     heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
     loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
-
     numeric_questions_with_answer = [
         ("What is the total quantity sold across all products and regions?", 105),
         ("What is the correlation coefficient between Sales and Profit?", 1.0),
