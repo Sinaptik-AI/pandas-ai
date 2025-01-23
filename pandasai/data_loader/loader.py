@@ -170,7 +170,7 @@ class DatasetLoader:
             return load_function(connection_info, formatted_query)
         except Exception as e:
             raise RuntimeError(
-                f"Failed to execute query for source type '{source_type}' with query: {formatted_query}"
+                f"Failed to execute query for '{source_type}' with: {formatted_query}"
             ) from e
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
