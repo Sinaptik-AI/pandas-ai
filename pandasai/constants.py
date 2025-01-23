@@ -37,7 +37,7 @@ SUPPORTED_SOURCE_CONNECTORS = {
     "oracle": "pandasai_oracle",
 }
 
-LOCAL_SOURCE_TYPES = ["csv", "parquet"]
+LOCAL_SOURCE_TYPES = ["csv", "parquet", "sqlite"]
 REMOTE_SOURCE_TYPES = [
     "mysql",
     "postgres",
@@ -50,7 +50,7 @@ REMOTE_SOURCE_TYPES = [
     "databricks",
     "oracle",
 ]
-SQL_SOURCE_TYPES = ["mysql", "postgres", "cockroachdb", "sqlite", "oracle"]
+SQL_SOURCE_TYPES = ["mysql", "postgres", "cockroachdb", "oracle", "sqlite"]
 
 VALID_COLUMN_TYPES = ["string", "integer", "float", "datetime", "boolean"]
 

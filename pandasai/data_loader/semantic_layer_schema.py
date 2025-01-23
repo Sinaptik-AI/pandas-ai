@@ -97,7 +97,9 @@ class Source(BaseModel):
         view = values.get("view")
         connection = values.get("connection")
 
-        if _type in LOCAL_SOURCE_TYPES:
+        if (
+            _type in LOCAL_SOURCE_TYPES and _type != "sqlite"
+        ):  # sqlite is a special case which local
             if not path:
                 raise ValueError(
                     f"For local source type '{_type}', 'path' must be defined."

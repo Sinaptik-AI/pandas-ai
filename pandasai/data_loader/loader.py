@@ -157,6 +157,10 @@ class DatasetLoader:
                 f"Unsupported local source type: {source_type}. Supported types are: {LOCAL_SOURCE_TYPES}."
             )
 
+        if source_type == "sqlite":
+            query = self.query_builder.build_query()
+            return self.execute_query(query)
+
         filepath = os.path.join(
             str(self._get_abs_dataset_path()),
             self.schema.source.path,
