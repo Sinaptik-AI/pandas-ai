@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from types import UnionType
 from typing import List, Tuple
@@ -22,6 +23,11 @@ API_KEY = os.getenv("PANDASAI_API_KEY_TEST_CHAT", None)
     API_KEY is None, reason="API key not set, skipping integration tests"
 )
 class TestAgentChat:
+    root_dir = Path(__file__).resolve().parents[3]
+    cache_path = root_dir / "cache"
+    heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
+    loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
+
     numeric_questions_with_answer = [
         ("What is the total quantity sold across all products and regions?", 105),
         ("What is the correlation coefficient between Sales and Profit?", 1.0),
@@ -115,10 +121,9 @@ class TestAgentChat:
         ),
     ]
 
-    root_dir = Path(__file__).resolve().parents[3]
-
-    heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
-    loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        shutil.rmtree(self.cache_path, ignore_errors=True)
 
     @pytest.fixture
     def pandas_ai(self):
@@ -228,10 +233,10 @@ class TestAgentChat:
         Test heart stoke related questions to ensure the response types match the expected ones.
         """
 
-        df1 = pandas_ai.read_csv(str(self.heart_stroke_path))
+        heart_stroke = pandas_ai.read_csv(str(self.heart_stroke_path))
         loans = pandas_ai.read_csv(str(self.loans_path))
 
-        response = pandas_ai.chat(question, *(df1, loans))
+        response = pandas_ai.chat(question, *(heart_stroke, loans))
 
         assert isinstance(
             response, expected
