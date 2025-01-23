@@ -167,15 +167,21 @@ class DataFrame(pd.DataFrame):
 
         headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
 
-        with open(
-            os.path.join(dataset_directory, "schema.yaml"), "rb"
-        ) as schema_file, open(
-            os.path.join(dataset_directory, "data.parquet"), "rb"
-        ) as data_file:
-            files = [
-                ("files", ("schema.yaml", schema_file, "application/x-yaml")),
-                ("files", ("data.parquet", data_file, "application/octet-stream")),
-            ]
+        files = []
+        schema_file_path = os.path.join(dataset_directory, "schema.yaml")
+        data_file_path = os.path.join(dataset_directory, "data.parquet")
+
+        try:
+            # Open schema.yaml
+            schema_file = open(schema_file_path, "rb")
+            files.append(("files", ("schema.yaml", schema_file, "application/x-yaml")))
+
+            # Check if data.parquet exists and open it
+            if os.path.exists(data_file_path):
+                data_file = open(data_file_path, "rb")
+                files.append(
+                    ("files", ("data.parquet", data_file, "application/octet-stream"))
+                )
 
             # Send the POST request
             request_session.post(
@@ -184,7 +190,13 @@ class DataFrame(pd.DataFrame):
                 params=params,
                 headers=headers,
             )
-            print("Your dataset was successfully pushed to the pandabi platform")
+
+        finally:
+            # Ensure files are closed after the request
+            for _, (name, file, _) in files:
+                file.close()
+
+        print("Your dataset was successfully pushed to the pandabi platform")
 
     def pull(self):
         api_key = os.environ.get("PANDABI_API_KEY", None)

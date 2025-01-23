@@ -26,17 +26,36 @@ class DatasetLoader:
         self.schema: Optional[SemanticLayerSchema] = None
         self.dataset_path = None
 
-    def load(self, dataset_path: str) -> DataFrame:
-        """Load data based on the provided dataset path.
+    def load(
+        self,
+        dataset_path: Optional[str] = None,
+        schema: Optional[SemanticLayerSchema] = None,
+    ) -> DataFrame:
+        """
+        Load data into a DataFrame based on the provided dataset path or schema.
 
         Args:
-            dataset_path (str): Path in the format 'organization/dataset_name'
+            dataset_path (Optional[str]): Path to the dataset file. Provide this or `schema`, not both.
+            schema (Optional[SemanticLayerSchema]): Schema object for the dataset. Provide this or `dataset_path`, not both.
 
         Returns:
-            DataFrame: A new PandaAI DataFrame instance with loaded data.
+            DataFrame: A new DataFrame instance with loaded data.
+
+        Raises:
+            ValueError: If both `dataset_path` and `schema` are provided, or neither is provided.
         """
-        self.dataset_path = dataset_path
-        self._load_schema()
+        if not dataset_path and not schema:
+            raise ValueError("Either 'dataset_path' or 'schema' must be provided.")
+        if dataset_path and schema:
+            raise ValueError(
+                "Provide only one of 'dataset_path' or 'schema', not both."
+            )
+
+        if dataset_path:
+            self.dataset_path = dataset_path
+            self._load_schema()
+        elif schema:
+            self.schema = schema
 
         source_type = self.schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:

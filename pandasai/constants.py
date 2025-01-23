@@ -41,7 +41,7 @@ LOCAL_SOURCE_TYPES = ["csv", "parquet"]
 REMOTE_SOURCE_TYPES = [
     "mysql",
     "postgres",
-    "cockroach",
+    "cockroachdb",
     "sqlite",
     "data",
     "yahoo_finance",
@@ -50,6 +50,7 @@ REMOTE_SOURCE_TYPES = [
     "databricks",
     "oracle",
 ]
+SQL_SOURCE_TYPES = ["mysql", "postgres", "cockroachdb", "sqlite", "oracle"]
 
 VALID_COLUMN_TYPES = ["string", "integer", "float", "datetime", "boolean"]
 
