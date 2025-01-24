@@ -55,7 +55,7 @@ def create(
             Each dictionary should have keys like 'name', 'type', and optionally
             'description' to describe individual columns. Defaults to None.
     """
-    if df and not isinstance(df, DataFrame):
+    if df is not None and not isinstance(df, DataFrame):
         raise ValueError("df must be a PandaAI DataFrame")
 
     # Validate path format
@@ -98,7 +98,7 @@ def create(
         df is None and connector is not None and connector["type"] in SQL_SOURCE_TYPES
     )
 
-    if not df and not is_valid_sql_config:
+    if df is None and not is_valid_sql_config:
         raise InvalidConfigError("Please provide either a DataFrame or a connector")
 
     if df is not None:

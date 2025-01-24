@@ -233,6 +233,4 @@ def is_schema_source_same(
     source1 = schema1.source
     source2 = schema2.source
 
-    return source1.type == source2.type and json.dumps(
-        source1.connection, sort_keys=True
-    ) == json.dumps(source2.connection, sort_keys=True)
+    return source1.type == source2.type and source1.path == source2.path

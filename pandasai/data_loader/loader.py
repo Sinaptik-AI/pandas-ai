@@ -66,6 +66,10 @@ class DatasetLoader:
 
         source_type = self.schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:
+            # in case of direct schema passed set dataset path to schema.source.path if exists
+            if not self.dataset_path and self.schema.source.path:
+                self.dataset_path = self.schema.source.path
+
             df = self._load_from_local_source()
             df = self._apply_transformations(df)
 
