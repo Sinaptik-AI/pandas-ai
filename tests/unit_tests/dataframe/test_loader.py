@@ -377,3 +377,44 @@ class TestDatasetLoader:
             assert mock_execute_query.call_args[0][0] == (
                 "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC LIMIT 100"
             )
+
+    def test_load_without_schema_and_path(self, sample_schema):
+        """Test load by not providing a schema or path."""
+        with patch("os.path.exists", return_value=True), patch(
+            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
+        ) as mock_read_csv_or_parquet, patch(
+            "pandasai.data_loader.loader.DatasetLoader._apply_transformations"
+        ) as mock_apply_transformations:
+            mock_read_csv_or_parquet.return_value = DataFrame(
+                {"email": ["test@example.com"]}
+            )
+            mock_apply_transformations.return_value = DataFrame(
+                {"email": ["test@example.com"]}
+            )
+            loader = DatasetLoader()
+
+            with pytest.raises(
+                ValueError, match="Either 'dataset_path' or 'schema' must be provided."
+            ):
+                result = loader.load()
+
+    def test_load_with_schema_and_path(self, sample_schema):
+        """Test load by providing both schema and path."""
+        with patch("os.path.exists", return_value=True), patch(
+            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
+        ) as mock_read_csv_or_parquet, patch(
+            "pandasai.data_loader.loader.DatasetLoader._apply_transformations"
+        ) as mock_apply_transformations:
+            mock_read_csv_or_parquet.return_value = DataFrame(
+                {"email": ["test@example.com"]}
+            )
+            mock_apply_transformations.return_value = DataFrame(
+                {"email": ["test@example.com"]}
+            )
+            loader = DatasetLoader()
+
+            with pytest.raises(
+                ValueError,
+                match="Provide only one of 'dataset_path' or 'schema', not both.",
+            ):
+                result = loader.load("test/users", sample_schema)
