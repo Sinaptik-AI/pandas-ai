@@ -1,6 +1,6 @@
 FROM python:3.9
 
-LABEL image_name="pandaai-sandbox"
+LABEL image_name="pandasai-sandbox"
 
 # Install required Python packages
 RUN pip install pandas numpy matplotlib

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class DockerSandbox(Sandbox):
-    def __init__(self, image_name="pandaai-sandbox", dockerfile_path=None):
+    def __init__(self, image_name="pandasai-sandbox", dockerfile_path=None):
         super().__init__()
         self._dockerfile_path: str = dockerfile_path or os.path.join(
             os.path.dirname(__file__), "Dockerfile"
