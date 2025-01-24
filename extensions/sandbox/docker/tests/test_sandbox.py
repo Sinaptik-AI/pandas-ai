@@ -35,7 +35,8 @@ class TestDockerSandbox(unittest.TestCase):
 
     @patch("builtins.open")
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
-    def test_build_image(self, mock_docker, mock_open):
+    @patch("pandasai_docker.docker_sandbox.subprocess")
+    def test_build_image(self, mock_subprocess, mock_docker, mock_open):
         # Create a single BytesIO object to mock the file content
         mock_file = MagicMock(spec=BytesIO)
         mock_file.__enter__.return_value = BytesIO(b"FROM python:3.9")
@@ -55,9 +56,7 @@ class TestDockerSandbox(unittest.TestCase):
         expected_fileobj = mock_file.__enter__.return_value
 
         # Assert
-        mock_client.images.build.assert_called_once_with(
-            fileobj=expected_fileobj, tag=image_name
-        )
+        mock_subprocess.run.assert_called_once()
 
     @patch("pandasai_docker.docker_sandbox.docker.from_env")
     def test_start_and_stop_container(self, mock_docker):

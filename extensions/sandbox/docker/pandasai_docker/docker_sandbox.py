@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import re
+import subprocess
 import tarfile
 import uuid
 from typing import Optional
@@ -44,8 +45,26 @@ class DockerSandbox(Sandbox):
         logger.info(
             f"Building Docker image '{self._image_name}' from '{self._dockerfile_path}'..."
         )
-        with open(self._dockerfile_path, "rb") as file:
-            self._client.images.build(fileobj=file, tag=self._image_name)
+        try:
+            subprocess.run(
+                [
+                    "docker",
+                    "build",
+                    "-f",
+                    self._dockerfile_path,
+                    "-t",
+                    "pandasai-sandbox",
+                    ".",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            logger.error(
+                f"Failed to build Docker image '{self._image_name}' failed with error: {e.stderr}"
+            )
+            raise
 
     def start(self):
         if not self._started:
