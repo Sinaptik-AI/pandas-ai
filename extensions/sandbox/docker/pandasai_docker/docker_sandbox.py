@@ -62,7 +62,7 @@ class DockerSandbox(Sandbox):
             )
         except subprocess.CalledProcessError as e:
             logger.error(
-                f"Failed to build Docker image '{self._image_name}' failed with error: {e.stderr}"
+                f"Failed to build Docker image '{self._image_name}' with error: {e.stderr}"
             )
             raise
 
