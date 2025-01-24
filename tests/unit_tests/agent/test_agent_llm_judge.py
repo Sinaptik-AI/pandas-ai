@@ -2,13 +2,12 @@ import os
 import shutil
 from pathlib import Path
 
-import pandas as pd
 import pytest
 from openai import OpenAI
 from pydantic import BaseModel
 
 import pandasai as pai
-from pandasai import DataFrame
+from pandasai import DataFrame, find_project_root
 
 # Read the API key from an environment variable
 JUDGE_OPENAI_API_KEY = os.getenv("JUDGE_OPENAI_API_KEY", None)
@@ -24,10 +23,10 @@ class Evaluation(BaseModel):
     reason="JUDGE_OPENAI_API_KEY key not set, skipping tests",
 )
 class TestAgentLLMJudge:
-    root_dir = Path(__file__).resolve().parents[3]
-    cache_path = root_dir / "cache"
-    heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
-    loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
+    root_dir = find_project_root()
+    cache_path = os.path.join(root_dir, "cache")
+    heart_stroke_path = os.path.join(root_dir, "examples", "data", "heart.csv")
+    loans_path = os.path.join(root_dir, "examples", "data", "loans_payments.csv")
 
     loans_questions = [
         "What is the total number of payments?",
@@ -69,6 +68,8 @@ class TestAgentLLMJudge:
         "Calculate average payments by health condition.",
         "Show payment distribution across age groups.",
     ]
+
+    evaluation_scores = []
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -117,6 +118,8 @@ class TestAgentLLMJudge:
 
         evaluation_response: Evaluation = completion.choices[0].message.parsed
 
+        self.evaluation_scores.append(evaluation_response.score)
+
         assert evaluation_response.score > 5, evaluation_response.justification
 
     @pytest.mark.parametrize("question", loans_questions)
@@ -140,6 +143,8 @@ class TestAgentLLMJudge:
 
         evaluation_response: Evaluation = completion.choices[0].message.parsed
 
+        self.evaluation_scores.append(evaluation_response.score)
+
         assert evaluation_response.score > 5, evaluation_response.justification
 
     @pytest.mark.parametrize("question", heart_strokes_questions)
@@ -162,6 +167,8 @@ class TestAgentLLMJudge:
         )
 
         evaluation_response: Evaluation = completion.choices[0].message.parsed
+
+        self.evaluation_scores.append(evaluation_response.score)
 
         assert evaluation_response.score > 5, evaluation_response.justification
 
@@ -190,4 +197,17 @@ class TestAgentLLMJudge:
 
         evaluation_response: Evaluation = completion.choices[0].message.parsed
 
+        self.evaluation_scores.append(evaluation_response.score)
+
         assert evaluation_response.score > 5, evaluation_response.justification
+
+    @pytest.mark.final
+    def test_average_score(self):
+        if self.evaluation_scores:
+            average_score = sum(self.evaluation_scores) / len(self.evaluation_scores)
+            file_path = Path(self.root_dir) / "test_agent_llm_judge.txt"
+            with open(file_path, "w") as f:
+                f.write(f"{average_score}")
+            assert (
+                average_score >= 5
+            ), f"Average score should be at least 5, got {average_score}"

@@ -7,7 +7,7 @@ from typing import List, Tuple
 import pytest
 
 import pandasai as pai
-from pandasai import DataFrame
+from pandasai import DataFrame, find_project_root
 from pandasai.core.response import (
     ChartResponse,
     DataFrameResponse,
@@ -23,10 +23,10 @@ API_KEY = os.getenv("PANDASAI_API_KEY_TEST_CHAT", None)
     API_KEY is None, reason="API key not set, skipping integration tests"
 )
 class TestAgentChat:
-    root_dir = Path(__file__).resolve().parents[3]
-    cache_path = root_dir / "cache"
-    heart_stroke_path = root_dir / "examples" / "data" / "heart.csv"
-    loans_path = root_dir / "examples" / "data" / "loans_payments.csv"
+    root_dir = find_project_root()
+    cache_path = os.path.join(root_dir, "cache")
+    heart_stroke_path = os.path.join(root_dir, "examples", "data", "heart.csv")
+    loans_path = os.path.join(root_dir, "examples", "data", "loans_payments.csv")
     numeric_questions_with_answer = [
         ("What is the total quantity sold across all products and regions?", 105),
         ("What is the correlation coefficient between Sales and Profit?", 1.0),
