@@ -16,7 +16,7 @@ from pandasai.core.response import (
 )
 
 # Read the API key from an environment variable
-API_KEY = os.getenv("PANDASAI_API_KEY_TEST_CHAT", None)
+API_KEY = os.getenv("PANDABI_API_KEY_TEST_CHAT", None)
 
 
 @pytest.mark.skipif(
