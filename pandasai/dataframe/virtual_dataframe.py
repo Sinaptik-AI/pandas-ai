@@ -36,14 +36,18 @@ class VirtualDataFrame(DataFrame):
         if not schema:
             raise VirtualizationError("Schema is required for virtualization!")
 
-        table_name = schema.source.table or schema.name
+        name = kwargs.pop("name", None)
 
-        description = schema.description
+        description = kwargs.pop("description", None)
+
+        table_name = schema.source.table or name or schema.name
+
+        table_description = description or schema.description
 
         super().__init__(
             self.get_head(),
             name=table_name,
-            description=description,
+            description=table_description,
             *args,
             **kwargs,
         )

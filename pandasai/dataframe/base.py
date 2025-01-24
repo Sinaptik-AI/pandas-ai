@@ -237,7 +237,12 @@ class DataFrame(pd.DataFrame):
         dataset_loader = DatasetLoader()
         df = dataset_loader.load(self.path)
         self.__init__(
-            df, schema=df.schema, name=df.name, description=df.description, path=df.path
+            df,
+            schema=df.schema,
+            data_loader=dataset_loader,
+            name=df.name,
+            description=df.description,
+            path=df.path,
         )
 
         print(f"Dataset pulled successfully from path: {self.path}")
