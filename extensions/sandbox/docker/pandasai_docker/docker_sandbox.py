@@ -53,7 +53,7 @@ class DockerSandbox(Sandbox):
                     "-f",
                     self._dockerfile_path,
                     "-t",
-                    "pandasai-sandbox",
+                    self._image_name,
                     ".",
                 ],
                 check=True,
