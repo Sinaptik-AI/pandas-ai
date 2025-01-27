@@ -15,10 +15,12 @@ from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.constants import DEFAULT_API_URL
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
+    Relation,
     SemanticLayerSchema,
+    Source,
 )
 from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
-from pandasai.helpers.path import find_project_root
+from pandasai.helpers.path import find_project_root, get_validated_dataset_path
 from pandasai.helpers.session import get_pandaai_session
 
 from .agent import Agent
@@ -37,48 +39,66 @@ from .smart_datalake import SmartDatalake
 def create(
     path: str,
     df: Optional[DataFrame] = None,
-    connector: Optional[dict] = None,
     name: Optional[str] = None,
     description: Optional[str] = None,
     columns: Optional[List[dict]] = None,
+    source: Optional[dict] = None,
+    relations: Optional[List[dict]] = None,
 ) -> Union[DataFrame, VirtualDataFrame]:
     """
+    Creates a new dataset at the specified path with optional metadata, schema,
+    and data source configurations.
+
     Args:
-        path (str): Path in the format 'organization/dataset'. This specifies
-            the location where the dataset should be created.
-        df (DataFrame): The DataFrame containing the data to save.
-        name (str, optional): The name of the dataset. Defaults to None.
-            If not provided, a name will be automatically generated.
-        description (str, optional): A textual description of the dataset.
-            Defaults to None.
+        path (str): Path in the format 'organization/dataset'. Specifies the location
+            where the dataset should be created. The organization and dataset names
+            must be lowercase, with hyphens instead of spaces.
+        df (DataFrame, optional): The DataFrame containing the data to save. If not
+            provided, a connector must be specified to define the dataset source.
+        name (str, optional): The name of the dataset. Defaults to None. If not
+            provided, a name will be automatically generated or inferred.
+        description (str, optional): A textual description of the dataset. Defaults
+            to None.
         columns (List[dict], optional): A list of dictionaries defining the column schema.
-            Each dictionary should have keys like 'name', 'type', and optionally
-            'description' to describe individual columns. Defaults to None.
+            Each dictionary should include keys such as 'name', 'type', and optionally
+            'description' to describe individual columns. If not provided, the schema
+            will be inferred from the DataFrame or connector.
+        source (dict, optional): A dictionary specifying the data source configuration.
+            Required if `df` is not provided. The connector may include keys like 'type',
+            'table', or 'view' to define the data source type and structure.
+        relations (dict, optional): A dictionary specifying relationships between tables
+            when the dataset is created as a view. Each relationship should be defined
+            using keys such as 'type', 'source', and 'target'.
+
+    Returns:
+        Union[DataFrame, VirtualDataFrame]: The created dataset object. This may be
+        a physical DataFrame if data is saved locally, or a VirtualDataFrame if
+        defined using a connector or relations.
+
+    Raises:
+        ValueError: If the `path` format is invalid, the organization or dataset
+            name contains unsupported characters, or a dataset already exists at
+            the specified path.
+        InvalidConfigError: If neither `df` nor a valid `source` is provided.
+
+    Example:
+        >>> create(
+        ...     path="my-org/my-dataset",
+        ...     df=my_dataframe,
+        ...     name="My Dataset",
+        ...     description="This is a sample dataset.",
+        ...     columns=[
+        ...         {"name": "id", "type": "integer", "description": "Primary key"},
+        ...         {"name": "name", "type": "string", "description": "Name of the item"},
+        ...     ],
+        ... )
+        Dataset saved successfully to path: datasets/my-org/my-dataset
     """
     if df is not None and not isinstance(df, DataFrame):
         raise ValueError("df must be a PandaAI DataFrame")
 
-    # Validate path format
-    path_parts = path.split("/")
-    if len(path_parts) != 2:
-        raise ValueError("Path must be in format 'organization/dataset'")
+    org_name, dataset_name = get_validated_dataset_path(path)
 
-    org_name, dataset_name = path_parts
-    if not org_name or not dataset_name:
-        raise ValueError("Both organization and dataset names are required")
-
-    # Validate organization and dataset name format
-    if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
-        raise ValueError(
-            "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
-        )
-
-    if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
-        raise ValueError(
-            "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
-        )
-
-    # Create full path with slugified dataset name
     dataset_directory = os.path.join(
         find_project_root(), "datasets", org_name, dataset_name
     )
@@ -94,29 +114,32 @@ def create(
     # Save schema to yaml
     schema_path = os.path.join(dataset_directory, "schema.yaml")
 
-    is_valid_sql_config = (
-        df is None and connector is not None and connector["type"] in SQL_SOURCE_TYPES
-    )
-
-    if df is None and not is_valid_sql_config:
-        raise InvalidConfigError("Please provide either a DataFrame or a connector")
+    if df is None and source is None:
+        raise InvalidConfigError("Please provide either a DataFrame or a source")
 
     if df is not None:
         schema = df.schema
-    elif is_valid_sql_config:
-        # Save SQL connection config to yaml
-        schema = SemanticLayerSchema(name=connector.get("table"), source=connector)
-        df = _dataset_loader.load(schema=schema)
-
-    if not is_valid_sql_config or connector["type"] in LOCAL_SOURCE_TYPES:
-        # Save DataFrame to parquet
         df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
+    elif source.get("type") == "sqlite" and source.get("table"):
+        schema = SemanticLayerSchema(name=source.get("table"), source=Source(**source))
+        df = _dataset_loader.load(schema=schema)
+        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
+    elif source.get("table"):
+        schema = SemanticLayerSchema(name=source.get("table"), source=Source(**source))
+        df = _dataset_loader.load(schema=schema)
+    elif source.get("view"):
+        name = name or dataset_name
+        _relation = [Relation(**relation) for relation in relations or ()]
+        schema = SemanticLayerSchema(
+            name=name, source=Source(**source), relations=_relation
+        )
+        df = _dataset_loader.load(schema=schema)
 
     schema.name = sanitize_sql_table_name(name or schema.name)
     schema.description = description or schema.description
     if columns:
-        schema.columns = list(map(lambda column: Column(**column), columns))
-    else:
+        schema.columns = [Column(**column) for column in columns]
+    elif df is not None:
         schema.columns = [
             Column(name=str(name), type=DataFrame.get_column_type(dtype))
             for name, dtype in df.dtypes.items()

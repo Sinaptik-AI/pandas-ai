@@ -221,7 +221,7 @@ class SemanticLayerSchema(BaseModel):
         return self
 
     def to_dict(self) -> dict[str, Any]:
-        return self.model_dump(exclude_none=True)
+        return self.model_dump(exclude_none=True, by_alias=True)
 
     def to_yaml(self) -> str:
         return yaml.dump(self.to_dict(), sort_keys=False)

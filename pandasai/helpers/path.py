@@ -1,4 +1,5 @@
 import os
+import re
 
 
 def find_project_root(filename=None):
@@ -41,3 +42,27 @@ def find_project_root(filename=None):
 
 def find_closest(filename):
     return os.path.join(find_project_root(filename), filename)
+
+
+def get_validated_dataset_path(path: str):
+    # Validate path format
+    path_parts = path.split("/")
+    if len(path_parts) != 2:
+        raise ValueError("Path must be in format 'organization/dataset'")
+
+    org_name, dataset_name = path_parts
+    if not org_name or not dataset_name:
+        raise ValueError("Both organization and dataset names are required")
+
+    # Validate organization and dataset name format
+    if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
+        raise ValueError(
+            "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
+        )
+
+    if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
+        raise ValueError(
+            "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
+        )
+
+    return org_name, dataset_name
