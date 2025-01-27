@@ -112,7 +112,6 @@ def create(
         # Save DataFrame to parquet
         df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
 
-    schema = df.schema
     schema.name = sanitize_sql_table_name(name or schema.name)
     schema.description = description or schema.description
     if columns:
