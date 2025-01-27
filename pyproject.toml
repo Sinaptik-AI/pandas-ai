@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai"
-version = "3.0.0-beta.1"
+version = "3.0.0-beta.2"
 description = "Chat with your database (SQL, CSV, pandas, mongodb, noSQL, etc). PandaAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -26,6 +26,7 @@ openpyxl = { version = "^3.0.7", optional = true }
 sqlglot = { extras = ["rs"], version = "^25.0.3" }
 transformers = "^4.45.2"
 typing-extensions = "^4.0.0"
+pyarrow = "^14.0.1"
 
 [tool.poetry.group.dev]
 optional = true
