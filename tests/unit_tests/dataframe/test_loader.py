@@ -146,6 +146,17 @@ class TestDatasetLoader:
             loader._load_schema()
             assert loader.schema == mysql_schema
 
+    def test_load_schema_mysql_sanitized_name(self, mysql_schema):
+        mysql_schema.name = "non-sanitized-name"
+
+        with patch("os.path.exists", return_value=True), patch(
+            "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
+        ):
+            loader = DatasetLoader()
+            loader.dataset_path = "test/users"
+            loader._load_schema()
+            assert loader.schema.name == "non_sanitized_name"
+
     def test_load_schema_file_not_found(self):
         with patch("os.path.exists", return_value=False):
             loader = DatasetLoader()
