@@ -111,7 +111,7 @@ pai.create(
 - Contains the raw data you want to enhance with semantic information
 - Required parameter for creating a semantic layer
 
-#### Connectors
+#### connector
 
 The connector field allows you to connect your data sources like PostgreSQL, MySQL and Sqlite to the semantic layer.
 For example, if you're working with a SQL database, you can specify the connection details using the connector field.
@@ -390,7 +390,7 @@ source:
 - `connection_string` (str): Connection string for the data source
 - `query` (str): Query to retrieve data from the data source
 
-{/\* commented as destination and update frequency will be only in the materialized case
+/* commented as destination and update frequency will be only in the materialized case */
 
 #### destination (mandatory)
 
@@ -426,7 +426,7 @@ Specify the frequency of updates for your dataset.
 update_frequency: daily
 ```
 
-\*/}
+/* end of materialized case comment */
 
 #### order_by
 
