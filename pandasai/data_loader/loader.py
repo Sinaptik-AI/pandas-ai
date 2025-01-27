@@ -11,6 +11,7 @@ from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.exceptions import InvalidDataSourceType
 from pandasai.helpers.path import find_project_root
+from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
 
 from ..constants import (
     LOCAL_SOURCE_TYPES,
@@ -100,6 +101,7 @@ class DatasetLoader:
 
         with open(schema_path, "r") as file:
             raw_schema = yaml.safe_load(file)
+            raw_schema["name"] = sanitize_sql_table_name(raw_schema["name"])
             self.schema = SemanticLayerSchema(**raw_schema)
 
     def _get_loader_function(self, source_type: str):

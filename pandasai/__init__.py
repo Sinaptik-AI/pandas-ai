@@ -112,7 +112,8 @@ def create(
         # Save DataFrame to parquet
         df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
 
-    schema.name = name or schema.name
+    schema = df.schema
+    schema.name = sanitize_sql_table_name(name or schema.name)
     schema.description = description or schema.description
     if columns:
         schema.columns = list(map(lambda column: Column(**column), columns))
@@ -227,7 +228,7 @@ def load(dataset_path: str) -> DataFrame:
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
     name = f"table_{sanitize_sql_table_name(filepath)}"
-    return DataFrame(data._data, name=name)
+    return DataFrame(data, name=name)
 
 
 __all__ = [
