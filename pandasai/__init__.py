@@ -79,7 +79,7 @@ def create(
         ValueError: If the `path` format is invalid, the organization or dataset
             name contains unsupported characters, or a dataset already exists at
             the specified path.
-        InvalidConfigError: If neither `df` nor a valid `connector` is provided.
+        InvalidConfigError: If neither `df` nor a valid `source` is provided.
 
     Example:
         >>> create(
