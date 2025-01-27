@@ -2,7 +2,6 @@ import copy
 import hashlib
 import importlib
 import os
-from datetime import datetime, timedelta
 from typing import Any, Optional
 
 import pandas as pd
@@ -29,17 +28,36 @@ class DatasetLoader:
         self.query_builder: Optional[QueryBuilder] = None
         self.dataset_path: Optional[str] = None
 
-    def load(self, dataset_path: str) -> DataFrame:
-        """Load data based on the provided dataset path.
+    def load(
+        self,
+        dataset_path: Optional[str] = None,
+        schema: Optional[SemanticLayerSchema] = None,
+    ) -> DataFrame:
+        """
+        Load data into a DataFrame based on the provided dataset path or schema.
 
         Args:
-            dataset_path (str): Path in the format 'organization/dataset_name'
+            dataset_path (Optional[str]): Path to the dataset file. Provide this or `schema`, not both.
+            schema (Optional[SemanticLayerSchema]): Schema object for the dataset. Provide this or `dataset_path`, not both.
 
         Returns:
-            DataFrame: A new PandaAI DataFrame instance with loaded data.
+            DataFrame: A new DataFrame instance with loaded data.
+
+        Raises:
+            ValueError: If both `dataset_path` and `schema` are provided, or neither is provided.
         """
-        self.dataset_path = dataset_path
-        self._load_schema()
+        if not dataset_path and not schema:
+            raise ValueError("Either 'dataset_path' or 'schema' must be provided.")
+        if dataset_path and schema:
+            raise ValueError(
+                "Provide only one of 'dataset_path' or 'schema', not both."
+            )
+
+        if dataset_path:
+            self.dataset_path = dataset_path
+            self._load_schema()
+        elif schema:
+            self.schema = schema
 
         if self.schema.source.view:
             self.query_builder = ViewQueryBuilder(self.schema)
@@ -48,6 +66,10 @@ class DatasetLoader:
 
         source_type = self.schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:
+            # in case of direct schema passed set dataset path to schema.source.path if exists
+            if not self.dataset_path and self.schema.source.path:
+                self.dataset_path = self.schema.source.path
+
             df = self._load_from_local_source()
             df = self._apply_transformations(df)
 
@@ -139,6 +161,10 @@ class DatasetLoader:
             raise InvalidDataSourceType(
                 f"Unsupported local source type: {source_type}. Supported types are: {LOCAL_SOURCE_TYPES}."
             )
+
+        if source_type == "sqlite":
+            query = self.query_builder.build_query()
+            return self.execute_query(query)
 
         filepath = os.path.join(
             str(self._get_abs_dataset_path()),

@@ -1,7 +1,7 @@
 import json
 import re
 from functools import partial
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import yaml
 from pydantic import (
@@ -17,6 +17,26 @@ from pandasai.constants import (
     VALID_COLUMN_TYPES,
     VALID_TRANSFORMATION_TYPES,
 )
+
+
+class SqliteConnectionConfig(BaseModel):
+    """
+    Connector configurations for SQLite database.
+    """
+
+    file_path: str = Field(..., description="Path to the SQLite database file")
+
+
+class SQLConnectionConfig(BaseModel):
+    """
+    Common connection configuration for MySQL and PostgreSQL.
+    """
+
+    host: str = Field(..., description="Host for the database server")
+    port: int = Field(..., description="Port for the database server")
+    database: str = Field(..., description="Target database name")
+    user: str = Field(..., description="Database username")
+    password: str = Field(..., description="Database password")
 
 
 class Column(BaseModel):
@@ -62,7 +82,7 @@ class Transformation(BaseModel):
 class Source(BaseModel):
     type: str = Field(..., description="Type of the data source.")
     path: Optional[str] = Field(None, description="Path of the local data source.")
-    connection: Optional[Dict[str, Union[str, int]]] = Field(
+    connection: Optional[Union[SqliteConnectionConfig, SQLConnectionConfig]] = Field(
         None, description="Connection object of the data source."
     )
     table: Optional[str] = Field(None, description="Table of the data source.")
@@ -77,7 +97,9 @@ class Source(BaseModel):
         view = values.get("view")
         connection = values.get("connection")
 
-        if _type in LOCAL_SOURCE_TYPES:
+        if (
+            _type in LOCAL_SOURCE_TYPES and _type != "sqlite"
+        ):  # sqlite is a special case which local
             if not path:
                 raise ValueError(
                     f"For local source type '{_type}', 'path' must be defined."
@@ -211,6 +233,4 @@ def is_schema_source_same(
     source1 = schema1.source
     source2 = schema2.source
 
-    return source1.type == source2.type and json.dumps(
-        source1.connection, sort_keys=True
-    ) == json.dumps(source2.connection, sort_keys=True)
+    return source1.type == source2.type and source1.path == source2.path

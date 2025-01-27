@@ -1,15 +1,17 @@
 ---
-title: 'Semantic Layer'
-description: 'Turn raw data into semantic-enhanced and clean dataframes'
+title: "Semantic Layer"
+description: "Turn raw data into semantic-enhanced and clean dataframes"
 ---
 
 <Note title="Beta Notice">
-Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+  Release v3 is currently in beta. This documentation reflects the features and
+  functionality in progress and may change before the final release.
 </Note>
 
 ## What's the Semantic Layer?
 
 The semantic layer allows you to turn raw data into [dataframes](/v3/dataframes) you can ask questions to and [share with your team](/v3/share-dataframes) as conversational AI dashboards. It serves several important purposes:
+
 1. **Data Configuration**: Define how your data should be loaded and processed
 2. **Semantic Information**: Add context and meaning to your data columns
 3. **Data Transformation**: Specify how data should be cleaned and transformed
@@ -60,7 +62,9 @@ pai.create(
     ...
 )
 ```
+
 **Type**: `str`
+
 - A string without special characters or spaces
 - Using kebab-case naming convention
 - Unique within your project
@@ -80,6 +84,7 @@ pai.create(
 ```
 
 **Type**: `str`
+
 - Must follow the format: "organization-identifier/dataset-identifier"
 - Organization identifier should be unique to your organization
 - Dataset identifier should be unique within your organization
@@ -101,11 +106,42 @@ pai.create(
 ```
 
 **Type**: `DataFrame`
+
 - Must be a pandas DataFrame created with `pai.read_csv()`
 - Contains the raw data you want to enhance with semantic information
 - Required parameter for creating a semantic layer
 
+#### Connectors
+
+The connector field allows you to connect your data sources like PostgreSQL, MySQL and Sqlite to the semantic layer.
+For example, if you're working with a SQL database, you can specify the connection details using the connector field.
+
+```python
+
+pai.create(
+    path="acme-corp/sales-data",
+    connector={
+         "type": "postgres",
+         "connection": {
+             "host": "postgres-host",
+             "port": 5432,
+             "user": "postgres",
+             "password": "*****",
+             "database": "postgres",
+         },
+         "table": "orders",
+     },
+    ...
+)
+```
+
+**Type**: `Dict`
+
+- Must be a sql connector source dict
+- Required connection string for creating a semantic layer
+
 #### description
+
 A clear text description that helps others understand the dataset's contents and purpose.
 
 ```python
@@ -121,15 +157,17 @@ pai.create(
 ```
 
 **Type**: `str`
+
 - The purpose of the dataset
 - The type of data contained
 - Any relevant context about data collection or usage
 - Optional but recommended for better data understanding
 
 #### columns
+
 Define the structure and metadata of your dataset's columns to help PandaAI understand your data better.
 
-**Note**: If the `columns` parameter is not provided, all columns from the input dataframe will be included in the semantic layer. 
+**Note**: If the `columns` parameter is not provided, all columns from the input dataframe will be included in the semantic layer.
 When specified, only the declared columns will be included, allowing you to select specific columns for your semantic layer.
 
 ```python
@@ -171,6 +209,7 @@ pai.create(
 ```
 
 **Type**: `dict[str, dict]`
+
 - Keys: column names as they appear in your DataFrame
 - Values: dictionary containing:
   - `type` (str): Data type of the column
@@ -181,22 +220,28 @@ pai.create(
     - "boolean": flags, true/false values
   - `description` (str): Clear explanation of what the column represents
 
-
 ### For other data sources: YAML configuration
 
 For other data sources (SQL databases, data warehouses, etc.), create a YAML file in your datasets folder:
+
 > Keep in mind that you have to install the sql, cloud data (ee), or yahoo_finance data extension to use this feature.
 
-Example
+Example PostgreSQL YAML file:
 
 ```yaml
 name: SalesData  # Dataset name
 description: "Sales data from our SQL database"
 
 source:
-  type: postgresql
-  connection_string: "postgresql://user:pass@localhost:5432/db"
-  query: "SELECT * FROM sales"
+  type: postgres
+  connection:
+    host: postgres-host
+    port: 5432
+    database: postgres
+    user: postgres
+    password: ******
+  table: orders
+  view: false
 
 columns:
   - name: transaction_id
@@ -207,26 +252,54 @@ columns:
     description: Date and time of the sale
 ```
 
+Example Sqlite YAML file:
+
+```yaml
+name: SalesData  # Dataset name
+description: "Sales data from our SQL database"
+
+source:
+  type: sqlite
+  connection:
+    file_path: /Users/arslan/Documents/SinapTik/pandas-ai/companies.db
+  table: companies
+  view: false
+
+description: Companies table
+columns:
+  - name: id
+    type: integer
+  - name: name
+    type: string
+  - name: domain
+    type: string
+  - name: year_founded
+    type: float
+```
+
 ### YAML Semantic Layer Configuration
 
 The following sections detail all available configuration options for your schema.yaml file:
 
 #### name (mandatory)
+
 The name field identifies your dataset in the schema.yaml file.
+
 ```yaml
 name: sales-data
 ```
 
-
 **Type**: `str`
+
 - A string without special characters or spaces
 - Using kebab-case naming convention
 - Unique within your project
 - Examples: "sales-data", "customer-profiles"
 
-
 #### columns
+
 Define the structure and metadata of your dataset's columns to help PandaAI understand your data better.
+
 ```yaml
 columns:
   - name: transaction_id
@@ -238,6 +311,7 @@ columns:
 ```
 
 **Type**: `list[dict]`
+
 - Each dictionary represents a column.
 - **Fields**:
   - `name` (str): Name of the column.
@@ -252,10 +326,12 @@ columns:
   - `description` (str): Clear explanation of what the column represents.
 
 **Constraints**:
+
 1. Column names must be unique.
 2. For views, all column names must be in the format `[table].[column]`.
 
 #### transformations
+
 Apply transformations to your data to clean, convert, or anonymize it.
 
 ```yaml
@@ -274,26 +350,34 @@ transformations:
 ```
 
 **Type**: `list[dict]`
+
 - Each dictionary represents a transformation
 - `type` (str): Type of transformation
   - "anonymize" for anonymizing data
   - "convert_timezone" for converting timezones
 - `params` (dict): Parameters for the transformation
 
-
 #### source (mandatory)
+
 Specify the data source for your dataset.
 
 ```yaml
 source:
-  type: postgresql
-  connection_string: "postgresql://user:pass@localhost:5432/db"
-  query: "SELECT * FROM sales"
+  type: postgres
+  connection:
+    host: postgres-host
+    port: 5432
+    database: postgres
+    user: postgres
+    password: ******
+  table: orders
+  view: false
 ```
 
 > The available data sources depends on the installed data extensions (sql, cloud data (ee), yahoo_finance).
 
 **Type**: `dict`
+
 - `type` (str): Type of data source
   - "postgresql" for PostgreSQL databases
   - "mysql" for MySQL databases
@@ -306,11 +390,14 @@ source:
 - `connection_string` (str): Connection string for the data source
 - `query` (str): Query to retrieve data from the data source
 
-{/* commented as destination and update frequency will be only in the materialized case
+{/\* commented as destination and update frequency will be only in the materialized case
+
 #### destination (mandatory)
+
 Specify the destination for your dataset.
 
 **Type**: `dict`
+
 - `type` (str): Type of destination
   - "local" for local storage
 - `format` (str): Format of the data
@@ -324,11 +411,12 @@ destination:
   path: /path/to/data
 ```
 
-
 #### update_frequency
+
 Specify the frequency of updates for your dataset.
 
 **Type**: `str`
+
 - "daily" for daily updates
 - "weekly" for weekly updates
 - "monthly" for monthly updates
@@ -337,12 +425,15 @@ Specify the frequency of updates for your dataset.
 ```yaml
 update_frequency: daily
 ```
-*/}
+
+\*/}
 
 #### order_by
+
 Specify the columns to order by.
 
 **Type**: `list[str]`
+
 - Each string should be in the format "column_name DESC" or "column_name ASC"
 
 ```yaml
@@ -352,6 +443,7 @@ order_by:
 ```
 
 #### limit
+
 Specify the maximum number of records to load.
 
 **Type**: `int`
@@ -371,23 +463,24 @@ name: table_heart
 source:
   type: postgres
   connection:
-    host: localhost
+    host: postgres-host
     port: 5432
-    database: test
-    user: test
-    password: test
-  view: true
+    database: postgres
+    user: postgres
+    password: ******
+  table: heart
+  view: false
 columns:
-- name: parents.id
-- name: parents.name
-- name: parents.age
-- name: children.name
-- name: children.age
+  - name: parents.id
+  - name: parents.name
+  - name: parents.age
+  - name: children.name
+  - name: children.age
 relations:
-- name: parent_to_children
-  description: Relation linking the parent to its children
-  from: parents.id
-  to: children.id
+  - name: parent_to_children
+    description: Relation linking the parent to its children
+    from: parents.id
+    to: children.id
 ```
 
 ---
@@ -395,10 +488,12 @@ relations:
 #### Constraints
 
 1. **Mutual Exclusivity**:
+
    - A schema cannot define both `table` and `view` simultaneously.
    - If `source.view` is `true`, then the schema represents a view.
 
 2. **Column Format**:
+
    - For views:
      - All columns must follow the format `[table].[column]`.
      - `from` and `to` fields in `relations` must follow the `[table].[column]` format.

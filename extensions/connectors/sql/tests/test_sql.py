@@ -11,6 +11,11 @@ from pandasai_sql import (
     load_from_sqlite,
 )
 
+from pandasai.data_loader.semantic_layer_schema import (
+    SQLConnectionConfig,
+    SqliteConnectionConfig,
+)
+
 
 class TestDatabaseLoader(unittest.TestCase):
     @patch("pymysql.connect")
@@ -31,9 +36,12 @@ class TestDatabaseLoader(unittest.TestCase):
             "database": "test_db",
             "port": 3306,
         }
+
         query = "SELECT * FROM test_table"
 
-        result = load_from_mysql(connection_info, query)
+        connection_config = SQLConnectionConfig(**connection_info)
+
+        result = load_from_mysql(connection_config, query)
 
         # Assert that the connection is made and SQL query is executed
         mock_pymysql_connect.assert_called_once_with(
@@ -69,7 +77,9 @@ class TestDatabaseLoader(unittest.TestCase):
         }
         query = "SELECT * FROM test_table"
 
-        result = load_from_postgres(connection_info, query)
+        connection_config = SQLConnectionConfig(**connection_info)
+
+        result = load_from_postgres(connection_config, query)
 
         # Assert that the connection is made and SQL query is executed
         mock_psycopg2_connect.assert_called_once_with(
@@ -96,10 +106,12 @@ class TestDatabaseLoader(unittest.TestCase):
         )
 
         # Test data
-        connection_info = {"database": "test_db.sqlite"}
+        connection_info = {"file_path": "test_db.sqlite"}
         query = "SELECT * FROM test_table"
 
-        result = load_from_sqlite(connection_info, query)
+        connection_config = SqliteConnectionConfig(**connection_info)
+
+        result = load_from_sqlite(connection_config, query)
 
         # Assert that the connection is made and SQL query is executed
         mock_sqlite3_connect.assert_called_once_with("test_db.sqlite")
@@ -129,7 +141,9 @@ class TestDatabaseLoader(unittest.TestCase):
         }
         query = "SELECT * FROM test_table"
 
-        result = load_from_cockroachdb(connection_info, query)
+        connection_config = SQLConnectionConfig(**connection_info)
+
+        result = load_from_cockroachdb(connection_config, query)
 
         # Assert that the connection is made and SQL query is executed
         mock_postgresql_connect.assert_called_once_with(

@@ -6,21 +6,28 @@ PandaAI is a wrapper around a LLM to make dataframes conversational
 import os
 import re
 from io import BytesIO
-from typing import List
+from typing import List, Optional, Union
 from zipfile import ZipFile
 
 import pandas as pd
 
 from pandasai.config import APIKeyManager, ConfigManager
 from pandasai.constants import DEFAULT_API_URL
-from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
+from pandasai.data_loader.semantic_layer_schema import (
+    Column,
+    SemanticLayerSchema,
+)
+from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
 
 from .agent import Agent
+from .constants import LOCAL_SOURCE_TYPES, SQL_SOURCE_TYPES
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
-from .data_loader.semantic_layer_schema import Column
+from .data_loader.semantic_layer_schema import (
+    Column,
+)
 from .dataframe import DataFrame, VirtualDataFrame
 from .helpers.sql_sanitizer import sanitize_sql_table_name
 from .smart_dataframe import SmartDataframe
@@ -29,16 +36,17 @@ from .smart_datalake import SmartDatalake
 
 def create(
     path: str,
-    df: pd.DataFrame,
-    name: str = None,
-    description: str = None,
-    columns: List[dict] = None,
-):
+    df: Optional[DataFrame] = None,
+    connector: Optional[dict] = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    columns: Optional[List[dict]] = None,
+) -> Union[DataFrame, VirtualDataFrame]:
     """
     Args:
         path (str): Path in the format 'organization/dataset'. This specifies
             the location where the dataset should be created.
-        df (pd.DataFrame): The DataFrame containing the data to save.
+        df (DataFrame): The DataFrame containing the data to save.
         name (str, optional): The name of the dataset. Defaults to None.
             If not provided, a name will be automatically generated.
         description (str, optional): A textual description of the dataset.
@@ -47,6 +55,8 @@ def create(
             Each dictionary should have keys like 'name', 'type', and optionally
             'description' to describe individual columns. Defaults to None.
     """
+    if df is not None and not isinstance(df, DataFrame):
+        raise ValueError("df must be a PandaAI DataFrame")
 
     # Validate path format
     path_parts = path.split("/")
@@ -81,30 +91,43 @@ def create(
 
     os.makedirs(dataset_directory, exist_ok=True)
 
-    # Save DataFrame to parquet
-    df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
-
     # Save schema to yaml
     schema_path = os.path.join(dataset_directory, "schema.yaml")
 
-    schema = df.schema
+    is_valid_sql_config = (
+        df is None and connector is not None and connector["type"] in SQL_SOURCE_TYPES
+    )
+
+    if df is None and not is_valid_sql_config:
+        raise InvalidConfigError("Please provide either a DataFrame or a connector")
+
+    if df is not None:
+        schema = df.schema
+    elif is_valid_sql_config:
+        # Save SQL connection config to yaml
+        schema = SemanticLayerSchema(name=connector.get("table"), source=connector)
+        df = _dataset_loader.load(schema=schema)
+
+    if not is_valid_sql_config or connector["type"] in LOCAL_SOURCE_TYPES:
+        # Save DataFrame to parquet
+        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
+
     schema.name = sanitize_sql_table_name(name or schema.name)
     schema.description = description or schema.description
     if columns:
         schema.columns = list(map(lambda column: Column(**column), columns))
+    else:
+        schema.columns = [
+            Column(name=str(name), type=DataFrame.get_column_type(dtype))
+            for name, dtype in df.dtypes.items()
+        ]
 
     with open(schema_path, "w") as yml_file:
         yml_file.write(schema.to_yaml())
 
     print(f"Dataset saved successfully to path: {dataset_directory}")
 
-    return DataFrame(
-        df._data,
-        schema=schema,
-        path=path,
-        name=schema.name,
-        description=schema.description,
-    )
+    return _dataset_loader.load(path)
 
 
 # Global variable to store the current agent
