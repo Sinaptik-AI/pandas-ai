@@ -1,0 +1,416 @@
+---
+title: 'Data Transformations'
+description: 'Available data transformations in PandaAI'
+---
+
+<Note title="Beta Notice">
+Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+</Note>
+
+## Data Transformations in PandaAI
+
+PandaAI provides a rich set of data transformations that can be applied to your data. These transformations can be specified in your schema file or applied programmatically.
+
+### String Transformations
+
+```yaml
+transformations:
+  # Convert text to lowercase
+  - type: to_lowercase
+    params:
+      column: product_name
+
+  # Convert text to uppercase
+  - type: to_uppercase
+    params:
+      column: category
+
+  # Remove leading/trailing whitespace
+  - type: strip
+    params:
+      column: description
+
+  # Truncate text to specific length
+  - type: truncate
+    params:
+      column: description
+      length: 100
+      add_ellipsis: true  # Optional, adds "..." to truncated text
+
+  # Pad strings to fixed width
+  - type: pad
+    params:
+      column: product_code
+      width: 10
+      side: left  # Optional: "left" or "right", default "left"
+      pad_char: "0"  # Optional, default " "
+
+  # Extract text using regex
+  - type: extract
+    params:
+      column: product_code
+      pattern: "^[A-Z]+-(\d+)"  # Extracts numbers after hyphen
+```
+
+### Numeric Transformations
+
+```yaml
+transformations:
+  # Round numbers to specified decimals
+  - type: round_numbers
+    params:
+      column: price
+      decimals: 2
+
+  # Scale values by a factor
+  - type: scale
+    params:
+      column: price
+      factor: 1.1  # 10% increase
+
+  # Clip values to bounds
+  - type: clip
+    params:
+      column: quantity
+      lower: 0  # Optional
+      upper: 100  # Optional
+
+  # Normalize to 0-1 range
+  - type: normalize
+    params:
+      column: score
+
+  # Standardize using z-score
+  - type: standardize
+    params:
+      column: score
+
+  # Ensure positive values
+  - type: ensure_positive
+    params:
+      column: amount
+      drop_negative: false  # Optional, drops rows with negative values if true
+
+  # Bin continuous data
+  - type: bin
+    params:
+      column: age
+      bins: [0, 18, 35, 50, 65, 100]  # Or specify number of bins: bins: 5
+      labels: ["0-18", "19-35", "36-50", "51-65", "65+"]  # Optional
+```
+
+### Date and Time Transformations
+
+```yaml
+transformations:
+  # Convert timezone
+  - type: convert_timezone
+    params:
+      column: timestamp
+      to: "US/Pacific"
+
+  # Format dates
+  - type: format_date
+    params:
+      column: date
+      format: "%Y-%m-%d"
+
+  # Convert to datetime
+  - type: to_datetime
+    params:
+      column: date
+      format: "%Y-%m-%d"  # Optional
+      errors: "coerce"  # Optional: "raise", "coerce", or "ignore"
+
+  # Validate date range
+  - type: validate_date_range
+    params:
+      column: date
+      start_date: "2024-01-01"
+      end_date: "2024-12-31"
+      drop_invalid: false  # Optional
+```
+
+### Data Cleaning Transformations
+
+```yaml
+transformations:
+  # Fill missing values
+  - type: fill_na
+    params:
+      column: quantity
+      value: 0
+
+  # Replace values
+  - type: replace
+    params:
+      column: status
+      old_value: "inactive"
+      new_value: "disabled"
+
+  # Remove duplicates
+  - type: remove_duplicates
+    params:
+      columns: ["order_id", "product_id"]
+      keep: "first"  # Optional: "first", "last", or false
+
+  # Normalize phone numbers
+  - type: normalize_phone
+    params:
+      column: phone
+      country_code: "+1"  # Optional, default "+1"
+```
+
+### Categorical Transformations
+
+```yaml
+transformations:
+  # One-hot encode categories
+  - type: encode_categorical
+    params:
+      column: category
+      drop_first: true  # Optional
+
+  # Map values using dictionary
+  - type: map_values
+    params:
+      column: grade
+      mapping:
+        "A": 4.0
+        "B": 3.0
+        "C": 2.0
+
+  # Standardize categories
+  - type: standardize_categories
+    params:
+      column: company
+      mapping:
+        "Apple Inc.": "Apple"
+        "Apple Computer": "Apple"
+```
+
+### Validation Transformations
+
+```yaml
+transformations:
+  # Validate email format
+  - type: validate_email
+    params:
+      column: email
+      drop_invalid: false  # Optional
+
+  # Validate foreign key references
+  - type: validate_foreign_key
+    params:
+      column: user_id
+      ref_df: users  # Reference DataFrame
+      ref_column: id
+      drop_invalid: false  # Optional
+```
+
+### Privacy and Security Transformations
+
+```yaml
+transformations:
+  # Anonymize sensitive data
+  - type: anonymize
+    params:
+      column: email  # Replaces username in emails with asterisks
+```
+
+## Type Conversion Transformations
+
+```yaml
+transformations:
+  # Convert to numeric type
+  - type: to_numeric
+    params:
+      column: amount
+      errors: "coerce"  # Optional: "raise", "coerce", or "ignore"
+```
+
+## Chaining Transformations
+
+You can chain multiple transformations in sequence. The transformations will be applied in the order they are specified:
+
+```yaml
+transformations:
+  - type: to_lowercase
+    params:
+      column: product_name
+  - type: strip
+    params:
+      column: product_name
+  - type: truncate
+    params:
+      column: product_name
+      length: 50
+```
+
+## Programmatic Usage
+
+While schema files are convenient for static transformations, you can also apply transformations programmatically using the `TransformationManager`:
+
+```python
+import pandasai as pai
+
+df = pai.read_csv("data.csv")
+manager = TransformationManager(df)
+result = (manager
+    .validate_email("email", drop_invalid=True)
+    .normalize_phone("phone")
+    .validate_date_range("birth_date", "1900-01-01", "2024-01-01")
+    .remove_duplicates("user_id")
+    .ensure_positive("amount")
+    .standardize_categories("company", {"Apple Inc.": "Apple"})
+    .df)
+```
+
+This approach allows for a fluent interface, chaining multiple transformations together. Each method returns the manager instance, enabling further transformations. The final `.df` attribute returns the transformed DataFrame.
+
+## Complete Example
+
+Let's walk through a complete example of data transformation using a sales dataset. This example demonstrates how to clean, validate, and prepare your data for analysis.
+
+### Sample Data
+
+Consider a CSV file `sales_data.csv` with the following structure:
+```csv
+date,store_id,product_name,category,quantity,unit_price,customer_email
+2024-01-15, ST001,  iPhone 13 Pro,Electronics,2,999.99,john.doe@email.com
+2024-01-15,ST002,macBook Pro ,Electronics,-1,1299.99,invalid.email
+2024-01-16,ST001,AirPods Pro,Electronics,3,249.99,jane@example.com
+2024-01-16,ST003,iMac 27" ,Electronics,1,1799.99,
+```
+
+### Schema File
+
+Create a `schema.yaml` file to define the transformations:
+
+```yaml
+name: sales_data
+description: "Daily sales data from retail stores"
+source:
+  type: csv
+  path: "sales_data.csv"
+
+transformations:
+  # Clean up product names
+  - type: strip
+    params:
+      column: product_name
+  - type: standardize_categories
+    params:
+      column: product_name
+      mapping:
+        "iPhone 13 Pro": "iPhone 13 Pro"
+        "macBook Pro": "MacBook Pro"
+        "AirPods Pro": "AirPods Pro"
+        "iMac 27\"": "iMac 27-inch"
+
+  # Format dates
+  - type: to_datetime
+    params:
+      column: date
+      format: "%Y-%m-%d"
+
+  # Validate and clean store IDs
+  - type: pad
+    params:
+      column: store_id
+      width: 5
+      side: "right"
+      pad_char: "0"
+
+  # Ensure valid quantities
+  - type: ensure_positive
+    params:
+      column: quantity
+      drop_negative: true
+
+  # Format prices
+  - type: round_numbers
+    params:
+      column: unit_price
+      decimals: 2
+
+  # Validate emails
+  - type: validate_email
+    params:
+      column: customer_email
+      drop_invalid: false
+
+  # Add derived columns
+  - type: scale
+    params:
+      column: unit_price
+      factor: 1.1  # Add 10% tax
+
+columns:
+  date:
+    type: datetime
+    description: "Date of sale"
+  store_id:
+    type: string
+    description: "Store identifier"
+  product_name:
+    type: string
+    description: "Product name"
+  category:
+    type: string
+    description: "Product category"
+  quantity:
+    type: integer
+    description: "Number of units sold"
+  unit_price:
+    type: float
+    description: "Price per unit"
+  customer_email:
+    type: string
+    description: "Customer email address"
+```
+
+### Python Code
+
+Here's how to use the schema and transformations in your code:
+
+```python
+import pandasai as pai
+
+# Load and transform the data of the schema we just created
+df = pai.load("my-org/sales-data")
+
+# The resulting DataFrame will have:
+# - Cleaned and standardized product names
+# - Properly formatted dates
+# - Padded store IDs (e.g., "ST001000")
+# - Only positive quantities
+# - Rounded prices with tax
+# - Validated email addresses
+
+# You can now analyze the data
+response = df.chat("What's our best-selling product?")
+
+# Or export the transformed data
+df.to_csv("cleaned_sales_data.csv")
+```
+
+### Result
+
+The transformed data will look like this:
+```csv
+date,store_id,product_name,category,quantity,unit_price,customer_email,email_valid
+2024-01-15,ST001000,iPhone 13 Pro,Electronics,2,1099.99,john.doe@email.com,true
+2024-01-16,ST001000,AirPods Pro,Electronics,3,274.99,jane@example.com,true
+2024-01-16,ST003000,iMac 27-inch,Electronics,1,1979.99,,false
+```
+
+Notice how the transformations have:
+- Standardized product names
+- Padded store IDs
+- Removed negative quantity rows
+- Added 10% tax to prices
+- Validated email addresses
+- Added an email validation column
+
+This example demonstrates how to use multiple transformations together to clean and prepare your data for analysis. The transformations are applied in sequence, and each transformation builds on the results of the previous ones.

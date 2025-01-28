@@ -59,7 +59,7 @@
       },
       {
         "group": "Data",
-        "pages": ["v3/data-layer", "v3/semantic-layer", "v3/data-ingestion", "v3/dataframes"],
+        "pages": ["v3/data-layer", "v3/semantic-layer", "v3/data-ingestion", "v3/transformations", "v3/dataframes"],
         "version": "v3"
       },
       {
