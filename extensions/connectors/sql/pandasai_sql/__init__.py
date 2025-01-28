@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 
 from pandasai.data_loader.semantic_layer_schema import (
@@ -6,7 +8,9 @@ from pandasai.data_loader.semantic_layer_schema import (
 )
 
 
-def load_from_mysql(connection_info: SQLConnectionConfig, query: str):
+def load_from_mysql(
+    connection_info: SQLConnectionConfig, query: str, params: Optional[list] = None
+):
     import pymysql
 
     conn = pymysql.connect(
@@ -16,10 +20,12 @@ def load_from_mysql(connection_info: SQLConnectionConfig, query: str):
         database=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, conn, params=params)
 
 
-def load_from_postgres(connection_info: SQLConnectionConfig, query: str):
+def load_from_postgres(
+    connection_info: SQLConnectionConfig, query: str, params: Optional[list] = None
+):
     import psycopg2
 
     conn = psycopg2.connect(
@@ -29,17 +35,21 @@ def load_from_postgres(connection_info: SQLConnectionConfig, query: str):
         dbname=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, conn, params=params)
 
 
-def load_from_sqlite(connection_info: SqliteConnectionConfig, query: str):
+def load_from_sqlite(
+    connection_info: SqliteConnectionConfig, query: str, params: Optional[list] = None
+):
     import sqlite3
 
     conn = sqlite3.connect(connection_info.file_path)
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, conn, params=params)
 
 
-def load_from_cockroachdb(connection_info: SQLConnectionConfig, query: str):
+def load_from_cockroachdb(
+    connection_info: SQLConnectionConfig, query: str, params: Optional[list] = None
+):
     import psycopg2
 
     conn = psycopg2.connect(
@@ -49,7 +59,7 @@ def load_from_cockroachdb(connection_info: SQLConnectionConfig, query: str):
         dbname=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, conn, params=params)
 
 
 __all__ = [

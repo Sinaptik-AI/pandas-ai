@@ -182,7 +182,7 @@ class DatasetLoader:
         result = self.execute_query(query)
         return result.iloc[0, 0]
 
-    def execute_query(self, query: str) -> pd.DataFrame:
+    def execute_query(self, query: str, params: Optional[list] = None) -> pd.DataFrame:
         source = self.schema.source
         source_type = source.type
         connection_info = source.connection
@@ -195,7 +195,7 @@ class DatasetLoader:
         load_function = self._get_loader_function(source_type)
 
         try:
-            return load_function(connection_info, formatted_query)
+            return load_function(connection_info, formatted_query, params)
         except Exception as e:
             raise RuntimeError(
                 f"Failed to execute query for '{source_type}' with: {formatted_query}"
