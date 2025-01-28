@@ -1,6 +1,10 @@
+import base64
+import io
 import unittest
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
+from PIL import Image
 
 from pandasai.core.response import (
     ChartResponse,
@@ -125,6 +129,44 @@ class TestResponseParser(unittest.TestCase):
     def test_validate_valid_plot_path(self):
         result = {"type": "plot", "value": "/valid/path/to/plot.png"}
         self.assertTrue(self.response_parser._validate_response(result))
+
+    @patch("pandasai.core.response.chart.Image.open")  # Mock the Image.open method
+    def test_get_base64_image(self, mock_image_open):
+        # Create a mock image
+        mock_image = MagicMock(spec=Image.Image)
+        mock_image.save = MagicMock()  # Mock the save method
+        mock_image_open.return_value = mock_image  # Mock return value for Image.open
+
+        # Create a mock image file path
+        mock_image_path = "test_image.png"
+
+        # Initialize ChartResponse with a mock image path
+        chart_response = ChartResponse(
+            value=mock_image_path, last_code_executed="test_code"
+        )
+
+        # Mock the image bytes to be encoded
+        mock_image_bytes = io.BytesIO()
+        mock_image_bytes.write(b"mock_image_data")
+        mock_image_bytes.seek(0)
+
+        def save_to_mock_bytes(file_obj, format=None):
+            file_obj.write(mock_image_bytes.read())
+
+        mock_image.save.side_effect = save_to_mock_bytes  # Mock save to write bytes
+
+        # Call the method
+        result = chart_response.get_base64_image()
+
+        # Prepare the expected base64 string
+        expected_base64 = base64.b64encode(b"mock_image_data").decode("utf-8")
+
+        # Assert the result
+        assert result == expected_base64
+        mock_image_open.assert_called_once_with(
+            mock_image_path
+        )  # Ensure the image was opened
+        mock_image.save.assert_called_once()
 
 
 if __name__ == "__main__":
