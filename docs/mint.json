@@ -3,7 +3,7 @@
     "logo": {
       "light": "/logo/logo.png",
       "dark": "/logo/logo.png",
-      "href": "https://pandas-ai.com"
+      "href": "https://getpanda.ai"
     },
     "favicon": "/favicon.svg",
     "colors": {
@@ -73,8 +73,13 @@
         "version": "v3"
       },
       {
+        "group": "Advanced Usage",
+        "pages": ["v3/agent"],
+        "version": "v3"
+      },
+      {
         "group": "Backwards Compatibility",
-        "pages": ["v3/agent", "v3/smart-dataframes", "v3/smart-datalakes"],
+        "pages": ["v3/smart-dataframes", "v3/smart-datalakes"],
         "version": "v3"
       },
       {

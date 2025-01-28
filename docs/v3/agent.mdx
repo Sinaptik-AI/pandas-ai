@@ -1,18 +1,18 @@
 ---
-title: 'Agent'
-description: 'Add few-shot learning to your PandaAI agent'
+title: "Agent"
+description: "Add few-shot learning to your PandaAI agent"
 ---
 
 <Note title="Beta Notice">
-Release v3 is currently in beta. This documentation reflects the features and functionality in progress and may change before the final release.
+  Release v3 is currently in beta. This documentation reflects the features and
+  functionality in progress and may change before the final release.
 </Note>
 
 You can train PandaAI to understand your data better and to improve its performance. Training is as easy as calling the `train` method on the `Agent`.
 
-
 ## Prerequisites
 
-Before you start training PandaAI, you need to set your PandaAI API key. 
+Before you start training PandaAI, you need to set your PandaAI API key.
 You can generate your API key by signing up at [https://app.pandabi.ai](https://app.pandabi.ai).
 
 ```python
@@ -134,6 +134,60 @@ print(response)
 # The model will use the information provided in the training to generate a response
 ```
 
+## Using the Sandbox Environment
+
+To enhance security and protect against malicious code through prompt injection, PandaAI provides a sandbox environment for code execution. The sandbox runs your code in an isolated Docker container, ensuring that potentially harmful operations are contained.
+
+### Installation
+
+Before using the sandbox, you need to install Docker on your machine and ensure it is running.
+
+First, install the sandbox package:
+
+```bash
+pip install pandasai-docker
+```
+
+### Basic Usage
+
+Here's how to use the sandbox with your PandaAI agent:
+
+```python
+from pandasai import Agent
+from pandasai_docker import DockerSandbox
+
+# Initialize the sandbox
+sandbox = DockerSandbox()
+sandbox.start()
+
+# Create an agent with the sandbox
+df = pai.read_csv("data.csv")
+agent = Agent([df], sandbox=sandbox)
+
+# Chat with the agent - code will run in the sandbox
+response = agent.chat("Calculate the average sales")
+
+# Don't forget to stop the sandbox when done
+sandbox.stop()
+```
+
+### Customizing the Sandbox
+
+You can customize the sandbox environment by specifying a custom name and Dockerfile:
+
+```python
+sandbox = DockerSandbox(
+    "custom-sandbox-name",
+    "/path/to/custom/Dockerfile"
+)
+```
+
+<Note>
+  The sandbox works offline and provides an additional layer of security for
+  code execution. It's particularly useful when working with untrusted data or
+  when you need to ensure that code execution is isolated from your main system.
+</Note>
+
 ## Troubleshooting
 
 In some cases, you might get an error like this: `No vector store provided. Please provide a vector store to train the agent`. It means no API key has been generated to use the `BambooVectorStore`.
@@ -153,9 +207,11 @@ vector_store = BambooVectorStor(api_key="YOUR_PANDABI_API_KEY")
 # Instantiate the agent with the custom vector store
 agent = Agent(connector, config={...} vectorstore=vector_store)
 ```
+
 ## Custom Head
 
 In some cases, you might want to provide custom data samples to the conversational agent to improve its understanding and responses. For example, you might want to:
+
 - Provide better examples that represent your data patterns
 - Avoid sharing sensitive information
 - Guide the agent with specific data scenarios

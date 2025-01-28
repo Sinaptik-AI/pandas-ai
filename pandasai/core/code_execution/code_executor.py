@@ -42,3 +42,7 @@ class CodeExecutor:
             raise NoResultFoundError("No result returned")
 
         return self._environment.get("result", None)
+
+    @property
+    def environment(self) -> dict:
+        return self._environment
