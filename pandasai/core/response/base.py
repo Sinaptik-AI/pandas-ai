@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+from pandasai.helpers.json_encoder import CustomJsonEncoder
+
 
 class BaseResponse:
     """
@@ -45,4 +47,4 @@ class BaseResponse:
 
     def to_json(self) -> str:
         """Return a JSON representation."""
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), cls=CustomJsonEncoder)

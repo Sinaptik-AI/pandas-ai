@@ -30,3 +30,10 @@ class ChartResponse(BaseResponse):
     def __str__(self) -> str:
         self.show()
         return self.value
+
+    def get_base64_image(self) -> str:
+        img = self._get_image()
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format="PNG")
+        img_byte_arr = img_byte_arr.getvalue()
+        return base64.b64encode(img_byte_arr).decode("utf-8")
