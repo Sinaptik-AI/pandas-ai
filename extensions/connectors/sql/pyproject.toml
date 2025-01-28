@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = ">=3.0.0-beta.0"
+pandasai = ">=3.0.0-beta.2"
 sqlalchemy = "^2.0.0"
 numpy = ">=1.23.2,<2.0.0"
 
