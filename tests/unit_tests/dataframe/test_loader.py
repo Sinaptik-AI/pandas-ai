@@ -235,27 +235,24 @@ class TestDatasetLoader:
             loader._read_csv_or_parquet("dummy_path", "unsupported")
 
     def test_apply_transformations(self, sample_schema):
+        """Test that DatasetLoader correctly uses TransformationManager."""
         loader = DatasetLoader()
         loader.schema = sample_schema
 
         df = pd.DataFrame(
             {
-                "email": ["user1@example.com", "user2@example.com"],
-                "timestamp": pd.to_datetime(
-                    ["2023-01-01T00:00:00+00:00", "2023-01-02T00:00:00+00:00"]
-                ),
+                "email": ["user1@example.com"],
+                "timestamp": pd.to_datetime(["2023-01-01T00:00:00+00:00"]),
             }
         )
 
         result = loader._apply_transformations(df)
 
-        # Check anonymization
-        assert all(result["email"].str.contains("@example.com"))
-        assert not any(result["email"].isin(["user1@example.com", "user2@example.com"]))
-
-        # Check timezone conversion
-        assert all(ts.tzinfo is not None for ts in result["timestamp"])
-        assert all(ts.tzname() == "UTC" for ts in result["timestamp"])
+        # We just need to verify that transformations were applied
+        # Detailed transformation tests are in test_transformation_manager.py
+        assert "@example.com" in result.iloc[0]["email"]
+        assert result.iloc[0]["email"] != "user1@example.com"
+        assert result.iloc[0]["timestamp"].tzname() == "UTC"
 
     def test_load_mysql_source(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""

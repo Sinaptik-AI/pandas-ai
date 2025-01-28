@@ -19,6 +19,7 @@ from ..constants import (
 )
 from .query_builder import QueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
+from .transformation_manager import TransformationManager
 from .view_query_builder import ViewQueryBuilder
 
 
@@ -202,18 +203,11 @@ class DatasetLoader:
             ) from e
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
-        for transformation in self.schema.transformations or []:
-            transformation_type = transformation.type
-            transformation_column = transformation.params["column"]
-            if transformation_type == "anonymize":
-                df[transformation_column] = df[transformation_column].apply(
-                    self._anonymize
-                )
-            elif transformation_type == "convert_timezone":
-                df[transformation_column] = pd.to_datetime(
-                    df[transformation_column]
-                ).dt.tz_convert(transformation.params["to"])
-        return df
+        if not self.schema.transformations:
+            return df
+
+        transformation_manager = TransformationManager(df)
+        return transformation_manager.apply_transformations(self.schema.transformations)
 
     @staticmethod
     def _anonymize(value: Any) -> Any:

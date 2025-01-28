@@ -284,3 +284,9 @@ class VirtualizationError(Exception):
     """Raised when there is an error with DataFrame virtualization."""
 
     pass
+
+
+class UnsupportedTransformation(Exception):
+    """Raised when a transformation is not supported."""
+
+    pass
