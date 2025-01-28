@@ -74,10 +74,10 @@ class DatasetLoader:
             df = self._apply_transformations(df)
 
             # Convert to pandas DataFrame while preserving internal data
-            df = pd.DataFrame(df._data)
+            df = pd.DataFrame(df)
 
             return DataFrame(
-                df._data,
+                df,
                 schema=self.schema,
                 name=self.schema.name,
                 description=self.schema.description,

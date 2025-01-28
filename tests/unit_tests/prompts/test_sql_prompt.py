@@ -19,28 +19,26 @@ class TestGeneratePythonCodeWithSQLPrompt:
     @pytest.mark.parametrize(
         "output_type,output_type_template",
         [
-            *[
-                (
-                    "",
-                    """type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }""",
-                ),
-                (
-                    "number",
-                    """type (must be "number"), value must int. Example: { "type": "number", "value": 125 }""",
-                ),
-                (
-                    "dataframe",
-                    """type (must be "dataframe"), value must be pd.DataFrame or pd.Series. Example: { "type": "dataframe", "value": pd.DataFrame({...}) }""",
-                ),
-                (
-                    "plot",
-                    """type (must be "plot"), value must be string. Example: { "type": "plot", "value": "temp_chart.png" }""",
-                ),
-                (
-                    "string",
-                    """type (must be "string"), value must be string. Example: { "type": "string", "value": f"The highest salary is {highest_salary}." }""",
-                ),
-            ]
+            (
+                "",
+                """type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }""",
+            ),
+            (
+                "number",
+                """type (must be "number"), value must int. Example: { "type": "number", "value": 125 }""",
+            ),
+            (
+                "dataframe",
+                """type (must be "dataframe"), value must be pd.DataFrame or pd.Series. Example: { "type": "dataframe", "value": pd.DataFrame({...}) }""",
+            ),
+            (
+                "plot",
+                """type (must be "plot"), value must be string. Example: { "type": "plot", "value": "temp_chart.png" }""",
+            ),
+            (
+                "string",
+                """type (must be "string"), value must be string. Example: { "type": "string", "value": f"The highest salary is {highest_salary}." }""",
+            ),
         ],
     )
     def test_str_with_args(self, output_type, output_type_template):
@@ -61,8 +59,6 @@ class TestGeneratePythonCodeWithSQLPrompt:
         prompt_content = prompt.to_string()
         if sys.platform.startswith("win"):
             prompt_content = prompt_content.replace("\r\n", "\n")
-
-        print(prompt_content)
 
         assert (
             prompt_content
