@@ -53,13 +53,13 @@ You can install the PandaAI library using pip or poetry.
 With pip:
 
 ```bash
-pip install pandasai
+pip install "pandasai>=3.0.0b2"
 ```
 
 With poetry:
 
 ```bash
-poetry add pandasai
+poetry add "pandasai>=3.0.0b2"
 ```
 
 ### 💻 Usage
