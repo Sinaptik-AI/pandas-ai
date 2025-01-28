@@ -201,7 +201,6 @@ class TestAgentLLMJudge:
 
         assert evaluation_response.score > 5, evaluation_response.justification
 
-    @pytest.mark.final
     def test_average_score(self):
         if self.evaluation_scores:
             average_score = sum(self.evaluation_scores) / len(self.evaluation_scores)
