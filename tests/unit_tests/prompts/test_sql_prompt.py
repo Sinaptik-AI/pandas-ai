@@ -93,7 +93,6 @@ import pandas as pd
 
 
 
-Variable `dfs: list[pd.DataFrame]` is already declared.
 
 At the end, declare "result" variable as a dictionary of type and value.
 
