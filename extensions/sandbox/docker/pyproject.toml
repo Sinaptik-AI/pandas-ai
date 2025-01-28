@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pandasai-docker"
+version = "0.1.0"
+description = ""
+authors = ["ArslanSaleem <khan.arslan38@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+pandasai = ">=3.0.0-beta.0"
+numpy = ">=1.23.2,<2.0.0"
+docker = "^7.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
