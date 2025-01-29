@@ -16,6 +16,76 @@ class TransformationManager:
             df (pd.DataFrame): The DataFrame to transform
         """
         self.df = df.copy()
+        self.transformation_handlers = {
+            "anonymize": lambda p: self.anonymize(p.column),
+            "convert_timezone": lambda p: self.convert_timezone(p.column, p.to),
+            "to_lowercase": lambda p: self.to_lowercase(p.column),
+            "to_uppercase": lambda p: self.to_uppercase(p.column),
+            "strip": lambda p: self.strip(p.column),
+            "round_numbers": lambda p: self.round_numbers(p.column, p.decimals),
+            "scale": lambda p: self.scale(p.column, p.factor),
+            "format_date": lambda p: self.format_date(p.column, p.format),
+            "to_numeric": lambda p: self.to_numeric(
+                p.column, getattr(p, "errors", "coerce")
+            ),
+            "to_datetime": lambda p: self.to_datetime(
+                p.column, getattr(p, "format", None), getattr(p, "errors", "coerce")
+            ),
+            "fill_na": lambda p: self.fill_na(p.column, p.value),
+            "replace": lambda p: self.replace(
+                p.column, getattr(p, "old_value", None), getattr(p, "new_value", None)
+            ),
+            "extract": lambda p: self.extract(p.column, getattr(p, "pattern", None)),
+            "truncate": lambda p: self.truncate(
+                p.column, getattr(p, "length", None), getattr(p, "add_ellipsis", True)
+            ),
+            "pad": lambda p: self.pad(
+                p.column,
+                getattr(p, "width", None),
+                getattr(p, "side", "left"),
+                getattr(p, "pad_char", " "),
+            ),
+            "clip": lambda p: self.clip(
+                p.column, getattr(p, "lower", None), getattr(p, "upper", None)
+            ),
+            "bin": lambda p: self.bin(
+                p.column, getattr(p, "bins", None), getattr(p, "labels", None)
+            ),
+            "normalize": lambda p: self.normalize(p.column),
+            "standardize": lambda p: self.standardize(p.column),
+            "map_values": lambda p: self.map_values(p.column, p.mapping),
+            "rename": lambda p: self.rename(p.column, p.new_name),
+            "encode_categorical": lambda p: self.encode_categorical(
+                p.column, getattr(p, "drop_first", True)
+            ),
+            "validate_email": lambda p: self.validate_email(
+                p.column, getattr(p, "drop_invalid", False)
+            ),
+            "validate_date_range": lambda p: self.validate_date_range(
+                p.column,
+                getattr(p, "start_date", None),
+                getattr(p, "end_date", None),
+                getattr(p, "drop_invalid", False),
+            ),
+            "normalize_phone": lambda p: self.normalize_phone(
+                p.column, getattr(p, "country_code", "+1")
+            ),
+            "remove_duplicates": lambda p: self.remove_duplicates(
+                getattr(p, "columns", None), getattr(p, "keep", "first")
+            ),
+            "validate_foreign_key": lambda p: self.validate_foreign_key(
+                p.column,
+                getattr(p, "ref_df", None),
+                getattr(p, "ref_column", None),
+                getattr(p, "drop_invalid", False),
+            ),
+            "ensure_positive": lambda p: self.ensure_positive(
+                p.column, getattr(p, "drop_negative", False)
+            ),
+            "standardize_categories": lambda p: self.standardize_categories(
+                p.column, getattr(p, "mapping", None)
+            ),
+        }
 
     def _anonymize(self, value: str) -> str:
         """Anonymize a value by replacing the local part of email with asterisks.
@@ -790,6 +860,29 @@ class TransformationManager:
         self.df[column] = self.df[column].replace(mapping)
         return self
 
+    def rename(self, column: str, new_name: str) -> "TransformationManager":
+        """Rename a column.
+
+        Args:
+            column (str): The current column name
+            new_name (str): The new name for the column
+
+        Returns:
+            TransformationManager: Self for method chaining
+
+        Example:
+            >>> df = pd.DataFrame({"old_name": [1, 2, 3]})
+            >>> manager = TransformationManager(df)
+            >>> result = manager.rename("old_name", "new_name").df
+            >>> print(result)
+               new_name
+            0         1
+            1         2
+            2         3
+        """
+        self.df = self.df.rename(columns={column: new_name})
+        return self
+
     def apply_transformations(
         self, transformations: Optional[List[dict]] = None
     ) -> pd.DataFrame:
@@ -804,67 +897,6 @@ class TransformationManager:
         if not transformations:
             return self.df
 
-        # Map transformation types to their corresponding methods
-        transformation_handlers = {
-            "anonymize": lambda p: self.anonymize(p["column"]),
-            "convert_timezone": lambda p: self.convert_timezone(p["column"], p["to"]),
-            "to_lowercase": lambda p: self.to_lowercase(p["column"]),
-            "to_uppercase": lambda p: self.to_uppercase(p["column"]),
-            "strip": lambda p: self.strip(p["column"]),
-            "round_numbers": lambda p: self.round_numbers(p["column"], p["decimals"]),
-            "scale": lambda p: self.scale(p["column"], p["factor"]),
-            "format_date": lambda p: self.format_date(p["column"], p["format"]),
-            "to_numeric": lambda p: self.to_numeric(
-                p["column"], p.get("errors", "coerce")
-            ),
-            "to_datetime": lambda p: self.to_datetime(
-                p["column"], p.get("format"), p.get("errors", "coerce")
-            ),
-            "fill_na": lambda p: self.fill_na(p["column"], p["value"]),
-            "replace": lambda p: self.replace(
-                p["column"], p["old_value"], p["new_value"]
-            ),
-            "extract": lambda p: self.extract(p["column"], p["pattern"]),
-            "truncate": lambda p: self.truncate(
-                p["column"], p["length"], p.get("add_ellipsis", True)
-            ),
-            "pad": lambda p: self.pad(
-                p["column"], p["width"], p.get("side", "left"), p.get("pad_char", " ")
-            ),
-            "clip": lambda p: self.clip(p["column"], p.get("lower"), p.get("upper")),
-            "bin": lambda p: self.bin(p["column"], p["bins"], p.get("labels")),
-            "normalize": lambda p: self.normalize(p["column"]),
-            "standardize": lambda p: self.standardize(p["column"]),
-            "map_values": lambda p: self.map_values(p["column"], p["mapping"]),
-            "encode_categorical": lambda p: self.encode_categorical(
-                p["column"], p.get("drop_first", True)
-            ),
-            "validate_email": lambda p: self.validate_email(
-                p["column"], p.get("drop_invalid", False)
-            ),
-            "validate_date_range": lambda p: self.validate_date_range(
-                p["column"],
-                p["start_date"],
-                p["end_date"],
-                p.get("drop_invalid", False),
-            ),
-            "normalize_phone": lambda p: self.normalize_phone(
-                p["column"], p.get("country_code", "+1")
-            ),
-            "remove_duplicates": lambda p: self.remove_duplicates(
-                p["columns"], p.get("keep", "first")
-            ),
-            "validate_foreign_key": lambda p: self.validate_foreign_key(
-                p["column"], p["ref_df"], p["ref_column"], p.get("drop_invalid", False)
-            ),
-            "ensure_positive": lambda p: self.ensure_positive(
-                p["column"], p.get("drop_negative", False)
-            ),
-            "standardize_categories": lambda p: self.standardize_categories(
-                p["column"], p["mapping"]
-            ),
-        }
-
         for transformation in transformations:
             # Handle both dict and object transformations
             if isinstance(transformation, dict):
@@ -874,12 +906,11 @@ class TransformationManager:
                 transformation_type = transformation.type
                 params = transformation.params
 
-            handler = transformation_handlers.get(transformation_type)
-            if handler:
-                handler(params)
-            else:
+            handler = self.transformation_handlers.get(transformation_type)
+            if not handler:
                 raise UnsupportedTransformation(
                     f"Transformation type '{transformation_type}' is not supported"
                 )
+            handler(params)
 
         return self.df

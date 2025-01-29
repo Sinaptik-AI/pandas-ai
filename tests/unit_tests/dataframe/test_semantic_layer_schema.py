@@ -189,7 +189,7 @@ class TestSemanticLayerSchema:
         transformation = Transformation(**transformation_data)
 
         assert transformation.type == "anonymize"
-        assert transformation.params["column"] == "email"
+        assert transformation.params.column == "email"
 
     def test_valid_destination(self):
         destination_data = {

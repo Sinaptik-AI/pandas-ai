@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pandasai.data_loader.semantic_layer_schema import (
+    Transformation,
+    TransformationParams,
+)
 from pandasai.data_loader.transformation_manager import TransformationManager
 from pandasai.exceptions import UnsupportedTransformation
 
@@ -178,30 +182,22 @@ class TestTransformationManager:
         )
 
         transformations = [
-            type(
-                "Transformation",
-                (),
-                {"type": "anonymize", "params": {"column": "email"}},
-            )(),
-            type(
-                "Transformation",
-                (),
-                {
-                    "type": "convert_timezone",
-                    "params": {"column": "timestamp", "to": "UTC"},
-                },
-            )(),
-            type(
-                "Transformation", (), {"type": "strip", "params": {"column": "text"}}
-            )(),
-            type(
-                "Transformation",
-                (),
-                {
-                    "type": "round_numbers",
-                    "params": {"column": "numbers", "decimals": 2},
-                },
-            )(),
+            Transformation(
+                type="anonymize",
+                params=TransformationParams(column="email"),
+            ),
+            Transformation(
+                type="convert_timezone",
+                params=TransformationParams(column="timestamp", to="UTC"),
+            ),
+            Transformation(
+                type="strip",
+                params=TransformationParams(column="text"),
+            ),
+            Transformation(
+                type="round_numbers",
+                params=TransformationParams(column="numbers", decimals=2),
+            ),
         ]
 
         manager = TransformationManager(df)
@@ -225,15 +221,25 @@ class TestTransformationManager:
         """Test that unsupported transformation type raises exception."""
         df = pd.DataFrame({"col": [1, 2, 3]})
 
+        # Test that invalid transformation type is caught by model validation
+        with pytest.raises(ValueError, match="Unsupported transformation type"):
+            Transformation(
+                type="non_existent_type",  # This is an invalid type
+                params=TransformationParams(column="col"),
+            )
+
+        # Test that missing handler is caught by transformation manager
         transformations = [
-            type(
-                "Transformation",
-                (),
-                {"type": "unsupported_type", "params": {"column": "col"}},
-            )()
+            Transformation(
+                type="to_lowercase",  # This is a valid type
+                params=TransformationParams(column="col"),
+            )
         ]
 
         manager = TransformationManager(df)
+        # Override the transformation handlers to make it raise the error
+        manager.transformation_handlers = {}
+
         with pytest.raises(UnsupportedTransformation):
             manager.apply_transformations(transformations)
 

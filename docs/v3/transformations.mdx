@@ -189,6 +189,25 @@ transformations:
         "Apple Computer": "Apple"
 ```
 
+### Rename Column
+
+Renames a column to a new name.
+
+**Parameters:**
+- `column` (str): The current column name
+- `new_name` (str): The new name for the column
+
+**Example:**
+```yaml
+transformations:
+  - type: rename
+    params:
+      column: old_name
+      new_name: new_name
+```
+
+This will rename the column `old_name` to `new_name`.
+
 ### Validation Transformations
 
 ```yaml
