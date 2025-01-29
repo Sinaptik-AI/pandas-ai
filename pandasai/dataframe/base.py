@@ -21,6 +21,7 @@ from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import DataframeSerializer
 from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
+from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent

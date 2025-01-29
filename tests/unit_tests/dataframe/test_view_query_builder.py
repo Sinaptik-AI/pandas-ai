@@ -16,17 +16,7 @@ class TestViewQueryBuilder:
                 {"name": "children.name"},
             ],
             "relations": [{"from": "parents.id", "to": "children.id"}],
-            "source": {
-                "type": "mysql",
-                "connection": {
-                    "host": "localhost",
-                    "port": 3306,
-                    "database": "test_db",
-                    "user": "test_user",
-                    "password": "test_password",
-                },
-                "view": "true",
-            },
+            "view": "true",
         }
         return SemanticLayerSchema(**raw_schema)
 

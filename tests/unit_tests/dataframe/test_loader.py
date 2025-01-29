@@ -94,47 +94,6 @@ class TestDatasetLoader:
         }
         return SemanticLayerSchema(**raw_schema)
 
-    @pytest.fixture
-    def sqlite_schema(self):
-        raw_schema = {
-            "name": "Users",
-            "update_frequency": "weekly",
-            "columns": [
-                {
-                    "name": "email",
-                    "type": "string",
-                    "description": "User's email address",
-                },
-                {
-                    "name": "first_name",
-                    "type": "string",
-                    "description": "User's first name",
-                },
-                {
-                    "name": "timestamp",
-                    "type": "datetime",
-                    "description": "Timestamp of the record",
-                },
-            ],
-            "order_by": ["created_at DESC"],
-            "limit": 100,
-            "transformations": [
-                {"type": "anonymize", "params": {"column": "email"}},
-                {
-                    "type": "convert_timezone",
-                    "params": {"column": "timestamp", "to": "UTC"},
-                },
-            ],
-            "source": {
-                "type": "sqlite",
-                "connection": {
-                    "file_path": "/path/to/database.db",
-                },
-                "table": "users",
-            },
-        }
-        return SemanticLayerSchema(**raw_schema)
-
     def test_load_from_local_source_valid(self, sample_schema):
         with patch("os.path.exists", return_value=True), patch(
             "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
@@ -175,8 +134,8 @@ class TestDatasetLoader:
         ):
             loader = DatasetLoader()
             loader.dataset_path = "test/users"
-            loader._load_schema()
-            assert loader.schema == sample_schema
+            schema = loader._read_local_schema()
+            assert schema == sample_schema
 
     def test_load_schema_mysql(self, mysql_schema):
         with patch("os.path.exists", return_value=True), patch(
@@ -184,8 +143,8 @@ class TestDatasetLoader:
         ):
             loader = DatasetLoader()
             loader.dataset_path = "test/users"
-            loader._load_schema()
-            assert loader.schema == mysql_schema
+            schema = loader._read_local_schema()
+            assert schema == mysql_schema
 
     def test_load_schema_mysql_sanitized_name(self, mysql_schema):
         mysql_schema.name = "non-sanitized-name"
@@ -195,15 +154,15 @@ class TestDatasetLoader:
         ):
             loader = DatasetLoader()
             loader.dataset_path = "test/users"
-            loader._load_schema()
-            assert loader.schema.name == "non_sanitized_name"
+            schema = loader._read_local_schema()
+            assert schema.name == "non_sanitized_name"
 
     def test_load_schema_file_not_found(self):
         with patch("os.path.exists", return_value=False):
             loader = DatasetLoader()
             loader.dataset_path = "test/users"
             with pytest.raises(FileNotFoundError):
-                loader._load_schema()
+                loader._read_local_schema()
 
     def test_read_parquet(self, sample_schema):
         loader = DatasetLoader()
@@ -297,7 +256,7 @@ class TestDatasetLoader:
             result.execute_sql_query(custom_query)
             mock_execute_query.assert_called_with(custom_query)
 
-    def test_load_direct_from_mysql_schema(self, mysql_schema):
+    def test_build_dataset_mysql_schema(self, mysql_schema):
         """Test loading data from a MySQL schema directly and creates a VirtualDataFrame and handles queries correctly."""
         with patch("os.path.exists", return_value=True), patch(
             "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
@@ -317,7 +276,9 @@ class TestDatasetLoader:
 
             loader = DatasetLoader()
             logging.debug("Loading schema from dataset path: %s", loader)
-            result = loader.load(schema=mysql_schema)
+            result = loader._build_dataset(
+                schema=mysql_schema, dataset_path="test/test"
+            )
 
             # Test that we get a VirtualDataFrame
             assert isinstance(result, DataFrame)
@@ -340,7 +301,7 @@ class TestDatasetLoader:
             result.execute_sql_query(custom_query)
             mock_execute_query.assert_called_with(custom_query)
 
-    def test_load_direct_from_csv_schema(self, sample_schema):
+    def test_build_dataset_csv_schema(self, sample_schema):
         """Test loading data from a CSV schema directly and creates a VirtualDataFrame and handles queries correctly."""
         with patch("os.path.exists", return_value=True), patch(
             "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
@@ -355,74 +316,9 @@ class TestDatasetLoader:
             )
             loader = DatasetLoader()
 
-            result = loader.load(schema=sample_schema)
+            result = loader._build_dataset(
+                schema=sample_schema, dataset_path="test/test"
+            )
 
             assert isinstance(result, DataFrame)
             assert "email" in result.columns
-
-    def test_load_direct_from_sqlite_schema(self, sqlite_schema):
-        """Test loading data from a sqlite schema directly and creates a VirtualDataFrame and handles queries correctly."""
-        with patch("os.path.exists", return_value=True), patch(
-            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
-        ) as mock_read_csv_or_parquet, patch(
-            "pandasai.data_loader.loader.DatasetLoader._apply_transformations"
-        ) as mock_apply_transformations, patch(
-            "pandasai.data_loader.loader.DatasetLoader.execute_query"
-        ) as mock_execute_query:
-            mock_read_csv_or_parquet.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            mock_apply_transformations.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            loader = DatasetLoader()
-
-            result = loader.load(schema=sqlite_schema)
-
-            assert isinstance(result, DataFrame)
-            assert "email" in result.columns
-
-            assert mock_execute_query.call_args[0][0] == (
-                "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC LIMIT 100"
-            )
-
-    def test_load_without_schema_and_path(self, sample_schema):
-        """Test load by not providing a schema or path."""
-        with patch("os.path.exists", return_value=True), patch(
-            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
-        ) as mock_read_csv_or_parquet, patch(
-            "pandasai.data_loader.loader.DatasetLoader._apply_transformations"
-        ) as mock_apply_transformations:
-            mock_read_csv_or_parquet.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            mock_apply_transformations.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            loader = DatasetLoader()
-
-            with pytest.raises(
-                ValueError, match="Either 'dataset_path' or 'schema' must be provided."
-            ):
-                result = loader.load()
-
-    def test_load_with_schema_and_path(self, sample_schema):
-        """Test load by providing both schema and path."""
-        with patch("os.path.exists", return_value=True), patch(
-            "pandasai.data_loader.loader.DatasetLoader._read_csv_or_parquet"
-        ) as mock_read_csv_or_parquet, patch(
-            "pandasai.data_loader.loader.DatasetLoader._apply_transformations"
-        ) as mock_apply_transformations:
-            mock_read_csv_or_parquet.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            mock_apply_transformations.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            loader = DatasetLoader()
-
-            with pytest.raises(
-                ValueError,
-                match="Provide only one of 'dataset_path' or 'schema', not both.",
-            ):
-                result = loader.load("test/users", sample_schema)

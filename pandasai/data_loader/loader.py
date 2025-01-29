@@ -29,11 +29,7 @@ class DatasetLoader:
         self.query_builder: Optional[QueryBuilder] = None
         self.dataset_path: Optional[str] = None
 
-    def load(
-        self,
-        dataset_path: Optional[str] = None,
-        schema: Optional[SemanticLayerSchema] = None,
-    ) -> DataFrame:
+    def load(self, dataset_path: str) -> DataFrame:
         """
         Load data into a DataFrame based on the provided dataset path or schema.
 
@@ -47,47 +43,39 @@ class DatasetLoader:
         Raises:
             ValueError: If both `dataset_path` and `schema` are provided, or neither is provided.
         """
-        if not dataset_path and not schema:
-            raise ValueError("Either 'dataset_path' or 'schema' must be provided.")
-        if dataset_path and schema:
-            raise ValueError(
-                "Provide only one of 'dataset_path' or 'schema', not both."
-            )
+        self.dataset_path = dataset_path
+        schema = self._read_local_schema()
+        return self._build_dataset(schema, dataset_path)
 
-        if dataset_path:
-            self.dataset_path = dataset_path
-            self._load_schema()
-        elif schema:
-            self.schema = schema
+    def _build_dataset(
+        self, schema: SemanticLayerSchema, dataset_path: str
+    ) -> DataFrame:
+        self.schema = schema
+        self.dataset_path = dataset_path
+        is_view = schema.view
 
-        if self.schema.source.view:
-            self.query_builder = ViewQueryBuilder(self.schema)
-        else:
-            self.query_builder = QueryBuilder(self.schema)
+        self.query_builder = (
+            ViewQueryBuilder(schema) if is_view else QueryBuilder(schema)
+        )
 
-        source_type = self.schema.source.type
+        source_type = schema.source.type
         if source_type in LOCAL_SOURCE_TYPES:
-            # in case of direct schema passed set dataset path to schema.source.path if exists
-            if not self.dataset_path and self.schema.source.path:
-                self.dataset_path = self.schema.source.path
-
             df = self._load_from_local_source()
             df = self._apply_transformations(df)
 
-            # Convert to pandas DataFrame while preserving internal data
             df = pd.DataFrame(df)
 
             return DataFrame(
                 df,
-                schema=self.schema,
-                name=self.schema.name,
-                description=self.schema.description,
+                schema=schema,
+                name=schema.name,
+                description=schema.description,
                 path=dataset_path,
             )
         else:
             data_loader = self.copy()
             return VirtualDataFrame(
-                schema=self.schema,
+                schema=schema,
                 data_loader=data_loader,
                 path=dataset_path,
             )
@@ -95,7 +83,7 @@ class DatasetLoader:
     def _get_abs_dataset_path(self):
         return os.path.join(find_project_root(), "datasets", self.dataset_path)
 
-    def _load_schema(self):
+    def _read_local_schema(self) -> SemanticLayerSchema:
         schema_path = os.path.join(str(self._get_abs_dataset_path()), "schema.yaml")
         if not os.path.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
@@ -103,7 +91,7 @@ class DatasetLoader:
         with open(schema_path, "r") as file:
             raw_schema = yaml.safe_load(file)
             raw_schema["name"] = sanitize_sql_table_name(raw_schema["name"])
-            self.schema = SemanticLayerSchema(**raw_schema)
+            return SemanticLayerSchema(**raw_schema)
 
     def _get_loader_function(self, source_type: str):
         """
@@ -162,10 +150,6 @@ class DatasetLoader:
             raise InvalidDataSourceType(
                 f"Unsupported local source type: {source_type}. Supported types are: {LOCAL_SOURCE_TYPES}."
             )
-
-        if source_type == "sqlite":
-            query = self.query_builder.build_query()
-            return self.execute_query(query)
 
         filepath = os.path.join(
             str(self._get_abs_dataset_path()),
