@@ -55,6 +55,9 @@ mkdocs = "1.5.3"
 mkdocstrings-python = "1.7.2"
 markdown-include = "^0.6.0"
 
+[tool.poetry.scripts]
+pai = "pandasai.cli.main:cli"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
