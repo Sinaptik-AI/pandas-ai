@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-sql"
-version = "0.1.3"
+version = "0.1.4"
 description = "SQL integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
