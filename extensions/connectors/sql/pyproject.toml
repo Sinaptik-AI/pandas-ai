@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-sql"
-version = "0.1.3"
+version = "0.1.4"
 description = "SQL integration for PandaAI"
 authors = ["Gabriele Venturi"]
 license = "MIT"
@@ -8,9 +8,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = ">=3.0.0-beta.2"
+pandasai = ">=3.0.0b4"
 sqlalchemy = "^2.0.0"
 numpy = ">=1.23.2,<2.0.0"
+
+[tool.poetry.extras]
+postgres = ["psycopg2-binary"]
+mysql = ["pymysql"]
+cockroach = ["cockroachdb"]
+sqlite = ["sqlite3"]
 
 [tool.poetry.group.test]
 optional = true
@@ -19,7 +25,6 @@ optional = true
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.11.1"
-
 
 [tool.poetry.group.dev.dependencies]
 pymysql = "^1.1.1"
