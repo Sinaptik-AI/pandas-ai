@@ -1123,13 +1123,13 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "pandasai"
-version = "3.0.0b2"
+version = "3.0.0b4"
 description = "Chat with your database (SQL, CSV, pandas, mongodb, noSQL, etc). PandaAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 optional = false
 python-versions = "<3.12,>=3.8"
 files = [
-    {file = "pandasai-3.0.0b2-py3-none-any.whl", hash = "sha256:bb5f66e0a5ce73340331a705eb10353065ae5db762ed404ca8118210fcb8627f"},
-    {file = "pandasai-3.0.0b2.tar.gz", hash = "sha256:a86a4158a7eef6f06a809d129c6221b5b4cd6dc8ed35460e9e1cbb53e0038dcd"},
+    {file = "pandasai-3.0.0b4-py3-none-any.whl", hash = "sha256:bed889ab85d866a4e98703bf7407ba61767e3787db7de18fd9fd7d4b50a29033"},
+    {file = "pandasai-3.0.0b4.tar.gz", hash = "sha256:6b2419ed0bf63735a7e3e94b4ebeda931bf4c25bb47a71038cc3ae6875ec776c"},
 ]
 
 [package.dependencies]
@@ -2344,7 +2344,13 @@ enabler = ["pytest-enabler (>=2.2)"]
 test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-ignore-flaky"]
 type = ["pytest-mypy"]
 
+[extras]
+cockroach = []
+mysql = []
+postgres = []
+sqlite = []
+
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "cffd4d0e0724464c4f543321863b773fdb757602286b7ca0bc8daa52705a7546"
+content-hash = "7b27e1adc27a0cb2b6f12783247ee8adff1e75fa29a3f71efb24fcc79f4dd063"

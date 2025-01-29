@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-bigquery"
-version = "0.1.2"
+version = "0.1.3"
 description = "Google BigQuery connector integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pandasai = ">=3.0.0-beta.0"
+pandasai = ">=3.0.0b4"
 pandasai-sql = "^0.1.0"
 sqlalchemy-bigquery = "^1.8.0"
 google-cloud-bigquery = "^3.27.0"
