@@ -4,7 +4,6 @@ PandaAI is a wrapper around a LLM to make dataframes conversational
 """
 
 import os
-import re
 from io import BytesIO
 from typing import List, Optional, Union
 from zipfile import ZipFile

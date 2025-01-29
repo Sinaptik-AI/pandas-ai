@@ -148,7 +148,7 @@ version = "0.3.5"
 description = "CockroachDB adapter for SQLAlchemy"
 optional = false
 python-versions = "*"
-groups = ["dev"]
+groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "cockroachdb-0.3.5-py3-none-any.whl", hash = "sha256:b09904b0381386102f6a613173e7b0ffa01addd56606dd4c807601e14fa054d3"},
@@ -1329,7 +1329,7 @@ version = "2.9.10"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
+groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "psycopg2-binary-2.9.10.tar.gz", hash = "sha256:4b3df0e6990aa98acda57d983942eff13d824135fe2250e6522edaa782a06de2"},
@@ -1544,7 +1544,7 @@ version = "1.1.1"
 description = "Pure Python MySQL Driver"
 optional = false
 python-versions = ">=3.7"
-groups = ["dev"]
+groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c"},
@@ -2415,4 +2415,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.12"
-content-hash = "7fdd73e21bcc443b496576913d19972fb5b9def1e93e657357bfc6ce30a71ad2"
+content-hash = "4c4abaacfd03e8c0e144ce6f02c4e8c9317bc8c57a32580a25cd038a9b60e4fb"

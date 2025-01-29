@@ -80,6 +80,7 @@ def test_get_pandaai_session_without_credentials():
     )
 
 
+@patch("pandasai.os.environ", {})
 def test_get_pandaai_session_with_default_api_url():
     """Test that get_pandaai_session uses DEFAULT_API_URL when no URL is provided"""
     with patch.dict(os.environ, {"PANDABI_API_KEY": "test-key"}):
