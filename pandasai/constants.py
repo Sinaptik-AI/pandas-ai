@@ -50,4 +50,34 @@ REMOTE_SOURCE_TYPES = [
 ]
 SQL_SOURCE_TYPES = ["mysql", "postgres", "cockroachdb", "oracle"]
 VALID_COLUMN_TYPES = ["string", "integer", "float", "datetime", "boolean"]
-VALID_TRANSFORMATION_TYPES = ["anonymize", "convert_timezone"]
+
+VALID_TRANSFORMATION_TYPES = [
+    "anonymize",
+    "convert_timezone",
+    "to_lowercase",
+    "to_uppercase",
+    "strip",
+    "round_numbers",
+    "scale",
+    "format_date",
+    "to_numeric",
+    "to_datetime",
+    "fill_na",
+    "replace",
+    "extract",
+    "truncate",
+    "pad",
+    "clip",
+    "bin",
+    "normalize",
+    "standardize",
+    "map_values",
+    "encode_categorical",
+    "validate_email",
+    "validate_date_range",
+    "normalize_phone",
+    "remove_duplicates",
+    "validate_foreign_key",
+    "ensure_positive",
+    "standardize_categories",
+]

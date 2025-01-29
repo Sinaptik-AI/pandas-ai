@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pandasai-milvus"
-version = "0.1.2"
+version = "0.1.3"
 description = "Milvus integration for PandaAI"
 authors = ["Gabriele Venturi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
-pandasai = ">=3.0.0-beta.0"
+pandasai = ">=3.0.0b4"
 pymilvus = {version = "^2.3.6", extras = ["model"]}
 numpy = "1.23.2"
 sentence-transformers = "^2.2.2"
