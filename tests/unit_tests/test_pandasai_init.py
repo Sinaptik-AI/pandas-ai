@@ -20,10 +20,6 @@ def create_test_zip():
 
 class TestPandaAIInit:
     @pytest.fixture
-    def sample_df(self):
-        return DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-
-    @pytest.fixture
     def mysql_connection_json(self):
         return {
             "type": "mysql",
@@ -54,30 +50,6 @@ class TestPandaAIInit:
     @pytest.fixture
     def sqlite_connection_json(self):
         return {"type": "sqlite", "path": "/path/to/database.db", "table": "countries"}
-
-    @pytest.fixture
-    def sample_dataframes(self):
-        df1 = DataFrame({"A": [1, 2, 3], "B": ["a", "b", "c"]})
-        df2 = DataFrame({"X": [10, 20, 30], "Y": ["x", "y", "z"]})
-        return [df1, df2]
-
-    @pytest.fixture
-    def sample_schema(self):
-        from pandasai.data_loader.semantic_layer_schema import (
-            Column,
-            SemanticLayerSchema,
-            Source,
-        )
-
-        return SemanticLayerSchema(
-            name="test_dataset",
-            description="A test dataset",
-            source=Source(type="parquet", path="data.parquet"),
-            columns=[
-                Column(name="A", type="integer", description="Column A"),
-                Column(name="B", type="integer", description="Column B"),
-            ],
-        )
 
     def test_chat_creates_agent(self, sample_df):
         with patch("pandasai.Agent") as MockAgent:
@@ -352,8 +324,8 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
-            assert result.description is None
+            assert result.schema.name == sample_df.schema.name
+            assert result.schema.description is None
             assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
 
     def test_create_invalid_path_format(self, sample_df):
@@ -427,7 +399,7 @@ class TestPandaAIInit:
 
             # Verify dataset was created successfully
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
+            assert result.schema.name == sample_df.schema.name
             mock_to_parquet.assert_called_once()
             mock_makedirs.assert_called_once()
             mock_file.assert_called_once()
@@ -481,7 +453,7 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
+            assert result.schema.name == sample_df.schema.name
             assert mock_schema.description == "test_description"
             mock_dataset_loader.load.assert_called_once_with("test-org/test-dataset")
 
@@ -533,8 +505,8 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
-            assert result.description is None
+            assert result.schema.name == sample_df.schema.name
+            assert result.schema.description is None
             assert result.schema.columns == list(
                 map(lambda column: Column(**column), columns_dict)
             )
@@ -610,8 +582,8 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
-            assert result.description is None
+            assert result.schema.name == sample_df.schema.name
+            assert result.schema.description is None
             assert mock_dataset_loader.load.call_count == 1
             assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
 
@@ -665,8 +637,8 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
-            assert result.description is None
+            assert result.schema.name == sample_df.schema.name
+            assert result.schema.description is None
             assert mock_dataset_loader.load.call_count == 1
             assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
 
@@ -747,7 +719,7 @@ class TestPandaAIInit:
 
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
-            assert result.name == sample_df.name
-            assert result.description is None
+            assert result.schema.name == sample_df.schema.name
+            assert result.schema.description is None
             assert mock_dataset_loader.load.call_count == 1
             assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"

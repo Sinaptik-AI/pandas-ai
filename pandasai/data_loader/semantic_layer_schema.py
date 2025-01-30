@@ -92,6 +92,10 @@ class Source(BaseModel):
                 raise ValueError(
                     f"For local source type '{_type}', 'path' must be defined."
                 )
+            if not table:
+                raise ValueError(
+                    f"For local source type '{_type}', 'table' must be defined."
+                )
 
         elif _type in REMOTE_SOURCE_TYPES:
             if not connection:

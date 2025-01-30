@@ -4,16 +4,6 @@ import pytest
 from pandasai.core.response.dataframe import DataFrameResponse
 
 
-@pytest.fixture
-def sample_dict_data():
-    return {"col1": [1, 2, 3], "col2": ["a", "b", "c"]}
-
-
-@pytest.fixture
-def sample_df(sample_dict_data):
-    return pd.DataFrame(sample_dict_data)
-
-
 def test_dataframe_response_initialization(sample_df):
     response = DataFrameResponse(sample_df, "test_code")
     assert response.type == "dataframe"
@@ -35,7 +25,7 @@ def test_dataframe_response_with_dict(sample_dict_data):
     response = DataFrameResponse(sample_dict_data, "test_code")
     assert response.type == "dataframe"
     assert isinstance(response.value, pd.DataFrame)
-    assert list(response.value.columns) == ["col1", "col2"]
+    assert list(response.value.columns) == ["A", "B"]
     assert len(response.value) == 3
 
 
@@ -50,7 +40,7 @@ def test_format_value_with_dict(sample_dict_data):
     response = DataFrameResponse(pd.DataFrame())  # Initialize with empty DataFrame
     result = response.format_value(sample_dict_data)
     assert isinstance(result, pd.DataFrame)
-    assert list(result.columns) == ["col1", "col2"]
+    assert list(result.columns) == ["A", "B"]
 
 
 def test_format_value_with_dataframe(sample_df):

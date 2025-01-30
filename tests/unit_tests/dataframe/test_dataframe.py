@@ -17,38 +17,20 @@ class TestDataFrame:
         yield
         pandasai._current_agent = None
 
-    @pytest.fixture
-    def sample_data(self):
-        return {
-            "Name": ["John", "Emma", "Liam", "Olivia", "Noah"],
-            "Age": [28, 35, 22, 31, 40],
-            "City": ["New York", "London", "Paris", "Tokyo", "Sydney"],
-            "Salary": [75000, 82000, 60000, 79000, 88000],
-        }
-
-    @pytest.fixture
-    def sample_df(self, sample_data):
-        return DataFrame(
-            sample_data,
-            path="acme-corp/employees",
-            name="employees",
-            description="Employee data",
-        )
-
-    def test_dataframe_initialization(self, sample_data, sample_df):
+    def test_dataframe_initialization(self, sample_dict_data, sample_df):
         assert isinstance(sample_df, DataFrame)
         assert isinstance(sample_df, pd.DataFrame)
-        assert sample_df.equals(pd.DataFrame(sample_data))
+        assert sample_df.equals(pd.DataFrame(sample_dict_data))
 
     def test_dataframe_operations(self, sample_df):
-        assert len(sample_df) == 5
-        assert list(sample_df.columns) == ["Name", "Age", "City", "Salary"]
-        assert sample_df["Salary"].mean() == 76800
+        assert len(sample_df) == 3
+        assert list(sample_df.columns) == ["A", "B"]
+        assert sample_df["A"].mean() == 2
 
     @patch("pandasai.agent.Agent")
     @patch("os.environ")
-    def test_chat_creates_agent(self, mock_env, mock_agent, sample_data):
-        sample_df = DataFrame(sample_data)
+    def test_chat_creates_agent(self, mock_env, mock_agent, sample_dict_data):
+        sample_df = DataFrame(sample_dict_data)
         mock_env.return_value = {"PANDABI_API_URL": "localhost:8000"}
         sample_df.chat("Test query")
         mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
@@ -124,7 +106,7 @@ class TestDataFrame:
         # Mock session and POST request
         mock_session = MagicMock()
         mock_get_session.return_value = mock_session
-
+        sample_df.path = "test/test"
         sample_df.push()
 
         # Verify POST request
@@ -146,8 +128,8 @@ class TestDataFrame:
             ],
             params={
                 "path": sample_df.path,
-                "description": sample_df.description,
-                "name": sample_df.name,
+                "description": sample_df.schema.description,
+                "name": sample_df.schema.name,
             },
             headers={
                 "accept": "application/json",
@@ -156,9 +138,6 @@ class TestDataFrame:
         )
 
     def test_push_raises_error_if_path_is_none(self, sample_df):
-        # Set up the object with no path
-        sample_df.path = None
-
         # Call the method and assert the exception
         with pytest.raises(
             ValueError,
@@ -173,6 +152,7 @@ class TestDataFrame:
 
         # Call the method and assert the exception
         with pytest.raises(PandaAIApiKeyError):
+            sample_df.path = "test/test"
             sample_df.push()
 
     @patch("pandasai.dataframe.base.os.path.exists")
@@ -197,6 +177,7 @@ class TestDataFrame:
         mock_get_session.return_value = mock_session
 
         # Call the method
+        sample_df.path = "test/test"
         sample_df.push()
 
         # Assert that files were closed after the request

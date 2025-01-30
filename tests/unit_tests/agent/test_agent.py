@@ -18,40 +18,6 @@ class TestAgent:
     "Unit tests for Agent class"
 
     @pytest.fixture
-    def mysql_schema(self):
-        raw_schema = {
-            "name": "countries",
-            "source": {
-                "type": "mysql",
-                "connection": {
-                    "host": "localhost",
-                    "port": 3306,
-                    "database": "test_db",
-                    "user": "test_user",
-                    "password": "test_password",
-                },
-                "table": "countries",
-            },
-        }
-        return SemanticLayerSchema(**raw_schema)
-
-    @pytest.fixture
-    def sample_df(self) -> DataFrame:
-        return DataFrame(
-            {
-                "country": ["United States", "United Kingdom", "Japan", "China"],
-                "gdp": [
-                    19294482071552,
-                    2891615567872,
-                    4380756541440,
-                    14631844184064,
-                ],
-                "happiness_index": [6.94, 7.22, 5.87, 5.12],
-            },
-            name="countries",
-        )
-
-    @pytest.fixture
     def llm(self, output: Optional[str] = None) -> FakeLLM:
         return FakeLLM(output=output)
 
@@ -60,7 +26,7 @@ class TestAgent:
         return {"llm": llm}
 
     @pytest.fixture
-    def agent(self, sample_df: pd.DataFrame, config: dict) -> Agent:
+    def agent(self, sample_df: DataFrame, config: dict) -> Agent:
         return Agent(sample_df, config, vectorstore=MagicMock())
 
     @pytest.fixture(autouse=True)
@@ -108,9 +74,11 @@ class TestAgent:
         assert response == "print(United States has the highest gdp)"
 
     @patch("pandasai.agent.base.CodeGenerator")
-    def test_generate_code_with_cache_hit(self, mock_generate_code, agent: Agent):
+    def test_generate_code_with_cache_hit(
+        self, mock_generate_code, agent: Agent, sample_df
+    ):
         # Set up the cache to return a pre-cached response
-        cached_code = """execute_sql_query('SELECT country FROM countries ORDER BY gdp DESC LIMIT 1')
+        cached_code = f"""execute_sql_query('SELECT A FROM {sample_df.schema.source.table}')
 print('Cached result: US has the highest GDP.')"""
         agent._state.config.enable_cache = True
         agent._state.cache.get = MagicMock(return_value=cached_code)
@@ -450,9 +418,9 @@ print('Cached result: US has the highest GDP.')"""
         with pytest.raises(ValueError):
             agent.train(codes)
 
-    def test_execute_local_sql_query_success(self, agent):
-        query = "SELECT count(*) as total from countries;"
-        expected_result = pd.DataFrame({"total": [4]})
+    def test_execute_local_sql_query_success(self, agent, sample_df):
+        query = f"SELECT count(*) as total from {sample_df.schema.source.table};"
+        expected_result = pd.DataFrame({"total": [3]})
         result = agent._execute_local_sql_query(query)
         pd.testing.assert_frame_equal(result, expected_result)
 
@@ -460,9 +428,9 @@ print('Cached result: US has the highest GDP.')"""
         with pytest.raises(RuntimeError, match="SQL execution failed"):
             agent._execute_local_sql_query("wrong query;")
 
-    def test_execute_sql_query_success_local(self, agent):
-        query = "SELECT count(*) as total from countries;"
-        expected_result = pd.DataFrame({"total": [4]})
+    def test_execute_sql_query_success_local(self, agent, sample_df):
+        query = f"SELECT count(*) as total from {sample_df.schema.source.table};"
+        expected_result = pd.DataFrame({"total": [3]})
         result = agent._execute_sql_query(query)
         pd.testing.assert_frame_equal(result, expected_result)
 

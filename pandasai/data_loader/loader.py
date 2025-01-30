@@ -68,8 +68,6 @@ class DatasetLoader:
             return DataFrame(
                 df,
                 schema=schema,
-                name=schema.name,
-                description=schema.description,
                 path=dataset_path,
             )
         else:
@@ -123,25 +121,21 @@ class DatasetLoader:
                 f"Please install the {SUPPORTED_SOURCE_CONNECTORS[source_type]} library."
             ) from e
 
-    def _read_csv_or_parquet(self, file_path: str, format: str) -> DataFrame:
-        if format == "parquet":
+    def _read_csv_or_parquet(self, file_path: str, _format: str) -> DataFrame:
+        if _format == "parquet":
             return DataFrame(
                 pd.read_parquet(file_path),
                 schema=self.schema,
                 path=self.dataset_path,
-                name=self.schema.name,
-                description=self.schema.description,
             )
-        elif format == "csv":
+        elif _format == "csv":
             return DataFrame(
                 pd.read_csv(file_path),
                 schema=self.schema,
                 path=self.dataset_path,
-                name=self.schema.name,
-                description=self.schema.description,
             )
         else:
-            raise ValueError(f"Unsupported file format: {format}")
+            raise ValueError(f"Unsupported file format: {_format}")
 
     def _load_from_local_source(self) -> pd.DataFrame:
         source_type = self.schema.source.type

@@ -4,7 +4,6 @@ PandaAI is a wrapper around a LLM to make dataframes conversational
 """
 
 import os
-import re
 from io import BytesIO
 from typing import List, Optional, Union
 from zipfile import ZipFile
@@ -86,7 +85,6 @@ def create(
         >>> create(
         ...     path="my-org/my-dataset",
         ...     df=my_dataframe,
-        ...     name="My Dataset",
         ...     description="This is a sample dataset.",
         ...     columns=[
         ...         {"name": "id", "type": "integer", "description": "Primary key"},
@@ -241,8 +239,8 @@ def load(dataset_path: str) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    name = f"table_{sanitize_sql_table_name(filepath)}"
-    return DataFrame(data, name=name)
+    table = f"table_{sanitize_sql_table_name(filepath)}"
+    return DataFrame(data, _table_name=table)
 
 
 __all__ = [
