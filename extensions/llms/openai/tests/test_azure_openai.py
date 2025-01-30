@@ -2,6 +2,7 @@
 import openai
 import pytest
 from pandasai_openai import AzureOpenAI
+import httpx
 
 from pandasai.exceptions import APIKeyNotFoundError, MissingModelError
 
@@ -37,6 +38,18 @@ class TestAzureOpenAILLM:
                 azure_endpoint="test",
                 api_version="test",
                 deployment_name="test",
+            ).type
+            == "azure-openai"
+        )
+
+    def test_type_with_http_client(self):
+        assert (
+            AzureOpenAI(
+                api_token="test",
+                azure_endpoint="test",
+                api_version="test",
+                deployment_name="test",
+                http_client=httpx.Client(verify=False)
             ).type
             == "azure-openai"
         )
