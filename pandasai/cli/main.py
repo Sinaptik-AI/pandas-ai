@@ -12,6 +12,12 @@ from pandasai.data_loader.semantic_layer_schema import (
 from pandasai.helpers.path import find_project_root, get_validated_dataset_path
 
 
+def validate_api_key(api_key: str) -> bool:
+    """Validate PandaBI API key format."""
+    pattern = r"^PAI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    return bool(re.match(pattern, api_key))
+
+
 @click.group()
 def cli():
     """🐼 PandaAI CLI - Manage your datasets with ease"""
@@ -91,6 +97,37 @@ def create():
         yml_file.write(schema.to_yaml())
 
     click.echo(f"\n✨ Dataset created successfully at: {dataset_directory}")
+
+
+@cli.command()
+@click.argument("api_key")
+def login(api_key: str):
+    """🔑 Authenticate with your PandaBI API key"""
+    if not validate_api_key(api_key):
+        click.echo(
+            "❌ Invalid API key format. Expected format: PAI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        )
+        return
+
+    env_path = os.path.join(find_project_root(), ".env")
+    env_content = ""
+    new_line = f"PANDABI_API_KEY={api_key}\n"
+
+    # Read existing .env if it exists
+    if os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+            # Filter out existing PANDABI_API_KEY line if present
+            lines = [line for line in lines if not line.startswith("PANDABI_API_KEY=")]
+            env_content = "".join(lines)
+            if env_content and not env_content.endswith("\n"):
+                env_content += "\n"
+
+    # Write updated content
+    with open(env_path, "w") as f:
+        f.write(env_content + new_line)
+
+    click.echo("✅ Successfully authenticated with PandaBI!")
 
 
 @cli.command()

@@ -1,9 +1,77 @@
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from pandasai.cli.main import cli, get_validated_dataset_path
+from pandasai.cli.main import cli, get_validated_dataset_path, validate_api_key
+
+
+def test_validate_api_key():
+    # Valid API key
+    assert validate_api_key("PAI-59ca2c4a-7998-4195-81d1-5c597f998867") == True
+
+    # Invalid API keys
+    assert validate_api_key("PAI-59ca2c4a-7998-4195-81d1") == False  # Too short
+    assert (
+        validate_api_key("XXX-59ca2c4a-7998-4195-81d1-5c597f998867") == False
+    )  # Wrong prefix
+    assert (
+        validate_api_key("PAI-59ca2c4a-7998-4195-81d1-5c597f99886") == False
+    )  # Wrong length
+    assert (
+        validate_api_key("PAI-59ca2c4a7998419581d15c597f998867") == False
+    )  # Missing hyphens
+    assert (
+        validate_api_key("PAI-XXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX") == False
+    )  # Invalid characters
+
+
+def test_login_command(tmp_path):
+    runner = CliRunner()
+
+    with runner.isolated_filesystem(temp_dir=tmp_path) as td:
+        # Test with valid API key
+        result = runner.invoke(
+            cli, ["login", "PAI-59ca2c4a-7998-4195-81d1-5c597f998867"]
+        )
+        assert result.exit_code == 0
+        assert "Successfully authenticated with PandaBI!" in result.output
+
+        # Verify .env file content
+        with open(os.path.join(td, ".env")) as f:
+            content = f.read()
+            assert "PANDABI_API_KEY=PAI-59ca2c4a-7998-4195-81d1-5c597f998867" in content
+
+        # Test with invalid API key
+        result = runner.invoke(cli, ["login", "invalid-key"])
+        assert result.exit_code == 0  # Click returns 0 for validation errors by default
+        assert "Invalid API key format" in result.output
+
+
+def test_login_command_preserves_existing_env(tmp_path):
+    runner = CliRunner()
+
+    with runner.isolated_filesystem(temp_dir=tmp_path) as td:
+        # Create .env with existing variables
+        with open(os.path.join(td, ".env"), "w") as f:
+            f.write("EXISTING_VAR=value\n")
+            f.write("PANDABI_API_KEY=PAI-old-key-that-should-be-replaced\n")
+            f.write("ANOTHER_VAR=another_value\n")
+
+        # Update API key
+        result = runner.invoke(
+            cli, ["login", "PAI-59ca2c4a-7998-4195-81d1-5c597f998867"]
+        )
+        assert result.exit_code == 0
+
+        # Verify .env file content
+        with open(os.path.join(td, ".env")) as f:
+            content = f.read().splitlines()
+            assert "EXISTING_VAR=value" in content
+            assert "ANOTHER_VAR=another_value" in content
+            assert "PANDABI_API_KEY=PAI-59ca2c4a-7998-4195-81d1-5c597f998867" in content
+            assert "PANDABI_API_KEY=PAI-old-key-that-should-be-replaced" not in content
 
 
 def test_get_validated_dataset_path_valid():
@@ -16,7 +84,7 @@ def test_get_validated_dataset_path_valid():
 def test_get_validated_dataset_path_invalid_format():
     """Test get_validated_dataset_path with invalid format"""
     with pytest.raises(
-        ValueError, match="Path must be in format: organization/dataset"
+        ValueError, match="Path must be in format 'organization/dataset'"
     ):
         get_validated_dataset_path("invalid-path")
 
@@ -24,14 +92,18 @@ def test_get_validated_dataset_path_invalid_format():
 def test_get_validated_dataset_path_invalid_org():
     """Test get_validated_dataset_path with invalid organization name"""
     with pytest.raises(
-        ValueError, match="Organization name must be lowercase with hyphens"
+        ValueError,
+        match="Organization name must be lowercase and use hyphens instead of spaces",
     ):
         get_validated_dataset_path("INVALID_ORG/dataset")
 
 
 def test_get_validated_dataset_path_invalid_dataset():
     """Test get_validated_dataset_path with invalid dataset name"""
-    with pytest.raises(ValueError, match="Dataset name must be lowercase with hyphens"):
+    with pytest.raises(
+        ValueError,
+        match="Dataset name must be lowercase and use hyphens instead of spaces",
+    ):
         get_validated_dataset_path("my-org/INVALID_DATASET")
 
 
