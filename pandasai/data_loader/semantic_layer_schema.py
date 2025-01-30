@@ -57,9 +57,96 @@ class Relation(BaseModel):
     to: str = Field(..., description="Target column for the relationship.")
 
 
+class TransformationParams(BaseModel):
+    column: Optional[str] = Field(None, description="Column to transform")
+    value: Optional[Union[str, int, float, bool]] = Field(
+        None, description="Value for fill_na and other transformations"
+    )
+    mapping: Optional[Dict[str, str]] = Field(
+        None, description="Mapping dictionary for map_values transformation"
+    )
+    format: Optional[str] = Field(None, description="Format string for date formatting")
+    decimals: Optional[int] = Field(
+        None, description="Number of decimal places for rounding"
+    )
+    factor: Optional[Union[int, float]] = Field(None, description="Scaling factor")
+    to: Optional[str] = Field(None, description="Target timezone or format")
+    errors: Optional[str] = Field(
+        None, description="Error handling mode for numeric/datetime conversion"
+    )
+    old_value: Optional[Any] = Field(
+        None, description="Old value for replace transformation"
+    )
+    new_value: Optional[Any] = Field(
+        None, description="New value for replace transformation"
+    )
+    new_name: Optional[str] = Field(
+        None, description="New name for column in rename transformation"
+    )
+    pattern: Optional[str] = Field(
+        None, description="Pattern for extract transformation"
+    )
+    length: Optional[int] = Field(
+        None, description="Length for truncate transformation"
+    )
+    add_ellipsis: Optional[bool] = Field(
+        True, description="Whether to add ellipsis in truncate"
+    )
+    width: Optional[int] = Field(None, description="Width for pad transformation")
+    side: Optional[str] = Field("left", description="Side for pad transformation")
+    pad_char: Optional[str] = Field(" ", description="Character for pad transformation")
+    lower: Optional[Union[int, float]] = Field(None, description="Lower bound for clip")
+    upper: Optional[Union[int, float]] = Field(None, description="Upper bound for clip")
+    bins: Optional[Union[int, List[Union[int, float]]]] = Field(
+        None, description="Bins for binning"
+    )
+    labels: Optional[List[str]] = Field(None, description="Labels for bins")
+    drop_first: Optional[bool] = Field(
+        True, description="Whether to drop first category in encoding"
+    )
+    drop_invalid: Optional[bool] = Field(
+        False, description="Whether to drop invalid values"
+    )
+    start_date: Optional[str] = Field(
+        None, description="Start date for date range validation"
+    )
+    end_date: Optional[str] = Field(
+        None, description="End date for date range validation"
+    )
+    country_code: Optional[str] = Field(
+        "+1", description="Country code for phone normalization"
+    )
+    columns: Optional[List[str]] = Field(
+        None, description="List of columns for multi-column operations"
+    )
+    keep: Optional[str] = Field("first", description="Which duplicates to keep")
+    ref_df: Optional[Any] = Field(
+        None, description="Reference DataFrame for foreign key validation"
+    )
+    ref_column: Optional[str] = Field(
+        None, description="Reference column for foreign key validation"
+    )
+    drop_negative: Optional[bool] = Field(
+        False, description="Whether to drop negative values"
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_required_params(cls, values: dict) -> dict:
+        """Validate that required parameters are present based on the transformation type"""
+        # Get the transformation type from parent if it exists
+        transform_type = values.get("_transform_type")
+
+        if transform_type == "rename":
+            if not values.get("new_name"):
+                raise ValueError("rename transformation requires 'new_name' parameter")
+
+        return values
+
+
 class Transformation(BaseModel):
     type: str = Field(..., description="Type of transformation to be applied.")
-    params: Optional[Dict[str, str]] = Field(
+    params: Optional[TransformationParams] = Field(
         None, description="Parameters for the transformation."
     )
 
@@ -69,6 +156,15 @@ class Transformation(BaseModel):
         if type not in VALID_TRANSFORMATION_TYPES:
             raise ValueError(f"Unsupported transformation type: {type}")
         return type
+
+    @model_validator(mode="before")
+    @classmethod
+    def set_transform_type(cls, values: dict) -> dict:
+        """Set transformation type in params for validation"""
+        if values.get("params") and values.get("type"):
+            if isinstance(values["params"], dict):
+                values["params"]["_transform_type"] = values["type"]
+        return values
 
 
 class Source(BaseModel):

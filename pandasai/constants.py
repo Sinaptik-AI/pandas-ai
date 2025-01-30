@@ -72,6 +72,7 @@ VALID_TRANSFORMATION_TYPES = [
     "normalize",
     "standardize",
     "map_values",
+    "rename",
     "encode_categorical",
     "validate_email",
     "validate_date_range",

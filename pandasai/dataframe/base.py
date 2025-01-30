@@ -197,7 +197,8 @@ class DataFrame(pd.DataFrame):
             for _, (name, file, _) in files:
                 file.close()
 
-        print("Your dataset was successfully pushed to the pandabi platform")
+        print("Your dataset was successfully pushed to the remote server!")
+        print(f"🔗 URL: https://app.pandabi.ai/datasets/{self.path}")
 
     def pull(self):
         api_key = os.environ.get("PANDABI_API_KEY", None)
