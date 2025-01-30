@@ -119,6 +119,7 @@ def create(
 
     if df is not None:
         schema = df.schema
+        schema.name = sanitize_sql_table_name(dataset_name)
         df.to_parquet(parquet_file_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
@@ -132,7 +133,6 @@ def create(
     else:
         raise InvalidConfigError("Unable to create schema with the provided params")
 
-    schema.name = sanitize_sql_table_name(schema.name)
     schema.description = description or schema.description
     if columns:
         schema.columns = [Column(**column) for column in columns]
