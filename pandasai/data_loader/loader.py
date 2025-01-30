@@ -9,9 +9,9 @@ import yaml
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
-from pandasai.exceptions import InvalidDataSourceType
+from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
 from pandasai.helpers.path import find_project_root
-from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
+from pandasai.helpers.sql_sanitizer import is_sql_query_safe, sanitize_sql_table_name
 
 from ..constants import (
     LOCAL_SOURCE_TYPES,
@@ -197,6 +197,9 @@ class DatasetLoader:
         load_function = self._get_loader_function(source_type)
 
         try:
+            if not is_sql_query_safe(formatted_query):
+                raise MaliciousQueryError("Query is not safe to execute.")
+
             return load_function(connection_info, formatted_query, params)
         except Exception as e:
             raise RuntimeError(
