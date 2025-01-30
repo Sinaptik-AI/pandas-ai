@@ -43,6 +43,9 @@ class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
     type: Optional[str] = Field(None, description="Data type of the column.")
     description: Optional[str] = Field(None, description="Description of the column")
+    expression: Optional[str] = Field(
+        None, description="SQL expression for aggregation or computation"
+    )
 
     @field_validator("type")
     @classmethod
@@ -234,10 +237,10 @@ class SemanticLayerSchema(BaseModel):
     name: str = Field(..., description="Dataset name.")
     source: Source = Field(..., description="Data source for your dataset.")
     description: Optional[str] = Field(
-        None, description="Dataset’s contents and purpose description."
+        None, description="Dataset's contents and purpose description."
     )
     columns: Optional[List[Column]] = Field(
-        None, description="Structure and metadata of your dataset’s columns"
+        None, description="Structure and metadata of your dataset's columns"
     )
     relations: Optional[List[Relation]] = Field(
         None, description="Relationships between columns and tables."
@@ -250,6 +253,9 @@ class SemanticLayerSchema(BaseModel):
     )
     transformations: Optional[List[Transformation]] = Field(
         None, description="List of transformations to apply to the data."
+    )
+    group_by: Optional[List[str]] = Field(
+        None, description="List of columns to group by for aggregations."
     )
     destination: Optional[Destination] = Field(
         None, description="Destination for saving the dataset."

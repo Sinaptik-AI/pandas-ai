@@ -2,6 +2,7 @@ import copy
 import hashlib
 import importlib
 import os
+import re
 from typing import Any, Optional
 
 import pandas as pd
@@ -73,6 +74,7 @@ class DatasetLoader:
 
             df = self._load_from_local_source()
             df = self._filter_columns(df)
+            df = self._apply_group_by(df)
             df = self._apply_transformations(df)
 
             # Convert to pandas DataFrame while preserving internal data
@@ -227,8 +229,115 @@ class DatasetLoader:
         transformation_manager = TransformationManager(df)
         return transformation_manager.apply_transformations(self.schema.transformations)
 
-    @staticmethod
-    def _anonymize(value: Any) -> Any:
+    def _apply_group_by(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply group by operations and aggregations to the DataFrame.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame
+
+        Returns:
+            pd.DataFrame: DataFrame with group by operations applied
+        """
+        if not self.schema.group_by or not self.schema.columns:
+            return df
+
+        # First handle CASE expressions in group by columns
+        group_cols = []
+        for col_name in self.schema.group_by:
+            col = next((c for c in self.schema.columns if c.name == col_name), None)
+            if col and col.expression and "case when" in col.expression.lower():
+                # Create the computed column for grouping
+                case_expr = col.expression
+                df[col.name] = self._evaluate_case_expression(df, case_expr)
+            group_cols.append(col_name)
+
+        # Map SQL functions to pandas functions
+        sql_to_pandas = {
+            "avg": "mean",
+            "count": "size",
+            "sum": "sum",
+            "min": "min",
+            "max": "max",
+        }
+
+        # Get aggregation expressions for each column
+        agg_dict = {}
+        for col in self.schema.columns:
+            if col.expression:
+                if col.expression == "count(*)":
+                    # For count(*), we'll use size
+                    agg_dict[col.name] = pd.NamedAgg(
+                        column=group_cols[0], aggfunc="size"
+                    )
+                else:
+                    match = re.match(r"(\w+)\(([\w\s*]+)\)", col.expression)
+                    if match:
+                        func, column = match.groups()
+                        pandas_func = sql_to_pandas.get(func.lower(), func.lower())
+                        agg_dict[col.name] = pd.NamedAgg(
+                            column=column.strip(), aggfunc=pandas_func
+                        )
+
+        if not agg_dict:
+            return df
+
+        # Apply group by and aggregations
+        result_df = df.groupby(group_cols, as_index=False, dropna=False).agg(**agg_dict)
+
+        # Sort by group by columns and convert categoricals to string
+        result_df = result_df.sort_values(group_cols).reset_index(drop=True)
+        for col in group_cols:
+            if pd.api.types.is_categorical_dtype(result_df[col]):
+                result_df[col] = result_df[col].astype(str)
+        return result_df
+
+    def _evaluate_case_expression(self, df: pd.DataFrame, case_expr: str) -> pd.Series:
+        """Evaluate a SQL CASE expression on a DataFrame
+
+        Args:
+            df (pd.DataFrame): Input DataFrame
+            case_expr (str): SQL CASE expression
+
+        Returns:
+            pd.Series: Result of the CASE expression
+        """
+        # Remove 'case' and 'end' keywords and split into when/then pairs
+        expr = case_expr.replace("case", "").replace("end", "").strip()
+        conditions = []
+        values = []
+        else_value = None
+
+        # Split into when/then pairs
+        parts = expr.split("when")[1:]  # Skip the first empty part
+
+        for part in parts:
+            if "then" not in part:
+                continue
+
+            condition, value = part.split("then", 1)
+            # Handle ELSE clause if present
+            if "else" in value:
+                value, else_part = value.split("else", 1)
+                else_value = else_part.strip().strip("'")
+
+            conditions.append(condition.strip())
+            values.append(value.strip().strip("'"))
+
+        # Create the result series with the else value
+        result = pd.Series([else_value] * len(df), index=df.index)
+
+        # Apply conditions in reverse order to handle overlapping conditions
+        for condition, value in zip(reversed(conditions), reversed(values)):
+            mask = df.eval(condition)
+            result[mask] = value
+
+        # Create a categorical with the values in the order they appear
+        all_values = values + [else_value]
+        result = pd.Categorical(result, categories=all_values, ordered=True)
+
+        return result
+
+    def _anonymize(self, value: Any) -> Any:
         if not isinstance(value, str) or "@" not in value:
             return value
         try:
