@@ -138,7 +138,7 @@ files = [
 name = "cockroachdb"
 version = "0.3.5"
 description = "CockroachDB adapter for SQLAlchemy"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "cockroachdb-0.3.5-py3-none-any.whl", hash = "sha256:b09904b0381386102f6a613173e7b0ffa01addd56606dd4c807601e14fa054d3"},
@@ -1270,7 +1270,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "psycopg2-binary"
 version = "2.9.10"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "psycopg2-binary-2.9.10.tar.gz", hash = "sha256:4b3df0e6990aa98acda57d983942eff13d824135fe2250e6522edaa782a06de2"},
@@ -1526,7 +1526,7 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 name = "pymysql"
 version = "1.1.1"
 description = "Pure Python MySQL Driver"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c"},
@@ -2345,12 +2345,11 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 type = ["pytest-mypy"]
 
 [extras]
-cockroach = []
-mysql = []
-postgres = []
-sqlite = []
+cockroach = ["cockroachdb"]
+mysql = ["pymysql"]
+postgres = ["psycopg2-binary"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "7b27e1adc27a0cb2b6f12783247ee8adff1e75fa29a3f71efb24fcc79f4dd063"
+content-hash = "502c167e75d0db37009896b1b98f9b791d99a9a2af960f083b192688932b261e"
