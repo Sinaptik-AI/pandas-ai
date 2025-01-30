@@ -5,8 +5,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pandasai import DataFrame, find_project_root
+from pandasai.data_loader.loader import DatasetLoader
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
+from pandasai.dataframe.base import DataFrame
+from pandasai.helpers.path import find_project_root
 
 
 @pytest.fixture
@@ -152,3 +154,20 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
                 terminalreporter.write(f"Average Score: {avg_score:.2f}\n")
 
         os.remove(scores_file)
+
+
+@pytest.fixture
+def mock_loader_instance(sample_df):
+    """Fixture to mock DatasetLoader and its methods."""
+    with patch.object(
+        DatasetLoader, "create_loader_from_path"
+    ) as mock_create_loader, patch.object(
+        DatasetLoader, "create_loader_from_schema"
+    ) as mock_create_loader_from_schema:
+        # Mock the create_loader_from_path method
+        mock_loader_instance = MagicMock()
+        mock_loader_instance.load.return_value = sample_df
+        mock_create_loader.return_value = mock_loader_instance
+        mock_create_loader_from_schema.return_value = mock_loader_instance
+
+        yield mock_loader_instance

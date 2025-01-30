@@ -102,23 +102,22 @@ class TestPandaAIInit:
             )
             assert result == "Mocked response"
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.path.exists")
     def test_load_valid_dataset(
-        self, mock_exists, mock_find_project_root, mock_dataset_loader
+        self, mock_exists, mock_find_project_root, mock_loader_instance, sample_schema
     ):
         """Test loading a valid dataset."""
+
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = MagicMock(name="DataFrame")
         mock_exists.return_value = True
-        pandasai._dataset_loader = mock_dataset_loader
 
         dataset_path = "org/dataset_name"
         result = pandasai.load(dataset_path)
 
-        mock_dataset_loader.load.assert_called_once_with(dataset_path)
-        assert isinstance(result, MagicMock)
+        # Verify the class method was called
+        mock_loader_instance.load.assert_called_once()
+        assert result.equals(mock_loader_instance.load.return_value)
 
     @patch("zipfile.ZipFile")
     @patch("io.BytesIO")
@@ -165,15 +164,14 @@ class TestPandaAIInit:
     @patch("pandasai.get_pandaai_session")
     @patch("pandasai.ZipFile")
     @patch("pandasai.BytesIO")
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     def test_load_successful_zip_extraction(
         self,
-        mock_dataset_loader,
         mock_bytes_io,
         mock_zip_file,
         mock_get_pandaai_session,
         mock_exists,
         mock_os_environ,
+        mock_loader_instance,
     ):
         """Test loading when dataset is not found locally but is successfully downloaded."""
         mock_exists.return_value = False
@@ -182,7 +180,6 @@ class TestPandaAIInit:
         mock_get_pandaai_session.return_value = mock_request_session
         mock_request_session.get.return_value.status_code = 200
         mock_request_session.get.return_value.content = b"mock zip content"
-        pandasai._dataset_loader = mock_dataset_loader
 
         dataset_path = "org/dataset_name"
 
@@ -192,7 +189,7 @@ class TestPandaAIInit:
         result = pandasai.load(dataset_path)
 
         mock_zip_file.return_value.__enter__.return_value.extractall.assert_called_once()
-        assert isinstance(result, MagicMock)
+        assert isinstance(result, DataFrame)
 
     @patch("pandasai.os.environ", {})
     def test_load_without_api_credentials(
@@ -217,7 +214,7 @@ class TestPandaAIInit:
     @patch("pandasai.helpers.path.find_project_root")
     @patch("pandasai.os.makedirs")
     def test_load_with_default_api_url(
-        self, mock_makedirs, mock_root, mock_exists, mock_session
+        self, mock_makedirs, mock_root, mock_exists, mock_session, mock_loader_instance
     ):
         """Test that load uses DEFAULT_API_URL when no URL is provided"""
         mock_root.return_value = "/tmp/test_project"
@@ -252,7 +249,7 @@ class TestPandaAIInit:
     @patch("pandasai.helpers.path.find_project_root")
     @patch("pandasai.os.makedirs")
     def test_load_with_custom_api_url(
-        self, mock_makedirs, mock_root, mock_exists, mock_session
+        self, mock_makedirs, mock_root, mock_exists, mock_session, mock_loader_instance
     ):
         """Test that load uses custom URL from environment"""
         mock_root.return_value = "/tmp/test_project"
@@ -278,16 +275,13 @@ class TestPandaAIInit:
             params={"path": "org/dataset"},
         )
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_dataset_no_params(
-        self, mock_makedirs, mock_find_project_root, mock_dataset_loader, sample_df
+        self, mock_makedirs, mock_find_project_root, sample_df, mock_loader_instance
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-        pandasai._dataset_loader = mock_dataset_loader
 
         with patch("builtins.open", mock_open()) as mock_file, patch.object(
             sample_df, "to_parquet"
@@ -326,7 +320,7 @@ class TestPandaAIInit:
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
             assert result.schema.description is None
-            assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
+            assert mock_loader_instance.load.call_count == 1
 
     def test_create_invalid_path_format(self, sample_df):
         """Test creating a dataset with invalid path format."""
@@ -374,15 +368,12 @@ class TestPandaAIInit:
             ):
                 pandasai.create("test-org/test-dataset", sample_df)
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     def test_create_existing_directory_no_dataset(
-        self, mock_find_project_root, mock_dataset_loader, sample_df
+        self, mock_find_project_root, sample_df, mock_loader_instance
     ):
         """Test creating a dataset in an existing directory but without existing dataset files."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-        pandasai._dataset_loader = mock_dataset_loader
 
         def mock_exists_side_effect(path):
             # Return True for directory, False for schema and data files
@@ -403,18 +394,16 @@ class TestPandaAIInit:
             mock_to_parquet.assert_called_once()
             mock_makedirs.assert_called_once()
             mock_file.assert_called_once()
-            mock_dataset_loader.load.assert_called_once_with("test-org/test-dataset")
+            mock_loader_instance.load.assert_called_once()
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_dataset_with_description(
-        self, mock_makedirs, mock_find_project_root, mock_dataset_loader, sample_df
+        self, mock_makedirs, mock_find_project_root, sample_df, mock_loader_instance
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-        pandasai._dataset_loader = mock_dataset_loader
+
         mock_schema = MagicMock()
         sample_df.schema = mock_schema
 
@@ -455,19 +444,15 @@ class TestPandaAIInit:
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
             assert mock_schema.description == "test_description"
-            mock_dataset_loader.load.assert_called_once_with("test-org/test-dataset")
+            mock_loader_instance.load.assert_called_once()
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_dataset_with_columns(
-        self, mock_makedirs, mock_find_project_root, mock_dataset_loader, sample_df
+        self, mock_makedirs, mock_find_project_root, sample_df, mock_loader_instance
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-
-        pandasai._dataset_loader = mock_dataset_loader
 
         with patch("builtins.open", mock_open()) as mock_file, patch.object(
             sample_df, "to_parquet"
@@ -510,7 +495,7 @@ class TestPandaAIInit:
             assert result.schema.columns == list(
                 map(lambda column: Column(**column), columns_dict)
             )
-            mock_dataset_loader.load.assert_called_once_with("test-org/test-dataset")
+            mock_loader_instance.load.assert_called_once()
 
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
@@ -532,22 +517,18 @@ class TestPandaAIInit:
                     "test-org/test-dataset", sample_df, columns=columns_dict
                 )
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_dataset_with_mysql(
         self,
         mock_makedirs,
         mock_find_project_root,
-        mock_dataset_loader,
         sample_df,
         mysql_connection_json,
+        mock_loader_instance,
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-
-        pandasai._dataset_loader = mock_dataset_loader
 
         with patch("builtins.open", mock_open()) as mock_file, patch.object(
             sample_df, "to_parquet"
@@ -584,25 +565,20 @@ class TestPandaAIInit:
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
             assert result.schema.description is None
-            assert mock_dataset_loader.load.call_count == 1
-            assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
+            assert mock_loader_instance.load.call_count == 1
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_dataset_with_postgres(
         self,
         mock_makedirs,
         mock_find_project_root,
-        mock_dataset_loader,
         sample_df,
         mysql_connection_json,
+        mock_loader_instance,
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-
-        pandasai._dataset_loader = mock_dataset_loader
 
         with patch("builtins.open", mock_open()) as mock_file, patch.object(
             sample_df, "to_parquet"
@@ -639,8 +615,7 @@ class TestPandaAIInit:
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
             assert result.schema.description is None
-            assert mock_dataset_loader.load.call_count == 1
-            assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
+            assert mock_loader_instance.load.call_count == 1
 
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
@@ -665,17 +640,13 @@ class TestPandaAIInit:
         with pytest.raises(ValueError, match="df must be a PandaAI DataFrame"):
             pandasai.create("test-org/test-dataset", df={"test": "test"})
 
-    @patch("pandasai.data_loader.loader.DatasetLoader")
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_valid_view(
-        self, mock_makedirs, mock_find_project_root, mock_dataset_loader, sample_df
+        self, mock_makedirs, mock_find_project_root, sample_df, mock_loader_instance
     ):
         """Test creating a dataset with valid inputs."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
-        mock_dataset_loader.load.return_value = sample_df
-
-        pandasai._dataset_loader = mock_dataset_loader
 
         with patch("builtins.open", mock_open()) as mock_file, patch(
             "pandasai.find_project_root", return_value=os.path.join("mock", "root")
@@ -721,5 +692,4 @@ class TestPandaAIInit:
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
             assert result.schema.description is None
-            assert mock_dataset_loader.load.call_count == 1
-            assert mock_dataset_loader.load.call_args[0][0] == "test-org/test-dataset"
+            assert mock_loader_instance.load.call_count == 1

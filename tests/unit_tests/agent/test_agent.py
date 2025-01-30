@@ -439,18 +439,18 @@ print('Cached result: US has the highest GDP.')"""
         self, mock_exists, agent, mysql_schema, sample_df
     ):
         query = "SELECT count(*) as total from countries;"
-        loader = DatasetLoader()
+        loader = DatasetLoader.create_loader_from_schema(mysql_schema, "test/users")
         expected_result = pd.DataFrame({"total": [4]})
 
         with patch(
             "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
         ), patch(
-            "pandasai.data_loader.loader.DatasetLoader.execute_query"
+            "pandasai.data_loader.sql_loader.SQLDatasetLoader.execute_query"
         ) as mock_query:
             # Set up the mock for both the sample data and the query result
             mock_query.side_effect = [sample_df, expected_result]
 
-            virtual_dataframe = loader.load("test/users")
+            virtual_dataframe = loader.load()
             agent._state.dfs = [virtual_dataframe]
 
             pd.testing.assert_frame_equal(virtual_dataframe.head(), sample_df)

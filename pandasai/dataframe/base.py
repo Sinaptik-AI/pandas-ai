@@ -236,14 +236,12 @@ class DataFrame(pd.DataFrame):
         # Reloads the Dataframe
         from pandasai import DatasetLoader
 
-        dataset_loader = DatasetLoader()
+        dataset_loader = DatasetLoader.create_loader_from_path(self.path)
         df = dataset_loader.load(self.path)
         self.__init__(
             df,
             schema=df.schema,
             data_loader=dataset_loader,
-            name=df.name,
-            description=df.description,
             path=df.path,
         )
 
