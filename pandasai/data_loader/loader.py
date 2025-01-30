@@ -72,6 +72,7 @@ class DatasetLoader:
                 self.dataset_path = self.schema.source.path
 
             df = self._load_from_local_source()
+            df = self._filter_columns(df)
             df = self._apply_transformations(df)
 
             # Convert to pandas DataFrame while preserving internal data
@@ -201,6 +202,23 @@ class DatasetLoader:
             raise RuntimeError(
                 f"Failed to execute query for '{source_type}' with: {formatted_query}"
             ) from e
+
+    def _filter_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Filter DataFrame columns based on schema columns if specified.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame to filter
+
+        Returns:
+            pd.DataFrame: DataFrame with only columns specified in schema
+        """
+        if not self.schema or not self.schema.columns:
+            return df
+
+        schema_columns = [col.name for col in self.schema.columns]
+        df_columns = df.columns.tolist()
+        columns_to_keep = [col for col in df_columns if col in schema_columns]
+        return df[columns_to_keep]
 
     def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
         if not self.schema.transformations:
