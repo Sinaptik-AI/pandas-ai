@@ -63,9 +63,7 @@ class DataFrame(pd.DataFrame):
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
 
-        print("dataframe_init method")
         if _table_name:
-            print(f"dataframe_init {_table_name}")
             self._table_name = _table_name
 
         self._column_hash = self._calculate_column_hash()
@@ -278,8 +276,6 @@ class DataFrame(pd.DataFrame):
         table_name = getattr(
             dataframe, "_table_name", f"table_{dataframe._column_hash}"
         )
-
-        print(f"default schema: {table_name}")
 
         return SemanticLayerSchema(
             name=f"{dataframe._column_hash}",
