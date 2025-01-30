@@ -9,24 +9,7 @@ from pandasai.data_loader.semantic_layer_schema import (
     Source,
     SQLConnectionConfig,
 )
-from pandasai.helpers.path import find_project_root
-
-
-def get_validated_dataset_path(path: str) -> tuple[str, str]:
-    """Validate and split a dataset path into organization and dataset names."""
-    if not path or "/" not in path:
-        raise ValueError("Path must be in format: organization/dataset")
-
-    org_name, dataset_name = path.split("/", 1)
-
-    # Validate names (lowercase with hyphens)
-    pattern = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-    if not pattern.match(org_name):
-        raise ValueError("Organization name must be lowercase with hyphens")
-    if not pattern.match(dataset_name):
-        raise ValueError("Dataset name must be lowercase with hyphens")
-
-    return org_name, dataset_name
+from pandasai.helpers.path import find_project_root, get_validated_dataset_path
 
 
 @click.group()
