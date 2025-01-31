@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 import yaml
 
 from pandasai.dataframe.base import DataFrame
@@ -12,6 +13,7 @@ from ..constants import (
 )
 from .query_builder import QueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
+from .transformation_manager import TransformationManager
 from .view_query_builder import ViewQueryBuilder
 
 
@@ -72,16 +74,12 @@ class DatasetLoader:
         """
         raise MethodNotImplementedError("Loader not instantiated")
 
-    def _build_dataset(
-        self, schema: SemanticLayerSchema, dataset_path: str
-    ) -> DataFrame:
-        self.schema = schema
-        self.dataset_path = dataset_path
-        is_view = schema.view
+    def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
+        if not self.schema.transformations:
+            return df
 
-        self.query_builder = (
-            ViewQueryBuilder(schema) if is_view else QueryBuilder(schema)
-        )
+        transformation_manager = TransformationManager(df)
+        return transformation_manager.apply_transformations(self.schema.transformations)
 
     def _get_abs_dataset_path(self):
         return os.path.join(find_project_root(), "datasets", self.dataset_path)
