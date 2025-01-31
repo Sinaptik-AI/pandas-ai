@@ -40,7 +40,7 @@ class SQLDatasetLoader(DatasetLoader):
         load_function = self._get_loader_function(source_type)
 
         if not is_sql_query_safe(formatted_query):
-            raise MaliciousQueryError("Query is not safe to execute.")
+            raise MaliciousQueryError("The SQL query is deemed unsafe and will not be executed.")
 
         try:
             return load_function(connection_info, formatted_query, params)
