@@ -18,7 +18,7 @@ The semantic layer allows you to turn raw data into [dataframes](/v3/dataframes)
 
 ## How to use the Semantic Layer?
 
-There are two ways to use the semantic layer:
+There are two ways to use the semantic layer, with the create method (working only for csv and sql) and by defininf a yaml schema file (working for all data sources).
 
 ### For CSV files: using the create method
 
@@ -31,7 +31,6 @@ file = pai.read_csv("data.csv")
 
 df = pai.create(
     path="company/sales-data",         # Format: "organization/dataset"
-    name="sales-data",                 # Human-readable name
     df = file,                           # Input Dataframe
     description="Sales data from our retail stores",  # Optional description
     columns=[
@@ -48,27 +47,6 @@ df = pai.create(
     ]
 )
 ```
-
-#### name
-
-The name field identifies your dataset in the create method.
-
-```python
-file = pai.read_csv("data.csv")
-
-pai.create(
-    path="company/sales-data",
-    name="sales-data",  # Unique, descriptive name
-    ...
-)
-```
-
-**Type**: `str`
-
-- A string without special characters or spaces
-- Using kebab-case naming convention
-- Unique within your project
-- Examples: "sales-data", "customer-profiles"
 
 #### path
 
@@ -111,34 +89,6 @@ pai.create(
 - Contains the raw data you want to enhance with semantic information
 - Required parameter for creating a semantic layer
 
-#### connector
-
-The connector field allows you to connect your data sources like PostgreSQL, MySQL and Sqlite to the semantic layer.
-For example, if you're working with a SQL database, you can specify the connection details using the connector field.
-
-```python
-
-pai.create(
-    path="acme-corp/sales-data",
-    connector={
-         "type": "postgres",
-         "connection": {
-             "host": "postgres-host",
-             "port": 5432,
-             "user": "postgres",
-             "password": "*****",
-             "database": "postgres",
-         },
-         "table": "orders",
-     },
-    ...
-)
-```
-
-**Type**: `Dict`
-
-- Must be a sql connector source dict
-- Required connection string for creating a semantic layer
 
 #### description
 
@@ -149,7 +99,6 @@ file = pai.read_csv("data.csv")
 
 pai.create(
     path="company/sales-data",
-    name="sales-data",
     df = file,
     description="Daily sales transactions from all retail stores, including transaction IDs, dates, and amounts",
     ...
@@ -175,7 +124,6 @@ file = pai.read_csv("data.csv")
 
 pai.create(
     path="company/sales-data",
-    name="sales-data",
     df = file,
     description="Daily sales transactions from all retail stores",
     columns=[
@@ -220,61 +168,54 @@ pai.create(
     - "boolean": flags, true/false values
   - `description` (str): Clear explanation of what the column represents
 
-### For other data sources: YAML configuration
 
-For other data sources (SQL databases, data warehouses, etc.), create a YAML file in your datasets folder:
+### For SQL Databases: using the create method
 
-> Keep in mind that you have to install the sql, cloud data (ee), or yahoo_finance data extension to use this feature.
+<Note title="Extra Dependency Required">
+  You need to install the `pandasai-sql` extra dependency for this feature. 
+  See [SQL installation instructions](/v3/data-ingestion#how-to-work-with-sql-in-pandaai).
+</Note>
 
-Example PostgreSQL YAML file:
+For SQL databases, you can use the `create` method to define your data source and schema. Here's an example using a MySQL database:
 
-```yaml
-name: SalesData  # Dataset name
-description: "Sales data from our SQL database"
-
-source:
-  type: postgres
-  connection:
-    host: postgres-host
-    port: 5432
-    database: postgres
-    user: postgres
-    password: ******
-  table: orders
-  view: false
-
-columns:
-  - name: transaction_id
-    type: string
-    description: Unique identifier for each sale
-  - name: sale_date
-    type: datetime
-    description: Date and time of the sale
+```python
+sql_table = pai.create(
+    path="organization/health-data",
+    description="Heart disease dataset from MySQL database",
+    source={
+        "type": "mysql",
+        "connection": {
+            "host": "${DB_HOST}",
+            "port": 3306,
+            "user": "${DB_USER}",
+            "password": "${DB_PASSWORD}",
+            "database": "${DB_NAME}"
+        },
+        "table": "heart_data"
+    }
+)
 ```
 
-Example Sqlite YAML file:
+In this example:
+- The `path` defines where the dataset will be stored in your project
+- The `description` provides context about the dataset
+- The `source` object contains:
+  - Database connection details (using environment variables for security)
+  - Table name to query
+  - Column definitions with types and descriptions
 
-```yaml
-name: SalesData  # Dataset name
-description: "Sales data from our SQL database"
+<Note>
+For security best practices, always use environment variables for sensitive connection details. Never hardcode credentials in your code.
+</Note>
 
-source:
-  type: sqlite
-  connection:
-    file_path: /Users/arslan/Documents/SinapTik/pandas-ai/companies.db
-  table: companies
-  view: false
+You can then use this dataset like any other:
 
-description: Companies table
-columns:
-  - name: id
-    type: integer
-  - name: name
-    type: string
-  - name: domain
-    type: string
-  - name: year_founded
-    type: float
+```python
+# Load the dataset
+heart_data = pai.load("organization/health-data")
+
+# Query the data
+response = heart_data.chat("What is the average age of patients with heart disease?")
 ```
 
 ### YAML Semantic Layer Configuration

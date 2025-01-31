@@ -54,7 +54,7 @@
     "navigation": [
       {
         "group": "Overview",
-        "pages": ["v3/introduction", "v3/getting-started", "v3/cli", "v3/privacy-security"],
+        "pages": ["v3/introduction", "v3/getting-started"],
         "version": "v3"
       },
       {
@@ -74,7 +74,7 @@
       },
       {
         "group": "Advanced Usage",
-        "pages": ["v3/agent"],
+        "pages": ["v3/cli", "v3/privacy-security","v3/agent"],
         "version": "v3"
       },
       {
