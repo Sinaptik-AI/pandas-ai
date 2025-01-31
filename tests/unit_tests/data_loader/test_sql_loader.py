@@ -213,9 +213,12 @@ class TestSqlDatasetLoader:
                 )
             )
             mocked_exec_function.return_value = mock_df
-            mock_loader_function.side_effect = ModuleNotFoundError("Error")
+
+            mock_exec_function = MagicMock()
+            mock_loader_function.return_value = mock_exec_function
+            mock_exec_function.side_effect = ModuleNotFoundError("Error")
             loader = SQLDatasetLoader(mysql_schema, "test/users")
-            mock_sql_query.return_value = False
+            mock_sql_query.return_value = True
             logging.debug("Loading schema from dataset path: %s", loader)
             with pytest.raises(ImportError):
                 loader.execute_query("select * from users")

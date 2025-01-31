@@ -51,7 +51,7 @@ class SQLDatasetLoader(DatasetLoader):
 
         except ModuleNotFoundError as e:
             raise ImportError(
-                f"{source_type.capitalize()} connector not found. Please install the pandasai_sql[{source_type}] library.e.g. `pip install pandasai_sql[{source_type}]`"
+                f"{source_type.capitalize()} connector not found. Please install the pandasai_sql[{source_type}] library, e.g. `pip install pandasai_sql[{source_type}]`."
             ) from e
 
         except Exception as e:
