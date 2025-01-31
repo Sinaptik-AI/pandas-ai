@@ -18,11 +18,9 @@ class LocalDatasetLoader(DatasetLoader):
     """
 
     def load(self) -> DataFrame:
-        df = self._load_from_local_source()
+        df: pd.DataFrame = self._load_from_local_source()
         df = self._filter_columns(df)
         df = self._apply_transformations(df)
-
-        df = pd.DataFrame(df)
 
         return DataFrame(
             df,
@@ -45,7 +43,7 @@ class LocalDatasetLoader(DatasetLoader):
 
         return self._read_csv_or_parquet(filepath, source_type)
 
-    def _read_csv_or_parquet(self, file_path: str, file_format: str) -> DataFrame:
+    def _read_csv_or_parquet(self, file_path: str, file_format: str) -> pd.DataFrame:
         if file_format == "parquet":
             df = pd.read_parquet(file_path)
         elif file_format == "csv":
@@ -53,7 +51,7 @@ class LocalDatasetLoader(DatasetLoader):
         else:
             raise ValueError(f"Unsupported file format: {file_format}")
 
-        return DataFrame(df, schema=self.schema, path=self.dataset_path)
+        return df
 
     def _filter_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Filter DataFrame columns based on schema columns if specified.
