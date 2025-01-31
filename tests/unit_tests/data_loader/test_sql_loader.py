@@ -1,5 +1,4 @@
 import logging
-
 from unittest.mock import MagicMock, mock_open, patch
 
 import pandas as pd
@@ -139,7 +138,6 @@ class TestSqlDatasetLoader:
                 loader_function.call_args[0][1]
                 == "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
             )
-
 
     def test_mysql_malicious_query(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""
