@@ -4,7 +4,8 @@ from typing import Optional
 import pandas as pd
 
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
-from pandasai.exceptions import InvalidDataSourceType
+from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
+from pandasai.helpers.sql_sanitizer import is_sql_query_safe
 
 from ..constants import (
     SUPPORTED_SOURCE_CONNECTORS,
@@ -37,6 +38,9 @@ class SQLDatasetLoader(DatasetLoader):
 
         formatted_query = self.query_builder.format_query(query)
         load_function = self._get_loader_function(source_type)
+
+        if not is_sql_query_safe(formatted_query):
+            raise MaliciousQueryError("Query is not safe to execute.")
 
         try:
             return load_function(connection_info, formatted_query, params)
