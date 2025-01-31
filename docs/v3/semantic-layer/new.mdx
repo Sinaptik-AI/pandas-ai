@@ -1,0 +1,336 @@
+---
+title: "Create a new schema"
+description: "Create a new semantic layer schema using the `create` method"
+---
+
+<Note title="Beta Notice">
+PandaAI 3.0 is currently in beta. This documentation reflects the latest features and functionality, which may evolve before the final release.
+</Note>
+
+### Using the `pai.create()` method with CSV and parquet files
+
+The simplest way to define a semantic layer schema is using the `create` method:
+
+```python
+import pandasai as pai
+
+# Load your data: for example, in this case, a CSV
+file = pai.read_csv("data.csv")
+
+df = pai.create(
+    # Format: "organization/dataset"
+    path="company/sales-data",
+
+    # Input dataframe
+    df = file,
+
+    # Optional description
+    description="Sales data from our retail stores",
+
+    # Define the structure and metadata of your dataset's columns.
+    # If not provided, all columns from the input dataframe will be included.
+    columns=[
+        {
+            "name": "transaction_id",
+            "type": "string",
+            "description": "Unique identifier for each sale"
+        },
+        {
+            "name": "sale_date"
+            "type": "datetime",
+            "description": "Date and time of the sale"
+        }
+    ]
+)
+```
+
+#### - path
+
+The path uniquely identifies your dataset in the PandaAI ecosystem using the format "organization/dataset".
+
+```python
+file = pai.read_csv("data.csv")
+
+pai.create(
+    path="acme-corp/sales-data",  # Format: "organization/dataset"
+    ...
+)
+```
+
+**Type**: `str`
+
+- Must follow the format: "organization-identifier/dataset-identifier"
+- Organization identifier should be unique to your organization
+- Dataset identifier should be unique within your organization
+- Can be used both locally and with the PandaAI Data Platform
+- Examples: "acme-corp/sales-data", "my-org/customer-profiles"
+
+#### - df
+
+The input dataframe that contains your data, typically created using `pai.read_csv()`.
+
+```python
+file = pai.read_csv("data.csv")  # Create the input dataframe
+
+pai.create(
+    path="acme-corp/sales-data",
+    df=file,  # Pass your dataframe here
+    ...
+)
+```
+
+**Type**: `DataFrame`
+
+- Must be a pandas DataFrame created with `pai.read_csv()`
+- Contains the raw data you want to enhance with semantic information
+- Required parameter for creating a semantic layer
+
+
+#### - description
+
+A clear text description that helps others understand the dataset's contents and purpose.
+
+```python
+file = pai.read_csv("data.csv")
+
+pai.create(
+    path="company/sales-data",
+    df = file,
+    description="Daily sales transactions from all retail stores, including transaction IDs, dates, and amounts",
+    ...
+)
+```
+
+**Type**: `str`
+
+- The purpose of the dataset
+- The type of data contained
+- Any relevant context about data collection or usage
+- Optional but recommended for better data understanding
+
+#### - columns
+
+Define the structure and metadata of your dataset's columns to help PandaAI understand your data better.
+
+**Note**: If the `columns` parameter is not provided, all columns from the input dataframe will be included in the semantic layer.
+When specified, only the declared columns will be included, allowing you to select specific columns for your semantic layer.
+
+```python
+file = pai.read_csv("data.csv")
+
+pai.create(
+    path="company/sales-data",
+    df = file,
+    description="Daily sales transactions from all retail stores",
+    columns=[
+        {
+            "name": "transaction_id",
+            "type": "string",
+            "description": "Unique identifier for each sale"
+        },
+        {
+            "name": "sale_date"
+            "type": "datetime",
+            "description": "Date and time of the sale"
+        },
+        {
+            "name": "quantity",
+            "type": "integer",
+            "description": "Number of units sold"
+        },
+        {
+            "name": "price",
+            "type": "float",
+            "description": "Price per unit in USD"
+        },
+        {
+            "name": "is_online",
+            "type": "boolean",
+            "description": "Whether the sale was made online"
+        }
+    ]
+)
+```
+
+**Type**: `dict[str, dict]`
+
+- Keys: column names as they appear in your DataFrame
+- Values: dictionary containing:
+  - `type` (str): Data type of the column
+    - "string": IDs, names, categories
+    - "integer": counts, whole numbers
+    - "float": prices, percentages
+    - "datetime": timestamps, dates
+    - "boolean": flags, true/false values
+  - `description` (str): Clear explanation of what the column represents
+
+
+### Using the `pai.create()` method for SQL databases
+
+<Note title="Extra Dependency Required">
+  You need to install the `pandasai-sql` extra dependency for this feature. 
+  See [SQL installation instructions](/v3/data-ingestion#how-to-work-with-sql-in-pandaai).
+</Note>
+
+For SQL databases, you can use the `create` method to define your data source and schema. Here's an example using a MySQL database:
+
+```python
+sql_table = pai.create(
+    # Format: "organization/dataset"
+    path="company/health-data",
+
+    # Optional description
+    description="Heart disease dataset from MySQL database",
+
+    # Define the source of the data, including connection details and
+    # table name
+    source={
+        "type": "mysql",
+        "connection": {
+            "host": "${DB_HOST}",
+            "port": 3306,
+            "user": "${DB_USER}",
+            "password": "${DB_PASSWORD}",
+            "database": "${DB_NAME}"
+        },
+        "table": "heart_data"
+    }
+)
+```
+
+In this example:
+- The `path` defines where the dataset will be stored in your project
+- The `description` provides context about the dataset
+- The `source` object contains:
+  - Database connection details (using environment variables for security)
+  - Table name to query
+  - Column definitions with types and descriptions
+
+<Note>
+For security best practices, always use environment variables for sensitive connection details. Never hardcode credentials in your code.
+</Note>
+
+You can then use this dataset like any other:
+
+```python
+# Load the dataset
+heart_data = pai.load("organization/health-data")
+
+# Query the data
+response = heart_data.chat("What is the average age of patients with heart disease?")
+```
+
+### YAML Semantic Layer Configuration
+
+Whenever you create a semantic layer schema using the `create` method, a YAML configuration file is automatically generated for you in the `datasets/` directory of your project.
+As an alternative, you can use a YAML `schema.yaml` file directly in the `datasets/organization_name/dataset_name` directory.
+
+The following sections detail all available configuration options for your schema.yaml file:
+
+#### - description
+
+A clear text description that helps others understand the dataset's contents and purpose.
+
+**Type**: `str`
+
+- The purpose of the dataset, in order for everyone in the organization and for the LLMs to understand
+
+```yaml
+description: Daily sales transactions from all retail stores, including transaction IDs, dates, and amounts
+```
+
+#### - source (mandatory for SQL datasets)
+
+Specify the data source for your dataset.
+
+```yaml
+source:
+  type: postgres
+  connection:
+    host: postgres-host
+    port: 5432
+    database: postgres
+    user: postgres
+    password: ******
+  table: orders
+  view: false
+```
+
+> The available data sources depends on the installed data extensions (sql databases, data lakehouses, yahoo_finance).
+
+**Type**: `dict`
+
+- `type` (str): Type of data source
+  - "postgresql" for PostgreSQL databases
+  - "mysql" for MySQL databases
+  - "bigquery" for Google BigQuery data
+  - "snowflake" for Snowflake data
+  - "databricks" for Databricks data
+  - "oracle" for Oracle databases
+  - "yahoo_finance" for Yahoo Finance data
+- `connection_string` (str): Connection string for the data source
+- `query` (str): Query to retrieve data from the data source
+
+
+#### - columns
+
+Define the structure and metadata of your dataset's columns to help PandaAI understand your data better.
+
+```yaml
+columns:
+  - name: transaction_id
+    type: string
+    description: Unique identifier for each sale
+  - name: sale_date
+    type: datetime
+    description: Date and time of the sale
+```
+
+**Type**: `list[dict]`
+
+- Each dictionary represents a column.
+- **Fields**:
+  - `name` (str): Name of the column.
+    - For tables: Use simple column names (e.g., `transaction_id`).
+  - `type` (str): Data type of the column.
+    - Supported types:
+      - `"string"`: IDs, names, categories.
+      - `"integer"`: Counts, whole numbers.
+      - `"float"`: Prices, percentages.
+      - `"datetime"`: Timestamps, dates.
+      - `"boolean"`: Flags, true/false values.
+  - `description` (str): Clear explanation of what the column represents.
+
+**Constraints**:
+
+1. Column names must be unique.
+2. For views, all column names must be in the format `[table].[column]`.
+
+#### - transformations
+
+Apply transformations to your data to clean, convert, or anonymize it.
+
+```yaml
+transformations:
+  - type: anonymize
+    params:
+      columns:
+        - transaction_id
+      method: hash
+  - type: convert_timezone
+    params:
+      columns:
+        - sale_date
+      from_timezone: UTC
+      to_timezone: America/New_York
+```
+
+**Type**: `list[dict]`
+
+- Each dictionary represents a transformation
+- `type` (str): Type of transformation
+  - "anonymize" for anonymizing data
+  - "convert_timezone" for converting timezones
+- `params` (dict): Parameters for the transformation
+
+> If you want to learn more about transformations, check out the [transformations documentation](/v3/transformations).

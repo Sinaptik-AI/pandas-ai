@@ -54,12 +54,12 @@
     "navigation": [
       {
         "group": "Overview",
-        "pages": ["v3/introduction", "v3/getting-started"],
+        "pages": ["v3/introduction", "v3/getting-started", "v3/cli", "v3/privacy-security"],
         "version": "v3"
       },
       {
-        "group": "Data",
-        "pages": ["v3/data-layer", "v3/semantic-layer", "v3/data-ingestion", "v3/transformations", "v3/dataframes"],
+        "group": "Data layer",
+        "pages": ["v3/semantic-layer", "v3/semantic-layer/new", "v3/semantic-layer/views", "v3/data-ingestion", "v3/transformations"],
         "version": "v3"
       },
       {
@@ -74,7 +74,7 @@
       },
       {
         "group": "Advanced Usage",
-        "pages": ["v3/cli", "v3/privacy-security","v3/agent"],
+        "pages": ["v3/agent"],
         "version": "v3"
       },
       {
