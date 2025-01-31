@@ -375,22 +375,15 @@ class TestPandaAIInit:
             mock_file.assert_called_once()
             mock_loader_instance.load.assert_called_once()
 
-    @patch("pandasai.config.ConfigManager.get")
     def test_create_valid_dataset_with_description(
-        self, mock_config_get, sample_df, mock_loader_instance
+        self, sample_df, mock_loader_instance, mock_file_manager
     ):
         """Test creating a dataset with valid inputs."""
 
         mock_schema = MagicMock()
         sample_df.schema = mock_schema
 
-        mock_file_manager = MagicMock()
-        mock_file_manager.exists.return_value = False
-        mock_config_get.return_value.file_manager = mock_file_manager
-
-        with patch(
-            "pandasai.helpers.filemanager.open", mock_open()
-        ) as mock_file, patch.object(sample_df, "to_parquet") as mock_to_parquet:
+        with patch.object(sample_df, "to_parquet") as mock_to_parquet:
             result = pandasai.create(
                 "test-org/test-dataset", sample_df, description="test_description"
             )
