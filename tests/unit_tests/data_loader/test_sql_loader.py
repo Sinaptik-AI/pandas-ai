@@ -140,7 +140,21 @@ class TestSqlDatasetLoader:
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""
         with patch(
             "pandasai.data_loader.sql_loader.is_sql_query_safe"
-        ) as mock_sql_query:
+        ) as mock_sql_query, patch(
+            "pandasai.data_loader.sql_loader.SQLDatasetLoader._get_loader_function"
+        ) as mock_loader_function:
+            mocked_exec_function = MagicMock()
+            mock_df = DataFrame(
+                pd.DataFrame(
+                    {
+                        "email": ["test@example.com"],
+                        "first_name": ["John"],
+                        "timestamp": [pd.Timestamp.now()],
+                    }
+                )
+            )
+            mocked_exec_function.return_value = mock_df
+            mock_loader_function.return_value = mocked_exec_function
             loader = SQLDatasetLoader(mysql_schema, "test/users")
             mock_sql_query.return_value = False
             logging.debug("Loading schema from dataset path: %s", loader)
