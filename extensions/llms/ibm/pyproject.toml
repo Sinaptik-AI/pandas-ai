@@ -10,7 +10,6 @@ readme = "README.md"
 python = ">=3.10,<3.12"
 pandasai = ">=3.0.0b4"
 ibm-watsonx-ai = "^1.1.0"
-numpy = "1.23.2"
 
 [tool.poetry.group.test]
 optional = true
