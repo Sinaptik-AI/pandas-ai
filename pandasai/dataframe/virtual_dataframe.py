@@ -19,9 +19,7 @@ class VirtualDataFrame(DataFrame):
         "_head",
         "_loader",
         "config",
-        "description",
         "head",
-        "name",
         "path",
         "schema",
     ]
@@ -32,22 +30,8 @@ class VirtualDataFrame(DataFrame):
             raise VirtualizationError("Data loader is required for virtualization!")
         self._head = None
 
-        schema: SemanticLayerSchema = kwargs.get("schema", None)
-        if not schema:
-            raise VirtualizationError("Schema is required for virtualization!")
-
-        name = kwargs.pop("name", None)
-
-        description = kwargs.pop("description", None)
-
-        table_name = schema.source.table or name or schema.name
-
-        table_description = description or schema.description
-
         super().__init__(
             self.get_head(),
-            name=table_name,
-            description=table_description,
             *args,
             **kwargs,
         )

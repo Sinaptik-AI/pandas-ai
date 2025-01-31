@@ -123,7 +123,7 @@ class Agent:
             with duckdb.connect() as con:
                 # Register all DataFrames in the state
                 for df in self._state.dfs:
-                    con.register(df.name, df)
+                    con.register(df.schema.source.table, df)
 
                 # Execute the query and fetch the result as a pandas DataFrame
                 result = con.sql(query).df()

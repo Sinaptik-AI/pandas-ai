@@ -8,13 +8,9 @@ from pandasai_sql import (
     load_from_cockroachdb,
     load_from_mysql,
     load_from_postgres,
-    load_from_sqlite,
 )
 
-from pandasai.data_loader.semantic_layer_schema import (
-    SQLConnectionConfig,
-    SqliteConnectionConfig,
-)
+from pandasai.data_loader.semantic_layer_schema import SQLConnectionConfig
 
 
 class TestDatabaseLoader(unittest.TestCase):
@@ -89,32 +85,6 @@ class TestDatabaseLoader(unittest.TestCase):
             dbname="test_db",
             port=5432,
         )
-        mock_read_sql.assert_called_once_with(query, mock_conn, params=None)
-
-        # Assert the result is a DataFrame
-        self.assertIsInstance(result, pd.DataFrame)
-        self.assertEqual(result.shape, (2, 2))
-
-    @patch("sqlite3.connect")
-    @patch("pandas.read_sql")
-    def test_load_from_sqlite(self, mock_read_sql, mock_sqlite3_connect):
-        # Setup the mock return values
-        mock_conn = MagicMock()
-        mock_sqlite3_connect.return_value = mock_conn
-        mock_read_sql.return_value = pd.DataFrame(
-            {"column1": [9, 10], "column2": [11, 12]}
-        )
-
-        # Test data
-        connection_info = {"file_path": "test_db.sqlite"}
-        query = "SELECT * FROM test_table"
-
-        connection_config = SqliteConnectionConfig(**connection_info)
-
-        result = load_from_sqlite(connection_config, query)
-
-        # Assert that the connection is made and SQL query is executed
-        mock_sqlite3_connect.assert_called_once_with("test_db.sqlite")
         mock_read_sql.assert_called_once_with(query, mock_conn, params=None)
 
         # Assert the result is a DataFrame
@@ -224,29 +194,6 @@ class TestDatabaseLoader(unittest.TestCase):
             dbname="test_db",
             port=5432,
         )
-        mock_read_sql.assert_called_once_with(query, mock_conn, params=query_params)
-
-        self.assertIsInstance(result, pd.DataFrame)
-        self.assertEqual(result.shape, (2, 2))
-
-    @patch("sqlite3.connect")
-    @patch("pandas.read_sql")
-    def test_load_from_sqlite_with_params(self, mock_read_sql, mock_sqlite3_connect):
-        mock_conn = MagicMock()
-        mock_sqlite3_connect.return_value = mock_conn
-        mock_read_sql.return_value = pd.DataFrame(
-            {"column1": [9, 10], "column2": [11, 12]}
-        )
-
-        connection_info = {"file_path": "test_db.sqlite"}
-        query = "SELECT * FROM test_table WHERE age > ?"
-        query_params = [30]
-
-        connection_config = SqliteConnectionConfig(**connection_info)
-
-        result = load_from_sqlite(connection_config, query, query_params)
-
-        mock_sqlite3_connect.assert_called_once_with("test_db.sqlite")
         mock_read_sql.assert_called_once_with(query, mock_conn, params=query_params)
 
         self.assertIsInstance(result, pd.DataFrame)

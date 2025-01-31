@@ -2,10 +2,7 @@ from typing import Optional
 
 import pandas as pd
 
-from pandasai.data_loader.semantic_layer_schema import (
-    SQLConnectionConfig,
-    SqliteConnectionConfig,
-)
+from pandasai.data_loader.semantic_layer_schema import SQLConnectionConfig
 
 
 def load_from_mysql(
@@ -35,15 +32,6 @@ def load_from_postgres(
         dbname=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn, params=params)
-
-
-def load_from_sqlite(
-    connection_info: SqliteConnectionConfig, query: str, params: Optional[list] = None
-):
-    import sqlite3
-
-    conn = sqlite3.connect(connection_info.file_path)
     return pd.read_sql(query, conn, params=params)
 
 

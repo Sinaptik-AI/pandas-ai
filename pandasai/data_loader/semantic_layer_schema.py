@@ -1,7 +1,6 @@
-import json
 import re
 from functools import partial
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import (
@@ -17,14 +16,6 @@ from pandasai.constants import (
     VALID_COLUMN_TYPES,
     VALID_TRANSFORMATION_TYPES,
 )
-
-
-class SqliteConnectionConfig(BaseModel):
-    """
-    Connector configurations for SQLite database.
-    """
-
-    file_path: str = Field(..., description="Path to the SQLite database file")
 
 
 class SQLConnectionConfig(BaseModel):
@@ -178,11 +169,10 @@ class Transformation(BaseModel):
 class Source(BaseModel):
     type: str = Field(..., description="Type of the data source.")
     path: Optional[str] = Field(None, description="Path of the local data source.")
-    connection: Optional[Union[SqliteConnectionConfig, SQLConnectionConfig]] = Field(
+    connection: Optional[SQLConnectionConfig] = Field(
         None, description="Connection object of the data source."
     )
     table: Optional[str] = Field(None, description="Table of the data source.")
-    view: Optional[bool] = Field(False, description="Whether table is a view")
 
     @model_validator(mode="before")
     @classmethod
@@ -190,27 +180,27 @@ class Source(BaseModel):
         _type = values.get("type")
         path = values.get("path")
         table = values.get("table")
-        view = values.get("view")
         connection = values.get("connection")
 
-        if (
-            _type in LOCAL_SOURCE_TYPES and _type != "sqlite"
-        ):  # sqlite is a special case which local
+        if _type in LOCAL_SOURCE_TYPES:
             if not path:
                 raise ValueError(
                     f"For local source type '{_type}', 'path' must be defined."
                 )
-            if view:
-                raise ValueError("A view cannot be used with a local source type.")
+            if not table:
+                raise ValueError(
+                    f"For local source type '{_type}', 'table' must be defined."
+                )
+
         elif _type in REMOTE_SOURCE_TYPES:
             if not connection:
                 raise ValueError(
                     f"For remote source type '{_type}', 'connection' must be defined."
                 )
-            if table and view:
-                raise ValueError("Only one of 'table' or 'view' can be defined.")
-            if not table and not view:
-                raise ValueError("Either 'table' or 'view' must be defined.")
+            if not table:
+                raise ValueError(
+                    f"For remote source type '{_type}', 'table' must be defined."
+                )
         else:
             raise ValueError(f"Unsupported source type: {_type}")
 
@@ -232,7 +222,8 @@ class Destination(BaseModel):
 
 class SemanticLayerSchema(BaseModel):
     name: str = Field(..., description="Dataset name.")
-    source: Source = Field(..., description="Data source for your dataset.")
+    source: Optional[Source] = Field(None, description="Data source for your dataset.")
+    view: Optional[bool] = Field(None, description="Whether table is a view")
     description: Optional[str] = Field(
         None, description="Dataset’s contents and purpose description."
     )
@@ -273,7 +264,12 @@ class SemanticLayerSchema(BaseModel):
         if len(_column_names) != len(set(_column_names)):
             raise ValueError("Column names must be unique. Duplicate names found.")
 
-        if self.source.view:
+        if self.source and self.view:
+            raise ValueError("Only one of 'source' or 'view' can be defined.")
+        if not self.source and not self.view:
+            raise ValueError("Either 'source' or 'view' must be defined.")
+
+        if self.view:
             # unpack relations info
             _relations = self.relations
             _column_names_in_relations = {
@@ -293,7 +289,7 @@ class SemanticLayerSchema(BaseModel):
                 is_view_column_name(column_name) for column_name in _column_names
             ):
                 raise ValueError(
-                    "All columns in a view must be in the format '[table].[column]'."
+                    "All columns in a view must be in the format '[dataset].[column]'."
                 )
 
             if not all(
@@ -301,7 +297,7 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations
             ):
                 raise ValueError(
-                    "All params 'from' and 'to' in the relations must be in the format '[table].[column]'."
+                    "All params 'from' and 'to' in the relations must be in the format '[dataset].[column]'."
                 )
 
             if (

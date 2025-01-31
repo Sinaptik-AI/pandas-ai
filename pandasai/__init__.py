@@ -4,7 +4,6 @@ PandaAI is a wrapper around a LLM to make dataframes conversational
 """
 
 import os
-import re
 from io import BytesIO
 from typing import List, Optional, Union
 from zipfile import ZipFile
@@ -27,6 +26,7 @@ from .agent import Agent
 from .constants import LOCAL_SOURCE_TYPES, SQL_SOURCE_TYPES
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
+from .data_loader.query_builder import QueryBuilder
 from .data_loader.semantic_layer_schema import (
     Column,
 )
@@ -39,11 +39,11 @@ from .smart_datalake import SmartDatalake
 def create(
     path: str,
     df: Optional[DataFrame] = None,
-    name: Optional[str] = None,
     description: Optional[str] = None,
     columns: Optional[List[dict]] = None,
     source: Optional[dict] = None,
     relations: Optional[List[dict]] = None,
+    view: bool = False,
 ) -> Union[DataFrame, VirtualDataFrame]:
     """
     Creates a new dataset at the specified path with optional metadata, schema,
@@ -85,7 +85,6 @@ def create(
         >>> create(
         ...     path="my-org/my-dataset",
         ...     df=my_dataframe,
-        ...     name="My Dataset",
         ...     description="This is a sample dataset.",
         ...     columns=[
         ...         {"name": "id", "type": "integer", "description": "Primary key"},
@@ -103,54 +102,46 @@ def create(
         find_project_root(), "datasets", org_name, dataset_name
     )
 
+    schema_path = os.path.join(str(dataset_directory), "schema.yaml")
+    parquet_file_path = os.path.join(str(dataset_directory), "data.parquet")
     # Check if dataset already exists
-    if os.path.exists(dataset_directory):
-        schema_path = os.path.join(dataset_directory, "schema.yaml")
-        if os.path.exists(schema_path):
-            raise ValueError(f"Dataset already exists at path: {path}")
+    if os.path.exists(dataset_directory) and os.path.exists(schema_path):
+        raise ValueError(f"Dataset already exists at path: {path}")
 
     os.makedirs(dataset_directory, exist_ok=True)
 
-    # Save schema to yaml
-    schema_path = os.path.join(dataset_directory, "schema.yaml")
-
-    if df is None and source is None:
-        raise InvalidConfigError("Please provide either a DataFrame or a source")
+    if df is None and source is None and not view:
+        raise InvalidConfigError(
+            "Please provide either a DataFrame, a Source or a View"
+        )
 
     if df is not None:
         schema = df.schema
-        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
-    elif source.get("type") == "sqlite" and source.get("table"):
-        schema = SemanticLayerSchema(name=source.get("table"), source=Source(**source))
-        df = _dataset_loader.load(schema=schema)
-        df.to_parquet(os.path.join(dataset_directory, "data.parquet"), index=False)
-    elif source.get("table"):
-        schema = SemanticLayerSchema(name=source.get("table"), source=Source(**source))
-        df = _dataset_loader.load(schema=schema)
-    elif source.get("view"):
-        name = name or dataset_name
+        schema.name = sanitize_sql_table_name(dataset_name)
+        df.to_parquet(parquet_file_path, index=False)
+    elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
-        schema = SemanticLayerSchema(
-            name=name, source=Source(**source), relations=_relation
+        schema: SemanticLayerSchema = SemanticLayerSchema(
+            name=sanitize_sql_table_name(dataset_name), relations=_relation, view=True
         )
-        df = _dataset_loader.load(schema=schema)
+    elif source.get("table"):
+        schema: SemanticLayerSchema = SemanticLayerSchema(
+            name=sanitize_sql_table_name(dataset_name), source=Source(**source)
+        )
+    else:
+        raise InvalidConfigError("Unable to create schema with the provided params")
 
-    schema.name = sanitize_sql_table_name(name or schema.name)
     schema.description = description or schema.description
     if columns:
         schema.columns = [Column(**column) for column in columns]
-    elif df is not None:
-        schema.columns = [
-            Column(name=str(name), type=DataFrame.get_column_type(dtype))
-            for name, dtype in df.dtypes.items()
-        ]
 
     with open(schema_path, "w") as yml_file:
         yml_file.write(schema.to_yaml())
 
     print(f"Dataset saved successfully to path: {dataset_directory}")
 
-    return _dataset_loader.load(path)
+    loader = DatasetLoader.create_loader_from_schema(schema, path)
+    return loader.load()
 
 
 # Global variable to store the current agent
@@ -206,9 +197,6 @@ def follow_up(query: str):
     return _current_agent.follow_up(query)
 
 
-_dataset_loader = DatasetLoader()
-
-
 def load(dataset_path: str) -> DataFrame:
     """
     Load data based on the provided dataset path.
@@ -223,7 +211,6 @@ def load(dataset_path: str) -> DataFrame:
     if len(path_parts) != 2:
         raise ValueError("The path must be in the format 'organization/dataset'.")
 
-    global _dataset_loader
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
     if not os.path.exists(dataset_full_path):
         api_key = os.environ.get("PANDABI_API_KEY", None)
@@ -244,13 +231,14 @@ def load(dataset_path: str) -> DataFrame:
         with ZipFile(BytesIO(file_data.content)) as zip_file:
             zip_file.extractall(dataset_full_path)
 
-    return _dataset_loader.load(dataset_path)
+    loader = DatasetLoader.create_loader_from_path(dataset_path)
+    return loader.load()
 
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    name = f"table_{sanitize_sql_table_name(filepath)}"
-    return DataFrame(data, name=name)
+    table = f"table_{sanitize_sql_table_name(filepath)}"
+    return DataFrame(data, _table_name=table)
 
 
 __all__ = [
