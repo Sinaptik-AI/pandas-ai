@@ -10,6 +10,7 @@ def find_project_root(filename=None):
 
     # Get the path of the file that is be
     # ing executed
+
     current_file_path = os.path.abspath(os.getcwd())
 
     # Navigate back until we either find a $filename file or there is no parent

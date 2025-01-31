@@ -7,13 +7,14 @@ from typing import List, Tuple
 import pytest
 
 import pandasai as pai
-from pandasai import DataFrame, find_project_root
+from pandasai import DataFrame
 from pandasai.core.response import (
     ChartResponse,
     DataFrameResponse,
     NumberResponse,
     StringResponse,
 )
+from pandasai.helpers.filemanager import find_project_root
 
 # Read the API key from an environment variable
 API_KEY = os.getenv("PANDABI_API_KEY_TEST_CHAT", None)

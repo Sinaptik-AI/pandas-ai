@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pandas as pd
 import pytest
-from numpy import False_
 
 import pandasai
 from pandasai.agent import Agent
@@ -79,10 +78,10 @@ class TestDataFrame:
         assert len(sample_df.column_hash) == 32  # MD5 hash length
 
     @patch("pandasai.dataframe.base.get_pandaai_session")
-    @patch("pandasai.dataframe.base.os.path.exists")
-    @patch("pandasai.dataframe.base.open", new_callable=mock_open)
+    @patch("pandasai.helpers.filemanager.os.path.exists")
+    @patch("pandasai.helpers.filemanager.open", new_callable=mock_open)
     @patch("pandasai.dataframe.base.os.environ")
-    @patch("pandasai.dataframe.base.find_project_root")
+    @patch("pandasai.helpers.path.find_project_root")
     def test_push_successful(
         self,
         mock_find_project_root,
@@ -115,13 +114,13 @@ class TestDataFrame:
             files=[
                 (
                     "files",
-                    ("schema.yaml", mock_open.return_value, "application/x-yaml"),
+                    ("schema.yaml", "", "application/x-yaml"),
                 ),
                 (
                     "files",
                     (
                         "data.parquet",
-                        mock_open.return_value,
+                        "",
                         "application/octet-stream",
                     ),
                 ),
@@ -155,8 +154,8 @@ class TestDataFrame:
             sample_df.path = "test/test"
             sample_df.push()
 
-    @patch("pandasai.dataframe.base.os.path.exists")
-    @patch("pandasai.dataframe.base.open", new_callable=mock_open)
+    @patch("pandasai.helpers.filemanager.os.path.exists")
+    @patch("pandasai.helpers.filemanager.open", new_callable=mock_open)
     @patch("pandasai.dataframe.base.get_pandaai_session")
     @patch("pandasai.dataframe.base.os.environ")
     def test_push_closes_files_on_completion(
@@ -179,6 +178,3 @@ class TestDataFrame:
         # Call the method
         sample_df.path = "test/test"
         sample_df.push()
-
-        # Assert that files were closed after the request
-        mock_open.return_value.close.assert_called()

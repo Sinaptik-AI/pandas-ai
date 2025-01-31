@@ -5,9 +5,9 @@ import yaml
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MethodNotImplementedError
-from pandasai.helpers.path import find_project_root
 from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
 
+from .. import ConfigManager
 from ..constants import (
     LOCAL_SOURCE_TYPES,
 )
@@ -48,21 +48,22 @@ class DatasetLoader:
         """
         Factory method to create the appropriate loader based on the dataset type.
         """
-        schema = cls._read_local_schema(dataset_path)
+        schema = cls._read_schema_file(dataset_path)
         return DatasetLoader.create_loader_from_schema(schema, dataset_path)
 
     @staticmethod
-    def _read_local_schema(dataset_path: str) -> SemanticLayerSchema:
-        schema_path = os.path.join(
-            find_project_root(), "datasets", dataset_path, "schema.yaml"
-        )
-        if not os.path.exists(schema_path):
+    def _read_schema_file(dataset_path: str) -> SemanticLayerSchema:
+        schema_path = os.path.join(dataset_path, "schema.yaml")
+
+        file_manager = ConfigManager.get().file_manager
+
+        if not file_manager.exists(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
-        with open(schema_path, "r") as file:
-            raw_schema = yaml.safe_load(file)
-            raw_schema["name"] = sanitize_sql_table_name(raw_schema["name"])
-            return SemanticLayerSchema(**raw_schema)
+        schema_file = file_manager.load(schema_path)
+        raw_schema = yaml.safe_load(schema_file)
+        raw_schema["name"] = sanitize_sql_table_name(raw_schema["name"])
+        return SemanticLayerSchema(**raw_schema)
 
     def load(self) -> DataFrame:
         """
@@ -80,6 +81,3 @@ class DatasetLoader:
 
         transformation_manager = TransformationManager(df)
         return transformation_manager.apply_transformations(self.schema.transformations)
-
-    def _get_abs_dataset_path(self):
-        return os.path.join(find_project_root(), "datasets", self.dataset_path)

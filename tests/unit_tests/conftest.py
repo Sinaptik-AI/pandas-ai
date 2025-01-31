@@ -5,9 +5,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from pandasai import ConfigManager
 from pandasai.data_loader.loader import DatasetLoader
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
+from pandasai.helpers.filemanager import DefaultFileManager
 from pandasai.helpers.path import find_project_root
 
 
@@ -171,3 +173,14 @@ def mock_loader_instance(sample_df):
         mock_create_loader_from_schema.return_value = mock_loader_instance
 
         yield mock_loader_instance
+
+
+@pytest.fixture
+def mock_file_manager():
+    """Fixture to mock FileManager and its methods."""
+    with patch.object(ConfigManager, "get") as mock_config_get:
+        # Create a mock FileManager
+        mock_file_manager = MagicMock()
+        mock_file_manager.exists.return_value = False
+        mock_config_get.return_value.file_manager = mock_file_manager
+        yield mock_file_manager
