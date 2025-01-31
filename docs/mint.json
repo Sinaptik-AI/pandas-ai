@@ -58,8 +58,8 @@
         "version": "v3"
       },
       {
-        "group": "Data",
-        "pages": ["v3/data-layer", "v3/semantic-layer", "v3/data-ingestion", "v3/transformations", "v3/dataframes"],
+        "group": "Data layer",
+        "pages": ["v3/semantic-layer", "v3/semantic-layer/new", "v3/semantic-layer/views", "v3/data-ingestion", "v3/transformations"],
         "version": "v3"
       },
       {

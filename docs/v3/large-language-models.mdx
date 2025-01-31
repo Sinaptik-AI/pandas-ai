@@ -43,7 +43,7 @@ Configure OpenAI:
 
 ```python
 import pandasai as pai
-from pandasai-openai import OpenAI
+from pandasai_openai import OpenAI
 
 llm = OpenAI(api_token="my-openai-api-key")
 
@@ -70,7 +70,7 @@ Configure Azure OpenAI:
 
 ```python
 import pandasai as pai
-from pandasai-openai import AzureOpenAI
+from pandasai_openai import AzureOpenAI
 
 llm = AzureOpenAI(api_base="https://<your-endpoint>.openai.azure.com/",
     api_key="my-azure-openai-api-key",
@@ -98,7 +98,7 @@ Once you have an API key, you can use it to instantiate a Google PaLM object:
 
 ```python
 import pandasai as pai
-from pandasai-google import GoogleGemini
+from pandasai_google import GoogleGemini
 
 llm = GoogleGemini(api_key="my-google-cloud-api-key")
 
@@ -118,7 +118,7 @@ Once you have basic setup, you can use it to instantiate a Google PaLM through v
 
 ```python
 import pandasai as pai
-from pandasai-google import GoogleVertexAI
+from pandasai_google import GoogleVertexAI
 
 llm = GoogleVertexAI(project_id="generative-ai-training",
                      location="us-central1",
@@ -146,7 +146,7 @@ The inference_server_url is the only required parameter to instantiate an Huggin
 
 ```python
 import pandasai as pai
-from pandasai-huggingface import HuggingFaceTextGen
+from pandasai_huggingface import HuggingFaceTextGen
 
 llm = HuggingFaceTextGen(inference_server_url="http://127.0.0.1:8080")
 
@@ -169,7 +169,7 @@ Configure LangChain:
 
 ```python
 import pandasai as pai
-from pandasai-langchain import LangchainLLM
+from pandasai_langchain import LangchainLLM
 
 llm = LangchainLLM(openai_api_key="my-openai-api-key")
 
@@ -194,7 +194,7 @@ Configure AWS Bedrock:
 
 ```python
 import pandasai as pai
-from pandasai-bedrock import BedrockClaude
+from pandasai_bedrock import BedrockClaude
 
 
 ACCESS_KEY = "YOUR_AWS_ACCESS_KEY_ID"
@@ -240,7 +240,7 @@ Configure IBM Watson:
 
 ```python
 import pandasai as pai
-from pandasai-ibm import IBMwatsonx
+from pandasai_ibm import IBMwatsonx
 
 llm = IBMwatsonx(
     model="ibm/granite-13b-chat-v2",
@@ -271,7 +271,7 @@ from pandasai import SmartDataframe
 
 ```python
 import pandasai as pai
-from pandasai-local import LocalLLM
+from pandasai_local import LocalLLM
 
 ollama_llm = LocalLLM(api_base="http://localhost:11434/v1", model="codellama")
 
@@ -284,7 +284,7 @@ An LM Studio server only hosts one model, so you can instantiate an LLM object w
 
 ```python
 import pandasai as pai
-from pandasai-local import LocalLLM
+from pandasai_local import LocalLLM
 
 lm_studio_llm = LocalLLM(api_base="http://localhost:1234/v1")
 

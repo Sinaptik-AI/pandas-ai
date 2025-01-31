@@ -31,7 +31,6 @@ file = pai.read_csv("data.csv")
 # Use the semantic layer on CSV
 df = pai.create(
     path="company/sales-data",
-    name="sales_data",
     df = file,
     description="Sales data from our retail stores",
     columns={
@@ -50,182 +49,48 @@ response = df.chat("Which product has the highest sales?")
 
 ## How to work with SQL in PandaAI?
 
-PandaAI provides a sql extension for you to work with SQL, PostgreSQL, MySQL, SQLite databases.
+PandaAI provides a sql extension for you to work with SQL, PostgreSQL, MySQL, and CockroachDB databases.
 To make the library lightweight and easy to use, the basic installation of the library does not include this extension.
-It can be easily installed using either `poetry` or `pip`.
+It can be easily installed using pip with the specific database you want to use:
 
 ```bash
-poetry add pandasai-sql
+pip install pandasai-sql[postgres]
+pip install pandasai-sql[mysql]
+pip install pandasai-sql[cockroachdb]
 ```
 
-```bash
-pip install pandasai-sql
-```
+Once you have installed the extension, you can use the [semantic data layer](/v3/semantic-layer#for-sql-databases-using-the-create-method) and perform [data transformations](/docs/v3/transformations).
 
-Once you have installed the extension, you can use it to connect to SQL databases.
-
-### PostgreSQL
-
-```yaml
-name: sales_data
-
-source:
-  type: postgres
-  connection:
-    host: db.example.com
-    port: 5432
-    database: analytics
-    user: ${DB_USER}
-    password: ${DB_PASSWORD}
-  table: sales_data
-
-destination:
-  type: local
-  format: parquet
-  path: company/sales-data
-
-columns:
-  - name: transaction_id
-    type: string
-    description: Unique identifier for each sale
-  - name: sale_date
-    type: datetime
-    description: Date and time of the sale
-  - name: product_id
-    type: string
-    description: Product identifier
-  - name: quantity
-    type: integer
-    description: Number of units sold
-  - name: price
-    type: float
-    description: Price per unit
-
-transformations:
-  - type: convert_timezone
-    params:
-      column: sale_date
-      from: UTC
-      to: America/New_York
-  - type: calculate
-    params:
-      column: total_amount
-      formula: quantity * price
-
-update_frequency: daily
-
-order_by:
-  - sale_date DESC
-
-limit: 100000
-```
-
-### MySQL
-
-```yaml
-name: customer_data
-
-source:
-  type: mysql
-  connection:
-    host: db.example.com
-    port: 3306
-    database: analytics
-    user: ${DB_USER}
-    password: ${DB_PASSWORD}
-  table: customers
-
-destination:
-  type: local
-  format: parquet
-  path: company/customer-data
-
-columns:
-  - name: customer_id
-    type: string
-    description: Unique identifier for each customer
-  - name: name
-    type: string
-    description: Customer's full name
-  - name: email
-    type: string
-    description: Customer's email address
-  - name: join_date
-    type: datetime
-    description: Date when customer joined
-  - name: total_purchases
-    type: integer
-    description: Total number of purchases made
-
-transformations:
-  - type: anonymize
-    params:
-      column: email
-  - type: split
-    params:
-      column: name
-      into: [first_name, last_name]
-      separator: " "
-
-update_frequency: daily
-
-order_by:
-  - join_date DESC
-
-limit: 100000
-```
-
-### SQLite 
-
-```yaml
-name: inventory_data
-
-source:
-  type: sqlite
-  connection:
-    database: path/to/database.db
-  table: inventory
-
-destination:
-  type: local
-  format: parquet
-  path: company/inventory-data
-
-columns:
-  - name: product_id
-    type: string
-    description: Unique identifier for each product
-  - name: product_name
-    type: string
-    description: Name of the product
-  - name: category
-    type: string
-    description: Product category
-  - name: stock_level
-    type: integer
-    description: Current quantity in stock
-  - name: last_updated
-    type: datetime
-    description: Last inventory update timestamp
-
-transformations:
-  - type: categorize
-    params:
-      column: stock_level
-      bins: [0, 10, 50, 100, 500]
-      labels: ["Critical", "Low", "Medium", "High"]
-  - type: convert_timezone
-    params:
-      column: last_updated
-      from: UTC
-      to: America/Los_Angeles
-
-update_frequency: hourly
-
-order_by:
-  - last_updated DESC
-
-limit: 50000
+```python
+sql_table = pai.create(
+    path="example/mysql-dataset",
+    description="Heart disease dataset from MySQL database",
+    source={
+        "type": "mysql",
+        "connection": {
+            "host": "database.example.com",
+            "port": 3306,
+            "user": "${DB_USER}",
+            "password": "${DB_PASSWORD}",
+            "database": "medical_data"
+        },
+        "table": "heart_data",
+        "columns": [
+            {"name": "Age", "type": "integer", "description": "Age of the patient in years"},
+            {"name": "Sex", "type": "string", "description": "Gender of the patient (M = male, F = female)"},
+            {"name": "ChestPainType", "type": "string", "description": "Type of chest pain (ATA, NAP, ASY, TA)"},
+            {"name": "RestingBP", "type": "integer", "description": "Resting blood pressure in mm Hg"},
+            {"name": "Cholesterol", "type": "integer", "description": "Serum cholesterol in mg/dl"},
+            {"name": "FastingBS", "type": "integer", "description": "Fasting blood sugar > 120 mg/dl (1 = true, 0 = false)"},
+            {"name": "RestingECG", "type": "string", "description": "Resting electrocardiogram results (Normal, ST, LVH)"},
+            {"name": "MaxHR", "type": "integer", "description": "Maximum heart rate achieved"},
+            {"name": "ExerciseAngina", "type": "string", "description": "Exercise-induced angina (Y = yes, N = no)"},
+            {"name": "Oldpeak", "type": "float", "description": "ST depression induced by exercise relative to rest"},
+            {"name": "ST_Slope", "type": "string", "description": "Slope of the peak exercise ST segment (Up, Flat, Down)"},
+            {"name": "HeartDisease", "type": "integer", "description": "Heart disease diagnosis (1 = present, 0 = absent)"}
+        ]
+    }
+)
 ```
 
 ## How to work with Enterprise Cloud Data in PandaAI?
@@ -590,8 +455,8 @@ limit: 100000
 </tr>
 <tr>
   <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>pandasai_sql</td>
-  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-sql</code></td>
-  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-sql</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>poetry add pandasai-sql[postgres]</code></td>
+  <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}><code>pip install pandasai-sql[postgres]</code></td>
   <td style={{ border: '1px solid #ccc', padding: '8px 16px' }}>No</td>
 </tr>
 <tr>

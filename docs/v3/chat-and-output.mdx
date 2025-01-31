@@ -108,7 +108,7 @@ You can inspect the code that was generated to produce the result:
 
 ```python
 response = df.chat("Calculate the correlation between age and salary")
-print(response.last_code_generated)
+print(response.last_code_executed)
 # Output: df['age'].corr(df['salary'])
 ```
 
