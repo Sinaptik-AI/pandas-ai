@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
 
-from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import VirtualizationError
 
 if TYPE_CHECKING:
-    from pandasai.data_loader.loader import DatasetLoader
+    from pandasai.data_loader.sql_loader import SQLDatasetLoader
 
 
 class VirtualDataFrame(DataFrame):
@@ -25,7 +24,7 @@ class VirtualDataFrame(DataFrame):
     ]
 
     def __init__(self, *args, **kwargs):
-        self._loader: DatasetLoader = kwargs.pop("data_loader", None)
+        self._loader: Optional[SQLDatasetLoader] = kwargs.pop("data_loader", None)
         if not self._loader:
             raise VirtualizationError("Data loader is required for virtualization!")
         self._head = None

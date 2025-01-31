@@ -69,10 +69,3 @@ class LocalDatasetLoader(DatasetLoader):
         df_columns = df.columns.tolist()
         columns_to_keep = [col for col in df_columns if col in schema_columns]
         return df[columns_to_keep]
-
-    def _apply_transformations(self, df: pd.DataFrame) -> pd.DataFrame:
-        if not self.schema.transformations:
-            return df
-
-        transformation_manager = TransformationManager(df)
-        return transformation_manager.apply_transformations(self.schema.transformations)

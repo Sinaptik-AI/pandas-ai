@@ -1,9 +1,9 @@
 from typing import Any, List, Optional, Union
 
-import numpy as np
 import pandas as pd
 
 from ..exceptions import UnsupportedTransformation
+from .semantic_layer_schema import Transformation
 
 
 class TransformationManager:
@@ -268,12 +268,12 @@ class TransformationManager:
             TransformationManager: Self for method chaining
 
         Example:
-            >>> df = pd.DataFrame({"date": ["2024-01-01 12:30:45"]})
+            >>> df = pd.DataFrame({"date": ["2025-01-01 12:30:45"]})
             >>> manager = TransformationManager(df)
             >>> result = manager.format_date("date", "%Y-%m-%d").df
             >>> print(result)
                      date
-            0  2024-01-01
+            0  2025-01-01
         """
         self.df[column] = self.df[column].dt.strftime(date_format)
         return self
@@ -307,28 +307,28 @@ class TransformationManager:
         return self
 
     def to_datetime(
-        self, column: str, format: Optional[str] = None, errors: str = "coerce"
+        self, column: str, _format: Optional[str] = None, errors: str = "coerce"
     ) -> "TransformationManager":
         """Convert values in a column to datetime type.
 
         Args:
             column (str): The column to transform
-            format (Optional[str]): Expected date format of the input
+            _format (Optional[str]): Expected date format of the input
             errors (str): How to handle parsing errors
 
         Returns:
             TransformationManager: Self for method chaining
 
         Example:
-            >>> df = pd.DataFrame({"date": ["2024-01-01", "invalid"]})
+            >>> df = pd.DataFrame({"date": ["2025-01-01", "invalid"]})
             >>> manager = TransformationManager(df)
             >>> result = manager.to_datetime("date", errors="coerce").df
             >>> print(result)
                         date
-            0  2024-01-01
+            0  2025-01-01
             1         NaT
         """
-        self.df[column] = pd.to_datetime(self.df[column], format=format, errors=errors)
+        self.df[column] = pd.to_datetime(self.df[column], format=_format, errors=errors)
         return self
 
     def fill_na(self, column: str, value: Any) -> "TransformationManager":
@@ -884,27 +884,20 @@ class TransformationManager:
         return self
 
     def apply_transformations(
-        self, transformations: Optional[List[dict]] = None
+        self, transformations: List[Transformation]
     ) -> pd.DataFrame:
         """Apply a list of transformations to the DataFrame.
 
         Args:
-            transformations (Optional[List[dict]]): List of transformation configurations
+            transformations List[Transformation]: List of transformation configurations
 
         Returns:
             pd.DataFrame: The transformed DataFrame
         """
-        if not transformations:
-            return self.df
 
         for transformation in transformations:
-            # Handle both dict and object transformations
-            if isinstance(transformation, dict):
-                transformation_type = transformation["type"]
-                params = transformation["params"]
-            else:
-                transformation_type = transformation.type
-                params = transformation.params
+            transformation_type = transformation.type
+            params = transformation.params
 
             handler = self.transformation_handlers.get(transformation_type)
             if not handler:
