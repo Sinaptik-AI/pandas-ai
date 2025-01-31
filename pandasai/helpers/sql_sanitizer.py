@@ -61,8 +61,8 @@ def is_sql_query_safe(query: str) -> bool:
         # Parse the query to extract its structure
         parsed = sqlglot.parse_one(query)
 
-        # Ensure the main query is SELECT or WITH
-        if parsed.key == "SELECT":
+        # Ensure the main query is SELECT
+        if parsed.key.upper() != "SELECT":
             return False
 
         # Check for infected keywords in the main query
