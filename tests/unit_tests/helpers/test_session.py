@@ -2,9 +2,10 @@ import os
 from unittest.mock import patch
 
 import pytest
+import requests
 
 from pandasai.constants import DEFAULT_API_URL
-from pandasai.exceptions import PandaAIApiKeyError
+from pandasai.exceptions import PandaAIApiKeyError, PandaAIApiCallError
 from pandasai.helpers.session import Session, get_pandaai_session
 
 
@@ -107,3 +108,76 @@ def test_get_pandaai_session_with_env_api_url():
     """Test that get_pandaai_session uses URL from environment"""
     session = get_pandaai_session()
     assert session._endpoint_url == "https://env.api.url"
+
+
+@patch("requests.request")
+def test_make_request_success(mock_request):
+    """Test successful API request"""
+    # Mock successful response
+    mock_response = mock_request.return_value
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"data": "test_data"}
+
+    session = Session(api_key="test-key")
+    result = session.make_request("GET", "/test")
+
+    # Verify request was made correctly
+    mock_request.assert_called_once_with(
+        "GET",
+        DEFAULT_API_URL + "/api/test",
+        headers={
+            "x-authorization": "Bearer test-key",
+            "Content-Type": "application/json",
+        },
+        params=None,
+        data=None,
+        json=None,
+        timeout=300,
+    )
+    assert result == {"data": "test_data"}
+
+
+@patch("requests.request")
+def test_make_request_error_response(mock_request):
+    """Test API request with error response"""
+    # Mock error response
+    mock_response = mock_request.return_value
+    mock_response.status_code = 400
+    mock_response.json.return_value = {"message": "Bad request"}
+
+    session = Session(api_key="test-key")
+    with pytest.raises(PandaAIApiCallError) as exc_info:
+        session.make_request("POST", "/test")
+    
+    assert str(exc_info.value) == "Bad request"
+
+
+@patch("requests.request")
+def test_make_request_network_error(mock_request):
+    """Test API request with network error"""
+    # Mock network error
+    mock_request.side_effect = requests.exceptions.RequestException("Network error")
+
+    session = Session(api_key="test-key")
+    with pytest.raises(PandaAIApiCallError) as exc_info:
+        session.make_request("GET", "/test")
+    
+    assert "Request failed: Network error" in str(exc_info.value)
+
+
+@patch("requests.request")
+def test_make_request_custom_headers(mock_request):
+    """Test API request with custom headers"""
+    # Mock successful response
+    mock_response = mock_request.return_value
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"data": "test_data"}
+
+    custom_headers = {"Custom-Header": "test-value"}
+    session = Session(api_key="test-key")
+    session.make_request("GET", "/test", headers=custom_headers)
+
+    # Verify custom headers were used
+    called_headers = mock_request.call_args[1]["headers"]
+    assert called_headers["Custom-Header"] == "test-value"
+    assert "x-authorization" not in called_headers
