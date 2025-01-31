@@ -47,6 +47,12 @@ class SQLDatasetLoader(DatasetLoader):
                 connection_info, formatted_query, params
             )
             return self._apply_transformations(dataframe)
+
+        except ModuleNotFoundError as e:
+            raise ImportError(
+                f"{source_type.capitalize()} connector not found. Please install the pandasai_sql[{source_type}] library, e.g. `pip install pandasai_sql[{source_type}]`."
+            ) from e
+
         except Exception as e:
             raise RuntimeError(
                 f"Failed to execute query for '{source_type}' with: {formatted_query}"
