@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from pandasai.constants import DEFAULT_API_URL
-from pandasai.exceptions import PandaAIApiKeyError, PandaAIApiCallError
+from pandasai.exceptions import PandaAIApiCallError, PandaAIApiKeyError
 from pandasai.helpers.session import Session, get_pandaai_session
 
 
@@ -148,7 +148,7 @@ def test_make_request_error_response(mock_request):
     session = Session(api_key="test-key")
     with pytest.raises(PandaAIApiCallError) as exc_info:
         session.make_request("POST", "/test")
-    
+
     assert str(exc_info.value) == "Bad request"
 
 
@@ -161,7 +161,7 @@ def test_make_request_network_error(mock_request):
     session = Session(api_key="test-key")
     with pytest.raises(PandaAIApiCallError) as exc_info:
         session.make_request("GET", "/test")
-    
+
     assert "Request failed: Network error" in str(exc_info.value)
 
 

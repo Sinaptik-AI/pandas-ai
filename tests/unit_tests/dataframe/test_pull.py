@@ -1,13 +1,18 @@
 import os
-import pytest
-from unittest.mock import patch, Mock, mock_open
 from io import BytesIO
+from unittest.mock import Mock, mock_open, patch
 from zipfile import ZipFile
 
 import pandas as pd
+import pytest
+
+from pandasai.data_loader.semantic_layer_schema import (
+    Column,
+    SemanticLayerSchema,
+    Source,
+)
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import PandaAIApiKeyError, DatasetNotFound
-from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema, Column, Source
+from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 
 
 @pytest.fixture
@@ -41,20 +46,22 @@ def mock_schema():
 
 
 def test_pull_success(mock_env, sample_df, mock_zip_content, mock_schema, tmp_path):
-    with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, \
-         patch("pandasai.dataframe.base.find_project_root") as mock_root, \
-         patch("pandasai.DatasetLoader.create_loader_from_path") as mock_loader, \
-         patch("builtins.open", mock_open()) as mock_file:
-        
+    with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, patch(
+        "pandasai.dataframe.base.find_project_root"
+    ) as mock_root, patch(
+        "pandasai.DatasetLoader.create_loader_from_path"
+    ) as mock_loader, patch("builtins.open", mock_open()) as mock_file:
         # Setup mocks
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.content = mock_zip_content
         mock_session.return_value.get.return_value = mock_response
         mock_root.return_value = str(tmp_path)
-        
+
         mock_loader_instance = Mock()
-        mock_loader_instance.load.return_value = DataFrame(sample_df, schema=mock_schema)
+        mock_loader_instance.load.return_value = DataFrame(
+            sample_df, schema=mock_schema
+        )
         mock_loader.return_value = mock_loader_instance
 
         # Create DataFrame instance and call pull
@@ -64,8 +71,11 @@ def test_pull_success(mock_env, sample_df, mock_zip_content, mock_schema, tmp_pa
         # Verify API call
         mock_session.return_value.get.assert_called_once_with(
             "/datasets/pull",
-            headers={"accept": "application/json", "x-authorization": "Bearer test_api_key"},
-            params={"path": "test/path"}
+            headers={
+                "accept": "application/json",
+                "x-authorization": "Bearer test_api_key",
+            },
+            params={"path": "test/path"},
         )
 
         # Verify file operations
@@ -92,13 +102,13 @@ def test_pull_api_error(mock_env, sample_df, mock_schema):
 
 
 def test_pull_file_exists(mock_env, sample_df, mock_zip_content, mock_schema, tmp_path):
-    with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, \
-         patch("pandasai.dataframe.base.find_project_root") as mock_root, \
-         patch("pandasai.DatasetLoader.create_loader_from_path") as mock_loader, \
-         patch("builtins.open", mock_open()) as mock_file, \
-         patch("os.path.exists") as mock_exists, \
-         patch("os.makedirs") as mock_makedirs:
-        
+    with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, patch(
+        "pandasai.dataframe.base.find_project_root"
+    ) as mock_root, patch(
+        "pandasai.DatasetLoader.create_loader_from_path"
+    ) as mock_loader, patch("builtins.open", mock_open()) as mock_file, patch(
+        "os.path.exists"
+    ) as mock_exists, patch("os.makedirs") as mock_makedirs:
         # Setup mocks
         mock_response = Mock()
         mock_response.status_code = 200
@@ -106,9 +116,11 @@ def test_pull_file_exists(mock_env, sample_df, mock_zip_content, mock_schema, tm
         mock_session.return_value.get.return_value = mock_response
         mock_root.return_value = str(tmp_path)
         mock_exists.return_value = True
-        
+
         mock_loader_instance = Mock()
-        mock_loader_instance.load.return_value = DataFrame(sample_df, schema=mock_schema)
+        mock_loader_instance.load.return_value = DataFrame(
+            sample_df, schema=mock_schema
+        )
         mock_loader.return_value = mock_loader_instance
 
         # Create DataFrame instance and call pull
@@ -116,4 +128,9 @@ def test_pull_file_exists(mock_env, sample_df, mock_zip_content, mock_schema, tm
         df.pull()
 
         # Verify directory creation
-        mock_makedirs.assert_called_with(os.path.dirname(os.path.join(str(tmp_path), "datasets", "test/path", "test.csv")), exist_ok=True)
+        mock_makedirs.assert_called_with(
+            os.path.dirname(
+                os.path.join(str(tmp_path), "datasets", "test/path", "test.csv")
+            ),
+            exist_ok=True,
+        )
