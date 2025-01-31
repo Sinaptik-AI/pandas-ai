@@ -24,7 +24,6 @@ class SQLDatasetLoader(DatasetLoader):
         self.query_builder: QueryBuilder = QueryBuilder(schema)
 
     def load(self) -> VirtualDataFrame:
-        self.query_builder = QueryBuilder(self.schema)
         return VirtualDataFrame(
             schema=self.schema,
             data_loader=SQLDatasetLoader(self.schema, self.dataset_path),
@@ -37,9 +36,11 @@ class SQLDatasetLoader(DatasetLoader):
 
         formatted_query = self.query_builder.format_query(query)
         load_function = self._get_loader_function(source_type)
-
         try:
-            return load_function(connection_info, formatted_query, params)
+            dataframe: pd.DataFrame = load_function(
+                connection_info, formatted_query, params
+            )
+            return self._apply_transformations(dataframe)
         except Exception as e:
             raise RuntimeError(
                 f"Failed to execute query for '{source_type}' with: {formatted_query}"
