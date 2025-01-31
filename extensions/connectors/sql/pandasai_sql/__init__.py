@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional
 
 import pandas as pd
@@ -17,7 +18,11 @@ def load_from_mysql(
         database=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn, params=params)
+    # Suppress warnings of SqlAlchemy
+    # TODO - Later can be removed when SqlAlchemy is to used
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        return pd.read_sql(query, conn, params=params)
 
 
 def load_from_postgres(
@@ -32,7 +37,11 @@ def load_from_postgres(
         dbname=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn, params=params)
+    # Suppress warnings of SqlAlchemy
+    # TODO - Later can be removed when SqlAlchemy is to used
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        return pd.read_sql(query, conn, params=params)
 
 
 def load_from_cockroachdb(
@@ -47,7 +56,11 @@ def load_from_cockroachdb(
         dbname=connection_info.database,
         port=connection_info.port,
     )
-    return pd.read_sql(query, conn, params=params)
+    # Suppress warnings of SqlAlchemy
+    # TODO - Later can be removed when SqlAlchemy is to used
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        return pd.read_sql(query, conn, params=params)
 
 
 __all__ = [

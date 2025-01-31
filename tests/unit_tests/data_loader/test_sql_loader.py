@@ -194,3 +194,28 @@ class TestSqlDatasetLoader:
 
             assert isinstance(result, DataFrame)
             mock_sql_query.assert_called_once_with("select * from users")
+
+    def test_mysql_malicious_with_no_import(self, mysql_schema):
+        """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""
+        with patch(
+            "pandasai.data_loader.sql_loader.is_sql_query_safe"
+        ) as mock_sql_query, patch(
+            "pandasai.data_loader.sql_loader.SQLDatasetLoader._get_loader_function"
+        ) as mock_loader_function:
+            mocked_exec_function = MagicMock()
+            mock_df = DataFrame(
+                pd.DataFrame(
+                    {
+                        "email": ["test@example.com"],
+                        "first_name": ["John"],
+                        "timestamp": [pd.Timestamp.now()],
+                    }
+                )
+            )
+            mocked_exec_function.return_value = mock_df
+            mock_loader_function.side_effect = ModuleNotFoundError("Error")
+            loader = SQLDatasetLoader(mysql_schema, "test/users")
+            mock_sql_query.return_value = False
+            logging.debug("Loading schema from dataset path: %s", loader)
+            with pytest.raises(ImportError):
+                loader.execute_query("select * from users")

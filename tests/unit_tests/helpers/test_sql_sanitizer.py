@@ -82,6 +82,10 @@ class TestSqlSanitizer:
             query
         )  # Safe query with subquery, no dangerous keyword
 
+    def test_safe_query_with_query_params(self):
+        query = "SELECT * FROM (SELECT * FROM heart_data) AS filtered_data LIMIT %s OFFSET %s"
+        assert is_sql_query_safe(query)
+
 
 if __name__ == "__main__":
     unittest.main()

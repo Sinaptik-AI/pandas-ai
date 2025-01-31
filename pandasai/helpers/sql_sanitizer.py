@@ -58,8 +58,14 @@ def is_sql_query_safe(query: str) -> bool:
             r"--",
             r"/\*.*\*/",  # Block comments and inline comments
         ]
+
+        placeholder = "___PLACEHOLDER___"  # Temporary placeholder for params
+
+        # Replace '%s' (MySQL, Psycopg2) with a unique placeholder
+        temp_query = query.replace("%s", placeholder)
+
         # Parse the query to extract its structure
-        parsed = sqlglot.parse_one(query)
+        parsed = sqlglot.parse_one(temp_query)
 
         # Ensure the main query is SELECT
         if parsed.key.upper() != "SELECT":
