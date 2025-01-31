@@ -5,27 +5,15 @@ from pandasai.helpers.dataframe_serializer import DataframeSerializer
 
 
 class TestDataframeSerializer:
-    @pytest.fixture
-    def sample_df(self):
-        df = DataFrame({"Name": ["Alice", "Bob"], "Age": [25, 30]})
-        df.name = "test_table"
-        df.description = "This is a test table"
-        return df
-
-    @pytest.fixture
-    def sample_dataframe_serializer(self):
-        return DataframeSerializer()
-
-    def test_serialize_with_name_and_description(
-        self, sample_dataframe_serializer, sample_df
-    ):
+    def test_serialize_with_name_and_description(self, sample_df):
         """Test serialization with name and description attributes."""
 
-        result = sample_dataframe_serializer.serialize(sample_df)
-        expected = """<table table_name="test_table" description="This is a test table" dimensions="2x2">
-Name,Age
-Alice,25
-Bob,30
+        result = DataframeSerializer.serialize(sample_df)
+        expected = """<table table_name="table_6c30b42101939c7bdf95f4c1052d615c" dimensions="3x2">
+A,B
+1,4
+2,5
+3,6
 </table>
 """
         assert result.replace("\r\n", "\n") == expected.replace("\r\n", "\n")

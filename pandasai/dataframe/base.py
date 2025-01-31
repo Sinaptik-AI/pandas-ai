@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from io import BytesIO
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 from zipfile import ZipFile
 
 import pandas as pd
@@ -40,9 +40,8 @@ class DataFrame(pd.DataFrame):
     _metadata = [
         "_agent",
         "_column_hash",
+        "_table_name",
         "config",
-        "description",
-        "name",
         "path",
         "schema",
     ]
@@ -56,29 +55,31 @@ class DataFrame(pd.DataFrame):
         copy: bool | None = None,
         **kwargs,
     ) -> None:
-        _name: Optional[str] = kwargs.pop("name", None)
         _schema: Optional[SemanticLayerSchema] = kwargs.pop("schema", None)
-        _description: Optional[str] = kwargs.pop("description", None)
         _path: Optional[str] = kwargs.pop("path", None)
+        _table_name: Optional[str] = kwargs.pop("_table_name", None)
 
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
 
+        if _table_name:
+            self._table_name = _table_name
+
         self._column_hash = self._calculate_column_hash()
-
-        self.name = _name or f"table_{self._column_hash}"
         self.schema = _schema or DataFrame.get_default_schema(self)
-        self.description = _description
         self.path = _path
-
         self.config = pai.config.get()
         self._agent: Optional[Agent] = None
 
     def __repr__(self) -> str:
         """Return a string representation of the DataFrame."""
-        name_str = f"name='{self.name}'" if self.name else ""
-        desc_str = f"description='{self.description}'" if self.description else ""
+        name_str = f"name='{self.schema.name}'"
+        desc_str = (
+            f"description='{self.schema.description}'"
+            if self.schema.description
+            else ""
+        )
         metadata = ", ".join(filter(None, [name_str, desc_str]))
 
         return f"PandaAI DataFrame({metadata})\n{super().__repr__()}"
@@ -142,7 +143,7 @@ class DataFrame(pd.DataFrame):
         Returns:
             str: Serialized string representation of the DataFrame
         """
-        return DataframeSerializer().serialize(self)
+        return DataframeSerializer.serialize(self)
 
     def get_head(self):
         return self.head()
@@ -159,8 +160,8 @@ class DataFrame(pd.DataFrame):
 
         params = {
             "path": self.path,
-            "description": self.description,
-            "name": self.name if self.name else "",
+            "description": self.schema.description,
+            "name": self.schema.name,
         }
 
         dataset_directory = os.path.join(find_project_root(), "datasets", self.path)
@@ -235,14 +236,12 @@ class DataFrame(pd.DataFrame):
         # Reloads the Dataframe
         from pandasai import DatasetLoader
 
-        dataset_loader = DatasetLoader()
+        dataset_loader = DatasetLoader.create_loader_from_path(self.path)
         df = dataset_loader.load(self.path)
         self.__init__(
             df,
             schema=df.schema,
             data_loader=dataset_loader,
-            name=df.name,
-            description=df.description,
             path=df.path,
         )
 
@@ -273,8 +272,16 @@ class DataFrame(pd.DataFrame):
             for name, dtype in dataframe.dtypes.items()
         ]
 
+        table_name = getattr(
+            dataframe, "_table_name", f"table_{dataframe._column_hash}"
+        )
+
         return SemanticLayerSchema(
-            name=dataframe.name,
-            source=Source(type="parquet", path="data.parquet"),
+            name=f"{dataframe._column_hash}",
+            source=Source(
+                type="parquet",
+                path="data.parquet",
+                table=table_name,
+            ),
             columns=columns_list,
         )

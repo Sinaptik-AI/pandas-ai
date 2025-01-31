@@ -98,7 +98,7 @@ def test_schema_with_transformations():
     """Test schema with multiple transformations"""
     schema = SemanticLayerSchema(
         name="test_dataset",
-        source={"type": "parquet", "path": "data.parquet"},
+        source={"type": "parquet", "path": "data.parquet", "table": "table"},
         transformations=[
             {
                 "type": "fill_na",
@@ -145,7 +145,7 @@ def test_complex_transformation_chain():
     """Test a complex chain of transformations in schema"""
     schema = SemanticLayerSchema(
         name="complex_dataset",
-        source={"type": "parquet", "path": "data.parquet"},
+        source={"type": "parquet", "path": "data.parquet", "table": "table"},
         transformations=[
             {
                 "type": "fill_na",
@@ -193,7 +193,7 @@ def test_rename_transformation():
     """Test rename transformation validation"""
     schema = SemanticLayerSchema(
         name="test_dataset",
-        source={"type": "parquet", "path": "data.parquet"},
+        source={"type": "parquet", "path": "data.parquet", "table": "table"},
         transformations=[
             {
                 "type": "rename",

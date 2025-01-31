@@ -44,6 +44,7 @@ class AzureOpenAI(BaseOpenAI):
         api_version: Optional[str] = None,
         deployment_name: str = None,
         is_chat_model: bool = True,
+        http_client: str = None,
         **kwargs,
     ):
         """
@@ -103,6 +104,7 @@ class AzureOpenAI(BaseOpenAI):
         self.azure_ad_token_provider = azure_ad_token_provider
         self._is_chat_model = is_chat_model
         self.deployment_name = deployment_name
+        self.http_client = http_client
 
         self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
         if self.openai_proxy:
@@ -138,6 +140,7 @@ class AzureOpenAI(BaseOpenAI):
             "azure_ad_token": self.azure_ad_token,
             "azure_ad_token_provider": self.azure_ad_token_provider,
             "api_key": self.api_token,
+            "http_client": self.http_client,
         }
         return {**client_params, **super()._client_params}
 

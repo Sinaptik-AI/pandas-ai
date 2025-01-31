@@ -29,7 +29,7 @@ class CodeCleaner:
         return isinstance(node, ast.FunctionDef) and node.name == "execute_sql_query"
 
     def _replace_table_names(
-        self, sql_query: str, table_names: list, allowed_table_names: list
+        self, sql_query: str, table_names: list, allowed_table_names: dict
     ) -> str:
         """
         Replace table names in the SQL query with case-sensitive or authorized table names.
@@ -54,8 +54,11 @@ class CodeCleaner:
         """
         sql_query = sql_query.rstrip(";")
         table_names = extract_table_names(sql_query)
-        allowed_table_names = {df.name: df.name for df in self.context.dfs} | {
-            f'"{df.name}"': df.name for df in self.context.dfs
+        allowed_table_names = {
+            df.schema.source.table: df.schema.source.table for df in self.context.dfs
+        } | {
+            f'"{df.schema.source.table}"': df.schema.source.table
+            for df in self.context.dfs
         }
         return self._replace_table_names(sql_query, table_names, allowed_table_names)
 

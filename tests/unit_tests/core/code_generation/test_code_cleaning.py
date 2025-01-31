@@ -64,23 +64,21 @@ class TestCodeCleaner(unittest.TestCase):
             )
 
     def test_clean_sql_query(self):
-        sql_query = "SELECT * FROM my_table;"
-        mock_dataframe = MagicMock(spec=object)
-        mock_dataframe.name = "my_table"
-        self.cleaner.context.dfs = [mock_dataframe]
+        table = self.sample_df.schema.source.table
+        sql_query = f"SELECT * FROM {table};"
+        self.cleaner.context.dfs = [self.sample_df]
         result = self.cleaner._clean_sql_query(sql_query)
-        self.assertEqual(result, "SELECT * FROM my_table")
+        self.assertEqual(result, f"SELECT * FROM {table}")
 
     def test_validate_and_make_table_name_case_sensitive(self):
+        table = self.sample_df.schema.source.table
         node = ast.Assign(
             targets=[ast.Name(id="query", ctx=ast.Store())],
-            value=ast.Constant(value="SELECT * FROM my_table"),
+            value=ast.Constant(value=f"SELECT * FROM {table}"),
         )
-        mock_dataframe = MagicMock(spec=object)
-        mock_dataframe.name = "my_table"
-        self.cleaner.context.dfs = [mock_dataframe]
+        self.cleaner.context.dfs = [self.sample_df]
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
-        self.assertEqual(updated_node.value.value, "SELECT * FROM my_table")
+        self.assertEqual(updated_node.value.value, f"SELECT * FROM {table}")
 
     def test_extract_fix_dataframe_redeclarations(self):
         node = ast.Assign(
