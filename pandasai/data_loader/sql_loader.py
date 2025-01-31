@@ -42,7 +42,6 @@ class SQLDatasetLoader(DatasetLoader):
             raise MaliciousQueryError(
                 "The SQL query is deemed unsafe and will not be executed."
             )
-
         try:
             dataframe: pd.DataFrame = load_function(
                 connection_info, formatted_query, params

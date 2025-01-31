@@ -1,9 +1,11 @@
 import os
+from abc import ABC, abstractmethod
 from importlib.util import find_spec
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from pandasai.helpers.filemanager import DefaultFileManager, FileManager
 from pandasai.llm.base import LLM
 
 
@@ -13,6 +15,7 @@ class Config(BaseModel):
     enable_cache: bool = True
     max_retries: int = 3
     llm: Optional[LLM] = None
+    file_manager: FileManager = DefaultFileManager()
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

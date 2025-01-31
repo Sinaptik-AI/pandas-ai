@@ -1,13 +1,16 @@
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pandas as pd
 import pytest
 
 from pandasai import VirtualDataFrame
+from pandasai.data_loader.loader import DatasetLoader
+from pandasai.data_loader.local_loader import LocalDatasetLoader
+from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import MaliciousQueryError
+from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
 
 
 class TestSqlDatasetLoader:

@@ -40,14 +40,14 @@ class TestDatasetLoader:
         with patch("os.path.exists", return_value=True), patch(
             "builtins.open", mock_open(read_data=str(sample_schema.to_yaml()))
         ):
-            schema = DatasetLoader._read_local_schema("test/users")
+            schema = DatasetLoader._read_schema_file("test/users")
             assert schema == sample_schema
 
     def test_load_schema_mysql(self, mysql_schema):
         with patch("os.path.exists", return_value=True), patch(
             "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
         ):
-            schema = DatasetLoader._read_local_schema("test/users")
+            schema = DatasetLoader._read_schema_file("test/users")
             assert schema == mysql_schema
 
     def test_load_schema_mysql_sanitized_name(self, mysql_schema):
@@ -56,13 +56,13 @@ class TestDatasetLoader:
         with patch("os.path.exists", return_value=True), patch(
             "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
         ):
-            schema = DatasetLoader._read_local_schema("test/users")
+            schema = DatasetLoader._read_schema_file("test/users")
             assert schema.name == "non_sanitized_name"
 
     def test_load_schema_file_not_found(self):
         with patch("os.path.exists", return_value=False):
             with pytest.raises(FileNotFoundError):
-                DatasetLoader._read_local_schema("test/users")
+                DatasetLoader._read_schema_file("test/users")
 
     def test_read_parquet(self, sample_schema):
         loader = LocalDatasetLoader(sample_schema, "test")

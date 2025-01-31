@@ -37,7 +37,7 @@ class LocalDatasetLoader(DatasetLoader):
             )
 
         filepath = os.path.join(
-            str(self._get_abs_dataset_path()),
+            self.dataset_path,
             self.schema.source.path,
         )
 
