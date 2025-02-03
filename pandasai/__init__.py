@@ -118,7 +118,8 @@ def create(
     if df is not None:
         schema = df.schema
         schema.name = sanitize_sql_table_name(dataset_name)
-        df.to_parquet(parquet_file_path, index=False)
+        parquet_file_path_abs_path = file_manager.abs_path(parquet_file_path)
+        df.to_parquet(parquet_file_path_abs_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(

@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from pandasai.config import Config
+from pandasai.llm.fake import FakeLLM
 from pandasai.smart_dataframe import SmartDataframe, load_smartdataframes
 
 
@@ -26,7 +27,7 @@ def test_smart_dataframe_init_with_all_params():
     # Create sample dataframes
     df = pd.DataFrame({"A": [1, 2, 3], "B": ["x", "y", "z"]})
     custom_head = pd.DataFrame({"A": [1], "B": ["x"]})
-    config = Config()
+    config = Config(llm=FakeLLM())
 
     # Test initialization with all parameters
     with pytest.warns(DeprecationWarning):
@@ -104,8 +105,8 @@ def test_load_smartdataframes():
     df1 = pd.DataFrame({"A": [1, 2, 3], "B": ["x", "y", "z"]})
     df2 = pd.DataFrame({"C": [4, 5, 6], "D": ["a", "b", "c"]})
 
-    # Create a config
-    config = Config()
+    # Create a config with FakeLLM
+    config = Config(llm=FakeLLM())
 
     # Test loading regular pandas DataFrames
     smart_dfs = load_smartdataframes([df1, df2], config)

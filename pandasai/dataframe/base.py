@@ -163,17 +163,16 @@ class DataFrame(pd.DataFrame):
             "name": self.schema.name,
         }
 
-        dataset_directory = os.path.join("datasets", self.path)
         file_manager = ConfigManager.get().file_manager
         headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
 
-        files = []
-        schema_file_path = os.path.join(dataset_directory, "schema.yaml")
-        data_file_path = os.path.join(dataset_directory, "data.parquet")
+        schema_file_path = os.path.join(self.path, "schema.yaml")
+        data_file_path = os.path.join(self.path, "data.parquet")
 
         # Open schema.yaml
         schema_file = file_manager.load_binary(schema_file_path)
-        files.append(("files", ("schema.yaml", schema_file, "application/x-yaml")))
+
+        files = [("files", ("schema.yaml", schema_file, "application/x-yaml"))]
 
         # Check if data.parquet exists and open it
         if file_manager.exists(data_file_path):

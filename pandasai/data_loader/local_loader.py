@@ -5,11 +5,11 @@ import pandas as pd
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import InvalidDataSourceType
 
+from ..config import ConfigManager
 from ..constants import (
     LOCAL_SOURCE_TYPES,
 )
 from .loader import DatasetLoader
-from .transformation_manager import TransformationManager
 
 
 class LocalDatasetLoader(DatasetLoader):
@@ -44,10 +44,11 @@ class LocalDatasetLoader(DatasetLoader):
         return self._read_csv_or_parquet(filepath, source_type)
 
     def _read_csv_or_parquet(self, file_path: str, file_format: str) -> pd.DataFrame:
+        file_manager = ConfigManager.get().file_manager
         if file_format == "parquet":
-            df = pd.read_parquet(file_path)
+            df = pd.read_parquet(file_manager.abs_path(file_path))
         elif file_format == "csv":
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_manager.abs_path(file_path))
         else:
             raise ValueError(f"Unsupported file format: {file_format}")
 
