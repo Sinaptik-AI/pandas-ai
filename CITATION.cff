@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+date-released: 2023-04-29
+message: "If you use this software, please cite it as below."
+title: "PandaAI: the conversational data analysis framework"
+abstract: "PandaAI is a python library that makes it easy to ask questions to your data in natural language."
+url: "https://github.com/sinaptik-ai/pandas-ai"
+authors:
+- family-names: "Venturi"
+  given-names: "Gabriele"
+  affiliation: "Sinaptik"
+license: MIT
