@@ -50,7 +50,7 @@ class TestConfigManager:
             ConfigManager.validate_llm()
 
             assert isinstance(ConfigManager._config.llm, LangchainLLM)
-            assert ConfigManager._config.llm._llm == mock_langchain_llm
+            assert ConfigManager._config.llm.langchain_llm == mock_langchain_llm
 
     def test_update_config(self):
         """Test updating configuration with new values"""
