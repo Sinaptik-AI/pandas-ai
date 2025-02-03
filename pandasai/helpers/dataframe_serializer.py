@@ -18,11 +18,7 @@ class DataframeSerializer:
         Returns:
             str: dataframe stringify
         """
-        dataframe_info = "<table"
-
-        # Add name attribute if available
-        if df.schema.source.table is not None:
-            dataframe_info += f' table_name="{df.schema.source.table}"'
+        dataframe_info = f'<table table_name="{df.schema.name}"'
 
         # Add description attribute if available
         if df.schema.description is not None:

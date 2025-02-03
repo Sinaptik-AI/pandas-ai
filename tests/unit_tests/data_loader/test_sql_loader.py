@@ -193,10 +193,10 @@ class TestSqlDatasetLoader:
             mock_sql_query.return_value = True
             logging.debug("Loading schema from dataset path: %s", loader)
 
-            result = loader.execute_query("select * from users")
+            result = loader.execute_query("SELECT * FROM users")
 
             assert isinstance(result, DataFrame)
-            mock_sql_query.assert_called_once_with("select * from users")
+            mock_sql_query.assert_called_once_with("SELECT * FROM users")
 
     def test_mysql_malicious_with_no_import(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""

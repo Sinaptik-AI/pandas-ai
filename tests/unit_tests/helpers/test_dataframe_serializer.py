@@ -9,7 +9,7 @@ class TestDataframeSerializer:
         """Test serialization with name and description attributes."""
 
         result = DataframeSerializer.serialize(sample_df)
-        expected = """<table table_name="table_6c30b42101939c7bdf95f4c1052d615c" dimensions="3x2">
+        expected = """<table table_name="6c30b42101939c7bdf95f4c1052d615c" dimensions="3x2">
 A,B
 1,4
 2,5

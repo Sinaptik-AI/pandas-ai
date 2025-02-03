@@ -5,22 +5,22 @@ import yaml
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MethodNotImplementedError
+from pandasai.helpers.path import get_validated_dataset_path
 from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
 
 from .. import ConfigManager
 from ..constants import (
     LOCAL_SOURCE_TYPES,
 )
-from .query_builder import QueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
 from .transformation_manager import TransformationManager
-from .view_query_builder import ViewQueryBuilder
 
 
 class DatasetLoader:
     def __init__(self, schema: SemanticLayerSchema, dataset_path: str):
         self.schema = schema
         self.dataset_path = dataset_path
+        self.org_name, self.dataset_name = get_validated_dataset_path(self.dataset_path)
 
     @classmethod
     def create_loader_from_schema(

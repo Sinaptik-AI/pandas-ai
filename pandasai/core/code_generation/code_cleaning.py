@@ -55,11 +55,8 @@ class CodeCleaner:
         sql_query = sql_query.rstrip(";")
         table_names = extract_table_names(sql_query)
         allowed_table_names = {
-            df.schema.source.table: df.schema.source.table for df in self.context.dfs
-        } | {
-            f'"{df.schema.source.table}"': df.schema.source.table
-            for df in self.context.dfs
-        }
+            df.schema.name: df.schema.name for df in self.context.dfs
+        } | {f'"{df.schema.name}"': df.schema.name for df in self.context.dfs}
         return self._replace_table_names(sql_query, table_names, allowed_table_names)
 
     def _validate_and_make_table_name_case_sensitive(self, node: ast.AST) -> ast.AST:
