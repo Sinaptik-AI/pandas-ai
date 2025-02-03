@@ -37,6 +37,11 @@ class FileManager(ABC):
         """Creates a directory if it doesn't exist."""
         pass
 
+    @abstractmethod
+    def abs_path(self, file_path: str) -> str:
+        """Returns the absolute path of {file_path}"""
+        pass
+
 
 class DefaultFileManager(FileManager):
     """Local file system implementation of FileLoader."""
@@ -45,29 +50,26 @@ class DefaultFileManager(FileManager):
         self.base_path = os.path.join(find_project_root(), "datasets")
 
     def load(self, file_path: str) -> str:
-        full_path = os.path.join(self.base_path, file_path)
-        with open(full_path, "r", encoding="utf-8") as f:
+        with open(self.abs_path(file_path), "r", encoding="utf-8") as f:
             return f.read()
 
     def load_binary(self, file_path: str) -> bytes:
-        full_path = os.path.join(self.base_path, file_path)
-        with open(full_path, "rb") as f:
+        with open(self.abs_path(file_path), "rb") as f:
             return f.read()
 
     def write(self, file_path: str, content: str) -> None:
-        full_path = os.path.join(self.base_path, file_path)
-        with open(full_path, "w", encoding="utf-8") as f:
+        with open(self.abs_path(file_path), "w", encoding="utf-8") as f:
             f.write(content)
 
     def write_binary(self, file_path: str, content: bytes) -> None:
-        full_path = os.path.join(self.base_path, file_path)
-        with open(full_path, "wb") as f:
+        with open(self.abs_path(file_path), "wb") as f:
             f.write(content)
 
     def exists(self, file_path: str) -> bool:
-        full_path = os.path.join(self.base_path, file_path)
-        return os.path.exists(full_path)
+        return os.path.exists(self.abs_path(file_path))
 
     def mkdir(self, dir_path: str) -> None:
-        full_path = os.path.join(self.base_path, dir_path)
-        os.makedirs(full_path, exist_ok=True)
+        os.makedirs(self.abs_path(dir_path), exist_ok=True)
+
+    def abs_path(self, file_path: str) -> str:
+        return os.path.join(self.base_path, file_path)
