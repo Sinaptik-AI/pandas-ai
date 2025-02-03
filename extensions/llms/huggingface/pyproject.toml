@@ -10,7 +10,6 @@ readme = "README.md"
 python = ">=3.8,<3.12"
 pandasai = ">=3.0.0b4"
 transformers = "^4.35.0"
-torch = "^2.1.0"
 text-generation = "^0.6.0"
 
 [tool.poetry.group.test]
