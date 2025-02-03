@@ -1,11 +1,12 @@
 import os
 from io import BytesIO
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, PropertyMock, mock_open, patch
 from zipfile import ZipFile
 
 import pandas as pd
 import pytest
 
+from pandasai.config import ConfigManager
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
     SemanticLayerSchema,
@@ -13,6 +14,7 @@ from pandasai.data_loader.semantic_layer_schema import (
 )
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
+from pandasai.helpers.path import find_project_root
 
 
 @pytest.fixture
@@ -47,7 +49,7 @@ def mock_schema():
 
 def test_pull_success(mock_env, sample_df, mock_zip_content, mock_schema, tmp_path):
     with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, patch(
-        "pandasai.dataframe.base.find_project_root"
+        "pandasai.helpers.path.find_project_root"
     ) as mock_root, patch(
         "pandasai.DatasetLoader.create_loader_from_path"
     ) as mock_loader, patch("builtins.open", mock_open()) as mock_file:
@@ -103,7 +105,7 @@ def test_pull_api_error(mock_env, sample_df, mock_schema):
 
 def test_pull_file_exists(mock_env, sample_df, mock_zip_content, mock_schema, tmp_path):
     with patch("pandasai.dataframe.base.get_pandaai_session") as mock_session, patch(
-        "pandasai.dataframe.base.find_project_root"
+        "pandasai.helpers.path.find_project_root"
     ) as mock_root, patch(
         "pandasai.DatasetLoader.create_loader_from_path"
     ) as mock_loader, patch("builtins.open", mock_open()) as mock_file, patch(
@@ -117,20 +119,24 @@ def test_pull_file_exists(mock_env, sample_df, mock_zip_content, mock_schema, tm
         mock_root.return_value = str(tmp_path)
         mock_exists.return_value = True
 
-        mock_loader_instance = Mock()
-        mock_loader_instance.load.return_value = DataFrame(
-            sample_df, schema=mock_schema
-        )
-        mock_loader.return_value = mock_loader_instance
+        # Setup FileManager mock
+        mock_file_manager = Mock()
+        mock_file_manager.exists.return_value = True
+        mock_file_manager.base_path = os.path.join(str(tmp_path), "datasets")
+        mock_config = Mock()
+        mock_config.file_manager = mock_file_manager
+        with patch.object(ConfigManager, "get", return_value=mock_config):
+            mock_loader_instance = Mock()
+            mock_loader_instance.load.return_value = DataFrame(
+                sample_df, schema=mock_schema
+            )
+            mock_loader.return_value = mock_loader_instance
 
-        # Create DataFrame instance and call pull
-        df = DataFrame(sample_df, path="test/path", schema=mock_schema)
-        df.pull()
+            # Create DataFrame instance and call pull
+            df = DataFrame(sample_df, path="test/path", schema=mock_schema)
+            df.pull()
 
-        # Verify directory creation
-        mock_makedirs.assert_called_with(
-            os.path.dirname(
-                os.path.join(str(tmp_path), "datasets", "test/path", "test.csv")
-            ),
-            exist_ok=True,
-        )
+            # Verify directory creation
+            mock_file_manager.mkdir.assert_called_with(
+                os.path.dirname("test/path/test.csv")
+            )
