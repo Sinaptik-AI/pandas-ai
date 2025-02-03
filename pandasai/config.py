@@ -1,5 +1,4 @@
 import os
-from abc import ABC, abstractmethod
 from importlib.util import find_spec
 from typing import Any, Dict, Optional
 
@@ -38,6 +37,9 @@ class ConfigManager:
     @classmethod
     def get(cls) -> Config:
         """Get the global configuration."""
+        if cls._config is None:
+            cls._config = Config()
+
         if cls._config.llm is None and os.environ.get("PANDABI_API_KEY"):
             from pandasai.llm.bamboo_llm import BambooLLM
 
