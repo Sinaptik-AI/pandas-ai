@@ -10,7 +10,7 @@ import pandas as pd
 from pandas._typing import Axes, Dtype
 
 import pandasai as pai
-from pandasai.config import Config
+from pandasai.config import Config, ConfigManager
 from pandasai.core.response import BaseResponse
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
@@ -19,7 +19,6 @@ from pandasai.data_loader.semantic_layer_schema import (
 )
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import DataframeSerializer
-from pandasai.helpers.path import find_project_root
 from pandasai.helpers.session import get_pandaai_session
 
 if TYPE_CHECKING:
@@ -164,38 +163,31 @@ class DataFrame(pd.DataFrame):
             "name": self.schema.name,
         }
 
-        dataset_directory = os.path.join(find_project_root(), "datasets", self.path)
-
+        file_manager = ConfigManager.get().file_manager
         headers = {"accept": "application/json", "x-authorization": f"Bearer {api_key}"}
 
-        files = []
-        schema_file_path = os.path.join(dataset_directory, "schema.yaml")
-        data_file_path = os.path.join(dataset_directory, "data.parquet")
+        schema_file_path = os.path.join(self.path, "schema.yaml")
+        data_file_path = os.path.join(self.path, "data.parquet")
 
-        try:
-            # Open schema.yaml
-            schema_file = open(schema_file_path, "rb")
-            files.append(("files", ("schema.yaml", schema_file, "application/x-yaml")))
+        # Open schema.yaml
+        schema_file = file_manager.load_binary(schema_file_path)
 
-            # Check if data.parquet exists and open it
-            if os.path.exists(data_file_path):
-                data_file = open(data_file_path, "rb")
-                files.append(
-                    ("files", ("data.parquet", data_file, "application/octet-stream"))
-                )
+        files = [("files", ("schema.yaml", schema_file, "application/x-yaml"))]
 
-            # Send the POST request
-            request_session.post(
-                "/datasets/push",
-                files=files,
-                params=params,
-                headers=headers,
+        # Check if data.parquet exists and open it
+        if file_manager.exists(data_file_path):
+            data_file = file_manager.load_binary(data_file_path)
+            files.append(
+                ("files", ("data.parquet", data_file, "application/octet-stream"))
             )
 
-        finally:
-            # Ensure files are closed after the request
-            for _, (name, file, _) in files:
-                file.close()
+        # Send the POST request
+        request_session.post(
+            "/datasets/push",
+            files=files,
+            params=params,
+            headers=headers,
+        )
 
         print("Your dataset was successfully pushed to the remote server!")
         print(f"🔗 URL: https://app.pandabi.ai/datasets/{self.path}")
@@ -218,20 +210,18 @@ class DataFrame(pd.DataFrame):
 
         with ZipFile(BytesIO(file_data.content)) as zip_file:
             for file_name in zip_file.namelist():
-                target_path = os.path.join(
-                    find_project_root(), "datasets", self.path, file_name
-                )
+                target_path = os.path.join(self.path, file_name)
 
+                file_manager = ConfigManager.get().file_manager
                 # Check if the file already exists
-                if os.path.exists(target_path):
+                if file_manager.exists(target_path):
                     print(f"Replacing existing file: {target_path}")
 
                 # Ensure target directory exists
-                os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                file_manager.mkdir(os.path.dirname(target_path))
 
                 # Extract the file
-                with open(target_path, "wb") as f:
-                    f.write(zip_file.read(file_name))
+                file_manager.write_binary(target_path, zip_file.read(file_name))
 
         # Reloads the Dataframe
         from pandasai import DatasetLoader

@@ -7,7 +7,8 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 import pandasai as pai
-from pandasai import DataFrame, find_project_root
+from pandasai import DataFrame
+from pandasai.helpers.path import find_project_root
 
 # Read the API key from an environment variable
 JUDGE_OPENAI_API_KEY = os.getenv("JUDGE_OPENAI_API_KEY", None)

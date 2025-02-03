@@ -72,7 +72,6 @@ df = pai.read_csv("data/companies.csv")
 companies = pai.create(
   path="my-org/companies",
   df=df,
-  name="companies",
   description="Customer companies dataset"
 )
 
@@ -89,7 +88,6 @@ By default, the column will be inferred from the data. For more control, though,
 companies = pai.create(
   path="my-org/companies",
   df=df,
-  name="companies",
   description="Customer companies dataset",
   columns=[
     {
@@ -121,7 +119,11 @@ stocks = pai.load("organization/coca_cola_stock")
 companies = pai.load("organization/companies")
 
 # Query using natural language
-result = companies.chat("What's the average revenue by region?")
+response = stocks.chat("What is the volatility of the Coca Cola stock?")
+response = companies.chat("What is the average revenue by region?")
+
+# Query using multiple datasets 
+result = pai.chat("Compare the revenue between Coca Cola and Apple", stocks, companies)
 ```
 
 ## Sharing and collaboration
@@ -130,8 +132,8 @@ Share your data layers with your team:
 
 ```python
 # Push datasets to the platform
+stocks.push()
 companies.push()
-market.push()
 ```
 
 Team members can then access and query the shared datasets through:
@@ -142,7 +144,7 @@ Of course, they will only be able to see the datasets they have access to. You c
 
 ## Next Steps
 
-- Learn more about [Data Schema Definition](/v3/data-layer)
-- Explore [Advanced Views and Joins](/v3/views)
-- Check out our [Example Projects](/v3/examples)
-- Join our [Discord Community](https://discord.gg/kF7FqH2FwS) for support
+- Learn more about [Semantic Layer](/v3/semantic-layer)
+- Join our [Discord Community](https://discord.gg/KYKj9F2FRH) for support
+{/* - Explore [Advanced Views and Joins](/v3/views) */}
+{/*- Check out our [Example Projects](/v3/examples) */}

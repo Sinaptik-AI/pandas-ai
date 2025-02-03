@@ -98,17 +98,17 @@ def create(
 
     org_name, dataset_name = get_validated_dataset_path(path)
 
-    dataset_directory = os.path.join(
-        find_project_root(), "datasets", org_name, dataset_name
-    )
+    dataset_directory = str(os.path.join(org_name, dataset_name))
 
-    schema_path = os.path.join(str(dataset_directory), "schema.yaml")
-    parquet_file_path = os.path.join(str(dataset_directory), "data.parquet")
+    schema_path = os.path.join(dataset_directory, "schema.yaml")
+    parquet_file_path = os.path.join(dataset_directory, "data.parquet")
+
+    file_manager = config.get().file_manager
     # Check if dataset already exists
-    if os.path.exists(dataset_directory) and os.path.exists(schema_path):
+    if file_manager.exists(dataset_directory) and file_manager.exists(schema_path):
         raise ValueError(f"Dataset already exists at path: {path}")
 
-    os.makedirs(dataset_directory, exist_ok=True)
+    file_manager.mkdir(dataset_directory)
 
     if df is None and source is None and not view:
         raise InvalidConfigError(
@@ -118,7 +118,8 @@ def create(
     if df is not None:
         schema = df.schema
         schema.name = sanitize_sql_table_name(dataset_name)
-        df.to_parquet(parquet_file_path, index=False)
+        parquet_file_path_abs_path = file_manager.abs_path(parquet_file_path)
+        df.to_parquet(parquet_file_path_abs_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(
@@ -135,8 +136,7 @@ def create(
     if columns:
         schema.columns = [Column(**column) for column in columns]
 
-    with open(schema_path, "w") as yml_file:
-        yml_file.write(schema.to_yaml())
+    file_manager.write(schema_path, schema.to_yaml())
 
     print(f"Dataset saved successfully to path: {dataset_directory}")
 

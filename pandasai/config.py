@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from pandasai.helpers.filemanager import DefaultFileManager, FileManager
 from pandasai.llm.base import LLM
 
 
@@ -13,6 +14,7 @@ class Config(BaseModel):
     enable_cache: bool = True
     max_retries: int = 3
     llm: Optional[LLM] = None
+    file_manager: FileManager = DefaultFileManager()
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -35,6 +37,9 @@ class ConfigManager:
     @classmethod
     def get(cls) -> Config:
         """Get the global configuration."""
+        if cls._config is None:
+            cls._config = Config()
+
         if cls._config.llm is None and os.environ.get("PANDABI_API_KEY"):
             from pandasai.llm.bamboo_llm import BambooLLM
 
