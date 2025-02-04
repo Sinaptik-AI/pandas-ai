@@ -89,7 +89,6 @@ class ViewDatasetLoader(SQLDatasetLoader):
 
         if source_type in LOCAL_SOURCE_TYPES:
             return self.execute_local_query(formatted_query)
-
         load_function = self._get_loader_function(source_type)
 
         if not is_sql_query_safe(formatted_query):
