@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Union
 from pandasai.data_loader.semantic_layer_schema import Relation, SemanticLayerSchema
 
 
-class QueryBuilder:
+class BaseQueryBuilder:
     def __init__(self, schema: SemanticLayerSchema):
         self.schema = schema
 
@@ -24,15 +24,6 @@ class QueryBuilder:
 
         return query
 
-    def _get_columns(self) -> str:
-        if self.schema.columns:
-            return ", ".join([col.name for col in self.schema.columns])
-        else:
-            return "*"
-
-    def _get_from_statement(self):
-        return f"FROM {self.schema.source.table.lower()}"
-
     def _add_order_by(self) -> str:
         if not self.schema.order_by:
             return ""
@@ -50,12 +41,19 @@ class QueryBuilder:
         return f" LIMIT {limit}" if limit else ""
 
     def get_head_query(self, n=5):
-        source_type = self.schema.source.type
         columns = self._get_columns()
         query = f"SELECT {columns} "
         query += self._get_from_statement()
-        order_by = "RANDOM()" if source_type in {"sqlite", "postgres"} else "RAND()"
-        return f"{query} ORDER BY {order_by} LIMIT {n}"
+        return f"{query} LIMIT {n}"
 
     def get_row_count(self):
         return f"SELECT COUNT(*) {self._get_from_statement()}"
+
+    def _get_columns(self) -> str:
+        if self.schema.columns:
+            return ", ".join([col.name for col in self.schema.columns])
+        else:
+            return "*"
+
+    def _get_from_statement(self):
+        return f"FROM {self.schema.name}"

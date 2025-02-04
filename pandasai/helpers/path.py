@@ -8,9 +8,6 @@ def find_project_root(filename=None):
     find project root
     """
 
-    # Get the path of the file that is be
-    # ing executed
-
     current_file_path = os.path.abspath(os.getcwd())
 
     # Navigate back until we either find a $filename file or there is no parent
@@ -52,16 +49,17 @@ def get_validated_dataset_path(path: str):
         raise ValueError("Path must be in format 'organization/dataset'")
 
     org_name, dataset_name = path_parts
+
     if not org_name or not dataset_name:
         raise ValueError("Both organization and dataset names are required")
 
     # Validate organization and dataset name format
-    if not bool(re.match(r"^[a-z0-9\-_]+$", org_name)):
+    if not bool(re.match(r"^[a-z0-9\-]+$", org_name)):
         raise ValueError(
             "Organization name must be lowercase and use hyphens instead of spaces (e.g. 'my-org')"
         )
 
-    if not bool(re.match(r"^[a-z0-9\-_]+$", dataset_name)):
+    if not bool(re.match(r"^[a-z0-9\-]+$", dataset_name)):
         raise ValueError(
             "Dataset name must be lowercase and use hyphens instead of spaces (e.g. 'my-dataset')"
         )

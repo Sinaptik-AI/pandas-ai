@@ -1,22 +1,31 @@
-from pandasai.helpers.sql_sanitizer import is_sql_query_safe, sanitize_sql_table_name
+from pandasai.helpers.sql_sanitizer import (
+    is_sql_query_safe,
+    sanitize_file_name,
+    sanitize_relation_name,
+)
 
 
 class TestSqlSanitizer:
-    def test_valid_filename(self):
+    def test_sanitize_file_name_valid(self):
         filepath = "/path/to/valid_table.csv"
         expected = "valid_table"
-        assert sanitize_sql_table_name(filepath) == expected
+        assert sanitize_file_name(filepath) == expected
 
-    def test_filename_with_special_characters(self):
+    def test_sanitize_file_name_special_characters(self):
         filepath = "/path/to/invalid!@#.csv"
         expected = "invalid___"
-        assert sanitize_sql_table_name(filepath) == expected
+        assert sanitize_file_name(filepath) == expected
 
-    def test_filename_with_long_name(self):
+    def test_sanitize_file_name_long_name(self):
         """Test with a filename exceeding the length limit."""
         filepath = "/path/to/" + "a" * 100 + ".csv"
         expected = "a" * 64
-        assert sanitize_sql_table_name(filepath) == expected
+        assert sanitize_file_name(filepath) == expected
+
+    def test_sanitize_relation_name_valid(self):
+        relation = "dataset-name.column"
+        expected = "dataset_name.column"
+        assert sanitize_relation_name(relation) == expected
 
     def test_safe_select_query(self):
         query = "SELECT * FROM users WHERE username = 'admin';"
@@ -85,7 +94,3 @@ class TestSqlSanitizer:
     def test_safe_query_with_query_params(self):
         query = "SELECT * FROM (SELECT * FROM heart_data) AS filtered_data LIMIT %s OFFSET %s"
         assert is_sql_query_safe(query)
-
-
-if __name__ == "__main__":
-    unittest.main()

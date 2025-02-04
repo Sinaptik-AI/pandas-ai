@@ -267,11 +267,10 @@ class DataFrame(pd.DataFrame):
         )
 
         return SemanticLayerSchema(
-            name=f"{dataframe._column_hash}",
+            name=table_name,
             source=Source(
                 type="parquet",
                 path="data.parquet",
-                table=table_name,
             ),
             columns=columns_list,
         )

@@ -64,7 +64,7 @@ class TestGeneratePythonCodeWithSQLPrompt:
             prompt_content
             == f'''<tables>
 
-<table table_name="d41d8cd98f00b204e9800998ecf8427e" dimensions="0x0">
+<table table_name="table_d41d8cd98f00b204e9800998ecf8427e" dimensions="0x0">
 
 </table>
 

@@ -8,6 +8,7 @@ from pandasai.data_loader.local_loader import LocalDatasetLoader
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import InvalidDataSourceType
+from pandasai.query_builders import LocalQueryBuilder
 
 
 class TestDatasetLoader:
@@ -26,6 +27,10 @@ class TestDatasetLoader:
             assert isinstance(result, DataFrame)
             mock_read_csv_or_parquet.assert_called_once()
             assert "email" in result.columns
+
+    def test_local_loader_properties(self, sample_schema):
+        loader = LocalDatasetLoader(sample_schema, "test/test")
+        assert isinstance(loader.query_builder, LocalQueryBuilder)
 
     def test_load_from_local_source_invalid_source_type(self, sample_schema):
         sample_schema.source.type = "mysql"

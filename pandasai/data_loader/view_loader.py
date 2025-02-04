@@ -1,16 +1,19 @@
-from typing import Dict, Optional
+from typing import Optional
 
+import duckdb
 import pandas as pd
 
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
+from pandasai.query_builders import ViewQueryBuilder
 
-from .. import InvalidConfigError
+from .. import LOCAL_SOURCE_TYPES
 from ..exceptions import MaliciousQueryError
 from ..helpers.sql_sanitizer import is_sql_query_safe
+from .duck_db_connection_manager import DuckDBConnectionManager
 from .loader import DatasetLoader
-from .semantic_layer_schema import SemanticLayerSchema, Source, is_schema_source_same
+from .local_loader import LocalDatasetLoader
+from .semantic_layer_schema import SemanticLayerSchema, Source
 from .sql_loader import SQLDatasetLoader
-from .view_query_builder import ViewQueryBuilder
 
 
 class ViewDatasetLoader(SQLDatasetLoader):
@@ -27,9 +30,13 @@ class ViewDatasetLoader(SQLDatasetLoader):
         self.source: Source = list(self.schema_dependencies_dict.values())[
             0
         ].schema.source
-        self.query_builder: ViewQueryBuilder = ViewQueryBuilder(
+        self._query_builder: ViewQueryBuilder = ViewQueryBuilder(
             schema, self.schema_dependencies_dict
         )
+
+    @property
+    def query_builder(self) -> ViewQueryBuilder:
+        return self._query_builder
 
     def _get_dependencies_datasets(self) -> set[str]:
         return {
@@ -62,11 +69,27 @@ class ViewDatasetLoader(SQLDatasetLoader):
             path=self.dataset_path,
         )
 
+    def execute_local_query(self, query) -> pd.DataFrame:
+        try:
+            db_manager = DuckDBConnectionManager()
+
+            for loader in list(self.schema_dependencies_dict.values()):
+                if isinstance(loader, LocalDatasetLoader):
+                    loader.register_table()
+
+            return db_manager.sql(query).df()
+        except duckdb.Error as e:
+            raise RuntimeError(f"SQL execution failed: {e}") from e
+
     def execute_query(self, query: str, params: Optional[list] = None) -> pd.DataFrame:
         source_type = self.source.type
         connection_info = self.source.connection
 
         formatted_query = self.query_builder.format_query(query)
+
+        if source_type in LOCAL_SOURCE_TYPES:
+            return self.execute_local_query(formatted_query)
+
         load_function = self._get_loader_function(source_type)
 
         if not is_sql_query_safe(formatted_query):

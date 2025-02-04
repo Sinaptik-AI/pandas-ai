@@ -1,16 +1,13 @@
 import logging
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
 from pandasai import VirtualDataFrame
-from pandasai.data_loader.loader import DatasetLoader
-from pandasai.data_loader.local_loader import LocalDatasetLoader
-from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
+from pandasai.exceptions import MaliciousQueryError
 
 
 class TestSqlDatasetLoader:
@@ -46,7 +43,7 @@ class TestSqlDatasetLoader:
 
             # Verify the SQL query was executed correctly
             mock_execute_query.assert_called_once_with(
-                "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
+                "SELECT email, first_name, timestamp FROM users LIMIT 5"
             )
 
             # Test executing a custom query
@@ -87,7 +84,7 @@ class TestSqlDatasetLoader:
 
             # Verify the SQL query was executed correctly
             mock_execute_query.assert_called_once_with(
-                "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
+                "SELECT email, first_name, timestamp FROM users LIMIT 5"
             )
 
             # Test executing a custom query
@@ -136,7 +133,7 @@ class TestSqlDatasetLoader:
             loader_function.assert_called_once()
             assert (
                 loader_function.call_args[0][1]
-                == "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
+                == "SELECT email, first_name, timestamp FROM users LIMIT 5"
             )
 
     def test_mysql_malicious_query(self, mysql_schema):

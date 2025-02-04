@@ -1,8 +1,6 @@
 import pytest
 
-from pandasai.data_loader.query_builder import QueryBuilder
-from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
-from pandasai.data_loader.view_query_builder import ViewQueryBuilder
+from pandasai.query_builders.view_query_builder import ViewQueryBuilder
 
 
 class TestViewQueryBuilder:
@@ -15,7 +13,6 @@ class TestViewQueryBuilder:
             mysql_view_schema, mysql_view_dependencies_dict
         )
         assert isinstance(query_builder, ViewQueryBuilder)
-        assert isinstance(query_builder, QueryBuilder)
         assert query_builder.schema == mysql_view_schema
 
     def test_format_query(self, view_query_builder):
@@ -23,7 +20,7 @@ class TestViewQueryBuilder:
         formatted_query = view_query_builder.format_query(query)
         assert formatted_query == "SELECT * FROM table_llm_friendly"
 
-    def test_build_query(self, view_query_builder) -> str:
+    def test_build_query(self, view_query_builder):
         assert (
             view_query_builder.build_query()
             == """SELECT parents_id, parents_name, children_name FROM ( SELECT

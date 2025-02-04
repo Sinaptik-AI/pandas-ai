@@ -21,17 +21,17 @@ from pandasai.data_loader.semantic_layer_schema import (
 from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
 from pandasai.helpers.path import find_project_root, get_validated_dataset_path
 from pandasai.helpers.session import get_pandaai_session
+from pandasai.query_builders import SqlQueryBuilder
 
 from .agent import Agent
 from .constants import LOCAL_SOURCE_TYPES, SQL_SOURCE_TYPES
 from .core.cache import Cache
 from .data_loader.loader import DatasetLoader
-from .data_loader.query_builder import QueryBuilder
 from .data_loader.semantic_layer_schema import (
     Column,
 )
 from .dataframe import DataFrame, VirtualDataFrame
-from .helpers.sql_sanitizer import sanitize_sql_table_name
+from .helpers.sql_sanitizer import sanitize_file_name, sanitize_sql_table_name
 from .smart_dataframe import SmartDataframe
 from .smart_datalake import SmartDatalake
 
@@ -97,7 +97,6 @@ def create(
         raise ValueError("df must be a PandaAI DataFrame")
 
     org_name, dataset_name = get_validated_dataset_path(path)
-
     dataset_directory = str(os.path.join(org_name, dataset_name))
 
     schema_path = os.path.join(dataset_directory, "schema.yaml")
@@ -117,17 +116,17 @@ def create(
 
     if df is not None:
         schema = df.schema
-        schema.name = sanitize_sql_table_name(dataset_name)
+        schema.name = dataset_name
         parquet_file_path_abs_path = file_manager.abs_path(parquet_file_path)
         df.to_parquet(parquet_file_path_abs_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=sanitize_sql_table_name(dataset_name), relations=_relation, view=True
+            name=dataset_name, relations=_relation, view=True
         )
     elif source.get("table"):
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=sanitize_sql_table_name(dataset_name), source=Source(**source)
+            name=dataset_name, source=Source(**source)
         )
     else:
         raise InvalidConfigError("Unable to create schema with the provided params")
@@ -140,6 +139,7 @@ def create(
 
     print(f"Dataset saved successfully to path: {dataset_directory}")
 
+    schema.name = sanitize_sql_table_name(schema.name)
     loader = DatasetLoader.create_loader_from_schema(schema, path)
     return loader.load()
 
@@ -237,7 +237,7 @@ def load(dataset_path: str) -> DataFrame:
 
 def read_csv(filepath: str) -> DataFrame:
     data = pd.read_csv(filepath)
-    table = f"table_{sanitize_sql_table_name(filepath)}"
+    table = f"table_{sanitize_file_name(filepath)}"
     return DataFrame(data, _table_name=table)
 
 

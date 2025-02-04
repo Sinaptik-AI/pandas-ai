@@ -28,6 +28,7 @@ from pandasai.vectorstores.vectorstore import VectorStore
 
 from ..config import Config
 from ..constants import LOCAL_SOURCE_TYPES
+from ..data_loader.duck_db_connection_manager import DuckDBConnectionManager
 from .state import AgentState
 
 
@@ -119,16 +120,10 @@ class Agent:
 
     def _execute_local_sql_query(self, query: str) -> pd.DataFrame:
         try:
-            # Use a context manager to ensure the connection is closed
-            with duckdb.connect() as con:
-                # Register all DataFrames in the state
-                for df in self._state.dfs:
-                    con.register(df.schema.name, df)
-
-                # Execute the query and fetch the result as a pandas DataFrame
-                result = con.sql(query).df()
-
-            return result
+            db_manager = DuckDBConnectionManager()
+            for df in self._state.dfs:
+                db_manager.register(df.schema.name, df)
+            return db_manager.sql(query).df()
         except duckdb.Error as e:
             raise RuntimeError(f"SQL execution failed: {e}") from e
 

@@ -4,18 +4,25 @@ import re
 import sqlglot
 
 
-def sanitize_sql_table_name(filepath: str) -> str:
-    # Extract the file name without extension
-    file_name = os.path.splitext(os.path.basename(filepath))[0]
+def sanitize_relation_name(relation_name: str) -> str:
+    return ".".join(list(map(sanitize_sql_table_name, relation_name.split("."))))
 
+
+def sanitize_sql_table_name(table_name: str) -> str:
     # Replace invalid characters with underscores
-    sanitized_name = re.sub(r"[^a-zA-Z0-9_]", "_", file_name)
+    sanitized_name = re.sub(r"[^a-zA-Z0-9_]", "_", table_name)
 
     # Truncate to a reasonable length (e.g., 64 characters)
     max_length = 64
     sanitized_name = sanitized_name[:max_length]
 
     return sanitized_name
+
+
+def sanitize_file_name(filepath: str) -> str:
+    # Extract the file name without extension
+    file_name = os.path.splitext(os.path.basename(filepath))[0]
+    return sanitize_sql_table_name(file_name)
 
 
 def is_sql_query_safe(query: str) -> bool:
