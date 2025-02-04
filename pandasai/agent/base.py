@@ -123,7 +123,7 @@ class Agent:
             with duckdb.connect() as con:
                 # Register all DataFrames in the state
                 for df in self._state.dfs:
-                    con.register(df.schema.source.table, df)
+                    con.register(df.schema.name, df)
 
                 # Execute the query and fetch the result as a pandas DataFrame
                 result = con.sql(query).df()
@@ -145,10 +145,13 @@ class Agent:
         if not self._state.dfs:
             raise ValueError("No DataFrames available to register for query execution.")
 
-        if self._state.dfs[0].schema.source.type in LOCAL_SOURCE_TYPES:
+        df0 = self._state.dfs[0]
+        source = df0.schema.source or None
+
+        if source and source.type in LOCAL_SOURCE_TYPES:
             return self._execute_local_sql_query(query)
         else:
-            return self._state.dfs[0].execute_sql_query(query)
+            return df0.execute_sql_query(query)
 
     def execute_with_retries(self, code: str) -> Any:
         """Execute the code with retry logic."""

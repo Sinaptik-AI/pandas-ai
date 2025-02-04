@@ -29,6 +29,15 @@ class SQLConnectionConfig(BaseModel):
     user: str = Field(..., description="Database username")
     password: str = Field(..., description="Database password")
 
+    def __eq__(self, other):
+        return (
+            self.host == other.host
+            and self.port == other.port
+            and self.database == other.database
+            and self.user == other.user
+            and self.password == other.password
+        )
+
 
 class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
@@ -173,6 +182,28 @@ class Source(BaseModel):
         None, description="Connection object of the data source."
     )
     table: Optional[str] = Field(None, description="Table of the data source.")
+
+    def is_compatible_source(self, source2: "Source"):
+        """
+        Checks if two sources are compatible for combining in a view.
+
+        Two sources are considered compatible if:
+        - Both are local sources.
+        - Both are remote sources with the same connection.
+
+        Compatible sources can be used together within the same view.
+
+        Args:
+            source2 (Source): The source to compare against.
+
+        Returns:
+            bool: True if the sources can be combined in a view, False otherwise.
+        """
+        if self.type in LOCAL_SOURCE_TYPES and source2.type in LOCAL_SOURCE_TYPES:
+            return True
+        if self.type in REMOTE_SOURCE_TYPES and source2.type in REMOTE_SOURCE_TYPES:
+            return self.connection == source2.connection
+        return False
 
     @model_validator(mode="before")
     @classmethod

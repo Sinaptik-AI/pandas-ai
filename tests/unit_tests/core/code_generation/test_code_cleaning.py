@@ -64,14 +64,14 @@ class TestCodeCleaner(unittest.TestCase):
             )
 
     def test_clean_sql_query(self):
-        table = self.sample_df.schema.source.table
+        table = self.sample_df.schema.name
         sql_query = f"SELECT * FROM {table};"
         self.cleaner.context.dfs = [self.sample_df]
         result = self.cleaner._clean_sql_query(sql_query)
         self.assertEqual(result, f"SELECT * FROM {table}")
 
     def test_validate_and_make_table_name_case_sensitive(self):
-        table = self.sample_df.schema.source.table
+        table = self.sample_df.schema.name
         node = ast.Assign(
             targets=[ast.Name(id="query", ctx=ast.Store())],
             value=ast.Constant(value=f"SELECT * FROM {table}"),

@@ -7,49 +7,31 @@ from pandasai.data_loader.view_query_builder import ViewQueryBuilder
 
 class TestViewQueryBuilder:
     @pytest.fixture
-    def mysql_view_schema(self):
-        raw_schema = {
-            "name": "Users",
-            "columns": [
-                {"name": "parents.id"},
-                {"name": "parents.name"},
-                {"name": "children.name"},
-            ],
-            "relations": [{"from": "parents.id", "to": "children.id"}],
-            "view": "true",
-        }
-        return SemanticLayerSchema(**raw_schema)
+    def view_query_builder(self, mysql_view_schema, mysql_view_dependencies_dict):
+        return ViewQueryBuilder(mysql_view_schema, mysql_view_dependencies_dict)
 
-    @pytest.fixture
-    def view_query_builder(self, mysql_view_schema):
-        return ViewQueryBuilder(mysql_view_schema)
-
-    def test__init__(self, mysql_view_schema):
-        query_builder = ViewQueryBuilder(mysql_view_schema)
+    def test__init__(self, mysql_view_schema, mysql_view_dependencies_dict):
+        query_builder = ViewQueryBuilder(
+            mysql_view_schema, mysql_view_dependencies_dict
+        )
         assert isinstance(query_builder, ViewQueryBuilder)
         assert isinstance(query_builder, QueryBuilder)
         assert query_builder.schema == mysql_view_schema
 
     def test_format_query(self, view_query_builder):
-        query = "SELECT ALL"
+        query = "SELECT * FROM table_llm_friendly"
         formatted_query = view_query_builder.format_query(query)
-        assert (
-            formatted_query
-            == """WITH Users AS ( SELECT
-parents.id AS parents_id, parents.name AS parents_name, children.name AS children_name
-FROM parents
-JOIN children ON parents.id = children.id)
-SELECT ALL"""
-        )
+        assert formatted_query == "SELECT * FROM table_llm_friendly"
 
     def test_build_query(self, view_query_builder) -> str:
         assert (
             view_query_builder.build_query()
-            == """WITH Users AS ( SELECT
+            == """SELECT parents_id, parents_name, children_name FROM ( SELECT
 parents.id AS parents_id, parents.name AS parents_name, children.name AS children_name
-FROM parents
-JOIN children ON parents.id = children.id)
-SELECT parents_id, parents_name, children_name FROM Users"""
+FROM ( SELECT * FROM parents ) AS parents
+JOIN ( SELECT * FROM children ) AS children
+ON parents.id = children.id) AS parent-children
+"""
         )
 
     def test_get_columns(self, view_query_builder):
@@ -63,25 +45,12 @@ SELECT parents_id, parents_name, children_name FROM Users"""
         assert view_query_builder._get_columns() == "*"
 
     def test_get_from_statement(self, view_query_builder):
-        assert view_query_builder._get_from_statement() == " FROM Users"
-
-    def test_get_with_statement(self, view_query_builder):
         assert (
-            view_query_builder._get_with_statement()
-            == """WITH Users AS ( SELECT
+            view_query_builder._get_from_statement()
+            == """FROM ( SELECT
 parents.id AS parents_id, parents.name AS parents_name, children.name AS children_name
-FROM parents
-JOIN children ON parents.id = children.id)
-"""
-        )
-
-    def test_get_with_statement_no_columns(self, view_query_builder):
-        view_query_builder.schema.columns = None
-        assert (
-            view_query_builder._get_with_statement()
-            == """WITH Users AS ( SELECT
-*
-FROM parents
-JOIN children ON parents.id = children.id)
+FROM ( SELECT * FROM parents ) AS parents
+JOIN ( SELECT * FROM children ) AS children
+ON parents.id = children.id) AS parent-children
 """
         )

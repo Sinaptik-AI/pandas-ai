@@ -15,7 +15,7 @@ class TestDatasetLoader:
         with patch("os.path.exists", return_value=True), patch(
             "pandasai.data_loader.local_loader.LocalDatasetLoader._read_csv_or_parquet"
         ) as mock_read_csv_or_parquet:
-            loader = LocalDatasetLoader(sample_schema, "test")
+            loader = LocalDatasetLoader(sample_schema, "test/test")
 
             mock_read_csv_or_parquet.return_value = DataFrame(
                 {"email": ["test@example.com"]}
@@ -29,7 +29,7 @@ class TestDatasetLoader:
 
     def test_load_from_local_source_invalid_source_type(self, sample_schema):
         sample_schema.source.type = "mysql"
-        loader = LocalDatasetLoader(sample_schema, "test")
+        loader = LocalDatasetLoader(sample_schema, "test/test")
 
         with pytest.raises(
             InvalidDataSourceType, match="Unsupported local source type"
@@ -65,7 +65,7 @@ class TestDatasetLoader:
                 DatasetLoader._read_schema_file("test/users")
 
     def test_read_parquet(self, sample_schema):
-        loader = LocalDatasetLoader(sample_schema, "test")
+        loader = LocalDatasetLoader(sample_schema, "test/test")
 
         mock_df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
         with patch("pandas.read_parquet", return_value=mock_df) as mock_read_parquet:
@@ -75,7 +75,7 @@ class TestDatasetLoader:
             assert result.equals(mock_df)
 
     def test_read_csv(self, sample_schema):
-        loader = LocalDatasetLoader(sample_schema, "test")
+        loader = LocalDatasetLoader(sample_schema, "test/test")
 
         mock_df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
         with patch("pandas.read_csv", return_value=mock_df) as mock_read_csv:
@@ -85,14 +85,14 @@ class TestDatasetLoader:
             assert result.equals(mock_df)
 
     def test_read_csv_or_parquet_unsupported_format(self, sample_schema):
-        loader = LocalDatasetLoader(sample_schema, "test")
+        loader = LocalDatasetLoader(sample_schema, "test/test")
 
         with pytest.raises(ValueError, match="Unsupported file format: unsupported"):
             loader._read_csv_or_parquet("dummy_path", "unsupported")
 
     def test_apply_transformations(self, sample_schema):
         """Test that DatasetLoader correctly uses TransformationManager."""
-        loader = LocalDatasetLoader(sample_schema, "test")
+        loader = LocalDatasetLoader(sample_schema, "test/test")
 
         df = pd.DataFrame(
             {
