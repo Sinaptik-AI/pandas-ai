@@ -8,5 +8,5 @@ class TestDuckDBConnectionManager:
     def duck_db_manager(self):
         return DuckDBConnectionManager()
 
-    def test_connection_correct_closing_doesnt_trow(self, duck_db_manager):
+    def test_connection_correct_closing_doesnt_throw(self, duck_db_manager):
         duck_db_manager.close()
