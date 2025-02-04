@@ -138,19 +138,38 @@ class TestPandaAIInit:
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
+    @patch("pandasai.os.environ", {})
+    @patch("pandasai.get_pandaai_session")
+    def test_load_missing_not_found_locally_and_no_remote_key(
+        self, mock_session, mock_exists
+    ):
+        """Test loading when API URL is missing."""
+        mock_exists.return_value = False
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_session.return_value.get.return_value = mock_response
+        dataset_path = "org/dataset_name"
+
+        with pytest.raises(
+            PandaAIApiKeyError,
+            match='The dataset "org/dataset_name" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.',
+        ):
+            pandasai.load(dataset_path)
+
+    @patch("pandasai.os.path.exists")
     @patch("pandasai.os.environ", {"PANDABI_API_KEY": "key"})
     def test_load_missing_api_url(self, mock_exists):
         """Test loading when API URL is missing."""
         mock_exists.return_value = False
         dataset_path = "org/dataset_name"
 
-        with pytest.raises(PandaAIApiKeyError):
+        with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
 
     @patch("pandasai.os.path.exists")
     @patch("pandasai.os.environ", {"PANDABI_API_KEY": "key"})
     @patch("pandasai.get_pandaai_session")
-    def test_load_missing_api_url(self, mock_session, mock_exists):
+    def test_load_missing_not_found(self, mock_session, mock_exists):
         """Test loading when API URL is missing."""
         mock_exists.return_value = False
         mock_response = MagicMock()
@@ -202,7 +221,7 @@ class TestPandaAIInit:
             pandasai.load("test/dataset")
         assert (
             str(exc_info.value)
-            == "PandaAI API key not found. Please set your API key using PandaAI.set_api_key() or by setting the PANDASAI_API_KEY environment variable."
+            == 'The dataset "test/dataset" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.'
         )
 
     def test_clear_cache(self):
