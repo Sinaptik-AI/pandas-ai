@@ -79,7 +79,7 @@ class TestAgent:
         self, mock_generate_code, agent: Agent, sample_df
     ):
         # Set up the cache to return a pre-cached response
-        cached_code = f"""execute_sql_query('SELECT A FROM {sample_df.schema.source.table}')
+        cached_code = f"""execute_sql_query('SELECT A FROM {sample_df.schema.name}')
 print('Cached result: US has the highest GDP.')"""
         agent._state.config.enable_cache = True
         agent._state.cache.get = MagicMock(return_value=cached_code)
@@ -420,7 +420,7 @@ print('Cached result: US has the highest GDP.')"""
             agent.train(codes)
 
     def test_execute_local_sql_query_success(self, agent, sample_df):
-        query = f"SELECT count(*) as total from {sample_df.schema.source.table};"
+        query = f'SELECT count(*) as total from "{sample_df.schema.name}";'
         expected_result = pd.DataFrame({"total": [3]})
         result = agent._execute_local_sql_query(query)
         pd.testing.assert_frame_equal(result, expected_result)
@@ -430,7 +430,7 @@ print('Cached result: US has the highest GDP.')"""
             agent._execute_local_sql_query("wrong query;")
 
     def test_execute_sql_query_success_local(self, agent, sample_df):
-        query = f"SELECT count(*) as total from {sample_df.schema.source.table};"
+        query = f'SELECT count(*) as total from "{sample_df.schema.name}";'
         expected_result = pd.DataFrame({"total": [3]})
         result = agent._execute_sql_query(query)
         pd.testing.assert_frame_equal(result, expected_result)

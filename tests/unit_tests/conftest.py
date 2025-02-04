@@ -7,7 +7,9 @@ import pytest
 
 from pandasai import ConfigManager
 from pandasai.data_loader.loader import DatasetLoader
+from pandasai.data_loader.query_builder import QueryBuilder
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
+from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.filemanager import DefaultFileManager
 from pandasai.helpers.path import find_project_root
@@ -132,6 +134,77 @@ def sample_schema(raw_sample_schema):
 @pytest.fixture
 def mysql_schema(raw_mysql_schema):
     return SemanticLayerSchema(**raw_mysql_schema)
+
+
+@pytest.fixture
+def mock_view_loader_instance_parents(sample_df):
+    """Fixture to mock DatasetLoader and its methods."""
+    # Mock the create_loader_from_path method
+    mock_loader_instance = MagicMock(spec=SQLDatasetLoader)
+    mock_loader_instance.load.return_value = sample_df
+    schema = SemanticLayerSchema(
+        **{
+            "name": "parents",
+            "source": {
+                "type": "mysql",
+                "connection": {
+                    "host": "localhost",
+                    "port": 3306,
+                    "database": "test_db",
+                    "user": "test_user",
+                    "password": "test_password",
+                },
+                "table": "parents",
+            },
+        }
+    )
+    mock_query_builder = QueryBuilder(schema=schema)
+    mock_loader_instance.query_builder = mock_query_builder
+    mock_loader_instance.schema = schema
+    yield mock_loader_instance
+
+
+@pytest.fixture
+def mock_view_loader_instance_children(sample_df):
+    """Fixture to mock DatasetLoader and its methods."""
+    # Mock the create_loader_from_path method
+    mock_loader_instance = MagicMock(spec=SQLDatasetLoader)
+    mock_loader_instance.load.return_value = sample_df
+    schema = SemanticLayerSchema(
+        **{
+            "name": "children",
+            "source": {
+                "type": "mysql",
+                "connection": {
+                    "host": "localhost",
+                    "port": 3306,
+                    "database": "test_db",
+                    "user": "test_user",
+                    "password": "test_password",
+                },
+                "table": "children",
+            },
+        }
+    )
+    mock_query_builder = QueryBuilder(schema=schema)
+    mock_loader_instance.query_builder = mock_query_builder
+    mock_loader_instance.schema = schema
+    yield mock_loader_instance
+
+
+@pytest.fixture
+def mysql_view_schema(raw_mysql_view_schema):
+    return SemanticLayerSchema(**raw_mysql_view_schema)
+
+
+@pytest.fixture
+def mysql_view_dependencies_dict(
+    mock_view_loader_instance_parents, mock_view_loader_instance_children
+) -> dict[str, MagicMock]:
+    return {
+        "parents": mock_view_loader_instance_parents,
+        "children": mock_view_loader_instance_children,
+    }
 
 
 @pytest.fixture(scope="session")

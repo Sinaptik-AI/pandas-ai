@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List, Union
 
 from pandasai.data_loader.semantic_layer_schema import Relation, SemanticLayerSchema
@@ -8,11 +9,15 @@ class QueryBuilder:
         self.schema = schema
 
     def format_query(self, query):
-        return query
+        pattern = re.compile(
+            rf"\bFROM\s+{re.escape(self.schema.name)}\b", re.IGNORECASE
+        )
+        replacement = self._get_from_statement()
+        return pattern.sub(replacement, query)
 
     def build_query(self) -> str:
         columns = self._get_columns()
-        query = f"SELECT {columns}"
+        query = f"SELECT {columns} "
         query += self._get_from_statement()
         query += self._add_order_by()
         query += self._add_limit()
@@ -26,7 +31,7 @@ class QueryBuilder:
             return "*"
 
     def _get_from_statement(self):
-        return f" FROM {self.schema.source.table.lower()}"
+        return f"FROM {self.schema.source.table.lower()}"
 
     def _add_order_by(self) -> str:
         if not self.schema.order_by:
@@ -47,7 +52,7 @@ class QueryBuilder:
     def get_head_query(self, n=5):
         source_type = self.schema.source.type
         columns = self._get_columns()
-        query = f"SELECT {columns}"
+        query = f"SELECT {columns} "
         query += self._get_from_statement()
         order_by = "RANDOM()" if source_type in {"sqlite", "postgres"} else "RAND()"
         return f"{query} ORDER BY {order_by} LIMIT {n}"
