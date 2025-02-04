@@ -44,8 +44,6 @@ def test_enable_cache(sample_dataframes):
     # Test with cache disabled
     mock_config.enable_cache = False
     assert smart_datalake.enable_cache is False
-<<<<<<< HEAD
-=======
 
 
 def test_enable_cache_setter(sample_dataframes):
@@ -71,4 +69,3 @@ def test_enable_cache_setter(sample_dataframes):
     smart_datalake.enable_cache = False
     assert mock_agent.context.config.enable_cache is False
     assert smart_datalake._cache is None
->>>>>>> 98ea589882e8fa26e8972c28bfac7b282a675b75

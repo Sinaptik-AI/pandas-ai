@@ -112,7 +112,6 @@ def test_load_smartdataframes():
     smart_dfs = load_smartdataframes([df1, df2], config)
     assert len(smart_dfs) == 2
     assert all(isinstance(df, SmartDataframe) for df in smart_dfs)
-    assert all(hasattr(df, "config") for df in smart_dfs)
 
     # Test loading mixed pandas DataFrames and SmartDataframes
     existing_smart_df = SmartDataframe(df1, config=config)
@@ -120,4 +119,3 @@ def test_load_smartdataframes():
     assert len(mixed_dfs) == 2
     assert mixed_dfs[0] is existing_smart_df  # Should return the same instance
     assert isinstance(mixed_dfs[1], SmartDataframe)
-    assert hasattr(mixed_dfs[1], "config")

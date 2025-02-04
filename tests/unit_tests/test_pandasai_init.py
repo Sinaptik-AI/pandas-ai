@@ -9,6 +9,8 @@ import pandasai
 from pandasai.data_loader.semantic_layer_schema import Column
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
+from pandasai.helpers.filemanager import DefaultFileManager
+from pandasai.llm.bamboo_llm import BambooLLM
 
 
 def create_test_zip():
@@ -333,7 +335,7 @@ class TestPandaAIInit:
             pandasai.create("test-org/", sample_df)
 
     @patch("pandasai.helpers.path.find_project_root")
-    def test_create_existing_dataset(self, mock_find_project_root, sample_df):
+    def test_create_existing_dataset(self, mock_find_project_root, sample_df, llm):
         """Test creating a dataset that already exists."""
         mock_find_project_root.return_value = os.path.join("mock", "root")
 
@@ -345,6 +347,11 @@ class TestPandaAIInit:
                 ValueError,
                 match="Dataset already exists at path: test-org/test-dataset",
             ):
+                pandasai.config.set(
+                    {
+                        "llm": llm,
+                    }
+                )
                 pandasai.create("test-org/test-dataset", sample_df)
 
     @patch("pandasai.helpers.path.find_project_root")
@@ -512,9 +519,7 @@ class TestPandaAIInit:
     @patch("pandasai.helpers.path.find_project_root")
     @patch("os.makedirs")
     def test_create_with_no_dataframe_and_connector(
-        self,
-        mock_makedirs,
-        mock_find_project_root,
+        self, mock_makedirs, mock_find_project_root, mock_file_manager
     ):
         with pytest.raises(
             InvalidConfigError,
@@ -563,3 +568,48 @@ class TestPandaAIInit:
             assert result.schema.name == sample_df.schema.name
             assert result.schema.description is None
             assert mock_loader_instance.load.call_count == 1
+
+    def test_config_change_after_df_creation(
+        self, sample_df, mock_loader_instance, llm
+    ):
+        with patch.object(sample_df, "to_parquet") as mock_to_parquet, patch(
+            "pandasai.core.code_generation.base.CodeGenerator.validate_and_clean_code"
+        ) as mock_validate_and_clean_code, patch(
+            "pandasai.agent.base.Agent.execute_code"
+        ) as mock_execute_code:
+            # Check if directories were created
+
+            # mock file manager to without mocking complete config
+            class MockFileManager(DefaultFileManager):
+                def exists(self, path):
+                    return False
+
+            mock_file_manager = MockFileManager()
+            pandasai.config.set(
+                {
+                    "file_manager": mock_file_manager,
+                }
+            )
+
+            df = pandasai.create("test-org/test-dataset", sample_df)
+
+            # set code generation output
+            llm.generate_code = MagicMock()
+            llm.generate_code.return_value = (
+                'df=execute_sql_query("select * from table")'
+            )
+
+            mock_execute_code.return_value = {"type": "number", "value": 42}
+
+            assert isinstance(pandasai.config.get().llm, BambooLLM)
+
+            pandasai.config.set(
+                {
+                    "llm": llm,
+                    "enable_cache": False,
+                }
+            )
+
+            df.chat("test")
+
+            llm.generate_code.assert_called_once()
