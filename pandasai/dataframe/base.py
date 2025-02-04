@@ -68,7 +68,6 @@ class DataFrame(pd.DataFrame):
         self._column_hash = self._calculate_column_hash()
         self.schema = _schema or DataFrame.get_default_schema(self)
         self.path = _path
-        self.config = pai.config.get()
         self._agent: Optional[Agent] = None
 
     def __repr__(self) -> str:
@@ -95,28 +94,22 @@ class DataFrame(pd.DataFrame):
     def type(self) -> str:
         return "pd.DataFrame"
 
-    def chat(
-        self, prompt: str, config: Optional[Union[dict, Config]] = None
-    ) -> BaseResponse:
+    def chat(self, prompt: str) -> BaseResponse:
         """
         Interact with the DataFrame using natural language.
 
         Args:
             prompt (str): The natural language query or instruction.
-            config (Optional[Union[dict, Config]]): Configuration for the chat session.
 
         Returns:
             str: The response to the prompt.
         """
-        if config:
-            self.config = Config(**config) if isinstance(config, dict) else config
-
         if self._agent is None:
             from pandasai.agent import (
                 Agent,
             )
 
-            self._agent = Agent([self], config=self.config)
+            self._agent = Agent([self])
 
         return self._agent.chat(prompt)
 
