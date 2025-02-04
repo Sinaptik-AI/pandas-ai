@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,6 +12,7 @@ from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.path import find_project_root
 from pandasai.query_builders.sql_query_builder import SqlQueryBuilder
+from pandasai.llm.fake import FakeLLM
 
 
 @pytest.fixture
@@ -255,3 +257,8 @@ def mock_file_manager():
         mock_file_manager.exists.return_value = False
         mock_config_get.return_value.file_manager = mock_file_manager
         yield mock_file_manager
+
+
+@pytest.fixture
+def llm(output: Optional[str] = None) -> FakeLLM:
+    return FakeLLM(output=output)

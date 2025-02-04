@@ -32,7 +32,7 @@ class TestDataFrame:
         sample_df = DataFrame(sample_dict_data)
         mock_env.return_value = {"PANDABI_API_URL": "localhost:8000"}
         sample_df.chat("Test query")
-        mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
+        mock_agent.assert_called_once_with([sample_df])
 
     @patch("pandasai.Agent")
     def test_chat_reuses_existing_agent(self, sample_df):
@@ -64,13 +64,6 @@ class TestDataFrame:
 
         assert sample_df._agent is not None
         assert mock_agent.chat.call_count == 1
-
-    def test_chat_with_config(self, sample_df):
-        config = {"max_retries": 100}
-        with patch("pandasai.agent.Agent") as mock_agent:
-            sample_df.chat("Test query", config=config)
-            mock_agent.assert_called_once_with([sample_df], config=sample_df.config)
-        assert sample_df.config.max_retries == 100
 
     def test_column_hash(self, sample_df):
         assert hasattr(sample_df, "column_hash")
