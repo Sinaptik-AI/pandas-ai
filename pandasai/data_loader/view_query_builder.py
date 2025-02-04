@@ -53,7 +53,7 @@ class ViewQueryBuilder(QueryBuilder):
             first_query, first_name = self._get_sub_query_from_loader(first_loader)
         else:
             raise ValueError(
-                f"Views for local datasets or nested views are currently not supported."
+                "Views for local datasets or nested views are currently not supported."
             )
 
         query = f"FROM ( SELECT\n"

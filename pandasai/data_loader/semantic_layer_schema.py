@@ -184,6 +184,21 @@ class Source(BaseModel):
     table: Optional[str] = Field(None, description="Table of the data source.")
 
     def is_compatible_source(self, source2: "Source"):
+        """
+        Checks if two sources are compatible for combining in a view.
+
+        Two sources are considered compatible if:
+        - Both are local sources.
+        - Both are remote sources with the same connection.
+
+        Compatible sources can be used together within the same view.
+
+        Args:
+            source2 (Source): The source to compare against.
+
+        Returns:
+            bool: True if the sources can be combined in a view, False otherwise.
+        """
         if self.type in LOCAL_SOURCE_TYPES and source2.type in LOCAL_SOURCE_TYPES:
             return True
         if self.type in REMOTE_SOURCE_TYPES and source2.type in REMOTE_SOURCE_TYPES:

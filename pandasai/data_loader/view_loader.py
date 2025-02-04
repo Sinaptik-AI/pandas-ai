@@ -18,11 +18,6 @@ class ViewDatasetLoader(SQLDatasetLoader):
     Loader for view-based datasets.
     """
 
-    # get the datasets name
-    # get the datasets schemas
-    # pass to the query builder
-    # generate SELECT IN statement with JOINs
-
     def __init__(self, schema: SemanticLayerSchema, dataset_path: str):
         super().__init__(schema, dataset_path)
         self.dependencies_datasets = self._get_dependencies_datasets()
