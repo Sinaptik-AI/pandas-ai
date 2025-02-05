@@ -15,39 +15,61 @@ class TestViewQueryBuilder:
         assert isinstance(query_builder, ViewQueryBuilder)
         assert query_builder.schema == mysql_view_schema
 
-    def test_format_query(self, view_query_builder):
-        query = "SELECT * FROM table_llm_friendly"
-        formatted_query = view_query_builder.format_query(query)
-        assert formatted_query == "SELECT * FROM table_llm_friendly"
-
     def test_build_query(self, view_query_builder):
         assert (
             view_query_builder.build_query()
-            == """SELECT parents_id, parents_name, children_name FROM ( SELECT
-parents.id AS parents_id, parents.name AS parents_name, children.name AS children_name
-FROM ( SELECT * FROM parents ) AS parents
-JOIN ( SELECT * FROM children ) AS children
-ON parents.id = children.id) AS parent-children
-"""
+            == """SELECT
+  parents_id,
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS parent_children"""
         )
 
     def test_get_columns(self, view_query_builder):
-        assert (
-            view_query_builder._get_columns()
-            == """parents_id, parents_name, children_name"""
-        )
+        assert view_query_builder._get_columns() == [
+            "parents_id",
+            "parents_name",
+            "children_name",
+        ]
 
     def test_get_columns_empty(self, view_query_builder):
         view_query_builder.schema.columns = None
-        assert view_query_builder._get_columns() == "*"
+        assert view_query_builder._get_columns() == ["*"]
 
-    def test_get_from_statement(self, view_query_builder):
+    def test_get_table_expression(self, view_query_builder):
         assert (
-            view_query_builder._get_from_statement()
-            == """FROM ( SELECT
-parents.id AS parents_id, parents.name AS parents_name, children.name AS children_name
-FROM ( SELECT * FROM parents ) AS parents
-JOIN ( SELECT * FROM children ) AS children
-ON parents.id = children.id) AS parent-children
-"""
+            view_query_builder._get_table_expression()
+            == """(
+  SELECT
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS parent_children"""
         )

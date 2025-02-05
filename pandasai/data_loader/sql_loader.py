@@ -39,17 +39,14 @@ class SQLDatasetLoader(DatasetLoader):
         source_type = self.schema.source.type
         connection_info = self.schema.source.connection
 
-        formatted_query = self.query_builder.format_query(query)
         load_function = self._get_loader_function(source_type)
 
-        if not is_sql_query_safe(formatted_query):
+        if not is_sql_query_safe(query):
             raise MaliciousQueryError(
                 "The SQL query is deemed unsafe and will not be executed."
             )
         try:
-            dataframe: pd.DataFrame = load_function(
-                connection_info, formatted_query, params
-            )
+            dataframe: pd.DataFrame = load_function(connection_info, query, params)
             return self._apply_transformations(dataframe)
 
         except ModuleNotFoundError as e:
@@ -59,7 +56,7 @@ class SQLDatasetLoader(DatasetLoader):
 
         except Exception as e:
             raise RuntimeError(
-                f"Failed to execute query for '{source_type}' with: {formatted_query}"
+                f"Failed to execute query for '{source_type}' with: {query}"
             ) from e
 
     @staticmethod

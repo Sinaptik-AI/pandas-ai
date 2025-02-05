@@ -1,59 +1,47 @@
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, List
 
-from pandasai.data_loader.semantic_layer_schema import Relation, SemanticLayerSchema
+import sqlglot
+from sqlglot import from_, pretty, select
+from sqlglot.expressions import Limit, cast
+
+from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema, Source
 
 
 class BaseQueryBuilder:
     def __init__(self, schema: SemanticLayerSchema):
         self.schema = schema
 
-    def format_query(self, query):
-        pattern = re.compile(
-            rf"\bFROM\s+{re.escape(self.schema.name)}\b", re.IGNORECASE
-        )
-        replacement = self._get_from_statement()
-        return pattern.sub(replacement, query)
-
     def build_query(self) -> str:
-        columns = self._get_columns()
-        query = f"SELECT {columns} "
-        query += self._get_from_statement()
-        query += self._add_order_by()
-        query += self._add_limit()
+        query = select(*self._get_columns()).from_(self._get_table_expression())
 
-        return query
+        if self.schema.limit:
+            query = query.limit(self.schema.limit)
 
-    def _add_order_by(self) -> str:
-        if not self.schema.order_by:
-            return ""
+        if self.schema.order_by:
+            query = query.order_by(*self.schema.order_by)
 
-        order_by = self.schema.order_by
-        order_by_clause = self._format_order_by(order_by)
-        return f" ORDER BY {order_by_clause}"
-
-    @staticmethod
-    def _format_order_by(order_by: List[str]) -> str:
-        return ", ".join(order_by)
-
-    def _add_limit(self, n=None) -> str:
-        limit = n or self.schema.limit
-        return f" LIMIT {limit}" if limit else ""
+        return query.sql(pretty=True)
 
     def get_head_query(self, n=5):
-        columns = self._get_columns()
-        query = f"SELECT {columns} "
-        query += self._get_from_statement()
-        return f"{query} LIMIT {n}"
+        query = (
+            select(*self._get_columns()).from_(self._get_table_expression()).limit(n)
+        )
+        return query.sql(pretty=True)
 
     def get_row_count(self):
-        return f"SELECT COUNT(*) {self._get_from_statement()}"
+        return select("COUNT(*)").from_(self._get_table_expression()).sql(pretty=True)
 
-    def _get_columns(self) -> str:
+    def _get_columns(self) -> list[str]:
         if self.schema.columns:
-            return ", ".join([col.name for col in self.schema.columns])
+            return [col.name for col in self.schema.columns]
         else:
-            return "*"
+            return ["*"]
 
-    def _get_from_statement(self):
-        return f"FROM {self.schema.name}"
+    def _get_table_expression(self) -> str:
+        return self.schema.name
+
+    @staticmethod
+    def check_compatible_sources(sources: List[Source]) -> bool:
+        base_source = sources[0]
+        return all(base_source.is_compatible_source(source) for source in sources[1:])

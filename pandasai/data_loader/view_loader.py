@@ -9,6 +9,7 @@ from pandasai.query_builders import ViewQueryBuilder
 from .. import LOCAL_SOURCE_TYPES
 from ..exceptions import MaliciousQueryError
 from ..helpers.sql_sanitizer import is_sql_query_safe
+from ..query_builders.base_query_builder import BaseQueryBuilder
 from .duck_db_connection_manager import DuckDBConnectionManager
 from .loader import DatasetLoader
 from .local_loader import LocalDatasetLoader
@@ -52,13 +53,13 @@ class ViewDatasetLoader(SQLDatasetLoader):
         }
 
         loaders = list(dependency_dict.values())
-        base_source = loaders[0].schema.source
 
-        for loader in loaders[1:]:
-            if not base_source.is_compatible_source(loader.schema.source):
-                raise ValueError(
-                    f"Source in loader with schema {loader.schema} is not compatible with the first loader's source."
-                )
+        if not BaseQueryBuilder.check_compatible_sources(
+            [loader.schema.source for loader in loaders]
+        ):
+            raise ValueError(
+                f"Sources in this schemas {self.schema} are compatible for a view."
+            )
 
         return dependency_dict
 
@@ -85,20 +86,16 @@ class ViewDatasetLoader(SQLDatasetLoader):
         source_type = self.source.type
         connection_info = self.source.connection
 
-        formatted_query = self.query_builder.format_query(query)
-
         if source_type in LOCAL_SOURCE_TYPES:
-            return self.execute_local_query(formatted_query)
+            return self.execute_local_query(query)
         load_function = self._get_loader_function(source_type)
 
-        if not is_sql_query_safe(formatted_query):
+        if not is_sql_query_safe(query):
             raise MaliciousQueryError(
                 "The SQL query is deemed unsafe and will not be executed."
             )
         try:
-            dataframe: pd.DataFrame = load_function(
-                connection_info, formatted_query, params
-            )
+            dataframe: pd.DataFrame = load_function(connection_info, query, params)
             return dataframe
 
         except ModuleNotFoundError as e:
@@ -108,5 +105,5 @@ class ViewDatasetLoader(SQLDatasetLoader):
 
         except Exception as e:
             raise RuntimeError(
-                f"Failed to execute query for '{source_type}' with: {formatted_query}"
+                f"Failed to execute query for '{source_type}' with: {query}"
             ) from e

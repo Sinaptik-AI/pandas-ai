@@ -92,13 +92,12 @@ class LocalDatasetLoader(DatasetLoader):
     def execute_query(self, query: str) -> pd.DataFrame:
         try:
             db_manager = DuckDBConnectionManager()
-            formatted_query = self.query_builder.format_query(query)
 
-            if not is_sql_query_safe(formatted_query):
+            if not is_sql_query_safe(query):
                 raise MaliciousQueryError(
                     "The SQL query is deemed unsafe and will not be executed."
                 )
 
-            return db_manager.sql(formatted_query).df()
+            return db_manager.sql(query).df()
         except duckdb.Error as e:
             raise RuntimeError(f"SQL execution failed: {e}") from e

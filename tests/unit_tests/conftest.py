@@ -115,7 +115,7 @@ def raw_mysql_schema():
 @pytest.fixture
 def raw_mysql_view_schema():
     return {
-        "name": "parent-children",
+        "name": "parent_children",
         "columns": [
             {"name": "parents.id"},
             {"name": "parents.name"},

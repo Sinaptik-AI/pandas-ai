@@ -53,28 +53,52 @@ class TestQueryBuilder:
     def test_build_query(self, mysql_schema):
         query_builder = SqlQueryBuilder(mysql_schema)
         query = query_builder.build_query()
-        expected_query = "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC LIMIT 100"
+        expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC
+LIMIT 100"""
         assert query == expected_query
 
     def test_build_query_without_order_by(self, mysql_schema):
         mysql_schema.order_by = None
         query_builder = SqlQueryBuilder(mysql_schema)
         query = query_builder.build_query()
-        expected_query = "SELECT email, first_name, timestamp FROM users LIMIT 100"
+        expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+LIMIT 100"""
         assert query == expected_query
 
     def test_build_query_without_limit(self, mysql_schema):
         mysql_schema.limit = None
         query_builder = SqlQueryBuilder(mysql_schema)
         query = query_builder.build_query()
-        expected_query = (
-            "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC"
-        )
+        expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC"""
         assert query == expected_query
 
     def test_build_query_with_multiple_order_by(self, mysql_schema):
         mysql_schema.order_by = ["created_at DESC", "email ASC"]
         query_builder = SqlQueryBuilder(mysql_schema)
         query = query_builder.build_query()
-        expected_query = "SELECT email, first_name, timestamp FROM users ORDER BY created_at DESC, email ASC LIMIT 100"
+        expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC,
+  email ASC
+LIMIT 100"""
         assert query == expected_query
