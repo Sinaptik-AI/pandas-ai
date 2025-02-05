@@ -220,7 +220,7 @@ class DataFrame(pd.DataFrame):
         from pandasai import DatasetLoader
 
         dataset_loader = DatasetLoader.create_loader_from_path(self.path)
-        df = dataset_loader.load(self.path)
+        df = dataset_loader.load()
         self.__init__(
             df,
             schema=df.schema,
