@@ -10,7 +10,6 @@ readme = "README.md"
 python = ">=3.8,<3.12"
 pandasai = ">=3.0.0b4"
 boto3 = "^1.34.0"
-numpy = "1.23.2"
 
 [tool.poetry.group.test]
 optional = true
