@@ -212,11 +212,17 @@ def load(dataset_path: str) -> DataFrame:
         raise ValueError("The path must be in the format 'organization/dataset'.")
 
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
-    if not os.path.exists(dataset_full_path):
+
+    local_dataset_exists = os.path.exists(dataset_full_path)
+
+    if not local_dataset_exists:
         api_key = os.environ.get("PANDABI_API_KEY", None)
         api_url = os.environ.get("PANDABI_API_URL", DEFAULT_API_URL)
+
         if not api_url or not api_key:
-            raise PandaAIApiKeyError()
+            raise PandaAIApiKeyError(
+                f'The dataset "{dataset_path}" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.'
+            )
 
         request_session = get_pandaai_session()
 
@@ -232,7 +238,16 @@ def load(dataset_path: str) -> DataFrame:
             zip_file.extractall(dataset_full_path)
 
     loader = DatasetLoader.create_loader_from_path(dataset_path)
-    return loader.load()
+    df = loader.load()
+
+    message = (
+        "Dataset loaded successfully."
+        if local_dataset_exists
+        else "Dataset fetched successfully from the remote server."
+    )
+    print(message)
+
+    return df
 
 
 def read_csv(filepath: str) -> DataFrame:
