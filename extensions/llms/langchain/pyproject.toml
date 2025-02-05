@@ -12,7 +12,6 @@ pandasai = ">=3.0.0b4"
 langchain = "^0.1.0"
 langchain-openai = "^0.1.0"
 langchain-community = "^0.0.38,<0.1"
-numpy = "1.23.2"
 
 [tool.poetry.group.test]
 optional = true
