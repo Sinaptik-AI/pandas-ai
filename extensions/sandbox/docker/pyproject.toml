@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pandasai-docker"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["ArslanSaleem <khan.arslan38@gmail.com>"]
 readme = "README.md"
@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
 pandasai = ">=3.0.0b4"
-numpy = ">=1.23.2,<2.0.0"
 docker = "^7.1.0"
 
 [build-system]
