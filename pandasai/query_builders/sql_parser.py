@@ -35,15 +35,16 @@ class SQLParser:
             if isinstance(node, exp.Table):
                 original_name = node.name
                 if original_name in table_mapping:
+                    alias = node.alias or original_name
                     mapped_value = parsed_mapping[original_name]
                     if isinstance(mapped_value, exp.Alias):
                         return exp.Subquery(
                             this=mapped_value.this.this,
-                            alias=node.alias or original_name,
+                            alias=alias,
                         )
-                    return exp.Subquery(
-                        this=mapped_value, alias=node.alias or original_name
-                    )
+                    elif isinstance(mapped_value, exp.Column):
+                        return exp.Table(this=mapped_value.this, alias=alias)
+                    return exp.Subquery(this=mapped_value, alias=alias)
 
             return node
 

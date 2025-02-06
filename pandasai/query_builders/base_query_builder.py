@@ -1,9 +1,6 @@
-import re
-from typing import Any, List
+from typing import List
 
-import sqlglot
-from sqlglot import from_, pretty, select
-from sqlglot.expressions import Limit, cast
+from sqlglot import select
 from sqlglot.optimizer.normalize_identifiers import normalize_identifiers
 
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema, Source
@@ -42,7 +39,7 @@ class BaseQueryBuilder:
             return ["*"]
 
     def _get_table_expression(self) -> str:
-        return normalize_identifiers(self.schema.name).sql()
+        return normalize_identifiers(self.schema.name).sql(pretty=True)
 
     @staticmethod
     def check_compatible_sources(sources: List[Source]) -> bool:
