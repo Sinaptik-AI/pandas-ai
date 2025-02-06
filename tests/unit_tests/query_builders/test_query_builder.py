@@ -202,3 +202,51 @@ ORDER BY
   created_at DESC
 LIMIT 100"""
         )
+
+    def test_table_name_stacked_query_injection(self, mysql_schema):
+        mysql_schema.name = 'users"; SELECT * FROM sensitive_data; --'
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM "users""; SELECT * FROM sensitive_data; --"
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_table_name_batch_injection(self, mysql_schema):
+        mysql_schema.name = "users; TRUNCATE users; SELECT * FROM users WHERE 't'='t"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM "users; TRUNCATE users; SELECT * FROM users WHERE 't'='t"
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_table_name_time_based_injection(self, mysql_schema):
+        mysql_schema.name = "users' AND (SELECT * FROM (SELECT(SLEEP(5)))test); --"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM "users' AND (SELECT * FROM (SELECT(SLEEP(5)))test); --"
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
