@@ -1,7 +1,7 @@
 from pandasai.helpers.sql_sanitizer import (
     is_sql_query_safe,
     sanitize_file_name,
-    sanitize_relation_name,
+    sanitize_view_column_name,
 )
 
 
@@ -25,7 +25,7 @@ class TestSqlSanitizer:
     def test_sanitize_relation_name_valid(self):
         relation = "dataset-name.column"
         expected = "dataset_name.column"
-        assert sanitize_relation_name(relation) == expected
+        assert sanitize_view_column_name(relation) == expected
 
     def test_safe_select_query(self):
         query = "SELECT * FROM users WHERE username = 'admin';"

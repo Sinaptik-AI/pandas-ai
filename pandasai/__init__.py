@@ -114,26 +114,30 @@ def create(
             "Please provide either a DataFrame, a Source or a View"
         )
 
+    parsed_columns = [Column(**column) for column in columns] if columns else None
+
     if df is not None:
         schema = df.schema
         schema.name = dataset_name
+        if (
+            parsed_columns
+        ):  # if no columns are passed it automatically parse the columns from the df
+            schema.columns = parsed_columns
         parquet_file_path_abs_path = file_manager.abs_path(parquet_file_path)
         df.to_parquet(parquet_file_path_abs_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name, relations=_relation, view=True
+            name=dataset_name, relations=_relation, view=True, columns=parsed_columns
         )
     elif source.get("table"):
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name, source=Source(**source)
+            name=dataset_name, source=Source(**source), columns=parsed_columns
         )
     else:
         raise InvalidConfigError("Unable to create schema with the provided params")
 
     schema.description = description or schema.description
-    if columns:
-        schema.columns = [Column(**column) for column in columns]
 
     file_manager.write(schema_path, schema.to_yaml())
 

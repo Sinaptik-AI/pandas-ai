@@ -44,7 +44,7 @@ class ViewDatasetLoader(SQLDatasetLoader):
             table.split(".")[0]
             for relation in self.schema.relations
             for table in (relation.from_, relation.to)
-        }
+        } or {self.schema.columns[0].name.split(".")[0]}
 
     def _get_dependencies_schemas(self) -> dict[str, DatasetLoader]:
         dependency_dict = {

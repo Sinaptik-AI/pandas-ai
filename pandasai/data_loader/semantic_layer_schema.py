@@ -283,6 +283,7 @@ class SemanticLayerSchema(BaseModel):
 
         # unpack columns info
         _columns = self.columns
+
         _column_names = [col.name for col in _columns or ()]
         _tables_names_in_columns = {
             column_name.split(".")[0] for column_name in _column_names or ()
@@ -309,8 +310,10 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations or ()
             }
 
-            if not self.relations:
-                raise ValueError("At least one relation must be defined for view.")
+            if not self.relations and not self.columns:
+                raise ValueError(
+                    "At least a relation or a column must be defined for view."
+                )
 
             if not all(
                 is_view_column_name(column_name) for column_name in _column_names
@@ -327,10 +330,8 @@ class SemanticLayerSchema(BaseModel):
                     "All params 'from' and 'to' in the relations must be in the format '[dataset].[column]'."
                 )
 
-            if (
-                uncovered_tables := _tables_names_in_columns
-                - _tables_names_in_relations
-            ):
+            uncovered_tables = _tables_names_in_columns - _tables_names_in_relations
+            if uncovered_tables and len(_tables_names_in_columns) > 1:
                 raise ValueError(
                     f"No relations provided for the following tables {uncovered_tables}."
                 )
