@@ -20,6 +20,7 @@ from pandasai.data_loader.semantic_layer_schema import (
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import DataframeSerializer
 from pandasai.helpers.session import get_pandaai_session
+from pandasai.sandbox.sandbox import Sandbox
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent
@@ -94,12 +95,13 @@ class DataFrame(pd.DataFrame):
     def type(self) -> str:
         return "pd.DataFrame"
 
-    def chat(self, prompt: str) -> BaseResponse:
+    def chat(self, prompt: str, sandbox: Optional[Sandbox] = None) -> BaseResponse:
         """
         Interact with the DataFrame using natural language.
 
         Args:
             prompt (str): The natural language query or instruction.
+            sandbox (Sandbox, optional): The sandbox to execute code securely.
 
         Returns:
             str: The response to the prompt.
@@ -109,7 +111,7 @@ class DataFrame(pd.DataFrame):
                 Agent,
             )
 
-            self._agent = Agent([self])
+            self._agent = Agent([self], sandbox=sandbox)
 
         return self._agent.chat(prompt)
 

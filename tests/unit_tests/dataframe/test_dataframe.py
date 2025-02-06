@@ -32,7 +32,18 @@ class TestDataFrame:
         sample_df = DataFrame(sample_dict_data)
         mock_env.return_value = {"PANDABI_API_URL": "localhost:8000"}
         sample_df.chat("Test query")
-        mock_agent.assert_called_once_with([sample_df])
+        mock_agent.assert_called_once_with([sample_df], sandbox=None)
+
+    @patch("pandasai.agent.Agent")
+    @patch("os.environ")
+    def test_chat_creates_agent_with_sandbox(
+        self, mock_env, mock_agent, sample_dict_data
+    ):
+        sandbox = MagicMock()
+        sample_df = DataFrame(sample_dict_data)
+        mock_env.return_value = {"PANDABI_API_URL": "localhost:8000"}
+        sample_df.chat("Test query", sandbox=sandbox)
+        mock_agent.assert_called_once_with([sample_df], sandbox=sandbox)
 
     @patch("pandasai.Agent")
     def test_chat_reuses_existing_agent(self, sample_df):

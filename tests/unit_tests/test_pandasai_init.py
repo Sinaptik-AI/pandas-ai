@@ -56,7 +56,13 @@ class TestPandaAIInit:
     def test_chat_creates_agent(self, sample_df):
         with patch("pandasai.Agent") as MockAgent:
             pandasai.chat("Test query", sample_df)
-            MockAgent.assert_called_once_with([sample_df])
+            MockAgent.assert_called_once_with([sample_df], sandbox=None)
+
+    def test_chat_sandbox_passed_to_agent(self, sample_df):
+        with patch("pandasai.Agent") as MockAgent:
+            sandbox = MagicMock()
+            pandasai.chat("Test query", sample_df, sandbox=sandbox)
+            MockAgent.assert_called_once_with([sample_df], sandbox=sandbox)
 
     def test_chat_without_dataframes_raises_error(self):
         with pytest.raises(ValueError, match="At least one dataframe must be provided"):
@@ -82,7 +88,7 @@ class TestPandaAIInit:
 
             result = pandasai.chat("What is the sum of column A?", *sample_dataframes)
 
-            MockAgent.assert_called_once_with(sample_dataframes)
+            MockAgent.assert_called_once_with(sample_dataframes, sandbox=None)
             mock_agent_instance.chat.assert_called_once_with(
                 "What is the sum of column A?"
             )
@@ -98,7 +104,7 @@ class TestPandaAIInit:
                 "What is the average of column X?", sample_dataframes[1]
             )
 
-            MockAgent.assert_called_once_with([sample_dataframes[1]])
+            MockAgent.assert_called_once_with([sample_dataframes[1]], sandbox=None)
             mock_agent_instance.chat.assert_called_once_with(
                 "What is the average of column X?"
             )
