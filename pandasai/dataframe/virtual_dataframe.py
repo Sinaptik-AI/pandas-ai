@@ -30,7 +30,6 @@ class VirtualDataFrame(DataFrame):
         self._head = None
 
         super().__init__(
-            self.get_head(),
             *args,
             **kwargs,
         )
