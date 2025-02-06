@@ -58,7 +58,7 @@ class TestPandaAIInit:
             pandasai.chat("Test query", sample_df)
             MockAgent.assert_called_once_with([sample_df], sandbox=None)
 
-    def test_chat_sanbox_passed_to_agent(self, sample_df):
+    def test_chat_sandbox_passed_to_agent(self, sample_df):
         with patch("pandasai.Agent") as MockAgent:
             sandbox = MagicMock()
             pandasai.chat("Test query", sample_df, sandbox=sandbox)

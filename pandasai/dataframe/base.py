@@ -20,10 +20,10 @@ from pandasai.data_loader.semantic_layer_schema import (
 from pandasai.exceptions import DatasetNotFound, PandaAIApiKeyError
 from pandasai.helpers.dataframe_serializer import DataframeSerializer
 from pandasai.helpers.session import get_pandaai_session
+from pandasai.sandbox.sandbox import Sandbox
 
 if TYPE_CHECKING:
     from pandasai.agent.base import Agent
-    from pandasai.sandbox.sandbox import Sandbox
 
 
 class DataFrame(pd.DataFrame):
@@ -101,7 +101,7 @@ class DataFrame(pd.DataFrame):
 
         Args:
             prompt (str): The natural language query or instruction.
-            sandbox (Sandbox, optional): The sandbox to execute code securily.
+            sandbox (Sandbox, optional): The sandbox to execute code securely.
 
         Returns:
             str: The response to the prompt.
