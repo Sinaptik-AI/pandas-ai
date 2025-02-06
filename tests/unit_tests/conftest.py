@@ -7,12 +7,12 @@ import pytest
 
 from pandasai import ConfigManager
 from pandasai.data_loader.loader import DatasetLoader
-from pandasai.data_loader.query_builder import QueryBuilder
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
 from pandasai.helpers.path import find_project_root
 from pandasai.llm.fake import FakeLLM
+from pandasai.query_builders.sql_query_builder import SqlQueryBuilder
 
 
 @pytest.fixture
@@ -115,7 +115,7 @@ def raw_mysql_schema():
 @pytest.fixture
 def raw_mysql_view_schema():
     return {
-        "name": "parent-children",
+        "name": "parent_children",
         "columns": [
             {"name": "parents.id"},
             {"name": "parents.name"},
@@ -158,7 +158,7 @@ def mock_view_loader_instance_parents(sample_df):
             },
         }
     )
-    mock_query_builder = QueryBuilder(schema=schema)
+    mock_query_builder = SqlQueryBuilder(schema=schema)
     mock_loader_instance.query_builder = mock_query_builder
     mock_loader_instance.schema = schema
     yield mock_loader_instance
@@ -186,7 +186,7 @@ def mock_view_loader_instance_children(sample_df):
             },
         }
     )
-    mock_query_builder = QueryBuilder(schema=schema)
+    mock_query_builder = SqlQueryBuilder(schema=schema)
     mock_loader_instance.query_builder = mock_query_builder
     mock_loader_instance.schema = schema
     yield mock_loader_instance

@@ -136,8 +136,8 @@ def pull(dataset_path):
     """📥 Pull a dataset from a remote source"""
     try:
         click.echo(f"🔄 Pulling dataset from: {dataset_path}")
-        dataset_loader = DatasetLoader()
-        df = dataset_loader.load(dataset_path)
+        dataset_loader = DatasetLoader.create_loader_from_path(dataset_path)
+        df = dataset_loader.load()
         df.pull()
         click.echo(f"\n✨ Dataset successfully pulled from path: {dataset_path}")
     except Exception as e:
@@ -150,8 +150,8 @@ def push(dataset_path):
     """📤 Push a dataset to a remote source"""
     try:
         click.echo(f"🔄 Pushing dataset to: {dataset_path}")
-        dataset_loader = DatasetLoader()
-        df = dataset_loader.load(dataset_path)
+        dataset_loader = DatasetLoader.create_loader_from_path(dataset_path)
+        df = dataset_loader.load()
         df.push()
         click.echo(f"\n✨ Dataset successfully pushed to path: {dataset_path}")
     except Exception as e:

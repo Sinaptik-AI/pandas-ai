@@ -218,10 +218,6 @@ class Source(BaseModel):
                 raise ValueError(
                     f"For local source type '{_type}', 'path' must be defined."
                 )
-            if not table:
-                raise ValueError(
-                    f"For local source type '{_type}', 'table' must be defined."
-                )
 
         elif _type in REMOTE_SOURCE_TYPES:
             if not connection:
@@ -282,7 +278,7 @@ class SemanticLayerSchema(BaseModel):
 
     @model_validator(mode="after")
     def check_columns_relations(self):
-        column_re_check = r"^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$"
+        column_re_check = r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9_]+$"
         is_view_column_name = partial(re.match, column_re_check)
 
         # unpack columns info

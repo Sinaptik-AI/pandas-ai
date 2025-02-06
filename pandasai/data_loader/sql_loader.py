@@ -6,12 +6,12 @@ import pandas as pd
 from pandasai.dataframe.virtual_dataframe import VirtualDataFrame
 from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
 from pandasai.helpers.sql_sanitizer import is_sql_query_safe
+from pandasai.query_builders import SqlQueryBuilder
 
 from ..constants import (
     SUPPORTED_SOURCE_CONNECTORS,
 )
 from .loader import DatasetLoader
-from .query_builder import QueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
 
 
@@ -22,7 +22,11 @@ class SQLDatasetLoader(DatasetLoader):
 
     def __init__(self, schema: SemanticLayerSchema, dataset_path: str):
         super().__init__(schema, dataset_path)
-        self.query_builder: QueryBuilder = QueryBuilder(schema)
+        self._query_builder: SqlQueryBuilder = SqlQueryBuilder(schema)
+
+    @property
+    def query_builder(self) -> SqlQueryBuilder:
+        return self._query_builder
 
     def load(self) -> VirtualDataFrame:
         return VirtualDataFrame(
@@ -35,17 +39,14 @@ class SQLDatasetLoader(DatasetLoader):
         source_type = self.schema.source.type
         connection_info = self.schema.source.connection
 
-        formatted_query = self.query_builder.format_query(query)
         load_function = self._get_loader_function(source_type)
 
-        if not is_sql_query_safe(formatted_query):
+        if not is_sql_query_safe(query):
             raise MaliciousQueryError(
                 "The SQL query is deemed unsafe and will not be executed."
             )
         try:
-            dataframe: pd.DataFrame = load_function(
-                connection_info, formatted_query, params
-            )
+            dataframe: pd.DataFrame = load_function(connection_info, query, params)
             return self._apply_transformations(dataframe)
 
         except ModuleNotFoundError as e:
@@ -55,7 +56,7 @@ class SQLDatasetLoader(DatasetLoader):
 
         except Exception as e:
             raise RuntimeError(
-                f"Failed to execute query for '{source_type}' with: {formatted_query}"
+                f"Failed to execute query for '{source_type}' with: {query}"
             ) from e
 
     @staticmethod

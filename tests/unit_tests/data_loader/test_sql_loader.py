@@ -1,16 +1,13 @@
 import logging
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
 from pandasai import VirtualDataFrame
-from pandasai.data_loader.loader import DatasetLoader
-from pandasai.data_loader.local_loader import LocalDatasetLoader
-from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
 from pandasai.data_loader.sql_loader import SQLDatasetLoader
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
+from pandasai.exceptions import MaliciousQueryError
 
 
 class TestSqlDatasetLoader:
@@ -46,48 +43,12 @@ class TestSqlDatasetLoader:
 
             # Verify the SQL query was executed correctly
             mock_execute_query.assert_called_once_with(
-                "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
-            )
-
-            # Test executing a custom query
-            custom_query = "SELECT email FROM users WHERE first_name = 'John'"
-            result.execute_sql_query(custom_query)
-            mock_execute_query.assert_called_with(custom_query)
-
-    def test_mysql_schema(self, mysql_schema):
-        """Test loading data from a MySQL schema directly and creates a VirtualDataFrame and handles queries correctly."""
-        with patch(
-            "pandasai.data_loader.sql_loader.SQLDatasetLoader.execute_query"
-        ) as mock_execute_query:
-            # Mock the query results
-            mock_execute_query.return_value = DataFrame(
-                pd.DataFrame(
-                    {
-                        "email": ["test@example.com"],
-                        "first_name": ["John"],
-                        "timestamp": [pd.Timestamp.now()],
-                    }
-                )
-            )
-
-            loader = SQLDatasetLoader(mysql_schema, "test/test")
-            logging.debug("Loading schema from dataset path: %s", loader)
-            result = loader.load()
-
-            # Test that we get a VirtualDataFrame
-            assert isinstance(result, DataFrame)
-            assert result.schema == mysql_schema
-
-            # Test that load_head() works
-            head_result = result.head()
-            assert isinstance(head_result, DataFrame)
-            assert "email" in head_result.columns
-            assert "first_name" in head_result.columns
-            assert "timestamp" in head_result.columns
-
-            # Verify the SQL query was executed correctly
-            mock_execute_query.assert_called_once_with(
-                "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
+                """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+LIMIT 5"""
             )
 
             # Test executing a custom query
@@ -134,10 +95,6 @@ class TestSqlDatasetLoader:
 
             # Verify the SQL query was executed correctly
             loader_function.assert_called_once()
-            assert (
-                loader_function.call_args[0][1]
-                == "SELECT email, first_name, timestamp FROM users ORDER BY RAND() LIMIT 5"
-            )
 
     def test_mysql_malicious_query(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""

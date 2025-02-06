@@ -44,5 +44,9 @@ class VirtualDataFrame(DataFrame):
     def rows_count(self) -> int:
         return self._loader.get_row_count()
 
+    @property
+    def query_builder(self):
+        return self._loader.query_builder
+
     def execute_sql_query(self, query: str) -> pd.DataFrame:
         return self._loader.execute_query(query)

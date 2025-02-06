@@ -35,7 +35,7 @@ class TestSemanticLayerSchema:
     def test_valid_raw_mysql_view_schema(self, raw_mysql_view_schema):
         schema = SemanticLayerSchema(**raw_mysql_view_schema)
 
-        assert schema.name == "parent-children"
+        assert schema.name == "parent_children"
         assert len(schema.columns) == 3
         assert schema.view == True
 

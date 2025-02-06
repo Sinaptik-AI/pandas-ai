@@ -1,4 +1,5 @@
 import os
+from abc import ABC, abstractmethod
 
 import pandas as pd
 import yaml
@@ -12,15 +13,26 @@ from .. import ConfigManager
 from ..constants import (
     LOCAL_SOURCE_TYPES,
 )
+from ..query_builders.base_query_builder import BaseQueryBuilder
 from .semantic_layer_schema import SemanticLayerSchema
 from .transformation_manager import TransformationManager
 
 
-class DatasetLoader:
+class DatasetLoader(ABC):
     def __init__(self, schema: SemanticLayerSchema, dataset_path: str):
         self.schema = schema
-        self.dataset_path = dataset_path
-        self.org_name, self.dataset_name = get_validated_dataset_path(self.dataset_path)
+        self.org_name, self.dataset_name = get_validated_dataset_path(dataset_path)
+        self.dataset_path = f"{self.org_name}/{self.dataset_name}"
+
+    @property
+    @abstractmethod
+    def query_builder(self) -> BaseQueryBuilder:
+        """Abstract property that must be implemented by subclasses."""
+        pass
+
+    @abstractmethod
+    def execute_query(self, query: str):
+        pass
 
     @classmethod
     def create_loader_from_schema(

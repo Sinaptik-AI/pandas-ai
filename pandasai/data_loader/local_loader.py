@@ -1,21 +1,39 @@
 import os
 
+import duckdb
 import pandas as pd
 
 from pandasai.dataframe.base import DataFrame
-from pandasai.exceptions import InvalidDataSourceType
+from pandasai.exceptions import InvalidDataSourceType, MaliciousQueryError
+from pandasai.query_builders import LocalQueryBuilder
 
 from ..config import ConfigManager
 from ..constants import (
     LOCAL_SOURCE_TYPES,
 )
+from ..helpers.sql_sanitizer import is_sql_query_safe
+from .duck_db_connection_manager import DuckDBConnectionManager
 from .loader import DatasetLoader
+from .semantic_layer_schema import SemanticLayerSchema
 
 
 class LocalDatasetLoader(DatasetLoader):
     """
     Loader for local datasets (CSV, Parquet).
     """
+
+    def __init__(self, schema: SemanticLayerSchema, dataset_path: str):
+        super().__init__(schema, dataset_path)
+        self._query_builder: LocalQueryBuilder = LocalQueryBuilder(schema)
+
+    @property
+    def query_builder(self) -> LocalQueryBuilder:
+        return self._query_builder
+
+    def register_table(self):
+        df = self.load()
+        db_manager = DuckDBConnectionManager()
+        db_manager.register(self.schema.name, df)
 
     def load(self) -> DataFrame:
         df: pd.DataFrame = self._load_from_local_source()
@@ -70,3 +88,16 @@ class LocalDatasetLoader(DatasetLoader):
         df_columns = df.columns.tolist()
         columns_to_keep = [col for col in df_columns if col in schema_columns]
         return df[columns_to_keep]
+
+    def execute_query(self, query: str) -> pd.DataFrame:
+        try:
+            db_manager = DuckDBConnectionManager()
+
+            if not is_sql_query_safe(query):
+                raise MaliciousQueryError(
+                    "The SQL query is deemed unsafe and will not be executed."
+                )
+
+            return db_manager.sql(query).df()
+        except duckdb.Error as e:
+            raise RuntimeError(f"SQL execution failed: {e}") from e

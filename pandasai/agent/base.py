@@ -26,8 +26,12 @@ from pandasai.exceptions import (
 from pandasai.sandbox import Sandbox
 from pandasai.vectorstores.vectorstore import VectorStore
 
+from .. import SqlQueryBuilder
 from ..config import Config
 from ..constants import LOCAL_SOURCE_TYPES
+from ..data_loader.duck_db_connection_manager import DuckDBConnectionManager
+from ..query_builders.base_query_builder import BaseQueryBuilder
+from ..query_builders.sql_parser import SQLParser
 from .state import AgentState
 
 
@@ -64,6 +68,13 @@ class Agent:
                 DeprecationWarning,
                 stacklevel=2,
             )
+
+        if isinstance(dfs, list):
+            sources = [df.schema.source for df in dfs]
+            if not BaseQueryBuilder.check_compatible_sources(sources):
+                raise ValueError(
+                    f"The sources of these datasets: {dfs} are not compatibles"
+                )
 
         self.description = description
         self._state = AgentState()
@@ -117,18 +128,20 @@ class Agent:
 
         return code_executor.execute_and_return_result(code)
 
+    @staticmethod
+    def _parse_correct_table_name(query: str, dfs: List[VirtualDataFrame]) -> str:
+        table_mapping = {
+            df.schema.name: df.query_builder._get_table_expression() for df in dfs
+        }
+
+        return SQLParser.replace_table_and_column_names(query, table_mapping)
+
     def _execute_local_sql_query(self, query: str) -> pd.DataFrame:
         try:
-            # Use a context manager to ensure the connection is closed
-            with duckdb.connect() as con:
-                # Register all DataFrames in the state
-                for df in self._state.dfs:
-                    con.register(df.schema.name, df)
-
-                # Execute the query and fetch the result as a pandas DataFrame
-                result = con.sql(query).df()
-
-            return result
+            db_manager = DuckDBConnectionManager()
+            for df in self._state.dfs:
+                db_manager.register(df.schema.name, df)
+            return db_manager.sql(query).df()
         except duckdb.Error as e:
             raise RuntimeError(f"SQL execution failed: {e}") from e
 
@@ -151,6 +164,7 @@ class Agent:
         if source and source.type in LOCAL_SOURCE_TYPES:
             return self._execute_local_sql_query(query)
         else:
+            query = self._parse_correct_table_name(query, self._state.dfs)
             return df0.execute_sql_query(query)
 
     def execute_with_retries(self, code: str) -> Any:
