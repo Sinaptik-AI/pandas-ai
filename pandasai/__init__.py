@@ -22,6 +22,7 @@ from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiK
 from pandasai.helpers.path import find_project_root, get_validated_dataset_path
 from pandasai.helpers.session import get_pandaai_session
 from pandasai.query_builders import SqlQueryBuilder
+from pandasai.sandbox.sandbox import Sandbox
 
 from .agent import Agent
 from .constants import LOCAL_SOURCE_TYPES, SQL_SOURCE_TYPES
@@ -158,13 +159,14 @@ def clear_cache(filename: str = None):
     cache.clear()
 
 
-def chat(query: str, *dataframes: DataFrame):
+def chat(query: str, *dataframes: DataFrame, sandbox: Optional[Sandbox] = None):
     """
     Start a new chat interaction with the assistant on Dataframe(s).
 
     Args:
         query (str): The query to run against the dataframes.
         *dataframes: Variable number of dataframes to query.
+        sandbox (Sandbox, optional): The sandbox to execute code securily.
 
     Returns:
         The result of the query.
@@ -173,7 +175,7 @@ def chat(query: str, *dataframes: DataFrame):
     if not dataframes:
         raise ValueError("At least one dataframe must be provided.")
 
-    _current_agent = Agent(list(dataframes))
+    _current_agent = Agent(list(dataframes), sandbox=sandbox)
     return _current_agent.chat(query)
 
 

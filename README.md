@@ -18,7 +18,7 @@ You can either decide to use PandaAI in your Jupyter notebooks, Streamlit apps, 
 
 ## ☁️ Using the platform
 
-The library can be used alongside our powerful data platform, making end-to-end conversational data analytics possible with as little as a few lines of code. 
+The library can be used alongside our powerful data platform, making end-to-end conversational data analytics possible with as little as a few lines of code.
 
 Load your data, save them as a dataframe, and push them to the platform
 
@@ -36,9 +36,10 @@ dataset = pai.create(path="your-organization/dataset-name",
 
 dataset.push()
 ```
+
 Your team can now access and query this data using natural language through the platform.
 
-![PandaAI](assets/demo.gif) 
+![PandaAI](assets/demo.gif)
 
 ## 📚 Using the library
 
@@ -144,6 +145,54 @@ pai.chat("Who gets paid the most?", employees_df, salaries_df)
 Olivia gets paid the most.
 ```
 
+#### Docker Sandbox
+
+You can run PandaAI in a Docker sandbox, providing a secure, isolated environment to execute code safely and mitigate the risk of malicious attacks.
+
+##### Python Requirements
+
+```bash
+pip install "pandasai-docker"
+```
+
+##### Usage
+
+```python
+import pandasai as pai
+from pandasai_docker import DockerSandbox
+
+# Initialize the sandbox
+sandbox = DockerSandbox()
+sandbox.start()
+
+employees_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Name': ['John', 'Emma', 'Liam', 'Olivia', 'William'],
+    'Department': ['HR', 'Sales', 'IT', 'Marketing', 'Finance']
+}
+
+salaries_data = {
+    'EmployeeID': [1, 2, 3, 4, 5],
+    'Salary': [5000, 6000, 4500, 7000, 5500]
+}
+
+employees_df = pai.DataFrame(employees_data)
+salaries_df = pai.DataFrame(salaries_data)
+
+# By default, unless you choose a different LLM, it will use BambooLLM.
+# You can get your free API key signing up at https://app.pandabi.ai (you can also configure it in your .env file)
+pai.api_key.set("your-pai-api-key")
+
+pai.chat("Who gets paid the most?", employees_df, salaries_df, sandbox=sandbox)
+
+# Don't forget to stop the sandbox when done
+sandbox.stop()
+```
+
+```
+Olivia gets paid the most.
+```
+
 You can find more examples in the [examples](examples) directory.
 
 ## 📜 License
@@ -160,7 +209,6 @@ If you are interested in managed PandaAI Cloud or self-hosted Enterprise Offerin
 - [Docs](https://pandas-ai.readthedocs.io/en/latest/) for comprehensive documentation
 - [Examples](examples) for example notebooks
 - [Discord](https://discord.gg/KYKj9F2FRH) for discussion with the community and PandaAI team
-
 
 ## 🤝 Contributing
 
