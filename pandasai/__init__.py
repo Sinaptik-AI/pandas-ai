@@ -166,7 +166,7 @@ def chat(query: str, *dataframes: DataFrame, sandbox: Optional[Sandbox] = None):
     Args:
         query (str): The query to run against the dataframes.
         *dataframes: Variable number of dataframes to query.
-        sandbox (Sandbox, optional): The sandbox to execute code securily.
+        sandbox (Sandbox, optional): The sandbox to execute code securely.
 
     Returns:
         The result of the query.
