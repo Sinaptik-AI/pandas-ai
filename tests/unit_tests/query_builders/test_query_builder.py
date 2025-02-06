@@ -1,6 +1,8 @@
 import pytest
+import sqlglot
 
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
+from pandasai.query_builders.base_query_builder import BaseQueryBuilder
 from pandasai.query_builders.sql_query_builder import SqlQueryBuilder
 
 
@@ -102,3 +104,101 @@ ORDER BY
   email ASC
 LIMIT 100"""
         assert query == expected_query
+
+    def test_table_name_injection(self, mysql_schema):
+        mysql_schema.name = "users; DROP TABLE users;"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM "users; DROP TABLE users;"
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_column_name_injection(self, mysql_schema):
+        mysql_schema.columns[0].name = "column; DROP TABLE users;"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  "column; DROP TABLE users;",
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_table_name_union_injection(self, mysql_schema):
+        mysql_schema.name = "users UNION SELECT 1,2,3;"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM "users UNION SELECT 1,2,3;"
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_column_name_union_injection(self, mysql_schema):
+        mysql_schema.columns[
+            0
+        ].name = "column UNION SELECT username, password FROM users;"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  "column UNION SELECT username, password FROM users;",
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_table_name_comment_injection(self, mysql_schema):
+        mysql_schema.name = "users --"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  email,
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )
+
+    def test_column_name_comment_injection(self, mysql_schema):
+        mysql_schema.columns[0].name = "column --"
+        query_builder = BaseQueryBuilder(mysql_schema)
+        query = query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  column,
+  first_name,
+  timestamp
+FROM users
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+        )

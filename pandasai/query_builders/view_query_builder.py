@@ -2,6 +2,7 @@ from typing import Dict
 
 from sqlglot import exp, expressions, parse_one, select
 from sqlglot.expressions import Subquery
+from sqlglot.optimizer.normalize_identifiers import normalize_identifiers
 
 from ..data_loader.loader import DatasetLoader
 from ..data_loader.semantic_layer_schema import SemanticLayerSchema
@@ -20,7 +21,10 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
     def _get_columns(self) -> list[str]:
         if self.schema.columns:
-            return [col.name.replace(".", "_") for col in self.schema.columns]
+            return [
+                normalize_identifiers(col.name.replace(".", "_")).sql()
+                for col in self.schema.columns
+            ]
         else:
             return super()._get_columns()
 
@@ -36,13 +40,12 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
         if self.schema.columns:
             columns = [
-                f"{col.name} AS {col.name.replace('.', '_')}"
+                f"{normalize_identifiers(col.name).sql()} AS {normalize_identifiers(col.name.replace('.', '_'))}"
                 for col in self.schema.columns
             ]
         else:
             columns = ["*"]
 
-        # query = select(*columns).from_(first_query).sql(pretty=True)
         query = select(*columns).from_(first_query)
 
         for relation in relations:
@@ -54,5 +57,5 @@ class ViewQueryBuilder(BaseQueryBuilder):
                 on=f"{sanitize_relation_name(relation.from_)} = {sanitize_relation_name(relation.to)}",
                 append=True,
             )
-
-        return exp.Subquery(this=query, alias=self.schema.name).sql(pretty=True)
+        alias = normalize_identifiers(self.schema.name).sql()
+        return exp.Subquery(this=query, alias=alias).sql(pretty=True)

@@ -24,9 +24,9 @@ class TestViewQueryBuilder:
   children_name
 FROM (
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    "parents.id" AS parents_id,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
   FROM (
     SELECT
       *
@@ -57,9 +57,179 @@ FROM (
             view_query_builder._get_table_expression()
             == """(
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    "parents.id" AS parents_id,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS parent_children"""
+        )
+
+    def test_table_name_injection(self, view_query_builder):
+        view_query_builder.schema.name = "users; DROP TABLE users;"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == '''SELECT
+  parents_id,
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    "parents.id" AS parents_id,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS "users; DROP TABLE users;"'''
+        )
+
+    def test_column_name_injection(self, view_query_builder):
+        view_query_builder.schema.columns[0].name = "column; DROP TABLE users;"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  "column; DROP TABLE users;",
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    "column; DROP TABLE users;" AS "column; DROP TABLE users;",
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS parent_children"""
+        )
+
+    def test_table_name_union_injection(self, view_query_builder):
+        view_query_builder.schema.name = "users UNION SELECT 1,2,3;"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == '''SELECT
+  parents_id,
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    "parents.id" AS parents_id,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS "users UNION SELECT 1,2,3;"'''
+        )
+
+    def test_column_name_union_injection(self, view_query_builder):
+        view_query_builder.schema.columns[
+            0
+        ].name = "column UNION SELECT username, password FROM users;"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  "column UNION SELECT username, password FROM users;",
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    "column UNION SELECT username, password FROM users;" AS "column UNION SELECT username, password FROM users;",
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS parent_children"""
+        )
+
+    def test_table_name_comment_injection(self, view_query_builder):
+        view_query_builder.schema.name = "users --"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  parents_id,
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    "parents.id" AS parents_id,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
+  FROM (
+    SELECT
+      *
+    FROM parents
+  ) AS parents
+  JOIN (
+    SELECT
+      *
+    FROM children
+  ) AS children
+    ON parents.id = children.id
+) AS users"""
+        )
+
+    def test_column_name_comment_injection(self, view_query_builder):
+        view_query_builder.schema.columns[0].name = "column --"
+        query = view_query_builder.build_query()
+        assert (
+            query
+            == """SELECT
+  column,
+  parents_name,
+  children_name
+FROM (
+  SELECT
+    column AS column,
+    "parents.name" AS parents_name,
+    "children.name" AS children_name
   FROM (
     SELECT
       *

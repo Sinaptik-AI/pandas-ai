@@ -4,6 +4,7 @@ from typing import Any, List
 import sqlglot
 from sqlglot import from_, pretty, select
 from sqlglot.expressions import Limit, cast
+from sqlglot.optimizer.normalize_identifiers import normalize_identifiers
 
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema, Source
 
@@ -34,12 +35,14 @@ class BaseQueryBuilder:
 
     def _get_columns(self) -> list[str]:
         if self.schema.columns:
-            return [col.name for col in self.schema.columns]
+            return [
+                normalize_identifiers(col.name).sql() for col in self.schema.columns
+            ]
         else:
             return ["*"]
 
     def _get_table_expression(self) -> str:
-        return self.schema.name
+        return normalize_identifiers(self.schema.name).sql()
 
     @staticmethod
     def check_compatible_sources(sources: List[Source]) -> bool:
