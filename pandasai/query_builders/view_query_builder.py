@@ -6,7 +6,7 @@ from sqlglot.optimizer.normalize_identifiers import normalize_identifiers
 
 from ..data_loader.loader import DatasetLoader
 from ..data_loader.semantic_layer_schema import SemanticLayerSchema
-from ..helpers.sql_sanitizer import sanitize_relation_name
+from ..helpers.sql_sanitizer import sanitize_view_column_name
 from .base_query_builder import BaseQueryBuilder
 
 
@@ -19,10 +19,20 @@ class ViewQueryBuilder(BaseQueryBuilder):
         super().__init__(schema)
         self.schema_dependencies_dict = schema_dependencies_dict
 
+    @staticmethod
+    def normalize_view_column_name(name: str) -> str:
+        return normalize_identifiers(parse_one(sanitize_view_column_name(name))).sql()
+
+    @staticmethod
+    def normalize_view_column_alias(name: str) -> str:
+        return normalize_identifiers(
+            sanitize_view_column_name(name).replace(".", "_")
+        ).sql()
+
     def _get_columns(self) -> list[str]:
         if self.schema.columns:
             return [
-                normalize_identifiers(col.name.replace(".", "_")).sql()
+                self.normalize_view_column_alias(col.name)
                 for col in self.schema.columns
             ]
         else:
@@ -34,13 +44,18 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
     def _get_table_expression(self) -> str:
         relations = self.schema.relations
-        first_dataset = relations[0].from_.split(".")[0]
+        columns = self.schema.columns
+        first_dataset = (
+            relations[0].from_.split(".")[0]
+            if relations
+            else columns[0].name.split(".")[0]
+        )
         first_loader = self.schema_dependencies_dict[first_dataset]
         first_query = self._get_sub_query_from_loader(first_loader)
 
         if self.schema.columns:
             columns = [
-                f"{normalize_identifiers(col.name).sql()} AS {normalize_identifiers(col.name.replace('.', '_'))}"
+                f"{self.normalize_view_column_name(col.name)} AS {self.normalize_view_column_alias(col.name)}"
                 for col in self.schema.columns
             ]
         else:
@@ -54,7 +69,7 @@ class ViewQueryBuilder(BaseQueryBuilder):
             subquery = self._get_sub_query_from_loader(loader)
             query = query.join(
                 subquery,
-                on=f"{sanitize_relation_name(relation.from_)} = {sanitize_relation_name(relation.to)}",
+                on=f"{sanitize_view_column_name(relation.from_)} = {sanitize_view_column_name(relation.to)}",
                 append=True,
             )
         alias = normalize_identifiers(self.schema.name).sql()

@@ -4,7 +4,7 @@ import re
 import sqlglot
 
 
-def sanitize_relation_name(relation_name: str) -> str:
+def sanitize_view_column_name(relation_name: str) -> str:
     return ".".join(list(map(sanitize_sql_table_name, relation_name.split("."))))
 
 

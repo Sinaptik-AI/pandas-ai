@@ -24,9 +24,9 @@ class TestViewQueryBuilder:
   children_name
 FROM (
   SELECT
-    "parents.id" AS parents_id,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -57,9 +57,9 @@ FROM (
             view_query_builder._get_table_expression()
             == """(
   SELECT
-    "parents.id" AS parents_id,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -85,9 +85,9 @@ FROM (
   children_name
 FROM (
   SELECT
-    "parents.id" AS parents_id,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -108,14 +108,14 @@ FROM (
         assert (
             query
             == """SELECT
-  "column; DROP TABLE users;",
+  column__drop_table_users_,
   parents_name,
   children_name
 FROM (
   SELECT
-    "column; DROP TABLE users;" AS "column; DROP TABLE users;",
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    column__drop_table_users_ AS column__drop_table_users_,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -141,9 +141,9 @@ FROM (
   children_name
 FROM (
   SELECT
-    "parents.id" AS parents_id,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -166,14 +166,14 @@ FROM (
         assert (
             query
             == """SELECT
-  "column UNION SELECT username, password FROM users;",
+  column_union_select_username__password_from_users_,
   parents_name,
   children_name
 FROM (
   SELECT
-    "column UNION SELECT username, password FROM users;" AS "column UNION SELECT username, password FROM users;",
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -199,9 +199,9 @@ FROM (
   children_name
 FROM (
   SELECT
-    "parents.id" AS parents_id,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    parents.id AS parents_id,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *
@@ -222,14 +222,14 @@ FROM (
         assert (
             query
             == """SELECT
-  column,
+  column___,
   parents_name,
   children_name
 FROM (
   SELECT
-    column AS column,
-    "parents.name" AS parents_name,
-    "children.name" AS children_name
+    column___ AS column___,
+    parents.name AS parents_name,
+    children.name AS children_name
   FROM (
     SELECT
       *

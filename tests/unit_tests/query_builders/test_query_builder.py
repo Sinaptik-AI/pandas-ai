@@ -250,3 +250,19 @@ ORDER BY
   created_at DESC
 LIMIT 100"""
         )
+
+    @pytest.mark.parametrize(
+        "injection",
+        [
+            "users; DROP TABLE users;",
+            "users UNION SELECT 1,2,3;",
+            'users"; SELECT * FROM sensitive_data; --',
+            "users; TRUNCATE users; SELECT * FROM users WHERE 't'='t",
+            "users' AND (SELECT * FROM (SELECT(SLEEP(5)))test); --",
+        ],
+    )
+    def test_order_by_injection(self, injection, mysql_schema):
+        mysql_schema.order_by = [injection]
+        query_builder = BaseQueryBuilder(mysql_schema)
+        with pytest.raises((sqlglot.errors.ParseError, sqlglot.errors.TokenError)):
+            query_builder.build_query()
