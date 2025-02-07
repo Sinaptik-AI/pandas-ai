@@ -153,7 +153,7 @@ LIMIT 5"""
             result = loader.execute_query("SELECT * FROM users")
 
             assert isinstance(result, DataFrame)
-            mock_sql_query.assert_called_once_with("SELECT * FROM users")
+            mock_sql_query.assert_called_once_with("SELECT\n  *\nFROM users")
 
     def test_mysql_malicious_with_no_import(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""

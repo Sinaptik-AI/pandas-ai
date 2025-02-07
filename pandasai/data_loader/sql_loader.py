@@ -11,6 +11,7 @@ from pandasai.query_builders import SqlQueryBuilder
 from ..constants import (
     SUPPORTED_SOURCE_CONNECTORS,
 )
+from ..query_builders.sql_parser import SQLParser
 from .loader import DatasetLoader
 from .semantic_layer_schema import SemanticLayerSchema
 
@@ -40,6 +41,7 @@ class SQLDatasetLoader(DatasetLoader):
         connection_info = self.schema.source.connection
 
         load_function = self._get_loader_function(source_type)
+        query = SQLParser.transpile_sql_dialect(query, to_dialect=source_type)
 
         if not is_sql_query_safe(query):
             raise MaliciousQueryError(

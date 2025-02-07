@@ -5,13 +5,6 @@ from sqlglot.optimizer.qualify_columns import quote_identifiers
 
 class SQLParser:
     @staticmethod
-    def extract_table_names(query: str):
-        parsed = sqlglot.parse_one(query)
-        return {
-            table.alias_or_name for table in parsed.find_all(sqlglot.expressions.Table)
-        }
-
-    @staticmethod
     def replace_table_and_column_names(query, table_mapping):
         """
         Transform a SQL query by replacing table names with either new table names or subqueries.
@@ -57,3 +50,10 @@ class SQLParser:
 
         # Convert back to SQL string
         return transformed.sql(pretty=True)
+
+    @staticmethod
+    def transpile_sql_dialect(query, to_dialect, from_dialect=None):
+        query = (
+            parse_one(query, read=from_dialect) if from_dialect else parse_one(query)
+        )
+        return query.sql(dialect=to_dialect, pretty=True)

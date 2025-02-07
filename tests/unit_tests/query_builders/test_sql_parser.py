@@ -56,3 +56,9 @@ JOIN (
     def test_replace_table_names(query, table_mapping, expected):
         result = SQLParser.replace_table_and_column_names(query, table_mapping)
         assert result.strip() == expected.strip()
+
+    def test_mysql_transpilation(self):
+        query = '''SELECT COUNT(*) AS "total_rows"'''
+        expected = """SELECT\n  COUNT(*) AS `total_rows`"""
+        result = SQLParser.transpile_sql_dialect(query, to_dialect="mysql")
+        assert result.strip() == expected.strip()

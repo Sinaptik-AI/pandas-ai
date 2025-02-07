@@ -2,6 +2,8 @@ import weakref
 
 import duckdb
 
+from pandasai.query_builders.sql_parser import SQLParser
+
 
 class DuckDBConnectionManager:
     _instance = None
@@ -32,6 +34,7 @@ class DuckDBConnectionManager:
 
     def sql(self, query: str):
         """Executes an SQL query and returns the result as a Pandas DataFrame."""
+        query = SQLParser.transpile_sql_dialect(query, to_dialect="duckdb")
         return self.connection.sql(query)
 
     def close(self):

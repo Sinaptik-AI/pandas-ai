@@ -10,6 +10,7 @@ from .. import LOCAL_SOURCE_TYPES
 from ..exceptions import MaliciousQueryError
 from ..helpers.sql_sanitizer import is_sql_query_safe
 from ..query_builders.base_query_builder import BaseQueryBuilder
+from ..query_builders.sql_parser import SQLParser
 from .duck_db_connection_manager import DuckDBConnectionManager
 from .loader import DatasetLoader
 from .local_loader import LocalDatasetLoader
@@ -89,6 +90,7 @@ class ViewDatasetLoader(SQLDatasetLoader):
         if source_type in LOCAL_SOURCE_TYPES:
             return self.execute_local_query(query)
         load_function = self._get_loader_function(source_type)
+        query = SQLParser.transpile_sql_dialect(query, to_dialect=source_type)
 
         if not is_sql_query_safe(query):
             raise MaliciousQueryError(
