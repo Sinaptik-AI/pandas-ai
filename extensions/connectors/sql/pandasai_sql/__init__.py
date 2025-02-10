@@ -66,6 +66,5 @@ def load_from_cockroachdb(
 __all__ = [
     "load_from_mysql",
     "load_from_postgres",
-    "load_from_sqlite",
     "load_from_cockroachdb",
 ]
