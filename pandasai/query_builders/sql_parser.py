@@ -1,6 +1,10 @@
+from typing import List, Optional
+
 import sqlglot
 from sqlglot import ParseError, exp, parse_one
 from sqlglot.optimizer.qualify_columns import quote_identifiers
+
+from pandasai.exceptions import MaliciousQueryError
 
 
 class SQLParser:
@@ -27,6 +31,7 @@ class SQLParser:
             # Handle Table nodes
             if isinstance(node, exp.Table):
                 original_name = node.name
+
                 if original_name in table_mapping:
                     alias = node.alias or original_name
                     mapped_value = parsed_mapping[original_name]
@@ -57,3 +62,23 @@ class SQLParser:
             parse_one(query, read=from_dialect) if from_dialect else parse_one(query)
         )
         return query.sql(dialect=to_dialect, pretty=True)
+
+    @staticmethod
+    def extract_table_names(sql_query: str, dialect: str = "postgres") -> List[str]:
+        # Parse the SQL query
+        parsed = sqlglot.parse(sql_query, dialect=dialect)
+        table_names = []
+        cte_names = set()
+
+        for stmt in parsed:
+            # Identify and store CTE names
+            for cte in stmt.find_all(exp.With):
+                for cte_expr in cte.expressions:
+                    cte_names.add(cte_expr.alias_or_name)
+
+            # Extract table names, excluding CTEs
+            for node in stmt.find_all(exp.Table):
+                if node.name not in cte_names:  # Ignore CTE names
+                    table_names.append(node.name)
+
+        return table_names

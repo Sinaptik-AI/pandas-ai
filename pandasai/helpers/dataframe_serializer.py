@@ -9,7 +9,7 @@ class DataframeSerializer:
         pass
 
     @staticmethod
-    def serialize(df: "DataFrame") -> str:
+    def serialize(df: "DataFrame", dialect: str = "postgres") -> str:
         """
         Convert df to csv like format where csv is wrapped inside <dataframe></dataframe>
         Args:
@@ -18,7 +18,7 @@ class DataframeSerializer:
         Returns:
             str: dataframe stringify
         """
-        dataframe_info = f'<table table_name="{df.schema.name}"'
+        dataframe_info = f'<table dialect="{dialect}" table_name="{df.schema.name}"'
 
         # Add description attribute if available
         if df.schema.description is not None:
