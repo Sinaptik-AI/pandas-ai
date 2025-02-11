@@ -311,7 +311,7 @@ class SemanticLayerSchema(BaseModel):
             }
 
             if not self.columns:
-                raise ValueError("At least a column must be defined for view.")
+                raise ValueError("A view must have at least one column defined.")
 
             if not all(
                 is_view_column_name(column_name) for column_name in _column_names
