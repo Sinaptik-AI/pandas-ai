@@ -93,7 +93,7 @@ class LocalDatasetLoader(DatasetLoader):
         try:
             db_manager = DuckDBConnectionManager()
 
-            if not is_sql_query_safe(query):
+            if not is_sql_query_safe(query, dialect="duckdb"):
                 raise MaliciousQueryError(
                     "The SQL query is deemed unsafe and will not be executed."
                 )

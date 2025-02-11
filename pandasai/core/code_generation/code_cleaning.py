@@ -7,7 +7,7 @@ import astor
 from pandasai.agent.state import AgentState
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.core.code_execution.code_executor import CodeExecutor
-from pandasai.helpers.sql import extract_table_names
+from pandasai.query_builders.sql_parser import SQLParser
 
 from ...exceptions import MaliciousQueryError
 
@@ -53,10 +53,11 @@ class CodeCleaner:
         Clean the SQL query by trimming semicolons and validating table names.
         """
         sql_query = sql_query.rstrip(";")
-        table_names = extract_table_names(sql_query)
+        table_names = SQLParser.extract_table_names(sql_query)
         allowed_table_names = {
             df.schema.name: df.schema.name for df in self.context.dfs
         } | {f'"{df.schema.name}"': df.schema.name for df in self.context.dfs}
+
         return self._replace_table_names(sql_query, table_names, allowed_table_names)
 
     def _validate_and_make_table_name_case_sensitive(self, node: ast.AST) -> ast.AST:
