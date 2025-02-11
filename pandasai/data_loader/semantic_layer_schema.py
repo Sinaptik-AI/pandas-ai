@@ -47,7 +47,7 @@ class Column(BaseModel):
     @field_validator("type")
     @classmethod
     def is_column_type_supported(cls, type: str) -> str:
-        if type not in VALID_COLUMN_TYPES:
+        if type and type not in VALID_COLUMN_TYPES:
             raise ValueError(
                 f"Unsupported column type: {type}. Supported types are: {VALID_COLUMN_TYPES}"
             )
@@ -310,10 +310,8 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations or ()
             }
 
-            if not self.relations and not self.columns:
-                raise ValueError(
-                    "At least a relation or a column must be defined for view."
-                )
+            if not self.columns:
+                raise ValueError("At least a column must be defined for view.")
 
             if not all(
                 is_view_column_name(column_name) for column_name in _column_names
