@@ -132,8 +132,5 @@ JOIN "department" AS d
         ],
     )
     def test_extract_table_names(sql_query, dialect, expected_tables):
-        print(sql_query)
-        print(expected_tables)
         result = SQLParser.extract_table_names(sql_query, dialect)
-        print(result)
         assert SQLParser.extract_table_names(sql_query, dialect) == expected_tables
