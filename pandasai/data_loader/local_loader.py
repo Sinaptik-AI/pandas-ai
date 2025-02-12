@@ -72,22 +72,71 @@ class LocalDatasetLoader(DatasetLoader):
 
         return df
 
+    def _apply_grouping(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply grouping and aggregation based on schema group_by and column expressions.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame to group
+
+        Returns:
+            pd.DataFrame: Grouped and aggregated DataFrame
+        """
+        if not self.schema.group_by:
+            return df
+
+        # Map of SQL/common aggregation names to pandas aggregation functions
+        agg_map = {
+            "avg": "mean",
+            "average": "mean",
+            "count": "count",
+            "max": "max",
+            "min": "min",
+            "sum": "sum",
+        }
+
+        # Create aggregation dictionary for columns with expressions
+        agg_dict = {}
+        for col in self.schema.columns:
+            if col.expression:
+                # Map the expression to pandas aggregation function
+                agg_func = agg_map.get(col.expression.lower(), col.expression)
+                agg_dict[col.name] = agg_func
+
+        # Group and aggregate if needed
+        if agg_dict:
+            df = df.groupby(self.schema.group_by).agg(agg_dict).reset_index()
+
+        return df
+
     def _filter_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Filter DataFrame columns based on schema columns if specified.
+        Also handles column aliases if present.
 
         Args:
             df (pd.DataFrame): Input DataFrame to filter
 
         Returns:
-            pd.DataFrame: DataFrame with only columns specified in schema
+            pd.DataFrame: DataFrame with filtered columns and applied aliases
         """
         if not self.schema.columns:
             return df
 
-        schema_columns = [col.name for col in self.schema.columns]
-        df_columns = df.columns.tolist()
-        columns_to_keep = [col for col in df_columns if col in schema_columns]
-        return df[columns_to_keep]
+        # First apply any grouping and aggregation
+        df = self._apply_grouping(df)
+
+        # Create a list of columns to keep and their aliases
+        column_mapping = {}
+        for col in self.schema.columns:
+            if col.alias:
+                column_mapping[col.name] = col.alias
+            else:
+                column_mapping[col.name] = col.name
+
+        # Filter columns and apply aliases
+        df = df[[col.name for col in self.schema.columns]]
+        df = df.rename(columns=column_mapping)
+
+        return df
 
     def execute_query(self, query: str) -> pd.DataFrame:
         try:

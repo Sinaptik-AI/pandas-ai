@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 import pandasai
-from pandasai.data_loader.semantic_layer_schema import Column
+from pandasai.data_loader.semantic_layer_schema import Column, SemanticLayerSchema
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
 from pandasai.helpers.filemanager import DefaultFileManager
@@ -412,8 +412,14 @@ class TestPandaAIInit:
     ):
         """Test creating a dataset with valid inputs."""
 
-        mock_schema = MagicMock()
-        sample_df.schema = mock_schema
+        from pandasai.data_loader.semantic_layer_schema import Source
+
+        schema = SemanticLayerSchema(
+            name="test-dataset",
+            description="test_description",
+            source=Source(type="parquet", path="data.parquet"),
+        )
+        sample_df.schema = schema
 
         with patch.object(sample_df, "to_parquet") as mock_to_parquet:
             result = pandasai.create(
@@ -436,7 +442,7 @@ class TestPandaAIInit:
             # Check returned DataFrame
             assert isinstance(result, DataFrame)
             assert result.schema.name == sample_df.schema.name
-            assert mock_schema.description == "test_description"
+            assert result.schema.description == "test_description"
             mock_loader_instance.load.assert_called_once()
 
     def test_create_valid_dataset_with_columns(
