@@ -29,14 +29,68 @@ class ViewQueryBuilder(BaseQueryBuilder):
             sanitize_view_column_name(name).replace(".", "_")
         ).sql()
 
+    def _get_group_by_columns(self) -> list[str]:
+        """Get the group by columns with proper view column aliasing."""
+        if not self.schema.group_by:
+            return []
+
+        group_by_cols = []
+        for col in self.schema.group_by:
+            # Use the view column alias format for group by
+            group_by_cols.append(self.normalize_view_column_alias(col))
+        return group_by_cols
+
     def _get_columns(self) -> list[str]:
-        if self.schema.columns:
-            return [
-                self.normalize_view_column_alias(col.name)
-                for col in self.schema.columns
-            ]
-        else:
-            return super()._get_columns()
+        columns = []
+        for col in self.schema.columns:
+            # Get the normalized column name
+            column_name = self.normalize_view_column_alias(col.name)
+
+            if col.expression:
+                # Add the aggregation function
+                column_expr = f"{col.expression}({column_name})"
+            else:
+                column_expr = column_name
+
+            # Add alias if specified, otherwise use the normalized name as alias
+            alias = (
+                col.alias if col.alias else self.normalize_view_column_alias(col.name)
+            )
+            column_expr = f"{column_expr} AS {alias}"
+
+            columns.append(column_expr)
+
+        return columns
+
+    def build_query(self) -> str:
+        """Build the SQL query with proper group by column aliasing."""
+        query = select(*self._get_columns()).from_(self._get_table_expression())
+
+        if self.schema.group_by:
+            query = query.group_by(
+                *[normalize_identifiers(col) for col in self._get_group_by_columns()]
+            )
+
+        if self.schema.order_by:
+            query = query.order_by(*self.schema.order_by)
+
+        if self.schema.limit:
+            query = query.limit(self.schema.limit)
+
+        return query.sql(pretty=True)
+
+    def get_head_query(self, n=5):
+        """Get the head query with proper group by column aliasing."""
+        query = select(*self._get_columns()).from_(self._get_table_expression())
+
+        if self.schema.group_by:
+            query = query.group_by(
+                *[normalize_identifiers(col) for col in self._get_group_by_columns()]
+            )
+
+        query = query.limit(n)
+
+        return query.sql(pretty=True)
 
     def _get_sub_query_from_loader(self, loader: DatasetLoader) -> Subquery:
         sub_query = parse_one(loader.query_builder.build_query())
@@ -53,13 +107,10 @@ class ViewQueryBuilder(BaseQueryBuilder):
         first_loader = self.schema_dependencies_dict[first_dataset]
         first_query = self._get_sub_query_from_loader(first_loader)
 
-        if self.schema.columns:
-            columns = [
-                f"{self.normalize_view_column_name(col.name)} AS {self.normalize_view_column_alias(col.name)}"
-                for col in self.schema.columns
-            ]
-        else:
-            columns = ["*"]
+        columns = [
+            f"{self.normalize_view_column_name(col.name)} AS {self.normalize_view_column_alias(col.name)}"
+            for col in self.schema.columns
+        ]
 
         query = select(*columns).from_(first_query)
 
