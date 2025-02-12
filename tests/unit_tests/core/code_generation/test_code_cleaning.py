@@ -1,18 +1,21 @@
 import ast
-import astor
 import os
-import pandas as pd
-import pytest
 import re
 import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import astor
+import pandas as pd
+import pytest
+
 from pandasai.agent.state import AgentState
 from pandasai.constants import DEFAULT_CHART_DIRECTORY
 from pandasai.core.code_execution.code_executor import CodeExecutor
 from pandasai.core.code_generation.code_cleaning import CodeCleaner
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MaliciousQueryError
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+
 
 class TestCodeCleaner(unittest.TestCase):
     def setUp(self):
@@ -20,7 +23,7 @@ class TestCodeCleaner(unittest.TestCase):
         sample_data = {
             "country": ["United States", "United Kingdom", "Japan", "China"],
             "gdp": [19294482071552, 2891615567872, 4380756541440, 14631844184064],
-            "happiness_index": [6.94, 7.22, 5.87, 5.12]
+            "happiness_index": [6.94, 7.22, 5.87, 5.12],
         }
         self.sample_df = DataFrame(sample_data)
         # For tests expecting a schema attribute, assign a dummy schema with a name.
@@ -29,6 +32,7 @@ class TestCodeCleaner(unittest.TestCase):
         # Initialize AgentState with the list of dataframes.
         state = AgentState(dfs=[self.sample_df])
         self.cleaner = CodeCleaner(state)
+
     def test_check_direct_sql_func_def_exists_true(self):
         node = ast.FunctionDef(
             name="execute_sql_query",
@@ -46,24 +50,32 @@ class TestCodeCleaner(unittest.TestCase):
         )
         result = self.cleaner._check_direct_sql_func_def_exists(node)
         self.assertTrue(result)
+
     def test_replace_table_names_valid(self):
         sql_query = "SELECT * FROM my_table;"
         table_names = ["my_table"]
         allowed_table_names = {"my_table": "my_table"}
-        result = self.cleaner._replace_table_names(sql_query, table_names, allowed_table_names)
+        result = self.cleaner._replace_table_names(
+            sql_query, table_names, allowed_table_names
+        )
         self.assertEqual(result, "SELECT * FROM my_table;")
+
     def test_replace_table_names_invalid(self):
         sql_query = "SELECT * FROM my_table;"
         table_names = ["my_table"]
         allowed_table_names = {}
         with self.assertRaises(MaliciousQueryError):
-            self.cleaner._replace_table_names(sql_query, table_names, allowed_table_names)
+            self.cleaner._replace_table_names(
+                sql_query, table_names, allowed_table_names
+            )
+
     def test_clean_sql_query(self):
         table = self.sample_df.schema.name
         sql_query = f"SELECT * FROM {table};"
         self.cleaner.context.dfs = [self.sample_df]
         result = self.cleaner._clean_sql_query(sql_query)
         self.assertEqual(result, f"SELECT * FROM {table}")
+
     def test_validate_and_make_table_name_case_sensitive(self):
         table = self.sample_df.schema.name
         node = ast.Assign(
@@ -73,6 +85,7 @@ class TestCodeCleaner(unittest.TestCase):
         self.cleaner.context.dfs = [self.sample_df]
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         self.assertEqual(updated_node.value.value, f"SELECT * FROM {table}")
+
     def test_extract_fix_dataframe_redeclarations(self):
         node = ast.Assign(
             targets=[ast.Name(id="df", ctx=ast.Store())],
@@ -99,8 +112,11 @@ class TestCodeCleaner(unittest.TestCase):
                 "happiness_index": [6.94, 7.22, 5.87, 5.12],
             })"""
         ]
-        updated_node = self.cleaner.extract_fix_dataframe_redeclarations(node, code_lines)
+        updated_node = self.cleaner.extract_fix_dataframe_redeclarations(
+            node, code_lines
+        )
         self.assertIsInstance(updated_node, ast.AST)
+
     def test_replace_output_filenames_with_temp_chart(self):
         handler = self.cleaner
         handler.context = MagicMock()
@@ -112,18 +128,25 @@ class TestCodeCleaner(unittest.TestCase):
         code = handler._replace_output_filenames_with_temp_chart(code)
         expected_code = f'some text "{os.path.join("exports", "charts", "temp_chart.png")}" more text'
         self.assertEqual(code, expected_code)
+
     def test_replace_output_filenames_with_temp_chart_empty_code(self):
         handler = self.cleaner
         code = ""
         expected_code = ""
         result = handler._replace_output_filenames_with_temp_chart(code)
-        self.assertEqual(result, expected_code, f"Expected '{expected_code}', but got '{result}'")
+        self.assertEqual(
+            result, expected_code, f"Expected '{expected_code}', but got '{result}'"
+        )
+
     def test_replace_output_filenames_with_temp_chart_no_png(self):
         handler = self.cleaner
         code = "some text without png"
         expected_code = "some text without png"
         result = handler._replace_output_filenames_with_temp_chart(code)
-        self.assertEqual(result, expected_code, f"Expected '{expected_code}', but got '{result}'")
+        self.assertEqual(
+            result, expected_code, f"Expected '{expected_code}', but got '{result}'"
+        )
+
     def test_clean_code_full_cleaning(self):
         """
         Test that clean_code properly cleans the entire code by:
@@ -148,8 +171,10 @@ class TestCodeCleaner(unittest.TestCase):
             "plt.show()\n"
         )
         sample_df = self.sample_df
+
         def mocked_execute(executor, code_str):
             return {"df": sample_df}
+
         with patch.object(CodeExecutor, "execute", new=mocked_execute):
             cleaned_code = self.cleaner.clean_code(code)
         self.assertNotIn("def execute_sql_query", cleaned_code)
@@ -158,6 +183,7 @@ class TestCodeCleaner(unittest.TestCase):
         self.assertIn(expected_png_path, cleaned_code)
         self.assertNotIn(";", cleaned_code)
         self.assertIn("dfs[0]", cleaned_code)
+
     def test_get_target_names_empty_and_valid(self):
         """
         Test the get_target_names method for a valid list of targets and for an empty targets list.
@@ -170,7 +196,7 @@ class TestCodeCleaner(unittest.TestCase):
         subscript_node = ast.Subscript(
             value=ast.Name(id="b", ctx=ast.Load()),
             slice=ast.Index(value=ast.Constant(value=1)),
-            ctx=ast.Store()
+            ctx=ast.Store(),
         )
         targets = [name_node, subscript_node]
         names, is_slice, last_target = self.cleaner.get_target_names(targets)
@@ -180,6 +206,7 @@ class TestCodeCleaner(unittest.TestCase):
         # Test with an empty list of targets.
         with self.assertRaises(UnboundLocalError):
             self.cleaner.get_target_names([])
+
     def test_validate_and_make_table_name_case_sensitive_expr(self):
         """
         Test that SQL queries passed via execute_sql_query in expression statements are cleaned properly
@@ -191,11 +218,14 @@ class TestCodeCleaner(unittest.TestCase):
             value=ast.Call(
                 func=ast.Name(id="execute_sql_query", ctx=ast.Load()),
                 args=[ast.Constant(value=f"SELECT * FROM {table};")],
-                keywords=[]
+                keywords=[],
             )
         )
-        updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(expr_node)
+        updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(
+            expr_node
+        )
         self.assertEqual(updated_node.value.args[0].value, f"SELECT * FROM {table}")
+
     def test_validate_and_make_table_name_case_sensitive_no_change(self):
         """
         Test that _validate_and_make_table_name_case_sensitive leaves nodes unchanged
@@ -204,6 +234,7 @@ class TestCodeCleaner(unittest.TestCase):
         node = ast.Expr(value=ast.Constant(value=42))
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         self.assertIs(updated_node, node)
+
     def test_extract_fix_dataframe_redeclarations_no_match(self):
         """
         Test that extract_fix_dataframe_redeclarations returns None when the pd.DataFrame redeclaration
@@ -218,7 +249,7 @@ class TestCodeCleaner(unittest.TestCase):
                     ctx=ast.Load(),
                 ),
                 args=[],
-                keywords=[]
+                keywords=[],
             ),
         )
         code_lines = [
@@ -228,11 +259,16 @@ class TestCodeCleaner(unittest.TestCase):
         ]
         self.cleaner.context.dfs = [self.sample_df]
         mismatch_df = DataFrame({"different_col": [1, 2, 3]})
+
         def fake_execute(executor, code_str):
             return {"df": mismatch_df}
+
         with patch.object(CodeExecutor, "execute", new=fake_execute):
-            updated_node = self.cleaner.extract_fix_dataframe_redeclarations(node, code_lines)
+            updated_node = self.cleaner.extract_fix_dataframe_redeclarations(
+                node, code_lines
+            )
         self.assertIsNone(updated_node)
+
     def test_check_is_df_declaration(self):
         """
         Test that check_is_df_declaration correctly identifies an AST node representing a pd.DataFrame call.
@@ -244,15 +280,15 @@ class TestCodeCleaner(unittest.TestCase):
                 func=ast.Attribute(
                     value=ast.Name(id="pd", ctx=ast.Load()),
                     attr="DataFrame",
-                    ctx=ast.Load()
+                    ctx=ast.Load(),
                 ),
                 args=[],
-                keywords=[]
-            )
+                keywords=[],
+            ),
         )
         self.assertTrue(
             self.cleaner.check_is_df_declaration(valid_df_node),
-            "Expected check_is_df_declaration to return True for a valid pd.DataFrame call."
+            "Expected check_is_df_declaration to return True for a valid pd.DataFrame call.",
         )
         invalid_df_node = ast.Assign(
             targets=[ast.Name(id="df", ctx=ast.Store())],
@@ -260,22 +296,24 @@ class TestCodeCleaner(unittest.TestCase):
                 func=ast.Attribute(
                     value=ast.Name(id="numpy", ctx=ast.Load()),
                     attr="DataFrame",
-                    ctx=ast.Load()
+                    ctx=ast.Load(),
                 ),
                 args=[],
-                keywords=[]
-            )
+                keywords=[],
+            ),
         )
         self.assertFalse(
             self.cleaner.check_is_df_declaration(invalid_df_node),
-            "Expected check_is_df_declaration to return False when not using pd."
+            "Expected check_is_df_declaration to return False when not using pd.",
         )
+
     def test_clean_code_empty(self):
         """
         Test that clean_code properly handles an empty code string and returns an empty string.
         """
         result = self.cleaner.clean_code("")
         self.assertEqual(result.strip(), "")
+
     def test_clean_sql_query_multiple_occurrences(self):
         """
         Test that _clean_sql_query correctly cleans a SQL query containing multiple occurrences
@@ -287,6 +325,7 @@ class TestCodeCleaner(unittest.TestCase):
         cleaned_query = self.cleaner._clean_sql_query(sql_query)
         expected_query = f"SELECT * FROM {table} JOIN {table}"
         self.assertEqual(cleaned_query, expected_query)
+
     def test_extract_fix_dataframe_redeclarations_with_subscript(self):
         """
         Test that extract_fix_dataframe_redeclarations correctly processes a DataFrame
@@ -296,7 +335,7 @@ class TestCodeCleaner(unittest.TestCase):
         subscript_target = ast.Subscript(
             value=ast.Name(id="df", ctx=ast.Load()),
             slice=ast.Index(value=ast.Constant(value=0)),
-            ctx=ast.Store()
+            ctx=ast.Store(),
         )
         node = ast.Assign(
             targets=[subscript_target],
@@ -304,11 +343,11 @@ class TestCodeCleaner(unittest.TestCase):
                 func=ast.Attribute(
                     value=ast.Name(id="pd", ctx=ast.Load()),
                     attr="DataFrame",
-                    ctx=ast.Load()
+                    ctx=ast.Load(),
                 ),
                 args=[],
-                keywords=[]
-            )
+                keywords=[],
+            ),
         )
         code_lines = [
             """df = pd.DataFrame({
@@ -318,10 +357,14 @@ class TestCodeCleaner(unittest.TestCase):
             })"""
         ]
         self.cleaner.context.dfs = [self.sample_df]
+
         def fake_execute(executor, code_str):
             return {"df": [self.sample_df]}
+
         with patch.object(CodeExecutor, "execute", new=fake_execute):
-            updated_node = self.cleaner.extract_fix_dataframe_redeclarations(node, code_lines)
+            updated_node = self.cleaner.extract_fix_dataframe_redeclarations(
+                node, code_lines
+            )
         self.assertIsNotNone(updated_node)
         self.assertIsInstance(updated_node, ast.Assign)
         self.assertTrue(isinstance(updated_node.targets[0], ast.Subscript))
@@ -341,8 +384,11 @@ class TestCodeCleaner(unittest.TestCase):
             elif hasattr(updated_node.value.slice, "value"):
                 index_value = updated_node.value.slice.value
         self.assertEqual(index_value, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
+
     def test_clean_sql_query_with_quoted_table(self):
         """
         Test that _clean_sql_query correctly cleans an SQL query that contains a quoted table name.
@@ -355,6 +401,7 @@ if __name__ == "__main__":
         cleaned_query = self.cleaner._clean_sql_query(query)
         expected_query = f"SELECT * FROM {table}"
         self.assertEqual(cleaned_query, expected_query)
+
     def test_clean_sql_query_multiple_trailing_semicolons(self):
         """
         Test that _clean_sql_query correctly removes multiple trailing semicolons from the SQL query
@@ -367,12 +414,13 @@ if __name__ == "__main__":
         cleaned_query = self.cleaner._clean_sql_query(sql_query)
         # Expect that all the trailing semicolons have been removed.
         self.assertEqual(cleaned_query, f"SELECT * FROM {table}")
+
     def test_replace_output_filenames_with_temp_chart_single_quotes(self):
         """
         Test that _replace_output_filenames_with_temp_chart correctly replaces png filenames enclosed in single quotes
         with the temporary chart path.
         """
-        # Use the existing cleaner instance and configure the context (if needed) 
+        # Use the existing cleaner instance and configure the context (if needed)
         handler = self.cleaner
         handler.context = MagicMock()
         # Provide a code string with a png filename enclosed in single quotes.
@@ -384,16 +432,20 @@ if __name__ == "__main__":
         result = handler._replace_output_filenames_with_temp_chart(code)
         # Assert that the replacement is done correctly.
         self.assertEqual(result, expected_code)
+
     def test_get_target_names_single_name(self):
         """
         Test get_target_names with a single ast.Name target to ensure it returns the correct target name,
         that the is_slice flag is False (since there is no subscript), and that the returned target is the same.
         """
         single_node = ast.Name(id="single", ctx=ast.Store())
-        target_names, is_slice, last_target = self.cleaner.get_target_names([single_node])
+        target_names, is_slice, last_target = self.cleaner.get_target_names(
+            [single_node]
+        )
         self.assertEqual(target_names, ["single"])
         self.assertFalse(is_slice)
         self.assertEqual(last_target, single_node)
+
     def test_validate_and_make_table_name_case_sensitive_sql_query(self):
         """
         Test that _validate_and_make_table_name_case_sensitive properly cleans a SQL query
@@ -403,12 +455,13 @@ if __name__ == "__main__":
         # Create an AST assignment node with target "sql_query"
         node = ast.Assign(
             targets=[ast.Name(id="sql_query", ctx=ast.Store())],
-            value=ast.Constant(value=f"SELECT * FROM {table};")
+            value=ast.Constant(value=f"SELECT * FROM {table};"),
         )
         self.cleaner.context.dfs = [self.sample_df]
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         # The trailing semicolon should be removed from the SQL query.
         self.assertEqual(updated_node.value.value, f"SELECT * FROM {table}")
+
     def test_validate_and_make_table_name_case_sensitive_non_sql_assign(self):
         """
         Test that _validate_and_make_table_name_case_sensitive leaves an AST.Assign node unchanged
@@ -420,7 +473,7 @@ if __name__ == "__main__":
         original_query = "This is not an SQL query;"
         node = ast.Assign(
             targets=[ast.Name(id="random_var", ctx=ast.Store())],
-            value=ast.Constant(value=original_query)
+            value=ast.Constant(value=original_query),
         )
         # Save the original source code for comparison.
         original_node_source = astor.to_source(node)
@@ -428,6 +481,7 @@ if __name__ == "__main__":
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         # Assert that the node remains unchanged.
         self.assertEqual(astor.to_source(updated_node), original_node_source)
+
     def test_validate_and_make_table_name_case_sensitive_assign_call(self):
         """
         Test that _validate_and_make_table_name_case_sensitive cleans SQL queries in assignment nodes
@@ -442,12 +496,13 @@ if __name__ == "__main__":
             value=ast.Call(
                 func=ast.Name(id="execute_sql_query", ctx=ast.Load()),
                 args=[ast.Constant(value=f"SELECT * FROM {table};")],
-                keywords=[]
-            )
+                keywords=[],
+            ),
         )
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         # Verify that the SQL query no longer has a trailing semicolon.
         self.assertEqual(updated_node.value.args[0].value, f"SELECT * FROM {table}")
+
     def test_validate_and_make_table_name_case_sensitive_non_constant_value(self):
         """
         Test that _validate_and_make_table_name_case_sensitive leaves an AST.Assign node unchanged
@@ -461,13 +516,14 @@ if __name__ == "__main__":
             value=ast.BinOp(
                 left=ast.Constant(value="SELECT * FROM "),
                 op=ast.Add(),
-                right=ast.Constant(value=table)
-            )
+                right=ast.Constant(value=table),
+            ),
         )
         original_source = astor.to_source(node)
         updated_node = self.cleaner._validate_and_make_table_name_case_sensitive(node)
         # Since the SQL query expression is not a Constant, it should remain unmodified.
         self.assertEqual(astor.to_source(updated_node), original_source)
+
     def test_get_target_names_with_invalid_and_valid(self):
         """
         Test get_target_names with a mix of an invalid target (which should be ignored)
@@ -475,14 +531,25 @@ if __name__ == "__main__":
         returned as the last target.
         """
         # Create an invalid target (ast.Call) and a valid target (ast.Name)
-        invalid_target = ast.Call(func=ast.Name(id="foo", ctx=ast.Load()), args=[], keywords=[])
+        invalid_target = ast.Call(
+            func=ast.Name(id="foo", ctx=ast.Load()), args=[], keywords=[]
+        )
         valid_target = ast.Name(id="valid", ctx=ast.Store())
         # Pass the targets in order: first invalid then valid.
         targets = [invalid_target, valid_target]
         names, is_slice, last_target = self.cleaner.get_target_names(targets)
-        self.assertEqual(names, ["valid"], "Expected only the valid target's name to be collected.")
-        self.assertFalse(is_slice, "Expected the is_slice flag to be False for an ast.Name target.")
-        self.assertEqual(last_target, valid_target, "Expected the last_target to be the valid target.")
+        self.assertEqual(
+            names, ["valid"], "Expected only the valid target's name to be collected."
+        )
+        self.assertFalse(
+            is_slice, "Expected the is_slice flag to be False for an ast.Name target."
+        )
+        self.assertEqual(
+            last_target,
+            valid_target,
+            "Expected the last_target to be the valid target.",
+        )
+
     def test_clean_code_invalid_python(self):
         """
         Test that clean_code() raises a SyntaxError when provided with invalid Python code.
