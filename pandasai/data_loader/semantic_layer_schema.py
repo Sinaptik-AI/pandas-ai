@@ -289,7 +289,8 @@ class SemanticLayerSchema(BaseModel):
         None, description="Frequency of dataset updates."
     )
     group_by: Optional[List[str]] = Field(
-        None, description="List of columns to group by. Every non-aggregated column must be included in group_by."
+        None,
+        description="List of columns to group by. Every non-aggregated column must be included in group_by.",
     )
 
     @model_validator(mode="after")
