@@ -244,9 +244,9 @@ def load(dataset_path: str) -> DataFrame:
     Returns:
         DataFrame: A new PandaAI DataFrame instance with loaded data.
     """
-    path_parts = dataset_path.split("/")
-    if len(path_parts) != 2:
-        raise ValueError("The path must be in the format 'organization/dataset'.")
+
+    # Validate the dataset path
+    get_validated_dataset_path(dataset_path)
 
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
 
@@ -282,6 +282,7 @@ def load(dataset_path: str) -> DataFrame:
         if local_dataset_exists
         else "Dataset fetched successfully from the remote server."
     )
+    # Printed to display info to the user
     print(message)
 
     return df
