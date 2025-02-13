@@ -120,7 +120,7 @@ class TestPandaAIInit:
         mock_find_project_root.return_value = os.path.join("mock", "root")
         mock_exists.return_value = True
 
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
         result = pandasai.load(dataset_path)
 
         # Verify the class method was called
@@ -138,7 +138,7 @@ class TestPandaAIInit:
         pandasai.get_pandaai_session.return_value = MagicMock()
         mock_request_session.get.return_value.status_code = 404
 
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
 
         with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
@@ -154,11 +154,11 @@ class TestPandaAIInit:
         mock_response = MagicMock()
         mock_response.status_code = 404
         mock_session.return_value.get.return_value = mock_response
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
 
         with pytest.raises(
             PandaAIApiKeyError,
-            match='The dataset "org/dataset_name" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.',
+            match='The dataset "org/dataset-name" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.',
         ):
             pandasai.load(dataset_path)
 
@@ -167,7 +167,7 @@ class TestPandaAIInit:
     def test_load_missing_api_url(self, mock_exists):
         """Test loading when API URL is missing."""
         mock_exists.return_value = False
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
 
         with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
@@ -181,7 +181,7 @@ class TestPandaAIInit:
         mock_response = MagicMock()
         mock_response.status_code = 404
         mock_session.return_value.get.return_value = mock_response
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
 
         with pytest.raises(DatasetNotFound):
             pandasai.load(dataset_path)
@@ -208,7 +208,7 @@ class TestPandaAIInit:
         mock_request_session.get.return_value.status_code = 200
         mock_request_session.get.return_value.content = b"mock zip content"
 
-        dataset_path = "org/dataset_name"
+        dataset_path = "org/dataset-name"
 
         # Mock the zip file extraction
         mock_zip_file.return_value.__enter__.return_value.extractall = MagicMock()
