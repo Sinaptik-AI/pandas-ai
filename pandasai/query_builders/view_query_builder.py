@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 
 from sqlglot import exp, expressions, parse_one, select
@@ -36,23 +37,20 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
         group_by_cols = []
         for col in self.schema.group_by:
-            # Use the view column alias format for group by
             group_by_cols.append(self.normalize_view_column_alias(col))
         return group_by_cols
 
     def _get_columns(self) -> list[str]:
         columns = []
         for col in self.schema.columns:
-            # Get the normalized column name
-            column_name = self.normalize_view_column_alias(col.name)
-
             if col.expression:
-                # Add the aggregation function
-                column_expr = f"{col.expression}({column_name})"
+                # Pre-process the expression to handle hyphens between letters
+                expr = re.sub(r"([a-zA-Z])-([a-zA-Z])", r"\1_\2", col.expression)
+                expr = re.sub(r"([a-zA-Z])\.([a-zA-Z])", r"\1_\2", expr)
+                column_expr = parse_one(expr).sql()
             else:
-                column_expr = column_name
+                column_expr = self.normalize_view_column_alias(col.name)
 
-            # Add alias if specified, otherwise use the normalized name as alias
             alias = (
                 col.alias if col.alias else self.normalize_view_column_alias(col.name)
             )
