@@ -245,10 +245,10 @@ def load(dataset_path: str) -> DataFrame:
         DataFrame: A new PandaAI DataFrame instance with loaded data.
     """
 
-    org_name, dataset_name = get_validated_dataset_path(dataset_path)
+    # org_name, dataset_name = get_validated_dataset_path(dataset_path)
 
-    if not org_name or not dataset_name:
-        raise ValueError("Path must be in format 'organization/dataset'")
+    # if not org_name or not dataset_name:
+    #     raise ValueError("Path must be in format 'organization/dataset'")
 
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
 
