@@ -19,9 +19,9 @@ class TestViewQueryBuilder:
         assert (
             view_query_builder.build_query()
             == """SELECT
-  parents_id,
-  parents_name,
-  children_name
+  parents_id AS parents_id,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     parents.id AS parents_id,
@@ -43,14 +43,10 @@ FROM (
 
     def test_get_columns(self, view_query_builder):
         assert view_query_builder._get_columns() == [
-            "parents_id",
-            "parents_name",
-            "children_name",
+            "parents_id AS parents_id",
+            "parents_name AS parents_name",
+            "children_name AS children_name",
         ]
-
-    def test_get_columns_empty(self, view_query_builder):
-        view_query_builder.schema.columns = None
-        assert view_query_builder._get_columns() == ["*"]
 
     def test_get_table_expression(self, view_query_builder):
         assert (
@@ -80,9 +76,9 @@ FROM (
         assert (
             query
             == '''SELECT
-  parents_id,
-  parents_name,
-  children_name
+  parents_id AS parents_id,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     parents.id AS parents_id,
@@ -108,9 +104,9 @@ FROM (
         assert (
             query
             == """SELECT
-  column__drop_table_users_,
-  parents_name,
-  children_name
+  column__drop_table_users_ AS column__drop_table_users_,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     column__drop_table_users_ AS column__drop_table_users_,
@@ -136,9 +132,9 @@ FROM (
         assert (
             query
             == '''SELECT
-  parents_id,
-  parents_name,
-  children_name
+  parents_id AS parents_id,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     parents.id AS parents_id,
@@ -166,9 +162,9 @@ FROM (
         assert (
             query
             == """SELECT
-  column_union_select_username__password_from_users_,
-  parents_name,
-  children_name
+  column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
@@ -194,9 +190,9 @@ FROM (
         assert (
             query
             == """SELECT
-  parents_id,
-  parents_name,
-  children_name
+  parents_id AS parents_id,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     parents.id AS parents_id,
@@ -222,9 +218,9 @@ FROM (
         assert (
             query
             == """SELECT
-  column___,
-  parents_name,
-  children_name
+  column___ AS column___,
+  parents_name AS parents_name,
+  children_name AS children_name
 FROM (
   SELECT
     column___ AS column___,

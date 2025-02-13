@@ -122,7 +122,7 @@ LIMIT 5"""
             with pytest.raises(MaliciousQueryError):
                 loader.execute_query("DROP TABLE users")
 
-            mock_sql_query.assert_called_once_with("DROP TABLE users")
+            mock_sql_query.assert_called_once_with("DROP TABLE users", "mysql")
 
     def test_mysql_safe_query(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""
@@ -153,7 +153,7 @@ LIMIT 5"""
             result = loader.execute_query("SELECT * FROM users")
 
             assert isinstance(result, DataFrame)
-            mock_sql_query.assert_called_once_with("SELECT\n  *\nFROM users")
+            mock_sql_query.assert_called_once_with("SELECT\n  *\nFROM users", "mysql")
 
     def test_mysql_malicious_with_no_import(self, mysql_schema):
         """Test loading data from a MySQL source creates a VirtualDataFrame and handles queries correctly."""

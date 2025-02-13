@@ -9,26 +9,104 @@ PandaAI 3.0 is currently in beta. This documentation reflects the latest feature
 
 ## What are views?
 
-Views are a feature of SQL databases that allow you to define logical subsets of data that can be used in queries. In PandaAI, you can define views in your semantic layer schema to organize and structure your data.
+Views are a feature of SQL databases that allow you to define logical subsets of data that can be used in queries. In PandaAI, you can define views in your semantic layer schema to organize and structure your data. Views are particularly useful when you want to:
 
-## View configuration
+- Combine data from multiple datasets
+- Create a simplified or filtered view of your data
+- Define relationships between different datasets
 
-The following sections detail all available configurations for view options in your `schema.yaml` file. Similar to views in SQL, you can define multiple tables and the relationships between them.
+## Creating Views
+
+You can create views either through YAML configuration or programmatically using Python.
+
+### Python Code Example
+
+```python
+import pandasai as pai
+
+# Create source datasets for an e-commerce analytics system
+# Orders dataset
+orders_df = pai.read_csv("orders.csv")
+orders_dataset = pai.create(
+    "myorg/orders",
+    orders_df,
+    description="Customer orders and transaction data"
+)
+
+# Products dataset
+products_df = pai.read_csv("products.csv")
+products_dataset = pai.create(
+    "myorg/products",
+    products_df,
+    description="Product catalog with categories and pricing"
+)
+
+# Customer dataset
+customers_df = pai.read_csv("customers.csv")
+customers_dataset = pai.create(
+    "myorg/customers",
+    customers_df,
+    description="Customer demographics and preferences"
+)
+
+# Define relationships between datasets
+view_relations = [
+    {
+        "name": "order_to_product",
+        "description": "Links orders to their products",
+        "from": "orders.product_id",
+        "to": "products.id"
+    },
+    {
+        "name": "order_to_customer",
+        "description": "Links orders to customer profiles",
+        "from": "orders.customer_id",
+        "to": "customers.id"
+    }
+]
+
+# Select relevant columns for the sales analytics view
+view_columns = [
+    # Order details
+    "orders.id",
+    "orders.order_date",
+    "orders.total_amount",
+    "orders.status",
+    
+    # Product information
+    "products.name",
+    "products.category",
+    "products.unit_price",
+    "products.stock_level",
+    
+    # Customer information
+    "customers.segment",
+    "customers.country",
+    "customers.join_date"
+]
+
+# Create a comprehensive sales analytics view
+sales_view = pai.create(
+    "myorg/sales-analytics",
+    description="Unified view of sales data combining orders, products, and customer information",
+    relations=view_relations,
+    columns=view_columns,
+    view=True
+)
+
+# This view enables powerful analytics queries like:
+# - Sales trends by customer segment and product category
+# - Customer purchase history and preferences
+# - Inventory management based on order patterns
+# - Geographic sales distribution
+```
+
+### YAML Configuration
 
 ### Example Configuration
 
 ```yaml
 name: table_heart
-source:
-  type: postgres
-  connection:
-    host: postgres-host
-    port: 5432
-    database: postgres
-    user: postgres
-    password: ******
-  table: heart
-  view: false
 columns:
   - name: parents.id
   - name: parents.name
@@ -47,17 +125,21 @@ relations:
 #### Constraints
 
 1. **Mutual Exclusivity**:
-
    - A schema cannot define both `table` and `view` simultaneously.
-   - If `source.view` is `true`, then the schema represents a view.
+   - If `view` is `true`, then the schema represents a view.
 
 2. **Column Format**:
-
    - For views:
      - All columns must follow the format `[table].[column]`.
      - `from` and `to` fields in `relations` must follow the `[table].[column]` format.
-     - Example: `parents.id`, `children.name`.
+     - Example: `loans.payment_amount`, `heart.condition`.
 
 3. **Relationships for Views**:
    - Each table referenced in `columns` must have at least one relationship defined in `relations`.
    - Relationships must specify `from` and `to` attributes in the `[table].[column]` format.
+   - Relations define how different tables in your view are connected.
+
+4. **Dataset Requirements**:
+   - All referenced datasets must exist before creating the view.
+   - The columns specified in the view must exist in their respective source datasets.
+   - The columns used in relations (`from` and `to`) must be compatible types.

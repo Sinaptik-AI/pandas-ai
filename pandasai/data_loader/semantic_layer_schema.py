@@ -43,15 +43,28 @@ class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
     type: Optional[str] = Field(None, description="Data type of the column.")
     description: Optional[str] = Field(None, description="Description of the column")
+    expression: Optional[str] = Field(
+        None, description="Aggregation expression (avg, min, max, sum)"
+    )
+    alias: Optional[str] = Field(None, description="Alias for the column")
 
     @field_validator("type")
     @classmethod
     def is_column_type_supported(cls, type: str) -> str:
-        if type not in VALID_COLUMN_TYPES:
+        if type and type not in VALID_COLUMN_TYPES:
             raise ValueError(
                 f"Unsupported column type: {type}. Supported types are: {VALID_COLUMN_TYPES}"
             )
         return type
+
+    @field_validator("expression")
+    @classmethod
+    def is_expression_valid(cls, expr: Optional[str]) -> Optional[str]:
+        if expr and expr.lower() not in ["avg", "min", "max", "sum"]:
+            raise ValueError(
+                f"Invalid expression: {expr}. Supported expressions are: avg, min, max, sum"
+            )
+        return expr.lower() if expr else None
 
 
 class Relation(BaseModel):
@@ -275,9 +288,35 @@ class SemanticLayerSchema(BaseModel):
     update_frequency: Optional[str] = Field(
         None, description="Frequency of dataset updates."
     )
+    group_by: Optional[List[str]] = Field(
+        None,
+        description="List of columns to group by. Every non-aggregated column must be included in group_by.",
+    )
 
     @model_validator(mode="after")
-    def check_columns_relations(self):
+    def validate_schema(self) -> "SemanticLayerSchema":
+        self._validate_group_by_columns()
+        self._validate_columns_relations()
+        return self
+
+    def _validate_group_by_columns(self) -> None:
+        if not self.group_by or not self.columns:
+            return
+
+        group_by_set = set(self.group_by)
+        for col in self.columns:
+            if col.expression and col.name in group_by_set:
+                raise ValueError(
+                    f"Column '{col.name}' cannot be in group_by because it has an aggregation expression. "
+                    "Only non-aggregated columns should be in group_by."
+                )
+            if not col.expression and col.name not in group_by_set:
+                raise ValueError(
+                    f"Column '{col.name}' must either be in group_by or have an aggregation expression "
+                    "when group_by is specified."
+                )
+
+    def _validate_columns_relations(self):
         column_re_check = r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9_]+$"
         is_view_column_name = partial(re.match, column_re_check)
 
@@ -310,10 +349,8 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations or ()
             }
 
-            if not self.relations and not self.columns:
-                raise ValueError(
-                    "At least a relation or a column must be defined for view."
-                )
+            if not self.columns:
+                raise ValueError("A view must have at least one column defined.")
 
             if not all(
                 is_view_column_name(column_name) for column_name in _column_names

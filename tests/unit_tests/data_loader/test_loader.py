@@ -121,12 +121,13 @@ class TestDatasetLoader:
         ) as mock_read_csv_or_parquet, patch(
             "pandasai.data_loader.local_loader.LocalDatasetLoader._apply_transformations"
         ) as mock_apply_transformations:
-            mock_read_csv_or_parquet.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
-            mock_apply_transformations.return_value = DataFrame(
-                {"email": ["test@example.com"]}
-            )
+            mock_data = {
+                "email": ["test@example.com"],
+                "first_name": ["John"],
+                "timestamp": ["2023-01-01"],
+            }
+            mock_read_csv_or_parquet.return_value = DataFrame(mock_data)
+            mock_apply_transformations.return_value = DataFrame(mock_data)
             loader = LocalDatasetLoader(sample_schema, "test/test")
 
             result = loader.load()
@@ -176,5 +177,5 @@ class TestDatasetLoader:
         # Create DataFrame with none of the schema columns
         df = pd.DataFrame({"different_col1": [1], "different_col2": [2]})
 
-        filtered_df = loader._filter_columns(df)
-        assert len(filtered_df.columns) == 0  # Should return empty DataFrame
+        with pytest.raises(KeyError, match="None of.*are in the.*columns"):
+            filtered_df = loader._filter_columns(df)

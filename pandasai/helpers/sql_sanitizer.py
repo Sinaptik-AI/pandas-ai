@@ -25,7 +25,7 @@ def sanitize_file_name(filepath: str) -> str:
     return sanitize_sql_table_name(file_name)
 
 
-def is_sql_query_safe(query: str) -> bool:
+def is_sql_query_safe(query: str, dialect: str = "postgres") -> bool:
     try:
         # List of infected keywords to block (you can add more)
         infected_keywords = [
@@ -72,7 +72,7 @@ def is_sql_query_safe(query: str) -> bool:
         temp_query = query.replace("%s", placeholder)
 
         # Parse the query to extract its structure
-        parsed = sqlglot.parse_one(temp_query)
+        parsed = sqlglot.parse_one(temp_query, dialect=dialect)
 
         # Ensure the main query is SELECT
         if parsed.key.upper() != "SELECT":
