@@ -84,25 +84,24 @@ class LocalDatasetLoader(DatasetLoader):
         if not self.schema.group_by:
             return df
 
-        # Map of SQL/common aggregation names to pandas aggregation functions
+        # Map of SQL aggregation names to pandas aggregation functions
         agg_map = {
-            "avg": "mean",
-            "average": "mean",
-            "count": "count",
-            "max": "max",
-            "min": "min",
-            "sum": "sum",
+            "AVG": "mean",
+            "MAX": "max",
+            "MIN": "min",
+            "SUM": "sum",
         }
 
         # Create aggregation dictionary for columns with expressions
         agg_dict = {}
         for col in self.schema.columns:
             if col.expression:
-                # Map the expression to pandas aggregation function
-                agg_func = agg_map.get(col.expression.lower(), col.expression)
-                agg_dict[col.name] = agg_func
+                # Only process if expression starts with a supported aggregation function
+                expr_upper = col.expression.upper()
+                if any(expr_upper.startswith(f"{func}(") for func in agg_map):
+                    func_name = expr_upper.split("(")[0]
+                    agg_dict[col.name] = agg_map[func_name]
 
-        # Group and aggregate if needed
         if agg_dict:
             df = df.groupby(self.schema.group_by).agg(agg_dict).reset_index()
 

@@ -51,9 +51,7 @@ class BaseQueryBuilder:
         columns = []
         for col in self.schema.columns:
             if col.expression:
-                # Create a raw SQL expression for the function call
-                column_name = normalize_identifiers(col.name).sql()
-                column_expr = f"{col.expression}({column_name})"
+                column_expr = col.expression
             else:
                 column_expr = normalize_identifiers(col.name).sql()
 

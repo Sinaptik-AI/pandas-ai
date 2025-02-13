@@ -21,8 +21,10 @@ class TestGroupByQueries(unittest.TestCase):
             columns=[
                 Column(name="category"),
                 Column(name="region"),
-                Column(name="amount", expression="sum", alias="total_sales"),
-                Column(name="quantity", expression="avg", alias="avg_quantity"),
+                Column(name="amount", expression="sum(amount)", alias="total_sales"),
+                Column(
+                    name="quantity", expression="avg(quantity)", alias="avg_quantity"
+                ),
             ],
             group_by=["category", "region"],
         )
@@ -44,8 +46,10 @@ class TestGroupByQueries(unittest.TestCase):
             columns=[
                 Column(name="category"),
                 Column(name="region"),
-                Column(name="amount", expression="sum", alias="total_sales"),
-                Column(name="quantity", expression="avg", alias="avg_quantity"),
+                Column(name="amount", expression="sum(amount)", alias="total_sales"),
+                Column(
+                    name="quantity", expression="avg(quantity)", alias="avg_quantity"
+                ),
             ],
             group_by=["category", "region"],
         )
@@ -57,8 +61,14 @@ class TestGroupByQueries(unittest.TestCase):
             columns=[
                 Column(name="sales.category"),
                 Column(name="sales.region"),
-                Column(name="sales.amount", expression="sum", alias="total_sales"),
-                Column(name="sales.quantity", expression="avg", alias="avg_quantity"),
+                Column(
+                    name="sales.amount", expression="sum(amount)", alias="total_sales"
+                ),
+                Column(
+                    name="sales.quantity",
+                    expression="avg(quantity)",
+                    alias="avg_quantity",
+                ),
             ],
             group_by=["sales.category", "sales.region"],
         )

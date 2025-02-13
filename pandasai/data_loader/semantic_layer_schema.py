@@ -9,6 +9,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from sqlglot import ParseError, parse_one
 
 from pandasai.constants import (
     LOCAL_SOURCE_TYPES,
@@ -60,11 +61,14 @@ class Column(BaseModel):
     @field_validator("expression")
     @classmethod
     def is_expression_valid(cls, expr: Optional[str]) -> Optional[str]:
-        if expr and expr.lower() not in ["avg", "min", "max", "sum"]:
-            raise ValueError(
-                f"Invalid expression: {expr}. Supported expressions are: avg, min, max, sum"
-            )
-        return expr.lower() if expr else None
+        if not expr:
+            return None
+
+        try:
+            parse_one(expr)
+            return expr
+        except ParseError as e:
+            raise ValueError(f"Invalid SQL expression: {expr}. Error: {str(e)}")
 
 
 class Relation(BaseModel):
