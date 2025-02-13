@@ -179,8 +179,12 @@ class TestCodeCleaner(unittest.TestCase):
             cleaned_code = self.cleaner.clean_code(code)
         self.assertNotIn("def execute_sql_query", cleaned_code)
         self.assertNotIn("plt.show()", cleaned_code)
-        expected_png_path = str(Path(DEFAULT_CHART_DIRECTORY) / "temp_chart.png")
-        self.assertIn(expected_png_path, cleaned_code)
+        # Normalize paths by replacing both single and double backslashes with forward slashes
+        cleaned_code_normalized = re.sub(r"\\+", "/", cleaned_code)
+        expected_png_path = str(
+            Path(DEFAULT_CHART_DIRECTORY) / "temp_chart.png"
+        ).replace("\\", "/")
+        self.assertIn(expected_png_path, cleaned_code_normalized)
         self.assertNotIn(";", cleaned_code)
         self.assertIn("dfs[0]", cleaned_code)
 
@@ -314,7 +318,7 @@ class TestCodeCleaner(unittest.TestCase):
         result = self.cleaner.clean_code("")
         self.assertEqual(result.strip(), "")
 
-    def test_clean_sql_query_multiple_occurrences(self):
+    def test_clean_sql_query(self):
         """
         Test that _clean_sql_query correctly cleans a SQL query containing multiple occurrences
         of an allowed table name, and removes the trailing semicolon.
