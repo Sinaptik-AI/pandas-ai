@@ -112,13 +112,23 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
         query = select(*columns).from_(first_query)
 
+        # Group relations by target dataset to combine multiple join conditions
+        join_conditions = {}
         for relation in relations:
             to_datasets = relation.to.split(".")[0]
+            if to_datasets not in join_conditions:
+                join_conditions[to_datasets] = []
+            join_conditions[to_datasets].append(
+                f"{sanitize_view_column_name(relation.from_)} = {sanitize_view_column_name(relation.to)}"
+            )
+
+        # Create joins with combined conditions
+        for to_datasets, conditions in join_conditions.items():
             loader = self.schema_dependencies_dict[to_datasets]
             subquery = self._get_sub_query_from_loader(loader)
             query = query.join(
                 subquery,
-                on=f"{sanitize_view_column_name(relation.from_)} = {sanitize_view_column_name(relation.to)}",
+                on=" AND ".join(conditions),
                 append=True,
             )
         alias = normalize_identifiers(self.schema.name).sql()
