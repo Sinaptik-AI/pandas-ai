@@ -334,3 +334,61 @@ transformations:
 - `params` (dict): Parameters for the transformation
 
 > If you want to learn more about transformations, check out the [transformations documentation](/v3/transformations).
+
+### Group By Configuration
+
+The `group_by` field allows you to specify which columns can be used for grouping operations. This is particularly useful for aggregation queries and data analysis.
+
+```yaml
+columns:
+  - name: order.date
+    type: datetime
+    description: Date and time of the sale
+  ...
+group_by:
+  - order.date
+  - order.status
+```
+
+**Configuration Options:**
+
+- `group_by` (list[str]):
+  - List of column references in the format `table.column`
+  - Specifies which columns can be used for grouping operations
+  - Can reference any column from any table in your schema
+
+### Column expressions and aliases
+
+The `expression` field allows you to specify a SQL expression for a column. This expression will be used in the query instead of the column name.
+
+```yaml
+columns:
+  - name: transaction_amount
+    type: float
+    description: Amount of the transaction
+    alias: amount
+  - name: total_revenue
+    type: float
+    description: Total revenue including tax
+    expression: "transaction_amount * (1 + tax_rate)"
+    alias: revenue
+```
+
+**Configuration Options:**
+
+- `alias` (str):
+  - Alternative name that can be used to reference the column
+  - Useful for supporting different naming conventions or more intuitive names
+  - Must be unique across all columns and their aliases
+
+- `expression` (str):
+  - Formula for calculating derived columns
+  - Uses other column names as variables
+  - Supports basic arithmetic operations (+, -, *, /)
+  - Can reference other columns in the same schema
+
+**Best Practices:**
+- Keep aliases concise and descriptive
+- Avoid using special characters or spaces in aliases
+- Use consistent naming conventions
+- Document the purpose of derived columns in their description
