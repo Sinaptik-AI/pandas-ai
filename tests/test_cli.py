@@ -107,6 +107,24 @@ def test_get_validated_dataset_path_invalid_dataset():
         get_validated_dataset_path("my-org/INVALID_DATASET")
 
 
+def test_get_validated_dataset_path_start_with_hyphen():
+    """Test get_validated_dataset_path with invalid dataset name"""
+    with pytest.raises(
+        ValueError,
+        match="Dataset name must be lowercase and use hyphens instead of spaces",
+    ):
+        get_validated_dataset_path("my-org/-INVALID-DATASET")
+
+
+def test_get_validated_dataset_path_end_with_hyphen():
+    """Test get_validated_dataset_path with invalid dataset name"""
+    with pytest.raises(
+        ValueError,
+        match="Dataset name must be lowercase and use hyphens instead of spaces",
+    ):
+        get_validated_dataset_path("my-org/-INVALID-DATASET")
+
+
 @pytest.fixture
 def mock_dataset_loader():
     with patch("pandasai.cli.main.DatasetLoader") as mock:
