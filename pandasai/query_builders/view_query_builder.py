@@ -41,17 +41,15 @@ class ViewQueryBuilder(BaseQueryBuilder):
         return group_by_cols
 
     def _get_aliases(self) -> list[str]:
-        aliases = []
-        for col in self.schema.columns:
-            alias = (
-                col.alias if col.alias else self.normalize_view_column_alias(col.name)
-            )
-            aliases.append(alias)
-        return aliases
+        return [
+            col.alias or self.normalize_view_column_alias(col.name)
+            for col in self.schema.columns
+        ]
 
     def _get_columns(self) -> list[str]:
         columns = []
-        for col in self.schema.columns:
+        aliases = self._get_aliases()
+        for i, col in enumerate(self.schema.columns):
             if col.expression:
                 # Pre-process the expression to handle hyphens between letters
                 expr = re.sub(r"([a-zA-Z])-([a-zA-Z])", r"\1_\2", col.expression)
@@ -60,9 +58,7 @@ class ViewQueryBuilder(BaseQueryBuilder):
             else:
                 column_expr = self.normalize_view_column_alias(col.name)
 
-            alias = (
-                col.alias if col.alias else self.normalize_view_column_alias(col.name)
-            )
+            alias = aliases[i]
             column_expr = f"{column_expr} AS {alias}"
 
             columns.append(column_expr)
