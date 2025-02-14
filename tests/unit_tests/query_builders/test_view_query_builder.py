@@ -44,28 +44,35 @@ class TestViewQueryBuilder:
         assert query_builder.schema == mysql_view_schema
 
     def test_build_query(self, view_query_builder):
+        result = view_query_builder.build_query()
         assert (
-            view_query_builder.build_query()
+            result
             == """SELECT
-  parents_id AS parents_id,
-  parents_name AS parents_name,
-  children_name AS children_name
+  parents_id,
+  parents_name,
+  children_name
 FROM (
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_id AS parents_id,
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      parents.id AS parents_id,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS parent_children"""
         )
 
@@ -81,20 +88,26 @@ FROM (
             view_query_builder._get_table_expression()
             == """(
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_id AS parents_id,
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      parents.id AS parents_id,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS parent_children"""
         )
 
@@ -104,25 +117,31 @@ FROM (
         assert (
             query
             == '''SELECT
-  parents_id AS parents_id,
-  parents_name AS parents_name,
-  children_name AS children_name
+  parents_id,
+  parents_name,
+  children_name
 FROM (
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_id AS parents_id,
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      parents.id AS parents_id,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS "users; DROP TABLE users;"'''
         )
 
@@ -132,25 +151,31 @@ FROM (
         assert (
             query
             == """SELECT
-  column__drop_table_users_ AS column__drop_table_users_,
-  parents_name AS parents_name,
-  children_name AS children_name
+  column__drop_table_users_,
+  parents_name,
+  children_name
 FROM (
   SELECT
     column__drop_table_users_ AS column__drop_table_users_,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      column__drop_table_users_ AS column__drop_table_users_,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS parent_children"""
         )
 
@@ -160,25 +185,31 @@ FROM (
         assert (
             query
             == '''SELECT
-  parents_id AS parents_id,
-  parents_name AS parents_name,
-  children_name AS children_name
+  parents_id,
+  parents_name,
+  children_name
 FROM (
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_id AS parents_id,
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      parents.id AS parents_id,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS "users UNION SELECT 1,2,3;"'''
         )
 
@@ -190,25 +221,31 @@ FROM (
         assert (
             query
             == """SELECT
-  column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
-  parents_name AS parents_name,
-  children_name AS children_name
+  column_union_select_username__password_from_users_,
+  parents_name,
+  children_name
 FROM (
   SELECT
     column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      column_union_select_username__password_from_users_ AS column_union_select_username__password_from_users_,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS parent_children"""
         )
 
@@ -218,25 +255,31 @@ FROM (
         assert (
             query
             == """SELECT
-  parents_id AS parents_id,
-  parents_name AS parents_name,
-  children_name AS children_name
+  parents_id,
+  parents_name,
+  children_name
 FROM (
   SELECT
-    parents.id AS parents_id,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_id AS parents_id,
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      parents.id AS parents_id,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS users"""
         )
 
@@ -263,26 +306,87 @@ FROM (
         }
         query_builder = ViewQueryBuilder(schema, dependencies)
 
-        assert (
-            query_builder._get_table_expression()
-            == """(
-  SELECT
-    diabetes.age AS diabetes_age,
-    diabetes.bloodpressure AS diabetes_bloodpressure,
-    heart.age AS heart_age,
-    heart.restingbp AS heart_restingbp
-  FROM (
-    SELECT
-      *
-    FROM diabetes
-  ) AS diabetes
-  JOIN (
-    SELECT
-      *
-    FROM heart
-  ) AS heart
-    ON diabetes.age = heart.age AND diabetes.bloodpressure = heart.restingbp
-) AS health_combined"""
+        assert query_builder._get_table_expression() == (
+            "(\n"
+            "  SELECT\n"
+            "    diabetes_age AS diabetes_age,\n"
+            "    diabetes_bloodpressure AS diabetes_bloodpressure,\n"
+            "    heart_age AS heart_age,\n"
+            "    heart_restingbp AS heart_restingbp\n"
+            "  FROM (\n"
+            "    SELECT\n"
+            "      diabetes.age AS diabetes_age,\n"
+            "      diabetes.bloodpressure AS diabetes_bloodpressure,\n"
+            "      heart.age AS heart_age,\n"
+            "      heart.restingbp AS heart_restingbp\n"
+            "    FROM (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM diabetes\n"
+            "    ) AS diabetes\n"
+            "    JOIN (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM heart\n"
+            "    ) AS heart\n"
+            "      ON diabetes.age = heart.age AND diabetes.bloodpressure = "
+            "heart.restingbp\n"
+            "  )\n"
+            ") AS health_combined"
+        )
+
+    def test_multiple_joins_same_table_with_aliases(self):
+        """Test joining the same table multiple times with different conditions."""
+        schema_dict = {
+            "name": "health_combined",
+            "columns": [
+                {
+                    "name": "diabetes.age",
+                },
+                {"name": "diabetes.bloodpressure", "alias": "pressure"},
+                {"name": "heart.age"},
+                {"name": "heart.restingbp"},
+            ],
+            "relations": [
+                {"from": "diabetes.age", "to": "heart.age"},
+                {"from": "diabetes.bloodpressure", "to": "heart.restingbp"},
+            ],
+            "view": "true",
+        }
+        schema = SemanticLayerSchema(**schema_dict)
+        dependencies = {
+            "diabetes": self._create_mock_loader("diabetes"),
+            "heart": self._create_mock_loader("heart"),
+        }
+        query_builder = ViewQueryBuilder(schema, dependencies)
+
+        assert query_builder._get_table_expression() == (
+            "(\n"
+            "  SELECT\n"
+            "    diabetes_age AS diabetes_age,\n"
+            "    diabetes_bloodpressure AS pressure,\n"
+            "    heart_age AS heart_age,\n"
+            "    heart_restingbp AS heart_restingbp\n"
+            "  FROM (\n"
+            "    SELECT\n"
+            "      diabetes.age AS diabetes_age,\n"
+            "      diabetes.bloodpressure AS diabetes_bloodpressure,\n"
+            "      heart.age AS heart_age,\n"
+            "      heart.restingbp AS heart_restingbp\n"
+            "    FROM (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM diabetes\n"
+            "    ) AS diabetes\n"
+            "    JOIN (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM heart\n"
+            "    ) AS heart\n"
+            "      ON diabetes.age = heart.age AND diabetes.bloodpressure = "
+            "heart.restingbp\n"
+            "  )\n"
+            ") AS health_combined"
         )
 
     def test_three_table_join(self, mysql_view_dependencies_dict):
@@ -308,31 +412,36 @@ FROM (
         }
         query_builder = ViewQueryBuilder(schema, dependencies)
 
-        assert (
-            query_builder._get_table_expression()
-            == """(
-  SELECT
-    patients.id AS patients_id,
-    diabetes.glucose AS diabetes_glucose,
-    heart.cholesterol AS heart_cholesterol
-  FROM (
-    SELECT
-      *
-    FROM patients
-  ) AS patients
-  JOIN (
-    SELECT
-      *
-    FROM diabetes
-  ) AS diabetes
-    ON patients.id = diabetes.patient_id
-  JOIN (
-    SELECT
-      *
-    FROM heart
-  ) AS heart
-    ON patients.id = heart.patient_id
-) AS patient_records"""
+        assert query_builder._get_table_expression() == (
+            "(\n"
+            "  SELECT\n"
+            "    patients_id AS patients_id,\n"
+            "    diabetes_glucose AS diabetes_glucose,\n"
+            "    heart_cholesterol AS heart_cholesterol\n"
+            "  FROM (\n"
+            "    SELECT\n"
+            "      patients.id AS patients_id,\n"
+            "      diabetes.glucose AS diabetes_glucose,\n"
+            "      heart.cholesterol AS heart_cholesterol\n"
+            "    FROM (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM patients\n"
+            "    ) AS patients\n"
+            "    JOIN (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM diabetes\n"
+            "    ) AS diabetes\n"
+            "      ON patients.id = diabetes.patient_id\n"
+            "    JOIN (\n"
+            "      SELECT\n"
+            "        *\n"
+            "      FROM heart\n"
+            "    ) AS heart\n"
+            "      ON patients.id = heart.patient_id\n"
+            "  )\n"
+            ") AS patient_records"
         )
 
     def test_column_name_comment_injection(self, view_query_builder):
@@ -341,24 +450,30 @@ FROM (
         assert (
             query
             == """SELECT
-  column___ AS column___,
-  parents_name AS parents_name,
-  children_name AS children_name
+  column___,
+  parents_name,
+  children_name
 FROM (
   SELECT
     column___ AS column___,
-    parents.name AS parents_name,
-    children.name AS children_name
+    parents_name AS parents_name,
+    children_name AS children_name
   FROM (
     SELECT
-      *
-    FROM parents
-  ) AS parents
-  JOIN (
-    SELECT
-      *
-    FROM children
-  ) AS children
-    ON parents.id = children.id
+      column___ AS column___,
+      parents.name AS parents_name,
+      children.name AS children_name
+    FROM (
+      SELECT
+        *
+      FROM parents
+    ) AS parents
+    JOIN (
+      SELECT
+        *
+      FROM children
+    ) AS children
+      ON parents.id = children.id
+  )
 ) AS parent_children"""
         )

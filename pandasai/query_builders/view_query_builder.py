@@ -40,9 +40,16 @@ class ViewQueryBuilder(BaseQueryBuilder):
             group_by_cols.append(self.normalize_view_column_alias(col))
         return group_by_cols
 
+    def _get_aliases(self) -> list[str]:
+        return [
+            col.alias or self.normalize_view_column_alias(col.name)
+            for col in self.schema.columns
+        ]
+
     def _get_columns(self) -> list[str]:
         columns = []
-        for col in self.schema.columns:
+        aliases = self._get_aliases()
+        for i, col in enumerate(self.schema.columns):
             if col.expression:
                 # Pre-process the expression to handle hyphens between letters
                 expr = re.sub(r"([a-zA-Z])-([a-zA-Z])", r"\1_\2", col.expression)
@@ -51,9 +58,7 @@ class ViewQueryBuilder(BaseQueryBuilder):
             else:
                 column_expr = self.normalize_view_column_alias(col.name)
 
-            alias = (
-                col.alias if col.alias else self.normalize_view_column_alias(col.name)
-            )
+            alias = aliases[i]
             column_expr = f"{column_expr} AS {alias}"
 
             columns.append(column_expr)
@@ -62,32 +67,17 @@ class ViewQueryBuilder(BaseQueryBuilder):
 
     def build_query(self) -> str:
         """Build the SQL query with proper group by column aliasing."""
-        query = select(*self._get_columns()).from_(self._get_table_expression())
-
-        if self.schema.group_by:
-            query = query.group_by(
-                *[normalize_identifiers(col) for col in self._get_group_by_columns()]
-            )
-
+        query = select(*self._get_aliases()).from_(self._get_table_expression())
         if self.schema.order_by:
             query = query.order_by(*self.schema.order_by)
-
         if self.schema.limit:
             query = query.limit(self.schema.limit)
-
         return query.sql(pretty=True)
 
     def get_head_query(self, n=5):
         """Get the head query with proper group by column aliasing."""
-        query = select(*self._get_columns()).from_(self._get_table_expression())
-
-        if self.schema.group_by:
-            query = query.group_by(
-                *[normalize_identifiers(col) for col in self._get_group_by_columns()]
-            )
-
+        query = select(*self._get_aliases()).from_(self._get_table_expression())
         query = query.limit(n)
-
         return query.sql(pretty=True)
 
     def _get_sub_query_from_loader(self, loader: DatasetLoader) -> Subquery:
@@ -132,4 +122,14 @@ class ViewQueryBuilder(BaseQueryBuilder):
                 append=True,
             )
         alias = normalize_identifiers(self.schema.name).sql()
-        return exp.Subquery(this=query, alias=alias).sql(pretty=True)
+
+        subquery = exp.Subquery(this=query).sql(pretty=True)
+
+        final_query = select(*self._get_columns()).from_(subquery)
+
+        if self.schema.group_by:
+            final_query = final_query.group_by(
+                *[normalize_identifiers(col) for col in self._get_group_by_columns()]
+            )
+
+        return exp.Subquery(this=final_query, alias=alias).sql(pretty=True)

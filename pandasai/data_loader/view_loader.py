@@ -48,10 +48,16 @@ class ViewDatasetLoader(SQLDatasetLoader):
         } or {self.schema.columns[0].name.split(".")[0]}
 
     def _get_dependencies_schemas(self) -> dict[str, DatasetLoader]:
-        dependency_dict = {
-            dep: DatasetLoader.create_loader_from_path(f"{self.org_name}/{dep}")
-            for dep in self.dependencies_datasets
-        }
+        dependency_dict = {}
+        for dep in self.dependencies_datasets:
+            try:
+                dependency_dict[dep] = DatasetLoader.create_loader_from_path(
+                    f"{self.org_name}/{dep}"
+                )
+            except FileNotFoundError:
+                raise FileNotFoundError(
+                    f"View failed to load. Missing required dataset: '{dep}'. Try pulling the dataset to resolve the issue."
+                )
 
         loaders = list(dependency_dict.values())
 
