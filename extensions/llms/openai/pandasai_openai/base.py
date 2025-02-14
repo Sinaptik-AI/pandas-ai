@@ -189,3 +189,202 @@ class BaseOpenAI(LLM):
             if self._is_chat_model
             else self.completion(self.last_prompt, memory)
         )
+
+
+class BaseOpenAI_Reasoning(LLM):
+    """Base class to implement a new OpenAI LLM.
+
+    LLM base class, this class is extended to be used with OpenAI API.
+
+    """
+
+    api_token: str
+    api_base: str = "https://api.openai.com/v1"
+    best_of: int = 1
+    n: int = 1
+    temperature: float = 1.0
+    top_p: float= 1.0
+    frequency_penalty: float = 0.0
+    presence_penalty: float = 0.0
+    max_completion_tokens: Optional[int] = None
+    reasoning_effort: Optional[str] = None
+    stop: Optional[str] = None
+    seed: Optional[int] = None
+    request_timeout: Union[float, Tuple[float, float], Any, None] = None
+    max_retries: int = 2
+    # support explicit proxy for OpenAI
+    openai_proxy: Optional[str] = None
+    default_headers: Union[Mapping[str, str], None] = None
+    default_query: Union[Mapping[str, object], None] = None
+    # Configure a custom httpx client. See the
+    # [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
+    http_client: Union[Any, None] = None
+    client: Any
+    _is_chat_model: bool
+
+    def _set_params(self, **kwargs):
+        """
+        Set Parameters
+        Args:
+            **kwargs: ["model", "deployment_name", "temperature","max_tokens",
+            "top_p", "frequency_penalty", "presence_penalty", "stop", "seed"]
+
+        Returns:
+            None.
+
+        """
+
+        valid_params = [
+            "model",
+            "deployment_name",
+            "temperature",
+            "max_completion_tokens",
+            "reasoning_effort"
+            "top_p",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "stop"
+        ]
+        for key, value in kwargs.items():
+            if key in valid_params:
+                setattr(self, key, value)
+
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        """Get the default parameters for calling OpenAI API."""
+        params: Dict[str, Any] = {
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "seed": self.seed,
+            "stop": self.stop,
+            "n": self.n,
+        }
+
+        # GPT-o1 model series only support max_completion_tokens for the max_tokens parameter
+        # Should not be used with max_tokens
+        if self.max_completion_tokens is not None:
+            params["max_completion_tokens"] = self.max_completion_tokens
+        if self.reasoning_effort is not None:
+            params["reasoning_effort"] = self.reasoning_effort
+
+        # Azure gpt-35-turbo doesn't support best_of
+        # don't specify best_of if it is 1
+        if self.best_of > 1:
+            params["best_of"] = self.best_of
+
+        return params
+
+    @property
+    def _invocation_params(self) -> Dict[str, Any]:
+        """Get the parameters used to invoke the model."""
+        openai_creds: Dict[str, Any] = {}
+        if not is_openai_v1():
+            openai_creds |= {
+                "api_key": self.api_token,
+                "api_base": self.api_base,
+            }
+
+        return {**openai_creds, **self._default_params}
+
+    @property
+    def _client_params(self) -> Dict[str, any]:
+        return {
+            "api_key": self.api_token,
+            "base_url": self.api_base,
+            "timeout": self.request_timeout,
+            "max_retries": self.max_retries,
+            "default_headers": self.default_headers,
+            "default_query": self.default_query,
+            "http_client": self.http_client,
+        }
+
+    def completion(self, prompt: str, memory: Memory) -> str:
+        """
+        Query the completion API
+
+        Args:
+            prompt (str): A string representation of the prompt.
+
+        Returns:
+            str: LLM response.
+
+        """
+        prompt = self.prepend_system_prompt(prompt, memory)
+
+        params = {**self._invocation_params, "prompt": prompt}
+
+        if self.stop is not None:
+            params["stop"] = [self.stop]
+
+        response = self.client.create(**params)
+
+        if openai_handler := openai_callback_var.get():
+            openai_handler(response)
+
+        self.last_prompt = prompt
+
+        return response.choices[0].text
+
+    def chat_completion(self, value: str, memory: Memory) -> str:
+        """
+        Query the chat completion API
+
+        Args:
+            value (str): Prompt
+
+        Returns:
+            str: LLM response.
+
+        """
+        messages = memory.to_openai_messages() if memory else []
+
+        # adding current prompt as latest query message
+        messages.append(
+            {
+                "role": "user",
+                "content": value,
+            },
+        )
+
+        params = {
+            **self._invocation_params,
+            "messages": messages,
+        }
+
+
+        if self.stop is not None:
+            params["stop"] = [self.stop]
+
+        response = self.client.create(**params)
+
+        if openai_handler := openai_callback_var.get():
+            openai_handler(response)
+
+        return response.choices[0].message.content
+
+    def call(self, instruction: BasePrompt, context: AgentState = None):
+        """
+        Call the OpenAI LLM.
+
+        Args:
+            instruction (BasePrompt): A prompt object with instruction for LLM.
+            context (PipelineContext): context to pass.
+
+        Raises:
+            UnsupportedModelError: Unsupported model
+
+        Returns:
+            str: Response
+        """
+        self.last_prompt = instruction.to_string()
+
+        memory = context.memory if context else None
+
+        return (
+            self.chat_completion(self.last_prompt, memory)
+            if self._is_chat_model
+            else self.completion(self.last_prompt, memory)
+        )
