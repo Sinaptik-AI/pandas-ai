@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock, patch
 
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
@@ -91,21 +92,28 @@ class TestGroupByQueries(unittest.TestCase):
         self.assertEqual(query.strip(), expected.strip())
 
     def test_local_query_builder(self):
-        builder = LocalQueryBuilder(self.base_schema, "test/test")
-        query = builder.build_query()
+        with patch(
+            "pandasai.query_builders.local_query_builder.ConfigManager.get"
+        ) as mock_config_get:
+            # Mock the return of `ConfigManager.get()`
+            mock_config = MagicMock()
+            mock_config.file_manager.abs_path.return_value = "/mocked/absolute/path"
+            mock_config_get.return_value = mock_config
+            builder = LocalQueryBuilder(self.base_schema, "test/test")
+            query = builder.build_query()
 
-        expected = (
-            "SELECT\n"
-            "  category,\n"
-            "  region,\n"
-            "  SUM(amount) AS total_sales,\n"
-            "  AVG(quantity) AS avg_quantity\n"
-            "FROM READ_CSV('/path/to/sales.csv')\n"
-            "GROUP BY\n"
-            "  category,\n"
-            "  region"
-        )
-        self.assertEqual(query.strip(), expected.strip())
+            expected = (
+                "SELECT\n"
+                "  category,\n"
+                "  region,\n"
+                "  SUM(amount) AS total_sales,\n"
+                "  AVG(quantity) AS avg_quantity\n"
+                "FROM READ_CSV('/mocked/absolute/path')\n"
+                "GROUP BY\n"
+                "  category,\n"
+                "  region"
+            )
+            self.assertEqual(query.strip(), expected.strip())
 
     def test_sql_query_builder(self):
         builder = SqlQueryBuilder(self.sql_schema)
