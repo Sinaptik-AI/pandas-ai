@@ -91,7 +91,7 @@ class TestGroupByQueries(unittest.TestCase):
         self.assertEqual(query.strip(), expected.strip())
 
     def test_local_query_builder(self):
-        builder = LocalQueryBuilder(self.base_schema)
+        builder = LocalQueryBuilder(self.base_schema, "test/test")
         query = builder.build_query()
 
         expected = (
@@ -100,7 +100,7 @@ class TestGroupByQueries(unittest.TestCase):
             "  region,\n"
             "  SUM(amount) AS total_sales,\n"
             "  AVG(quantity) AS avg_quantity\n"
-            "FROM sales\n"
+            "FROM READ_CSV('/path/to/sales.csv')\n"
             "GROUP BY\n"
             "  category,\n"
             "  region"
