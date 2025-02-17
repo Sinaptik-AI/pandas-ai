@@ -1,7 +1,10 @@
+from unittest.mock import MagicMock, mock_open, patch
+
 import pytest
 import sqlglot
 
 from pandasai.data_loader.semantic_layer_schema import SemanticLayerSchema
+from pandasai.query_builders import LocalQueryBuilder
 from pandasai.query_builders.base_query_builder import BaseQueryBuilder
 from pandasai.query_builders.sql_query_builder import SqlQueryBuilder
 
@@ -51,6 +54,47 @@ class TestQueryBuilder:
             },
         }
         return SemanticLayerSchema(**raw_schema)
+
+    def test_build_query_csv(self, sample_schema):
+        with patch(
+            "pandasai.query_builders.local_query_builder.ConfigManager.get"
+        ) as mock_config_get:
+            # Mock the return of `ConfigManager.get()`
+            mock_config = MagicMock()
+            mock_config.file_manager.abs_path.return_value = "/mocked/absolute/path"
+            mock_config_get.return_value = mock_config
+            query_builder = LocalQueryBuilder(sample_schema, "test/test")
+            query = query_builder.build_query()
+            expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM READ_CSV('/mocked/absolute/path')
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+            assert query == expected_query
+
+    def test_build_query_parquet(self, sample_schema):
+        sample_schema.source.type = "parquet"
+        with patch(
+            "pandasai.query_builders.local_query_builder.ConfigManager.get"
+        ) as mock_config_get:
+            # Mock the return of `ConfigManager.get()`
+            mock_config = MagicMock()
+            mock_config.file_manager.abs_path.return_value = "/mocked/absolute/path"
+            mock_config_get.return_value = mock_config
+            query_builder = LocalQueryBuilder(sample_schema, "test/test")
+            query = query_builder.build_query()
+            expected_query = """SELECT
+  email,
+  first_name,
+  timestamp
+FROM READ_PARQUET('/mocked/absolute/path')
+ORDER BY
+  created_at DESC
+LIMIT 100"""
+            assert query == expected_query
 
     def test_build_query(self, mysql_schema):
         query_builder = SqlQueryBuilder(mysql_schema)
