@@ -45,6 +45,7 @@ def create(
     source: Optional[dict] = None,
     relations: Optional[List[dict]] = None,
     view: bool = False,
+    group_by: Optional[List[str]] = None,
 ) -> Union[DataFrame, VirtualDataFrame]:
     """
     Creates a new dataset at the specified path with optional metadata, schema,
@@ -70,6 +71,10 @@ def create(
         relations (dict, optional): A dictionary specifying relationships between tables
             when the dataset is created as a view. Each relationship should be defined
             using keys such as 'type', 'source', and 'target'.
+        group_by (List[str], optional): A list of column names to use for grouping in SQL
+            queries. Each column name should correspond to a non-aggregated column in the
+            dataset. Aggregated columns (those with expressions) cannot be included in
+            group_by.
 
     Returns:
         Union[DataFrame, VirtualDataFrame]: The created dataset object. This may be
@@ -82,7 +87,8 @@ def create(
             the specified path.
         InvalidConfigError: If neither `df` nor a valid `source` is provided.
 
-    Example:
+    Examples:
+        >>> # Create a simple dataset
         >>> create(
         ...     path="my-org/my-dataset",
         ...     df=my_dataframe,
@@ -93,6 +99,21 @@ def create(
         ...     ],
         ... )
         Dataset saved successfully to path: datasets/my-org/my-dataset
+
+        >>> # Create a dataset with group by functionality
+        >>> create(
+        ...     path="my-org/sales",
+        ...     df=sales_df,
+        ...     description="Sales data with aggregations",
+        ...     columns=[
+        ...         {"name": "category", "type": "string", "description": "Product category"},
+        ...         {"name": "region", "type": "string", "description": "Sales region"},
+        ...         {"name": "amount", "type": "float", "expression": "sum", "alias": "total_sales"},
+        ...         {"name": "quantity", "type": "integer", "expression": "avg", "alias": "avg_quantity"},
+        ...     ],
+        ...     group_by=["category", "region"],
+        ... )
+        Dataset saved successfully to path: datasets/my-org/sales
     """
     if df is not None and not isinstance(df, DataFrame):
         raise ValueError("df must be a PandaAI DataFrame")
@@ -124,16 +145,26 @@ def create(
             parsed_columns
         ):  # if no columns are passed it automatically parse the columns from the df
             schema.columns = parsed_columns
+        if group_by is not None:
+            schema.group_by = group_by
+        SemanticLayerSchema.model_validate(schema)
         parquet_file_path_abs_path = file_manager.abs_path(parquet_file_path)
         df.to_parquet(parquet_file_path_abs_path, index=False)
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name, relations=_relation, view=True, columns=parsed_columns
+            name=dataset_name,
+            relations=_relation,
+            view=True,
+            columns=parsed_columns,
+            group_by=group_by,
         )
     elif source.get("table"):
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name, source=Source(**source), columns=parsed_columns
+            name=dataset_name,
+            source=Source(**source),
+            columns=parsed_columns,
+            group_by=group_by,
         )
     else:
         raise InvalidConfigError("Unable to create schema with the provided params")
@@ -213,9 +244,9 @@ def load(dataset_path: str) -> DataFrame:
     Returns:
         DataFrame: A new PandaAI DataFrame instance with loaded data.
     """
-    path_parts = dataset_path.split("/")
-    if len(path_parts) != 2:
-        raise ValueError("The path must be in the format 'organization/dataset'.")
+
+    # Validate the dataset path
+    get_validated_dataset_path(dataset_path)
 
     dataset_full_path = os.path.join(find_project_root(), "datasets", dataset_path)
 
@@ -251,6 +282,7 @@ def load(dataset_path: str) -> DataFrame:
         if local_dataset_exists
         else "Dataset fetched successfully from the remote server."
     )
+    # Printed to display info to the user
     print(message)
 
     return df

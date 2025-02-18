@@ -9,6 +9,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from sqlglot import ParseError, parse_one
 
 from pandasai.constants import (
     LOCAL_SOURCE_TYPES,
@@ -43,6 +44,10 @@ class Column(BaseModel):
     name: str = Field(..., description="Name of the column.")
     type: Optional[str] = Field(None, description="Data type of the column.")
     description: Optional[str] = Field(None, description="Description of the column")
+    expression: Optional[str] = Field(
+        None, description="Aggregation expression (avg, min, max, sum)"
+    )
+    alias: Optional[str] = Field(None, description="Alias for the column")
 
     @field_validator("type")
     @classmethod
@@ -52,6 +57,18 @@ class Column(BaseModel):
                 f"Unsupported column type: {type}. Supported types are: {VALID_COLUMN_TYPES}"
             )
         return type
+
+    @field_validator("expression")
+    @classmethod
+    def is_expression_valid(cls, expr: Optional[str]) -> Optional[str]:
+        if not expr:
+            return None
+
+        try:
+            parse_one(expr)
+            return expr
+        except ParseError as e:
+            raise ValueError(f"Invalid SQL expression: {expr}. Error: {str(e)}")
 
 
 class Relation(BaseModel):
@@ -275,9 +292,35 @@ class SemanticLayerSchema(BaseModel):
     update_frequency: Optional[str] = Field(
         None, description="Frequency of dataset updates."
     )
+    group_by: Optional[List[str]] = Field(
+        None,
+        description="List of columns to group by. Every non-aggregated column must be included in group_by.",
+    )
 
     @model_validator(mode="after")
-    def check_columns_relations(self):
+    def validate_schema(self) -> "SemanticLayerSchema":
+        self._validate_group_by_columns()
+        self._validate_columns_relations()
+        return self
+
+    def _validate_group_by_columns(self) -> None:
+        if not self.group_by or not self.columns:
+            return
+
+        group_by_set = set(self.group_by)
+        for col in self.columns:
+            if col.expression and col.name in group_by_set:
+                raise ValueError(
+                    f"Column '{col.name}' cannot be in group_by because it has an aggregation expression. "
+                    "Only non-aggregated columns should be in group_by."
+                )
+            if not col.expression and col.name not in group_by_set:
+                raise ValueError(
+                    f"Column '{col.name}' must either be in group_by or have an aggregation expression "
+                    "when group_by is specified."
+                )
+
+    def _validate_columns_relations(self):
         column_re_check = r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9_]+$"
         is_view_column_name = partial(re.match, column_re_check)
 
