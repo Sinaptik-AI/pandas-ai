@@ -10,6 +10,7 @@ import pandas as pd
 from pandas._typing import Axes, Dtype
 
 import pandasai as pai
+from pandasai import get_validated_dataset_path
 from pandasai.config import Config, ConfigManager
 from pandasai.core.response import BaseResponse
 from pandasai.data_loader.semantic_layer_schema import (
@@ -148,12 +149,15 @@ class DataFrame(pd.DataFrame):
                 "Please save the dataset before pushing to the remote server."
             )
 
+        SemanticLayerSchema.model_validate(self.schema)
+        org_name, dataset_name = get_validated_dataset_path(self.path)
+
         api_key = os.environ.get("PANDABI_API_KEY", None)
 
         request_session = get_pandaai_session()
 
         params = {
-            "path": self.path,
+            "path": f"{org_name}/{dataset_name}",
             "description": self.schema.description,
             "name": self.schema.name,
         }

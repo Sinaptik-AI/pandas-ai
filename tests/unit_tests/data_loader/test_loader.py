@@ -32,6 +32,18 @@ class TestDatasetLoader:
         loader = LocalDatasetLoader(sample_schema, "test/test")
         assert isinstance(loader.query_builder, LocalQueryBuilder)
 
+    def test_load_schema_mysql_invalid_name(self, mysql_schema):
+        mysql_schema.name = "invalid-name"
+
+        with patch("os.path.exists", return_value=True), patch(
+            "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
+        ):
+            with pytest.raises(
+                ValueError,
+                match="Dataset name must be lowercase and use underscores instead of spaces.",
+            ):
+                DatasetLoader._read_schema_file("test/users")
+
     def test_load_from_local_source_invalid_source_type(self, sample_schema):
         sample_schema.source.type = "mysql"
         loader = LocalDatasetLoader(sample_schema, "test/test")
@@ -52,15 +64,6 @@ class TestDatasetLoader:
         ):
             schema = DatasetLoader._read_schema_file("test/users")
             assert schema == mysql_schema
-
-    def test_load_schema_mysql_sanitized_name(self, mysql_schema):
-        mysql_schema.name = "non-sanitized-name"
-
-        with patch("os.path.exists", return_value=True), patch(
-            "builtins.open", mock_open(read_data=str(mysql_schema.to_yaml()))
-        ):
-            schema = DatasetLoader._read_schema_file("test/users")
-            assert schema.name == "non_sanitized_name"
 
     def test_load_schema_file_not_found(self):
         with patch("os.path.exists", return_value=False):

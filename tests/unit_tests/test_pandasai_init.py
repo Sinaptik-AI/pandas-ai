@@ -230,6 +230,13 @@ class TestPandaAIInit:
             == 'The dataset "test/dataset" does not exist in your local datasets directory. In addition, no API Key has been provided. Set an API key with valid permits if you want to fetch the dataset from the remote server.'
         )
 
+    def test_load_invalid_name(self):
+        with pytest.raises(
+            ValueError,
+            match="Organization name must be lowercase and use hyphens instead of spaces",
+        ):
+            pandasai.load("test_test/data_set")
+
     def test_clear_cache(self):
         with patch("pandasai.core.cache.Cache.clear") as mock_clear:
             pandasai.clear_cache()
@@ -415,7 +422,7 @@ class TestPandaAIInit:
         from pandasai.data_loader.semantic_layer_schema import Source
 
         schema = SemanticLayerSchema(
-            name="test-dataset",
+            name="test_dataset",
             description="test_description",
             source=Source(type="parquet", path="data.parquet"),
         )

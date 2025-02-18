@@ -13,7 +13,7 @@ class TestSemanticLayerSchema:
     def test_valid_schema(self, raw_sample_schema):
         schema = SemanticLayerSchema(**raw_sample_schema)
 
-        assert schema.name == "Users"
+        assert schema.name == "users"
         assert schema.update_frequency == "weekly"
         assert len(schema.columns) == 3
         assert schema.order_by == ["created_at DESC"]
@@ -38,6 +38,12 @@ class TestSemanticLayerSchema:
         assert schema.name == "parent_children"
         assert len(schema.columns) == 3
         assert schema.view == True
+
+    def test_invalid_name(self, raw_sample_schema):
+        raw_sample_schema["name"] = "invalid-name"
+
+        with pytest.raises(ValidationError):
+            SemanticLayerSchema(**raw_sample_schema)
 
     def test_missing_source_path(self, raw_sample_schema):
         raw_sample_schema["source"].pop("path")
