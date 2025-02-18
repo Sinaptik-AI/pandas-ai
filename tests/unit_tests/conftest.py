@@ -35,7 +35,7 @@ def sample_dataframes():
 @pytest.fixture
 def raw_sample_schema():
     return {
-        "name": "Users",
+        "name": "users",
         "update_frequency": "weekly",
         "columns": [
             {

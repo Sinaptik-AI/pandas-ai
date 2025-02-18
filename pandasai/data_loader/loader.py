@@ -6,7 +6,10 @@ import yaml
 
 from pandasai.dataframe.base import DataFrame
 from pandasai.exceptions import MethodNotImplementedError
-from pandasai.helpers.path import get_validated_dataset_path
+from pandasai.helpers.path import (
+    get_validated_dataset_path,
+    transform_underscore_to_dash,
+)
 from pandasai.helpers.sql_sanitizer import sanitize_sql_table_name
 
 from .. import ConfigManager
@@ -60,6 +63,7 @@ class DatasetLoader(ABC):
         """
         Factory method to create the appropriate loader based on the dataset type.
         """
+        dataset_path = transform_underscore_to_dash(dataset_path)
         schema = cls._read_schema_file(dataset_path)
         return DatasetLoader.create_loader_from_schema(schema, dataset_path)
 
@@ -74,7 +78,6 @@ class DatasetLoader(ABC):
 
         schema_file = file_manager.load(schema_path)
         raw_schema = yaml.safe_load(schema_file)
-        raw_schema["name"] = sanitize_sql_table_name(raw_schema["name"])
         return SemanticLayerSchema(**raw_schema)
 
     def load(self) -> DataFrame:

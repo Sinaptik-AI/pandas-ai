@@ -49,6 +49,21 @@ def validate_name_format(value):
     return bool(re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", value))
 
 
+def validate_underscore_name_format(value):
+    """
+    Validate name format to be 'my_organization'
+    """
+    return bool(re.match(r"^[a-z0-9]+(?:_[a-z0-9]+)*$", value))
+
+
+def transform_dash_to_underscore(value: str) -> str:
+    return value.replace("-", "_")
+
+
+def transform_underscore_to_dash(value: str) -> str:
+    return value.replace("_", "-")
+
+
 def get_validated_dataset_path(path: str):
     # Validate path format
     path_parts = path.split("/")

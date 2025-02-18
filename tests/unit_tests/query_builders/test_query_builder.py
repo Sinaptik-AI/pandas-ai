@@ -13,7 +13,7 @@ class TestQueryBuilder:
     @pytest.fixture
     def mysql_schema(self):
         raw_schema = {
-            "name": "Users",
+            "name": "users",
             "update_frequency": "weekly",
             "columns": [
                 {

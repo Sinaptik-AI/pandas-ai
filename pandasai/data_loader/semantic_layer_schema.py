@@ -17,6 +17,9 @@ from pandasai.constants import (
     VALID_COLUMN_TYPES,
     VALID_TRANSFORMATION_TYPES,
 )
+from pandasai.helpers.path import (
+    validate_underscore_name_format,
+)
 
 
 class SQLConnectionConfig(BaseModel):
@@ -299,9 +302,16 @@ class SemanticLayerSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_schema(self) -> "SemanticLayerSchema":
+        self._validate_name()
         self._validate_group_by_columns()
         self._validate_columns_relations()
         return self
+
+    def _validate_name(self) -> None:
+        if not self.name or not validate_underscore_name_format(self.name):
+            raise ValueError(
+                "Dataset name must be lowercase and use underscores instead of spaces. E.g. 'dataset_name'."
+            )
 
     def _validate_group_by_columns(self) -> None:
         if not self.group_by or not self.columns:
@@ -321,7 +331,7 @@ class SemanticLayerSchema(BaseModel):
                 )
 
     def _validate_columns_relations(self):
-        column_re_check = r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9_]+$"
+        column_re_check = r"^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$"
         is_view_column_name = partial(re.match, column_re_check)
 
         # unpack columns info
@@ -360,7 +370,7 @@ class SemanticLayerSchema(BaseModel):
                 is_view_column_name(column_name) for column_name in _column_names
             ):
                 raise ValueError(
-                    "All columns in a view must be in the format '[dataset].[column]'."
+                    "All columns in a view must be in the format '[dataset_name].[column_name]' accepting only letters, numbers, and underscores."
                 )
 
             if not all(
@@ -368,7 +378,7 @@ class SemanticLayerSchema(BaseModel):
                 for column_name in _column_names_in_relations
             ):
                 raise ValueError(
-                    "All params 'from' and 'to' in the relations must be in the format '[dataset].[column]'."
+                    "All params 'from' and 'to' in the relations must be in the format '[dataset_name].[column_name]' accepting only letters, numbers, and underscores."
                 )
 
             uncovered_tables = _tables_names_in_columns - _tables_names_in_relations
@@ -378,7 +388,9 @@ class SemanticLayerSchema(BaseModel):
                 )
 
         elif any(is_view_column_name(column_name) for column_name in _column_names):
-            raise ValueError("All columns in a table must be in the format '[column]'.")
+            raise ValueError(
+                "All columns in a table must be in the format '[column_name]' accepting only letters, numbers, and underscores."
+            )
         return self
 
     def to_dict(self) -> dict[str, Any]:

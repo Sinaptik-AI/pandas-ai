@@ -19,7 +19,11 @@ from pandasai.data_loader.semantic_layer_schema import (
     Source,
 )
 from pandasai.exceptions import DatasetNotFound, InvalidConfigError, PandaAIApiKeyError
-from pandasai.helpers.path import find_project_root, get_validated_dataset_path
+from pandasai.helpers.path import (
+    find_project_root,
+    get_validated_dataset_path,
+    transform_dash_to_underscore,
+)
 from pandasai.helpers.session import get_pandaai_session
 from pandasai.query_builders import SqlQueryBuilder
 from pandasai.sandbox.sandbox import Sandbox
@@ -119,6 +123,7 @@ def create(
         raise ValueError("df must be a PandaAI DataFrame")
 
     org_name, dataset_name = get_validated_dataset_path(path)
+    underscore_dataset_name = transform_dash_to_underscore(dataset_name)
     dataset_directory = str(os.path.join(org_name, dataset_name))
 
     schema_path = os.path.join(dataset_directory, "schema.yaml")
@@ -140,7 +145,7 @@ def create(
 
     if df is not None:
         schema = df.schema
-        schema.name = dataset_name
+        schema.name = underscore_dataset_name
         if (
             parsed_columns
         ):  # if no columns are passed it automatically parse the columns from the df
@@ -153,7 +158,7 @@ def create(
     elif view:
         _relation = [Relation(**relation) for relation in relations or ()]
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name,
+            name=underscore_dataset_name,
             relations=_relation,
             view=True,
             columns=parsed_columns,
@@ -161,7 +166,7 @@ def create(
         )
     elif source.get("table"):
         schema: SemanticLayerSchema = SemanticLayerSchema(
-            name=dataset_name,
+            name=underscore_dataset_name,
             source=Source(**source),
             columns=parsed_columns,
             group_by=group_by,
