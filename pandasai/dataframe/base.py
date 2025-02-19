@@ -141,7 +141,7 @@ class DataFrame(pd.DataFrame):
         """
         source = self.schema.source or None
 
-        if source and source.type in LOCAL_SOURCE_TYPES:
+        if source:
             dialect = "duckdb" if source.type in LOCAL_SOURCE_TYPES else source.type
         else:
             dialect = "postgres"
