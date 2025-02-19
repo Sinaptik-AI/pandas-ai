@@ -1,4 +1,9 @@
-from .azure_openai import AzureOpenAI
-from .openai import OpenAI
+from .azure_openai import AzureOpenAI, AzureOpenAI_Reasoning
+from .openai import OpenAI, OpenAI_Reasoning
 
-__all__ = ["OpenAI", "AzureOpenAI"]
+__all__ = [
+  "OpenAI",
+  "OpenAI_Reasoning",
+  "AzureOpenAI",
+  "AzureOpenAI_Reasoning"
+]
