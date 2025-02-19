@@ -11,8 +11,8 @@ from pandas._typing import Axes, Dtype
 
 import pandasai as pai
 from pandasai import get_validated_dataset_path
-from pandasai.constants import LOCAL_SOURCE_TYPES
 from pandasai.config import Config, ConfigManager
+from pandasai.constants import LOCAL_SOURCE_TYPES
 from pandasai.core.response import BaseResponse
 from pandasai.data_loader.semantic_layer_schema import (
     Column,
@@ -146,7 +146,7 @@ class DataFrame(pd.DataFrame):
         else:
             dialect = "postgres"
 
-        return DataframeSerializer.serialize(self,dialect)
+        return DataframeSerializer.serialize(self, dialect)
 
     def get_head(self):
         return self.head()
