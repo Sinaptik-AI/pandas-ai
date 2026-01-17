@@ -11,10 +11,10 @@ license = "Proprietary"
 "Repository" = "https://github.com/sinaptik-ai/pandas-ai"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 pandasai = ">=3.0.0b4"
-qdrant-client = "1.4.0"
-numpy = "1.23.2"
+qdrant-client = "^1.4.0"
+numpy = "^1.24.0"
 sentence-transformers = "^2.2.2"
 
 [tool.poetry.group.test]

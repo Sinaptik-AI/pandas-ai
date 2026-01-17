@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 pandasai = ">=3.0.0b4"
 sqlalchemy = "^2.0.0"
 psycopg2-binary = { version = "^2.9.10", optional = true }
