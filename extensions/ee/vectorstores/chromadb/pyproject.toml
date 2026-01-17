@@ -11,10 +11,10 @@ license = "Proprietary"
 "Repository" = "https://github.com/sinaptik-ai/pandas-ai"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 pandasai = ">=3.0.0b4"
 chromadb = "^0.4.22"
-numpy = "1.23.2"
+numpy = "^1.24.0"
 pydantic = "^2.0.0"
 onnxruntime = ">=1.14.1,<1.20"
 

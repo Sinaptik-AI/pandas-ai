@@ -11,7 +11,7 @@ license = "Proprietary"
 "Repository" = "https://github.com/sinaptik-ai/pandas-ai"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 pandasai = ">=3.0.0b4"
 pandasai-sql = "^0.1.0"
 pyarrow = ">=14.0.1,<19.0.0"
