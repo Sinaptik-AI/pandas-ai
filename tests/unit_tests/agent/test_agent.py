@@ -256,6 +256,14 @@ class TestAgent:
         memory = agent._state.memory.all()
         assert len(memory) == 0
 
+    def test_start_new_conversation_resets_state(self, sample_df, config):
+        agent = Agent(sample_df, config, memory_size=10)
+        agent._state.last_code_generated = "result = df.head()"
+        agent._state.last_prompt_used = "Show me the first 5 rows"
+        agent.start_new_conversation()
+        assert agent._state.last_code_generated is None
+        assert agent._state.last_prompt_used is None
+
     def test_code_generation_success(self, agent: Agent):
         # Mock the code generator
         agent._code_generator = Mock()

@@ -267,6 +267,8 @@ class Agent:
         Clears the previous conversation
         """
         self.clear_memory()
+        self._state.last_code_generated = None
+        self._state.last_prompt_used = None
 
     def _process_query(self, query: str, output_type: Optional[str] = None):
         """Process a user query and return the result."""
