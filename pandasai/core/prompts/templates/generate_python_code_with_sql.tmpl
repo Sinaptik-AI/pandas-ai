@@ -1,3 +1,6 @@
+{% if context.memory.agent_description %}{{ context.memory.agent_description }}
+
+{% endif %}
 <tables>
 {% for df in context.dfs %}
 {% include 'shared/dataframe.tmpl' with context %}
