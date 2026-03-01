@@ -21,6 +21,10 @@ import pandas as pd
 ```
 {% endif %}
 {% include 'shared/vectordb_docs.tmpl' with context %}
+{% if context.memory.count() > 1 %}
+### PREVIOUS CONVERSATION
+{{ context.memory.get_previous_conversation() }}
+{% endif %}
 {{ context.memory.get_last_message() }}
 
 At the end, declare "result" variable as a dictionary of type and value in the following format:
