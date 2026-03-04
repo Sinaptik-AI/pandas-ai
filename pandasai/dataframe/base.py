@@ -45,7 +45,7 @@ class DataFrame(pd.DataFrame):
         "_table_name",
         "config",
         "path",
-        "schema",
+        "_schema",
     ]
 
     def __init__(
@@ -72,6 +72,23 @@ class DataFrame(pd.DataFrame):
         self.schema = _schema or DataFrame.get_default_schema(self)
         self.path = _path
         self._agent: Optional[Agent] = None
+        
+    @property
+    def schema(self):
+        return getattr(self, "_schema", None)
+
+    @schema.setter
+    def schema(self, value):
+        self._schema = value
+
+        # Apply schema row limit
+        if value and value.limit and len(self) > value.limit:
+            truncated = self.iloc[: value.limit].copy()
+
+            self.drop(self.index, inplace=True)
+
+            for col in truncated.columns:
+                self[col] = truncated[col].values
 
     def __repr__(self) -> str:
         """Return a string representation of the DataFrame."""
