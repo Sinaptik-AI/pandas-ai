@@ -81,9 +81,29 @@ def load_from_sqlserver(
         return pd.read_sql(query, conn, params=params)
 
 
+def load_from_oracle(
+    connection_info: SQLConnectionConfig, query: str, params: Optional[list] = None
+):
+    import oracledb  # Modern driver for Oracle
+
+    # Oracle typically uses 'service_name' instead of 'database'
+    conn = oracledb.connect(
+        user=connection_info.user,
+        password=connection_info.password,
+        host=connection_info.host,
+        port=connection_info.port,
+        service_name=connection_info.database,
+    )
+    # Suppress warnings of SqlAlchemy
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        return pd.read_sql(query, conn, params=params)
+
+
 __all__ = [
     "load_from_mysql",
     "load_from_postgres",
     "load_from_cockroachdb",
     "load_from_sqlserver",
+    "load_from_oracle",
 ]
