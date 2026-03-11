@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from pandasai.helpers.path import find_project_root
 
@@ -47,7 +48,7 @@ class DefaultFileManager(FileManager):
     """Local file system implementation of FileLoader."""
 
     def __init__(self):
-        self.base_path = os.path.join(find_project_root(), "datasets")
+        self.base_path = Path(find_project_root()) / "datasets"
 
     def load(self, file_path: str) -> str:
         with open(self.abs_path(file_path), "r", encoding="utf-8") as f:
@@ -66,10 +67,10 @@ class DefaultFileManager(FileManager):
             f.write(content)
 
     def exists(self, file_path: str) -> bool:
-        return os.path.exists(self.abs_path(file_path))
+        return Path(self.abs_path(file_path)).exists()
 
     def mkdir(self, dir_path: str) -> None:
-        os.makedirs(self.abs_path(dir_path), exist_ok=True)
+        Path(self.abs_path(dir_path)).mkdir(parents=True, exist_ok=True)
 
     def abs_path(self, file_path: str) -> str:
-        return os.path.join(self.base_path, file_path)
+        return str((self.base_path / file_path).resolve())
