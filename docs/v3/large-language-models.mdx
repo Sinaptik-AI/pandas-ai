@@ -90,6 +90,37 @@ llm = AzureOpenAI(api_base="https://<your-endpoint>.openai.azure.com/",
 pai.config.set({"llm": llm})
 ```
 
+## MiniMax models
+
+[MiniMax](https://www.minimaxi.com/) provides powerful large language models with up to 204K context window.
+
+Install the pandasai-minimax extension:
+
+```bash
+# Using poetry
+poetry add pandasai-minimax
+
+# Using pip
+pip install pandasai-minimax
+```
+
+In order to use MiniMax models, you need to have a MiniMax API key. You can get one from the [MiniMax platform](https://www.minimaxi.com/).
+Once you have an API key, you can use it to instantiate a MiniMax object:
+
+Configure MiniMax:
+
+```python
+import pandasai as pai
+from pandasai_minimax import MiniMax
+
+llm = MiniMax(api_token="my-minimax-api-key")
+# Or set MINIMAX_API_KEY environment variable
+
+pai.config.set({"llm": llm})
+```
+
+Supported models: `MiniMax-M3` (default), `MiniMax-M2.7`, `MiniMax-M2.7-highspeed`.
+
 ## How to set up any LLM?
 
 LiteLLM provides a unified interface to interact with 100+ LLM models from various providers including OpenAI, Azure, Anthropic, Google, AWS, Hugging Face, and many more. This makes it easy to switch between different LLM providers without changing your code.
