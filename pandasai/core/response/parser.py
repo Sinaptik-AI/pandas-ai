@@ -43,6 +43,14 @@ class ResponseParser:
                 raise InvalidOutputValueMismatch(
                     "Invalid output: Expected a numeric value for result type 'number', but received a non-numeric value."
                 )
+            # NaN / inf are floats, so they pass the isinstance check above and would be
+            # returned as a valid number. They almost always come from an aggregation over
+            # empty data (e.g. df["x"].mean() on a zero-row result) - reject instead of
+            # silently returning NaN as the answer.
+            if isinstance(result["value"], float) and not np.isfinite(result["value"]):
+                raise InvalidOutputValueMismatch(
+                    "Invalid output: Numeric result is NaN or infinite (likely an aggregation over empty data)."
+                )
         elif result["type"] == "string":
             if not isinstance(result["value"], str):
                 raise InvalidOutputValueMismatch(
