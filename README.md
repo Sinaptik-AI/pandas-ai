@@ -201,3 +201,7 @@ For more information, please check out the [contributing guidelines](CONTRIBUTIN
 ### Thank you!
 
 [![Contributors](https://contrib.rocks/image?repo=sinaptik-ai/pandas-ai)](https://github.com/sinaptik-ai/pandas-ai/graphs/contributors)
+
+---
+
+*[Mukller](https://github.com/Mukller)*
