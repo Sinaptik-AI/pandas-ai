@@ -19,9 +19,207 @@ def get_version(module: types.ModuleType) -> str:
     return version
 
 
+_DANGEROUS_MODULES = frozenset(
+    {
+        "os",
+        "sys",
+        "subprocess",
+        "shutil",
+        "socket",
+        "pathlib",
+        "io",
+        "ctypes",
+        "signal",
+        "multiprocessing",
+        "threading",
+        "pickle",
+        "marshal",
+        "shelve",
+        "dbm",
+        "sqlite3",
+        "importlib",
+        "code",
+        "codeop",
+        "compileall",
+        "py_compile",
+        "zipimport",
+        "pkgutil",
+        "pdb",
+        "profile",
+        "cProfile",
+        "timeit",
+        "trace",
+        "tracemalloc",
+        "faulthandler",
+        "platform",
+        "webbrowser",
+        "cgi",
+        "cgitb",
+        "xmlrpc",
+        "urllib",
+        "http",
+        "ftplib",
+        "smtplib",
+        "telnetlib",
+        "uuid",
+        "ssl",
+        "hashlib",
+        "hmac",
+        "secrets",
+        "textwrap",
+        "difflib",
+        "unicodedata",
+        "stringprep",
+        "readline",
+        "rlcompleter",
+        "struct",
+        "codecs",
+        "encodings",
+        "tokenize",
+        "keyword",
+        "token",
+        "tabnanny",
+        "pyclbr",
+        "pydoc",
+        "doctest",
+        "unittest",
+        "test",
+        "distutils",
+        "ensurepip",
+        "venv",
+        "zipapp",
+        "builtins",
+        "_thread",
+        "weakref",
+        "types",
+        "copyreg",
+    }
+)
+
+
+def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """
+    Safe wrapper around __import__ that blocks imports of dangerous modules.
+
+    This provides runtime defense-in-depth: even if the AST-level validation
+    in CodeRequirementValidator is bypassed, dangerous module imports will be
+    blocked at execution time.
+
+    Matches the standard __import__ signature so it works as a drop-in replacement.
+    """
+    module_root = name.split(".")[0]
+    if module_root in _DANGEROUS_MODULES:
+        raise ImportError(
+            f"Import of module '{name}' is not allowed in LLM-generated code. "
+            f"Imports of system/OS-level modules are blocked for security."
+        )
+    return importlib.__import__(name, globals, locals, fromlist, level)
+
+
+def _get_restricted_builtins() -> dict:
+    """
+    Returns a restricted subset of Python builtins safe for LLM-generated code.
+
+    Provides a safe __import__ wrapper that blocks dangerous modules while
+    allowing legitimate imports (pandas, numpy, matplotlib, etc.).
+
+    Excludes dangerous builtins such as open, exec, eval, compile, getattr,
+    setattr, delattr, globals, locals, vars, dir, breakpoint, exit, quit,
+    help, input, memoryview, super, staticmethod, classmethod, property,
+    bytearray, bytes, frozenset, hash, id, callable, next.
+
+    Returns:
+        dict: A dictionary of safe builtins.
+    """
+    import builtins as _builtins
+
+    _SAFE_NAMES = {
+        "True",
+        "False",
+        "None",
+        "bool",
+        "int",
+        "float",
+        "str",
+        "list",
+        "dict",
+        "tuple",
+        "set",
+        "type",
+        "isinstance",
+        "issubclass",
+        "len",
+        "range",
+        "enumerate",
+        "zip",
+        "map",
+        "filter",
+        "sorted",
+        "reversed",
+        "min",
+        "max",
+        "sum",
+        "abs",
+        "round",
+        "pow",
+        "divmod",
+        "print",
+        "Exception",
+        "ValueError",
+        "TypeError",
+        "KeyError",
+        "IndexError",
+        "AttributeError",
+        "NameError",
+        "ZeroDivisionError",
+        "RuntimeError",
+        "StopIteration",
+        "NotImplementedError",
+        "ArithmeticError",
+        "OverflowError",
+        "FloatingPointError",
+        "LookupError",
+        "AssertionError",
+        "OSError",
+        "IOError",
+        "FileNotFoundError",
+        "ConnectionError",
+        "TimeoutError",
+        "SyntaxError",
+        "IndentationError",
+        "TabError",
+        "MemoryError",
+        "RecursionError",
+        "UnicodeError",
+        "BytesWarning",
+        "DeprecationWarning",
+        "FutureWarning",
+        "UserWarning",
+        "RuntimeWarning",
+        "PendingDeprecationWarning",
+        "ImportWarning",
+        "UnicodeWarning",
+        "ResourceWarning",
+    }
+
+    builtins_dict = {
+        name: getattr(_builtins, name)
+        for name in _SAFE_NAMES
+        if hasattr(_builtins, name)
+    }
+
+    builtins_dict["__import__"] = _safe_import
+
+    return builtins_dict
+
+
 def get_environment() -> dict:
     """
     Returns the environment for the code to be executed.
+
+    The environment includes a restricted set of Python builtins to prevent
+    LLM-generated code from performing dangerous operations such as importing
+    arbitrary modules, accessing the filesystem, or executing system commands.
 
     Returns (dict): A dictionary of environment variables
     """
@@ -29,6 +227,7 @@ def get_environment() -> dict:
         "pd": import_dependency("pandas"),
         "plt": import_dependency("matplotlib.pyplot"),
         "np": import_dependency("numpy"),
+        "__builtins__": _get_restricted_builtins(),
     }
 
     return env

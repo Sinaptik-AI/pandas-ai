@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from pandasai.core.code_execution.environment import (
+    _get_restricted_builtins,
     get_environment,
     get_version,
     import_dependency,
@@ -69,6 +70,121 @@ class TestEnvironmentFunctions(unittest.TestCase):
         mock_import_module.return_value = module_mock
         with self.assertRaises(ImportError):
             get_version(mock_import_module("numpy"))
+
+
+class TestRestrictedBuiltins(unittest.TestCase):
+    def test_restricted_builtins_excludes_dangerous(self):
+        """Test that restricted builtins exclude dangerous builtins."""
+        builtins = _get_restricted_builtins()
+
+        dangerous = [
+            "open",
+            "exec",
+            "eval",
+            "compile",
+            "getattr",
+            "setattr",
+            "delattr",
+            "globals",
+            "locals",
+            "vars",
+            "dir",
+            "breakpoint",
+            "exit",
+            "quit",
+            "help",
+            "input",
+            "memoryview",
+            "super",
+            "staticmethod",
+            "classmethod",
+            "property",
+            "bytearray",
+            "bytes",
+            "frozenset",
+            "hash",
+            "id",
+            "callable",
+            "next",
+            "object",
+        ]
+
+        for name in dangerous:
+            self.assertNotIn(
+                name,
+                builtins,
+                f"Dangerous builtin '{name}' should not be in restricted builtins",
+            )
+
+    def test_restricted_builtins_includes_safe(self):
+        """Test that restricted builtins include safe builtins needed for data analysis."""
+        builtins = _get_restricted_builtins()
+
+        safe = [
+            "True",
+            "False",
+            "None",
+            "int",
+            "float",
+            "str",
+            "list",
+            "dict",
+            "tuple",
+            "set",
+            "bool",
+            "type",
+            "isinstance",
+            "len",
+            "range",
+            "enumerate",
+            "print",
+            "Exception",
+            "ValueError",
+            "TypeError",
+        ]
+
+        for name in safe:
+            self.assertIn(
+                name,
+                builtins,
+                f"Safe builtin '{name}' should be in restricted builtins",
+            )
+
+    def test_get_environment_contains_restricted_builtins(self):
+        """Test that get_environment returns an environment with restricted __builtins__."""
+        env = get_environment()
+        self.assertIn("__builtins__", env)
+        self.assertIsInstance(env["__builtins__"], dict)
+        self.assertNotIn("open", env["__builtins__"])
+        self.assertNotIn("exec", env["__builtins__"])
+        self.assertNotIn("eval", env["__builtins__"])
+        self.assertIn("__import__", env["__builtins__"])
+        self.assertIn("len", env["__builtins__"])
+
+    def test_safe_import_blocks_dangerous_modules(self):
+        """Test that the safe __import__ wrapper blocks dangerous modules."""
+        from pandasai.core.code_execution.environment import _safe_import
+
+        dangerous = ["os", "sys", "subprocess", "shutil", "socket", "pickle"]
+        for module in dangerous:
+            with self.subTest(module=module):
+                with self.assertRaises(ImportError):
+                    _safe_import(module)
+
+    def test_safe_import_allows_safe_modules(self):
+        """Test that the safe __import__ wrapper allows safe modules."""
+        from pandasai.core.code_execution.environment import _safe_import
+
+        safe = ["pandas", "numpy", "math", "json", "re", "datetime"]
+        for module in safe:
+            with self.subTest(module=module):
+                try:
+                    result = _safe_import(module)
+                    self.assertIsNotNone(result)
+                except ImportError as e:
+                    if "is not allowed" in str(e):
+                        self.fail(f"Safe module '{module}' was incorrectly blocked")
+                    # Other ImportError (module not installed) is acceptable
 
 
 if __name__ == "__main__":
