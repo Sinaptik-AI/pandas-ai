@@ -17,6 +17,7 @@ class VirtualDataFrame(DataFrame):
         "_column_hash",
         "_head",
         "_loader",
+        "_rows_count",
         "config",
         "head",
         "path",
@@ -28,6 +29,7 @@ class VirtualDataFrame(DataFrame):
         if not self._loader:
             raise VirtualizationError("Data loader is required for virtualization!")
         self._head = None
+        self._rows_count = None
 
         super().__init__(
             *args,
@@ -41,7 +43,18 @@ class VirtualDataFrame(DataFrame):
 
     @property
     def rows_count(self) -> int:
-        return self._loader.get_row_count()
+        if self._rows_count is None:
+            self._rows_count = self._loader.get_row_count()
+        return self._rows_count
+
+    @property
+    def columns_count(self) -> int:
+        # The backing pandas frame holds no data, so len(self.columns) is always 0
+        # here. The schema is authoritative when it declares columns; otherwise fall
+        # back to the head, which is cached.
+        if self.schema.columns:
+            return len(self.schema.columns)
+        return len(self.head().columns)
 
     @property
     def query_builder(self):
