@@ -1,0 +1,6 @@
+{
+  "name": "PandasAI Studio",
+  "description": "Conversational data analysis and visualization workspace powered by AI for tabular datasets with PandasAI query workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

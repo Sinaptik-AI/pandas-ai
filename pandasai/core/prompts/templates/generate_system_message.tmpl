@@ -1,5 +1,0 @@
-{% if memory.agent_description %} {{memory.agent_description}} {% endif %}
-{% if memory.count() > 1 %}
-### PREVIOUS CONVERSATION
-{{ memory.get_previous_conversation() }}
-{% endif %}
